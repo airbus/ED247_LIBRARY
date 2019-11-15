@@ -1,0 +1,384 @@
+#!/bin/sh
+
+###############################################################################
+# The MIT Licence                                                             #
+#                                                                             #
+# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the "Software"),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included     #
+# in all copies or substantial portions of the Software.                      #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+###############################################################################
+
+ROOT_PID=$$
+
+case `uname -s` in
+
+    Linux)
+        export IOTEST_OS="LINUX"
+        export IOTEST_USER=`id -un`
+        ;;
+    LynxOS)
+        export IOTEST_OS="LYNXOS"
+        export IOTEST_USER=`whoami`
+        ;;
+    *NT*)
+        export IOTEST_OS="WINDOWS"
+        export IOTEST_USER=`id -un`
+        ;;
+    *)
+        echo 'ERROR: Unsupported OS type: uname -s = "'`uname -s`'"'
+        exit 1
+        ;;
+esac
+
+# Activer $DOS2UNIX uniquement sous Windows
+[ "$IOTEST_OS" == "WINDOWS" ] && export DOS2UNIX=dos2unix || export DOS2UNIX="true"
+
+case `uname -m` in
+
+    ppc|PowerPC)
+        export IOTEST_PLF="PPC"
+        export IOTEST_CPU="ppc"
+        ;;
+
+    x86_64|i?86)
+        export IOTEST_PLF="PC"
+        export IOTEST_CPU=`uname -i`
+        ;;
+    *)
+        echo 'ERROR: Unsupported machine type: uname -m = "'`uname -m`'"'
+        exit 1
+        ;;
+esac
+
+if [ "$iotest_log" != "" ]; then
+    log_file="$iotest_log"
+else
+    log_file=./global_test_report.log
+fi
+#=========================================================
+#Functions to handle xml report
+#=========================================================
+#Xml file tags
+export HEAD_LABEL="TestCases"
+export TEST_LABEL="TestCase"
+export STEP_LABEL="Step"
+export TITLE_LABEL="Name"
+export DESC_LABEL="Purpose"
+export REF_LABEL="Reference"
+
+#Names of the variables to describe the tests
+export var_Title="Titre"
+export var_Description="Description"
+export var_Requirement="Exigence"
+
+#Xml report specific variables
+start_time=$SECONDS
+cur_test=""
+tmp_xml_file_save=""
+
+#functions
+#Saving the name of the temporary file is required to test the library within itself (non-regression tests)
+function init_tmp_xml {
+if [ ! -z $tmp_xml_file ];then
+    tmp_xml_file_save="$tmp_xml_file"
+fi
+export tmp_xml_file="/tmp/iotest_xml_file_`date +%Y%m%d-%Hh%Mm%Ss`_$$.tmp"
+}
+
+function restore_tmp_xml {
+if [ ! -z $tmp_xml_file_save ];then
+    tmp_xml_file="$tmp_xml_file_save"
+fi
+}
+
+function get_test_duration {
+    test_duration=$(($SECONDS - $1))
+    let hours=$test_duration/3600
+    let minutes=$test_duration%3600/60
+    let seconds=$test_duration%60
+    format_duration="${hours}h:${minutes}mn:${seconds}s"
+    echo "$format_duration"
+}
+
+function get_test_name {
+    title=`eval echo \\\$$var_Title$cur_test`
+    if [ ! -z "$title" ]; then
+        echo "        <$TITLE_LABEL>$title</$TITLE_LABEL>"  >>  $xml_file
+    fi
+}
+
+
+function get_test_purpose {
+    desc=`eval echo \\\$$var_Description$cur_test`
+    if [ ! -z "$desc" ]; then
+        echo "        <$DESC_LABEL>$desc</$DESC_LABEL>"  >>  $xml_file
+    fi
+}
+
+function get_test_references {
+    reqs=`eval echo \\\$$var_Requirement$cur_test`
+    if [ ! -z "$reqs" ]; then
+        IFS=';'; req_array=($reqs)
+        for req in "${req_array[@]}"; do
+            echo "            <$REF_LABEL>$req</$REF_LABEL>"  >>  $tmp_xml_file
+        done
+    fi
+}
+
+#function to create the header the end of the xml report
+function init_xml_report {
+    if [ ! -z "$xml_file" ]; then
+        init_tmp_xml
+        (
+        echo "<!-- Xml test report file -->"
+        echo "<!-- Generated date : `date \"+%D at %T\"` -->"
+        echo "<!-- Author : `whoami` -->"
+        echo "<!-- Environment : `hostname` ($OSREL) -->"
+        echo "<$HEAD_LABEL>" ) >  $xml_file
+    fi
+}
+
+function close_xml_report {
+    if [ ! -z "$xml_file" ] && [ -e $xml_file ]; then
+        restore_tmp_xml
+        echo "</$HEAD_LABEL>" >>  $xml_file
+    fi
+}
+
+#Functions to report a test in xml file
+function init_test_xml_report {
+    if [ ! -z "$xml_file" ] && [ -e $xml_file ]; then
+        echo "    <$TEST_LABEL ID=\"$1\">" >>  $xml_file
+        cur_test="$1"
+        if [ "$IOTEST_OS" != "LYNXOS" ];then
+            start_time=`date +%s`
+        else
+            start_time=`date "+%j;%k;%m;%S"`
+        fi
+        start_time=$SECONDS
+    fi
+}
+
+function close_test_xml_report {
+    if [ ! -z "$xml_file" ] && [ -e $xml_file ]; then
+        dur="`get_test_duration $start_time`"
+        (
+        get_test_name
+        get_test_purpose
+        echo "        <Duration>$dur</Duration>"
+        echo "        <Result>$1</Result>"
+        if [ -e $tmp_xml_file ]; then
+            cat $tmp_xml_file
+        fi
+        echo "    </$TEST_LABEL>" ) >>  $xml_file
+        if [ -e $tmp_xml_file ]; then
+            rm $tmp_xml_file
+        fi
+    fi
+}
+
+#function for a test step in xml file
+#Use of temprorary file is to organize the tags of the xml report
+function step_test_xml_report {
+    if [ ! -z "$xml_file" ] && [ -e $xml_file ]; then
+        (
+        echo "        <$STEP_LABEL ID=\"$1\">"
+        get_test_references
+        echo "            <Result>$2</Result>"
+        echo "        </$STEP_LABEL>" ) >>  $tmp_xml_file
+    fi
+}
+
+
+
+
+#=========================================================
+#Tests Functions
+#=========================================================
+
+
+
+function do_test {
+    the_test=$1
+    $the_test
+    return_code="$?"
+    exit $return_code
+}
+
+function launch_test {
+    if [[ `uname -s` == "Linux" ]]; then
+        do_test $1 &
+        export TEST_PID=$!
+    else
+        do_test $1 &
+        export TEST_PID=$!
+    fi
+}
+
+
+function pid_exists {
+    if [ $IOTEST_OS = "WINDOWS" ]; then
+        ps -s | awk '{print $1}' | grep -q $1
+    elif [ $IOTEST_OS = "LYNXOS" ]; then
+        [ `ps -p $1 | wc -l` = "3" ]
+    else
+        ps $1 > /dev/null 2>&1
+    fi
+    if [ "$?" = "0" ]; then
+        echo "YES"
+    else
+        echo "NO"
+    fi
+}
+
+function export_test_result {
+#variable TEST_RESULT_XML  prevent the  suppression of characters " ***" in shell Lynx for format xml
+    if [ "$1" = "0" ]; then
+        export TEST_RESULT="Success"
+        export TEST_RESULT_XML="OK"
+    else
+        export TEST_RESULT="Failure ***"
+        export TEST_RESULT_XML="KO"
+        export GLOBAL_RESULT="SOME TESTS ARE FAILED"
+        export GLOBAL_STATUS="FAILED"
+    fi
+}
+
+function wait_test_end {
+    wait $TEST_PID
+    code_retour="$?"
+    export_test_result "$code_retour"
+}
+
+function do_run {
+    list="$filter_include"
+    cur=0
+
+    if [ -e $log_file -a ! -w $log_file ]; then
+        echo "Error: log file $log_file is not writable."
+        printf "*** [%s] FAILURE ***\n" "`date +"%F %T"`"
+        exit -1
+    fi
+    if [ ! -z "$xml_file" ] && [ -e $xml_file -a ! -w $xml_file ]; then
+        echo "Error: xml result file $xml_file is not writable."
+        printf "*** [%s] FAILURE ***\n" "`date +"%F %T"`"
+        exit -1
+    fi
+
+    init_xml_report
+    
+    echo "Start testing... Logs are recorded to file : " $log_file
+    (
+    echo "###################################################################################"
+    echo " LIBED247"
+    echo " hostname: " `hostname`
+    echo " uname -a: " `uname -a`
+    echo " date    : " `date`
+    echo " user    : " $IOTEST_USER
+    echo "###################################################################################") 2>&1 | tee $log_file
+    export GLOBAL_RESULT="ALL TESTS ARE SUCCESSFULLY EXECUTED"
+    export GLOBAL_STATUS="SUCCESS"
+    wc_list=$(echo $list | wc -w)
+    for the_test in $list ; do
+        init_test_xml_report $the_test
+        cur=`expr $cur + 1`
+        printf "[%s] Starting test  %3i/$wc_list : $the_test\n" "`date +"%F %T"`" "$cur" 2>&1 | tee -a $log_file
+        launch_test $the_test >> $log_file 2>&1
+        wait_test_end >> $log_file 2>&1
+        printf "[%s] Result of test %3i/$wc_list : %-40s %s\n" "`date +"%F %T"`" "$cur" "$the_test" "$TEST_RESULT" 2>&1 | tee -a $log_file
+        echo "===================================================================================" | tee -a $log_file
+        close_test_xml_report "$TEST_RESULT_XML"
+    done
+    close_xml_report
+    # printf "*** [%s] RESULT OF TEST CAMPAIGN: $GLOBAL_RESULT ***\n" "`date +"%F %T"`" 2>&1 | tee -a $log_file
+    printf "### [$GLOBAL_STATUS] ####\n" 2>&1 | tee -a $log_file
+    if [ "$GLOBAL_RESULT" = "ALL TESTS ARE SUCCESSFULLY EXECUTED" ]; then
+        exit 0
+    else
+        exit -1
+    fi
+}
+
+
+function do_help {
+    echo "$0 is a test suite"
+    echo ""
+    echo "Syntax:  $0 [subcommand]"
+    echo "Where [subcommand] may be:"
+    echo "    run [-i list of tests] [-f file_name] "
+    echo "          Runs the tests listed after the -i argument"
+    echo "          If [-f] switch is set, record test results in [file_name]."
+    echo "    help                        "
+    echo "          Print help and exit"
+}
+
+function syntax_error {
+    echo "Syntax error !"
+    echo ""
+    do_help
+    exit -1
+}
+
+#=========================================================
+#Main
+#=========================================================
+#function iotest_main {
+
+if [ "$#" -lt "1" ]; then
+    do_help
+    exit -1
+fi
+
+export filter_include=""
+export xml_file=""
+
+
+iotest_cmd="$1"
+OPTIND=2
+
+while getopts "i:f:" argument ; do
+    case $argument in
+        "i")
+            filter_include=$OPTARG
+            ;;
+        "f")
+            xml_file=$OPTARG
+            echo "the results of the tests are recorded in xml file : $xml_file"
+            ;;
+        *)
+            syntax_error
+            ;;
+    esac
+done
+
+if [ $(($OPTIND - 1)) != "$#" ]; then
+    syntax_error
+fi
+
+case $iotest_cmd in
+    "run")
+        do_run
+        ;;
+    "help")
+        do_help
+        ;;
+    *)
+        syntax_error
+esac
+

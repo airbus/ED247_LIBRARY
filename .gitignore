@@ -1,0 +1,9 @@
+/install
+/build
+/deps
+/new.sh
+/*_dependencies*
+/.vs*
+/CMakeSettings.json
+/src/ed247/ed247_xsd.h
+/1

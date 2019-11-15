@@ -1,0 +1,69 @@
+/*!
+
+\page page_examples Examples
+
+\tableofcontents
+
+This page contains several examples of use of the library API.
+
+\section example_1 Example 1: @DOX_EXAMPLE_1_TITLE@
+
+<b>@DOX_EXAMPLE_1_ECIC_FILENAME@</b>
+\code{.xml}
+@DOX_EXAMPLE_1_ECIC@
+\endcode
+
+<b>@DOX_EXAMPLE_1_CODE_FILENAME@</b>
+\code{.c}
+@DOX_EXAMPLE_1_CODE@
+\endcode
+
+\section example_2 Example 2: @DOX_EXAMPLE_2_TITLE@
+
+<b>@DOX_EXAMPLE_2_ECIC_FILENAME@</b>
+\code{.xml}
+@DOX_EXAMPLE_2_ECIC@
+\endcode
+
+<b>@DOX_EXAMPLE_2_CODE_FILENAME@</b>
+\code{.c}
+@DOX_EXAMPLE_2_CODE@
+\endcode
+
+\section example_3 Example 3: @DOX_EXAMPLE_3_TITLE@
+
+<b>@DOX_EXAMPLE_3_ECIC_FILENAME@</b>
+\code{.xml}
+@DOX_EXAMPLE_3_ECIC@
+\endcode
+
+<b>@DOX_EXAMPLE_3_CODE_FILENAME@</b>
+\code{.c}
+@DOX_EXAMPLE_3_CODE@
+\endcode
+
+\section example_4 Example 4: @DOX_EXAMPLE_4_TITLE@
+
+<b>@DOX_EXAMPLE_4_ECIC_FILENAME@</b>
+\code{.xml}
+@DOX_EXAMPLE_4_ECIC@
+\endcode
+
+<b>@DOX_EXAMPLE_4_CODE_FILENAME@</b>
+\code{.c}
+@DOX_EXAMPLE_4_CODE@
+\endcode
+
+\section example_5 Example 5: @DOX_EXAMPLE_5_TITLE@
+
+<b>@DOX_EXAMPLE_5_ECIC_FILENAME@</b>
+\code{.xml}
+@DOX_EXAMPLE_5_ECIC@
+\endcode
+
+<b>@DOX_EXAMPLE_5_CODE_FILENAME@</b>
+\code{.c}
+@DOX_EXAMPLE_5_CODE@
+\endcode
+
+*/

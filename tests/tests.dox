@@ -1,0 +1,100 @@
+/*!
+
+\page page_tests Tests
+
+\tableofcontents
+
+This page describes the tests of the library.
+
+\section functional_tests Functional tests
+
+The following tests are designed to validates the ED-247 LIBRARY at API level.
+
+\subsection ft_backup FT_BACKUP
+
+This test validates the communication between the ED-247 LIBRARY compliant with ED-247 revision A in a mode compliant with revision 0.
+<b>This test is not consistant of a standard use of the ED-247 LIBRARY.</b>
+
+\subsection ft_exchange FT_EXCHANGE
+
+This test validates the communication between two components (actor & tester) at API level for all implemented protocols, both in unicast and multicast mode.
+
+\subsection ft_frame FT_FRAME
+
+This test validates that the frames are well encoded and decoded.
+
+\subsection ft_limit FT_LIMIT
+
+This test validates the ED-247 LIBRARY can exchange between two components 10 channels and 100 streams per channel. The number of channels and streams can be modified. Please look at the `launch_ft_limit.sh` script arguments.
+
+\subsection ft_load_all FT_LOAD_ALL
+
+This test validates the ED-247 LIBRARY is able to load ECIC configuration files, and return an error if the file is not valid.
+
+\subsection ft_logging FT_LOGGING
+
+This test validates the logging mechanism of the ED-247 LIBRARY.
+
+\subsection ft_perfos FT_PERFOS
+
+This test provides a tool to assess the runtime performances of the ED-247 LIBRARY between two components (master and slave).
+The `prepare_ft_perfos.sh` script generates the two configuration files according to several tunning parameters such as the number of channels, the number of streams per channel and the number of signals per streams.
+For more information, look at the script arguments or launch it with the `-h` option.
+
+\section unit_tests Unit tests
+
+The following tests are designed to validate ED-247 LIBRARY core components up to the API level.
+
+\subsection ut_api_channels UT_API_CHANNELS
+
+This test validates the channel part of the API.
+
+\subsection ut_api_converters UT_API_CONVERTERS
+
+This test validates the converting function such as conversion of enumerations to string and vice versa.
+
+\subsection ut_api_metrics UT_API_METRICS
+
+This test validates the capability of ED-247 to genrate runtime metrics between two components (sender & receiver).
+
+\subsection ut_api_misc UT_API_MISC
+
+This test validates several functions out of other perimeters, such as information getters.
+
+\subsection ut_api_signals UT_API_SIGNALS
+
+This test validates the API functions linked to signal handling.
+
+\subsection ut_api_streams UT_API_STREAMS
+
+This test validates the API functions linked to stream handling.
+
+\subsection ut_api_use_feedback UT_API_USER_FEEDBACK
+
+This test checks the warnings and error messages return when the ED-247 LIBRARY is not used the right way.
+
+\subsection ut_channels UT_CHANNELS
+
+This test validates the `Channel` core component of the ED-247 LIBRARY.
+
+\subsection ut_loading UT_LOADING
+
+This test validates the load of ECIC files.
+
+\subsection ut_signals UT_SIGNALS
+
+This test validates the `Signal` core component of the ED-247 LIBRARY.
+
+\subsection ut_sockets UT_SOCKETS
+
+This test validates the `Socket` core component of the ED-247 LIBRARY. It is the low level of the communication.
+
+\subsection ut_streams UT_STREAMS
+
+This test validates the `Stream` core component of the ED-247 LIBRARY.
+
+\subsection ut_timestamp UT_TIMESTAMP
+
+This test validates the simulation timing callback feature.
+
+*/

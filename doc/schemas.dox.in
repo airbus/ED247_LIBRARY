@@ -1,0 +1,17 @@
+/*!
+
+\page schemas Configuration files
+
+\section ecd ECD XSD file
+
+\code{.xml}
+@DOX_XSD_ECD@
+\endcode
+
+\section ecic ECIC XSD file
+
+\code{.xml}
+@DOX_XSD_ECIC@
+\endcode
+
+*/
