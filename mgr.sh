@@ -3,7 +3,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+# Copyright (c) 2020 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -73,7 +73,7 @@ else
             error "${PRODUCT} cannot be compiled from an UNC path (e.g. \\\\filer\\${PRODUCT} or //filer/${PRODUCT}). You must mount it on a Windows drive, and use its local path to compile it."
             ;;
     esac
-    compilers=("mingw4.9.2" "msvc2017" "msvc2015")
+    compilers=("mingw4.9.2" "msvc2019" "msvc2017" "msvc2015")
 fi
 
 build_path="${script_path}/build"
@@ -330,7 +330,8 @@ set PATH=%DOXYGEN_NEWPATH%;%PATH%
 pushd %MSVC_PATH%
 
 echo Change to %cd%
-call %MSVC_EXE% %MSVC_ARG%
+echo call %MSVC_EXE% %MSVC_ARG% %MSVC_ARG2%
+call %MSVC_EXE% %MSVC_ARG% %MSVC_ARG2%
 
 pushd %~dp0
 
@@ -410,6 +411,11 @@ function define_arg
     define ARG $@
 }
 
+function define_arg2
+{
+    define ARG2 $@
+}
+
 function generate_dependencies_files
 {
     echo "Generating dependencies paths configuration files..."
@@ -438,7 +444,7 @@ function generate_dependencies_files
             cmake_variables+=(MINGW_PATH)
         fi
         if [[ ${_COMPILER} =~ ^msvc.* ]]; then
-            cmake_variables+=(MSVC_PATH MSVC_EXE MSVC_ARG)
+            cmake_variables+=(MSVC_PATH MSVC_EXE MSVC_ARG MSVC_ARG2)
         fi
 
         # Write to file
@@ -530,6 +536,7 @@ set PATH=${write_path}%PATH%
 set MSVC_PATH="$(echo ${msvc_path_})"
 set MSVC_EXE=${MSVC_EXE}
 set MSVC_ARG=${MSVC_ARG}
+set MSVC_ARG2=${MSVC_ARG2}
 set NINJA_PATH=$(echo ${ninja_path_})
 END
         fi
@@ -752,7 +759,7 @@ function cmd_test {
 ###############################################################################
 # Exec                                                                        #
 ###############################################################################
-cmdhelp_test="# Run a single executable in tests directory
+cmdhelp_exec="# Run a single executable in tests directory
      -d                 Launch with debugger
      -p                 Launch with perf
      compiler           Compiler (first default): ${compilers[@]}
@@ -803,7 +810,8 @@ function cmd_exec {
         fi
 
         pushd bin
-        cmd "/C call ..\run_test.bat $test_exe"
+        shift 1
+        cmd "/C call ..\run_test.bat $test_exe ${@}"
         popd
     else
         test_sh=$(echo "launch_${1}.sh")
@@ -816,12 +824,13 @@ function cmd_exec {
 
         . ${test_env_filepath}
         pushd bin
+        shift 1
         if [[ ${_DEBUG} -eq 1 ]]; then
-            gdb ${test_exe_filepath}
+            gdb ${test_exe_filepath} ${@}
         elif [[ ${_PERF} -eq 1 ]]; then
-            perf record -g -v ${test_exe_filepath}
+            perf record -g -v ${test_exe_filepath} ${@}
         else
-            ${test_exe_filepath}
+            ${test_exe_filepath} ${@}
         fi
         popd
     fi
@@ -933,6 +942,18 @@ END
         echo "# Done"
     else
         echo "# No need to copy ${1}"
+    fi
+}
+
+###############################################################################
+# Deliver                                                                     #
+###############################################################################
+
+cmdhelp_deliver="# Generate the ePDN"
+
+function cmd_deliver {
+    if [[ `uname -s` == "Linux" ]]; then
+        sh /home/CrossTools/ePDN/V2.0.0/scripts/ePdn.sh -d ${script_path}/ED247_LIBRARY.epdn -o ${script_path}/install/PDN.html -t frameworks
     fi
 }
 

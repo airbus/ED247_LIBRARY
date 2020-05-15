@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -75,7 +75,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         // Stream (Emitter)
         auto sp_stream_emitter_conf = std::make_shared<xml::A429Stream>();
         sp_stream_emitter_conf->reset();
-        sp_stream_emitter_conf->info.name = "Stream";
+        sp_stream_emitter_conf->info.name = "StreamOut";
         sp_stream_emitter_conf->info.direction = ED247_DIRECTION_OUT;
         sp_stream_emitter_conf->info.uid = 0;
 
@@ -89,7 +89,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         // Stream (Receiver)
         auto sp_stream_receiver_conf = std::make_shared<xml::A429Stream>();
         sp_stream_receiver_conf->reset();
-        sp_stream_receiver_conf->info.name = "Stream";
+        sp_stream_receiver_conf->info.name = "StreamIn";
         sp_stream_receiver_conf->info.direction = ED247_DIRECTION_IN;
         sp_stream_receiver_conf->info.uid = 0;
 
@@ -201,7 +201,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         // Stream (Emitter)
         auto sp_stream_emitter_conf = std::make_shared<xml::A429Stream>();
         sp_stream_emitter_conf->reset();
-        sp_stream_emitter_conf->info.name = "Stream";
+        sp_stream_emitter_conf->info.name = "StreamOut";
         sp_stream_emitter_conf->info.direction = ED247_DIRECTION_OUT;
         sp_stream_emitter_conf->info.uid = 0;
 
@@ -215,7 +215,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         // Stream (Receiver)
         auto sp_stream_receiver_conf = std::make_shared<xml::A429Stream>();
         sp_stream_receiver_conf->reset();
-        sp_stream_receiver_conf->info.name = "Stream";
+        sp_stream_receiver_conf->info.name = "StreamIn";
         sp_stream_receiver_conf->info.direction = ED247_DIRECTION_IN;
         sp_stream_receiver_conf->info.uid = 0;
 
@@ -313,7 +313,7 @@ std::vector<xml::UdpSocket> sockets_unicast = {
 };
 
 std::vector<xml::UdpSocket> sockets_multicast = {
-    xml::UdpSocket("226.23.12.4",6000,"",5000)
+    xml::UdpSocket("224.1.1.1",6000,"",5000)
 };
 
 INSTANTIATE_TEST_CASE_P(UnicastTests, SocketContext,

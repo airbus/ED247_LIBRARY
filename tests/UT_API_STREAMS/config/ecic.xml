@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -42,15 +42,15 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="102" Name="Stream3full" SampleMaxNumber="17" Comment="A825 designates CAN" ICD="ICD for A825"/>
                 <SERIAL_Stream UID="1003" Name="StreamSerial" Direction="Out"/>
                 <SERIAL_Stream UID="1002" Name="StreamSerialFull" Direction="Out" SampleMaxSizeBytes="67" SampleMaxNumber="17" Comment="A825 designates CAN" ICD="ICD for A825"/>
-                <DIS_Stream UID="3" Name="Stream4" Direction="Out">
+                <DIS_Stream UID="3" Name="Stream4" SampleMaxSizeBytes="4" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal1" ByteOffset="0"/>
-                        <Signal Name="Signal2" ByteOffset="1"/>
+                        <!-- <Signal Name="Signal2" ByteOffset="1"/> -->
                         <Signal Name="Signal3" ByteOffset="2"/>
                         <Signal Name="Signal4" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="103" Name="Stream4full" Direction="In" SampleMaxNumber="14" Comment="Discrete input signals" ICD="ICD for DSI">
+                <DIS_Stream UID="103" Name="Stream4full" SampleMaxSizeBytes="4" Direction="In" SampleMaxNumber="14" Comment="Discrete input signals" ICD="ICD for DSI">
                     <Signals SamplingPeriodUs="15000">
                         <Signal Name="Signal1" ByteOffset="0"/>
                         <Signal Name="Signal2" ByteOffset="1"/>
@@ -58,7 +58,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="Signal4" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
-                <ANA_Stream UID="4" Name="Stream5" Direction="Out">
+                <ANA_Stream UID="4" Name="Stream5" SampleMaxSizeBytes="16" Direction="Out">
                     <Signals SamplingPeriodUs="20000">
                         <Signal Name="SignalAna1" ByteOffset="0"/>
                         <Signal Name="SignalAna2" ByteOffset="4"/>
@@ -66,7 +66,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalAna4" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="104" Name="Stream5full" Direction="In" SampleMaxNumber="36" Comment="Analog input signals" ICD="ICD for ANA">
+                <ANA_Stream UID="104" Name="Stream5full" SampleMaxSizeBytes="16" Direction="In" SampleMaxNumber="36" Comment="Analog input signals" ICD="ICD for ANA">
                     <Signals SamplingPeriodUs="25000">
                         <Signal Name="SignalAna1" ByteOffset="0"/>
                         <Signal Name="SignalAna2" ByteOffset="4"/>
@@ -74,7 +74,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalAna4" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="5" Name="Stream6" Direction="In">
+                <NAD_Stream UID="5" Name="Stream6" SampleMaxSizeBytes="6" Direction="In">
                     <Signals SamplingPeriodUs="100000">
                         <Signal Name="SignalNAD1" Type="int8" ByteOffset="0"/>
                         <Signal Name="SignalNAD2" Type="int8" ByteOffset="1"/>
@@ -83,7 +83,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalNAD5" Type="int16" ByteOffset="4"/>
                     </Signals>
                 </NAD_Stream>
-                <NAD_Stream UID="105" Name="Stream6full" Direction="Out" SampleMaxNumber="23" Comment="Non Avionic Data input signals" ICD="ICD for NAD">
+                <NAD_Stream UID="105" Name="Stream6full" SampleMaxSizeBytes="15" Direction="Out" SampleMaxNumber="23" Comment="Non Avionic Data input signals" ICD="ICD for NAD">
                     <Signals SamplingPeriodUs="110000">
                         <Signal Name="SignalNAD1" Type="int16" ByteOffset="0"/>
                         <Signal Name="SignalNAD2" Type="int8" ByteOffset="2"/>

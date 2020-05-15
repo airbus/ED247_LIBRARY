@@ -3,7 +3,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+# Copyright (c) 2020 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -36,7 +36,7 @@ sh ${script_path}/prepare_ft_perfos.sh
 if [[ `uname -s` == "Linux" ]]; then
     export ED247_TEST_IP_ADDRESS=${SLAVE_IP_ADDRESS}
     ./$master > $master.log 2>&1&
-    echo "## PID [$(pidof $master)] EUID [${EUID}]"
+    # echo "## PID [$(pidof $master)] EUID [${EUID}]"
     export ED247_TEST_IP_ADDRESS=${MASTER_IP_ADDRESS}
     ./$slave > $slave.log 2>&1
 else

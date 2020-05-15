@@ -3,7 +3,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+# Copyright (c) 2020 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -47,7 +47,7 @@ function write_ecic () {
     echo '<!--' >> $1
     echo 'The MIT Licence' >> $1
     echo ' ' >> $1
-    echo 'Copyright (c) 2019 Airbus Operations S.A.S' >> $1
+    echo 'Copyright (c) 2020 Airbus Operations S.A.S' >> $1
     echo ' ' >> $1
     echo 'Permission is hereby granted, free of charge, to any person obtaining a' >> $1
     echo 'copy of this software and associated documentation files (the "Software"),' >> $1

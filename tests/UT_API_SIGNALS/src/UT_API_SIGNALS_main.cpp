@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -95,8 +95,6 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_TRUE(signal_info->icd != NULL && strcmp(signal_info->icd, "") == 0);
     ASSERT_EQ(signal_info->type, ED247_SIGNAL_TYPE_DISCRETE);
     ASSERT_EQ(signal_info->info.dis.byte_offset, (uint32_t)0);
-    ASSERT_EQ(signal_info->info.dis.true_value, (double)1);
-    ASSERT_EQ(signal_info->info.dis.false_value, (double)0);
 
     ASSERT_EQ(ed247_signal_get_stream(signal, &stream_test), ED247_STATUS_SUCCESS);
     ASSERT_EQ(stream, stream_test);
@@ -108,8 +106,6 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_TRUE(signal_info->icd != NULL && strcmp(signal_info->icd, "This") == 0);
     ASSERT_EQ(signal_info->type, ED247_SIGNAL_TYPE_DISCRETE);
     ASSERT_EQ(signal_info->info.dis.byte_offset, (uint32_t)1);
-    ASSERT_EQ(signal_info->info.dis.true_value, (double)4);
-    ASSERT_EQ(signal_info->info.dis.false_value, (double)2);
     
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);

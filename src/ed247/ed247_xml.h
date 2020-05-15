@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -122,8 +122,6 @@ namespace attr
     static const std::string UID { "UID" };
     static const std::string ICD { "ICD" };
     static const std::string FifoSize { "FifoSize" };
-    static const std::string TrueValue { "TrueValue" };
-    static const std::string FalseValue { "FalseValue" };
     static const std::string ByteOffset { "ByteOffset" };
     static const std::string ComponentType { "ComponentType" };
     static const std::string StandardRevision { "StandardRevision" };

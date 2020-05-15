@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -714,6 +714,16 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 std::shared_ptr<BaseStream> get_stream()
                 {
                     return _stream;
+                }
+
+                bool is_valid()
+                {
+                    auto type = _stream->get_configuration()->info.type;
+                    return _stream ? (
+                        type == ED247_STREAM_TYPE_DISCRETE ||
+                        type == ED247_STREAM_TYPE_ANALOG ||
+                        type == ED247_STREAM_TYPE_NAD ||
+                        type == ED247_STREAM_TYPE_VNAD) : false;
                 }
 
                 void write(std::shared_ptr<BaseSignal> signal, const void *data, size_t size)

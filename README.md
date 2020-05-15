@@ -15,6 +15,9 @@ The ED247 LIBRARY / LIBED247 is natively built with the following operating syst
   * MINGW 4.9.2 (`mingw4.9.2`)
     * 32 bits (`x86`)
     * 64 bits (`x64`)
+  * Microsoft Visual Studio C++ 2019 (`msvc2019`)
+    * 32 bits (`x86`)
+    * 64 bits (`x64`)
   * Microsoft Visual Studio C++ 2017 (`msvc2017`)
     * 32 bits (`x86`)
     * 64 bits (`x64`)
@@ -131,3 +134,11 @@ The logging strategy can be controlled through the API with `ed247_set_log_level
 ## License
 
 The license is detailed in the License section.
+
+## Test between two computers
+
+The test FT_PERFOS can be adapted to be launched on two separate computers (with different IP addresses).
+Indeed, the FT_PERFOS test contains a simple ECIC file generator that can be used to generate ECIC configuration files using the `./install/linux/gcc4.8.5/x86/tests/bin/prepare_ft_perfos.sh` script (run `sh ./install/linux/gcc4.8.5/x86/tests/bin/prepare_ft_perfos.sh -h` for more info about the arguments). Example of use: `sh ./install/linux/gcc4.8.5/x86/tests/bin/prepare_ft_perfos.sh 10000 1 1 1 1 192.169.0.1 192.169.0.2` (`192.169.0.1` = Master IP address & `192.169.0.2` = Slave IP address).
+
+Next, in order to run the executables, use `sh ./install/linux/gcc4.8.5/x86/tests/bin/run_ft_perfos_single.sh [master/slave] [remote IP address]` on each computer (for example `sh ./install/linux/gcc4.8.5/x86/tests/bin/run_ft_perfos_single.sh master 192.169.0.2` on the computer with IP address `192.169.0.1` which is considered as the `master`).
+

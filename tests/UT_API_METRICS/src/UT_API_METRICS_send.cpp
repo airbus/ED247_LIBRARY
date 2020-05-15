@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -62,18 +62,26 @@ TEST(OutSequence, UTMetrics)
     ed247_stream_list_t streams = NULL;
     ed247_stream_t stream = NULL;
     ed247_stream_t second_stream = NULL;
+    void *second_stream_value;
+    size_t second_stream_size;
     ed247_stream_assistant_t assistant = NULL;
-    ed247_signal_list_t signal_list = NULL;
+    ed247_signal_list_t signals = NULL;
     ed247_signal_t dummy_header_sn = NULL;
+    void *sn_value;
+    size_t sn_size;
     ed247_signal_t dummy_header_pid = NULL;
+    void *pid_value;
+    size_t pid_size;
     ed247_signal_t dummy_header_tts1 = NULL;
+    void *tts1_value;
+    size_t tts1_size;
     ed247_signal_t dummy_header_tts2 = NULL;
+    void *tts2_value;
+    size_t tts2_size;
     ed247_signal_t data_signal = NULL;
-    uint16_t zero16 = 0;
-    uint32_t zero32 = 0;
-    uint16_t value;
+    void *data_value;
+    size_t data_size;
     std::string ecic_filename = CONFIG_PATH"/ut_api_metrics/ecic_send.xml";
-    
     
     uint16_t header_values [] = {
         65000,
@@ -81,50 +89,64 @@ TEST(OutSequence, UTMetrics)
         65535,
         10,
         65500};
-    uint16_t header_values_size = sizeof(header_values)/sizeof(header_values[0]);
+    uint16_t header_values_size = 5;
     
     ASSERT_EQ(ed247_load(ecic_filename.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_streams(context, "MyStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_NE(assistant, (ed247_stream_assistant_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderPID" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_pid), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderPID" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_pid), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_pid, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderSN" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_sn), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &pid_value, &pid_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderSN" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_sn), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_sn, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS1" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_tts1), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &sn_value, &sn_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS1" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts1), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts1, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS2" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_tts2), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts1, &tts1_value, &tts1_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS2" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts2), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts2, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "Data" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &data_signal), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts2, &tts2_value, &tts2_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "Data" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &data_signal), ED247_STATUS_SUCCESS);
     ASSERT_NE(data_signal, (ed247_signal_t)NULL);
+    ASSERT_EQ(ed247_signal_allocate_sample(data_signal, &data_value, &data_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
     // uint16_t data = 0x0000;
     
     ASSERT_EQ(ed247_find_streams(context, "MySecondStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &second_stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
     
     // Synchro after initialisation
     synchronizer.send(TEST_ENTITY_DST_ID);
     ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_DST_ID));
     
     for (uint16_t i = 0; i < header_values_size; i++){
-        value = htons(header_values[i]);
+        *(uint16_t*)pid_value = (uint16_t)0;
+        *(uint16_t*)sn_value = (uint16_t)(header_values[i]);
+        // *(uint16_t*)sn_value = htons(header_values[i]);
+        *(uint32_t*)tts1_value = (uint32_t)10;
+        *(uint32_t*)tts2_value = (uint32_t)12;
+        *(uint16_t*)data_value = i;
         std::cout << "Sending frame " << i+1 << ": Simulated SN is " << header_values[i] << std::endl;
-        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_pid, &zero16, sizeof(uint16_t)), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_sn, &value, sizeof(value)), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts1, &zero32, sizeof(uint32_t)), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts2, &zero32, sizeof(uint32_t)), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, data_signal, &i, sizeof(i)), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_pid, pid_value, pid_size), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_sn, sn_value, sn_size), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts1, tts1_value, tts1_size), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts2, tts2_value, tts2_size), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, data_signal, data_value, data_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
         
@@ -133,8 +155,8 @@ TEST(OutSequence, UTMetrics)
         ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_DST_ID));
         
         // Send the second stream to check the runtime metrics is not disturbed
-        uint32_t second_stream_content = 0x12345678;
-        ed247_stream_push_sample(second_stream, &second_stream_content, sizeof(second_stream_content), NULL, NULL);
+        *(uint32_t*)second_stream_value = 0x12345678;
+        ed247_stream_push_sample(second_stream, second_stream_value, second_stream_size, NULL, NULL);
         ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
         
         // Synchro after each send
@@ -144,6 +166,13 @@ TEST(OutSequence, UTMetrics)
     
     synchronizer.send(TEST_ENTITY_DST_ID);
     ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_DST_ID));
+
+    free(pid_value);
+    free(sn_value);
+    free(tts1_value);
+    free(tts2_value);
+    free(data_value);
+    free(second_stream_value);
     
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
     
@@ -162,15 +191,25 @@ TEST(OutSequence, UTMetricsCross)
     ed247_stream_list_t streams = NULL;
     ed247_stream_t stream = NULL;
     ed247_stream_t second_stream = NULL;
+    void *second_stream_value;
+    size_t second_stream_size;
     ed247_stream_assistant_t assistant = NULL;
-    ed247_signal_list_t signal_list = NULL;
+    ed247_signal_list_t signals = NULL;
     ed247_signal_t dummy_header_sn = NULL;
+    void *sn_value;
+    size_t sn_size;
     ed247_signal_t dummy_header_pid = NULL;
+    void *pid_value;
+    size_t pid_size;
     ed247_signal_t dummy_header_tts1 = NULL;
+    void *tts1_value;
+    size_t tts1_size;
     ed247_signal_t dummy_header_tts2 = NULL;
+    void *tts2_value;
+    size_t tts2_size;
     ed247_signal_t data_signal = NULL;
-    uint32_t zero32 = 0;
-    uint16_t value;
+    void *data_value;
+    size_t data_size;
     std::string ecic_filename = CONFIG_PATH"/ut_api_metrics/ecic_send.xml";
 
     uint16_t header_values_cross [2][4] = {
@@ -181,32 +220,41 @@ TEST(OutSequence, UTMetricsCross)
     ASSERT_EQ(ed247_load(ecic_filename.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_streams(context, "MyStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_NE(assistant, (ed247_stream_assistant_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderPID" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_pid), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderPID" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_pid), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_pid, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderSN" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_sn), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &pid_value, &pid_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderSN" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_sn), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_sn, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS1" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_tts1), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &sn_value, &sn_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS1" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts1), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts1, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS2" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &dummy_header_tts2), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts1, &tts1_value, &tts1_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "DummyHeaderTTS2" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts2), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts2, (ed247_signal_t)NULL);
-    ASSERT_EQ(ed247_find_signals(context, "Data" , &signal_list), ED247_STATUS_SUCCESS);
-    ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
-    ASSERT_EQ(ed247_signal_list_next(signal_list, &data_signal), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts2, &tts2_value, &tts2_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_find_signals(context, "Data" , &signals), ED247_STATUS_SUCCESS);
+    ASSERT_NE(signals, (ed247_signal_list_t)NULL);
+    ASSERT_EQ(ed247_signal_list_next(signals, &data_signal), ED247_STATUS_SUCCESS);
     ASSERT_NE(data_signal, (ed247_signal_t)NULL);
+    ASSERT_EQ(ed247_signal_allocate_sample(data_signal, &data_value, &data_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
     // uint16_t data = 0x0000;
     
     ASSERT_EQ(ed247_find_streams(context, "MySecondStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &second_stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
     
     // Synchro after initialisation
     synchronizer.send(TEST_ENTITY_DST_ID);
@@ -215,13 +263,19 @@ TEST(OutSequence, UTMetricsCross)
     uint16_t counter = 0;
     for (uint16_t i = 0; i < 4; i++){
         for (uint16_t j = 0; j < 2; j++){
-            value = htons(header_values_cross[j][i]);
+            
+            *(uint16_t*)pid_value = (uint16_t)j;
+            *(uint16_t*)sn_value = (uint16_t)(header_values_cross[j][i]);
+            // *(uint16_t*)sn_value = htons(header_values_cross[j][i]);
+            *(uint32_t*)tts1_value = (uint32_t)10;
+            *(uint32_t*)tts2_value = (uint32_t)12;
+            *(uint16_t*)data_value = counter;
             std::cout << "Sending frame [" << counter << "] Simulated SN [" << header_values_cross[j][i] << "] for PID [" << j << "]" << std::endl;
-            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_pid, &j, sizeof(uint16_t)), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_sn, &value, sizeof(value)), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts1, &zero32, sizeof(uint32_t)), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts2, &zero32, sizeof(uint32_t)), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, data_signal, &counter, sizeof(counter)), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_pid, pid_value, pid_size), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_sn, sn_value, sn_size), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts1, tts1_value, tts1_size), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts2, tts2_value, tts2_size), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, data_signal, data_value, data_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
             
@@ -230,8 +284,8 @@ TEST(OutSequence, UTMetricsCross)
             ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_DST_ID));
             
             // Send the second stream to check the runtime metrics is not disturbed
-            uint32_t second_stream_content = 0x12345678;
-            ed247_stream_push_sample(second_stream, &second_stream_content, sizeof(second_stream_content), NULL, NULL);
+            *(uint32_t*)second_stream_value = 0x12345678;
+            ed247_stream_push_sample(second_stream, second_stream_value, second_stream_size, NULL, NULL);
             ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
             
             // Synchro after each send
@@ -243,6 +297,13 @@ TEST(OutSequence, UTMetricsCross)
     
     synchronizer.send(TEST_ENTITY_DST_ID);
     ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_DST_ID));
+
+    free(pid_value);
+    free(sn_value);
+    free(tts1_value);
+    free(tts2_value);
+    free(data_value);
+    free(second_stream_value);
     
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
     

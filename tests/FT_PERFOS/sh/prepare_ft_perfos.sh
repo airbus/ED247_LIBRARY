@@ -3,7 +3,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+# Copyright (c) 2020 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -88,7 +88,7 @@ function write_channels () {
         if [[ "${stream_type}" == "A429_Stream" ]]; then
             echo '              <'${stream_type}' UID="'$((10#${stream}))'" Name="Stream_'${NamePrefix}'_'$((10#${channel}))'_'$((10#${stream}))'" Direction="'${Direction}'" SampleMaxNumber="'${TEST_SAMPLE_MAX_NUMBER}'">' >> ${filepath}
         else
-            echo '              <'${stream_type}' UID="'$((10#${stream}))'" Name="Stream_'${NamePrefix}'_'$((10#${channel}))'_'$((10#${stream}))'" Direction="'${Direction}'" SampleMaxNumber="'${TEST_SAMPLE_MAX_NUMBER}'">' >> ${filepath}
+            echo '              <'${stream_type}' UID="'$((10#${stream}))'" Name="Stream_'${NamePrefix}'_'$((10#${channel}))'_'$((10#${stream}))'" Direction="'${Direction}'" SampleMaxSizeBytes="'${TEST_NUM_SIGNALS_PER_STREAMS}'" SampleMaxNumber="'${TEST_SAMPLE_MAX_NUMBER}'">' >> ${filepath}
         fi
         if [[ "${stream_type}" == "DIS_Stream" ]]; then
             echo '                  <Signals>' >> ${filepath}
@@ -114,7 +114,7 @@ function write_ecic () {
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),

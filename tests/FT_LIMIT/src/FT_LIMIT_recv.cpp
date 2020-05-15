@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -79,22 +79,26 @@ TEST(InSequence, FtLimit)
     std::string ecic_filename = "ft_limit_recv.xml";
     
     // Synchro at startup
+    std::cout << "Startup" << std::endl;
     synchronizer.send(TEST_ENTITY_SRC_ID);
-    ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_SRC_ID));
+    ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_SRC_ID, 60000000));
     
     // Initialisation of the receiver side
+    std::cout << "Receiver init" << std::endl;
     uint64_t start = test::get_time_us();
     ASSERT_EQ(ed247_load(ecic_filename.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
     uint64_t end = test::get_time_us();
     std::cout << "Loading time (us) = " << (end-start) << std::endl;
     
     // Synchro after receiver initialisation
+    std::cout << "Sending recever init ok" << std::endl;
     synchronizer.send(TEST_ENTITY_SRC_ID);
-    ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_SRC_ID));
+    ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_SRC_ID, 60000000));
     
     // Synchro after sender initialisation
+    std::cout << "Waiting for sender init" << std::endl;
     synchronizer.send(TEST_ENTITY_SRC_ID);
-    ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_SRC_ID, 20000000));
+    ASSERT_TRUE(synchronizer.wait(TEST_ENTITY_SRC_ID, 60000000));
     
     ASSERT_EQ(ed247_component_get_streams(context, &streams), ED247_STATUS_SUCCESS);
     uint32_t number_of_streams = stream_list_size(streams);

@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -401,4 +401,42 @@ Entity::Entity(uint32_t eid):
         client(this)
 {}
 
+}
+
+test::Entity *_tester;
+
+void test_wait(uint32_t remote_id)
+{
+    std::cout << "###### TEST WAIT ######" << std::endl;
+    if(!_tester->wait(remote_id))
+        THROW_TEST_ERROR("Test entity [" << _tester->id << "] failed to wait for [" << remote_id << "]");
+}
+
+void test_send(uint32_t remote_id)
+{
+    std::cout << "###### TEST SEND ######" << std::endl;
+    _tester->send(remote_id);
+}
+
+void test_sync(uint32_t remote_id)
+{
+    std::cout << "###### TEST SYNC ######" << std::endl;
+    if(_tester->id == TESTER_ID_MASTER){
+        test_wait(remote_id); test_send(remote_id);
+    }else{
+        test_send(remote_id); test_wait(remote_id);
+    }
+}
+
+void test_init(uint32_t src_id)
+{
+    std::cout << "###### TEST INIT ######" << std::endl;
+    test::Entity::init();
+    _tester = new test::Entity(src_id);
+}
+
+void test_stop()
+{
+    std::cout << "###### TEST STOP ######" << std::endl;
+    delete _tester;
 }

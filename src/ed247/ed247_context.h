@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -124,12 +124,6 @@ class Context : public ed247_internal_context_t
         std::shared_ptr<SmartListActiveStreams>   active_streams() { return _active_streams; }
 
         const libed247_runtime_metrics_t* get_runtime_metrics();
-
-        // Test
-#ifndef NDEBUG
-        static void __test();
-        void __dump();
-#endif
 
         class Builder
         {

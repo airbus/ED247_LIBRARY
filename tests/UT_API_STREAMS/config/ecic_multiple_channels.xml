@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -38,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="2" Name="Stream3"/>
                 <A664_Stream UID="0" Name="Stream1" Direction="Out"/>
                 <SERIAL_Stream UID="7" Name="Stream8" Direction="Out" SampleMaxSizeBytes="123"/>
-                <DIS_Stream UID="3" Name="Stream4" Direction="Out">
+                <DIS_Stream UID="3" Name="Stream4" SampleMaxSizeBytes="4" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal1" ByteOffset="0"/>
                         <Signal Name="Signal2" ByteOffset="1"/>
@@ -46,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="Signal4" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
-                <ANA_Stream UID="4" Name="Stream5" Direction="Out">
+                <ANA_Stream UID="4" Name="Stream5" SampleMaxSizeBytes="16" Direction="Out">
                     <Signals SamplingPeriodUs="20000">
                         <Signal Name="SignalAna1" ByteOffset="0"/>
                         <Signal Name="SignalAna2" ByteOffset="4"/>
@@ -54,7 +54,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalAna4" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="5" Name="Stream6" Direction="In">
+                <NAD_Stream UID="5" Name="Stream6" SampleMaxSizeBytes="6" Direction="In">
                     <Signals SamplingPeriodUs="100000">
                         <Signal Name="SignalNAD1" Type="int8" ByteOffset="0"/>
                         <Signal Name="SignalNAD2" Type="int8" ByteOffset="1"/>
@@ -85,7 +85,7 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="2" Name="Stream13"/>
                 <A664_Stream UID="0" Name="Stream11" Direction="Out"/>
                 <SERIAL_Stream UID="7" Name="Stream18" Direction="Out" SampleMaxSizeBytes="123"/>
-                <DIS_Stream UID="3" Name="Stream14" Direction="Out">
+                <DIS_Stream UID="3" Name="Stream14" SampleMaxSizeBytes="4" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal1" ByteOffset="0"/>
                         <Signal Name="Signal2" ByteOffset="1"/>
@@ -93,7 +93,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="Signal4" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
-                <ANA_Stream UID="4" Name="Stream15" Direction="Out">
+                <ANA_Stream UID="4" Name="Stream15" SampleMaxSizeBytes="16" Direction="Out">
                     <Signals SamplingPeriodUs="20000">
                         <Signal Name="SignalAna1" ByteOffset="0"/>
                         <Signal Name="SignalAna2" ByteOffset="4"/>
@@ -101,7 +101,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalAna4" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="5" Name="Stream16" Direction="In">
+                <NAD_Stream UID="5" Name="Stream16" SampleMaxSizeBytes="6" Direction="In">
                     <Signals SamplingPeriodUs="100000">
                         <Signal Name="SignalNAD1" Type="int8" ByteOffset="0"/>
                         <Signal Name="SignalNAD2" Type="int8" ByteOffset="1"/>

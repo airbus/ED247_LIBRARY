@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -72,6 +72,12 @@ TEST(RobustnessLoad, Loading)
     // Check the errors did not mess up the loading capabilities
     ASSERT_EQ(ed247_load(CONFIG_PATH"/ft_load_all/a429.xml", NULL, &context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
+    
+    // ECIC file with duplicated stream
+    ASSERT_EQ(ed247_load(CONFIG_PATH"/ft_load_all/stream_duplicated.xml", NULL, &context), ED247_STATUS_FAILURE);
+
+    // ECIC file with duplicated channel
+    ASSERT_EQ(ed247_load(CONFIG_PATH"/ft_load_all/stream_duplicated.xml", NULL, &context), ED247_STATUS_FAILURE);
 }
 
 
@@ -105,12 +111,7 @@ TEST_P(LoadContext, Loading)
 }
 
 std::vector<std::string> configuration_files = {
-    std::string(CONFIG_PATH"/ft_load_all/a429.xml"),
-    std::string(CONFIG_PATH"/examples/ECIC_EXAMPLE_1.xml"),
-    std::string(CONFIG_PATH"/examples/ECIC_EXAMPLE_2.xml"),
-    std::string(CONFIG_PATH"/examples/ECIC_EXAMPLE_3.xml"),
-    std::string(CONFIG_PATH"/examples/ECIC_EXAMPLE_4.xml"),
-    std::string(CONFIG_PATH"/examples/ECIC_EXAMPLE_5.xml")
+    std::string(CONFIG_PATH"/ft_load_all/a429.xml")
     };
 
 INSTANTIATE_TEST_CASE_P(LoadingTests, LoadContext,

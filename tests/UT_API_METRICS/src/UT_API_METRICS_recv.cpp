@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -186,6 +186,7 @@ TEST(InSequence, UTMetricsCross)
     ed247_signal_list_t signal_list = NULL;
     ed247_signal_t data_signal = NULL;
     std::string ecic_filename = CONFIG_PATH"/ut_api_metrics/ecic_recv.xml";
+    const ed247_sample_info_t *sample_info;
 
     uint16_t expected_sn_cross [2][4] = {
         {10, 15, 56, 413},
@@ -237,7 +238,9 @@ TEST(InSequence, UTMetricsCross)
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
             ASSERT_EQ(count, (size_t)1);
         
-            ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(sample_info->transport_timestamp.epoch_s,(uint16_t)10);
+            ASSERT_EQ(sample_info->transport_timestamp.offset_ns,(uint16_t)12);
             ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, data_signal, (const void**)(&data_buffer), &data_size), ED247_STATUS_SUCCESS);
             ASSERT_TRUE(memhooks_section_stop());
         

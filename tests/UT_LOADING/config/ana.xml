@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -36,13 +36,13 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- ANA -->
-                <ANA_Stream UID="0" Name="ANA_StreamOutput" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
+                <ANA_Stream UID="0" Name="ANA_StreamOutput" SampleMaxSizeBytes="8" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="ANA_Signal_out0" Comment="Comment" ICD="File.xml:ANA_Signal_out0" ElectricalUnit="" ByteOffset="0"/>
                         <Signal Name="ANA_Signal_out1" Comment="Comment" ICD="File.xml:ANA_Signal_out1" ElectricalUnit="" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="1" Name="ANA_StreamInput" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <ANA_Stream UID="1" Name="ANA_StreamInput" SampleMaxSizeBytes="8" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="ANA_Signal_in0" Comment="Comment" ICD="File.xml:ANA_Signal_in0" ElectricalUnit="" ByteOffset="0"/>
                         <Signal Name="ANA_Signal_in1" Comment="Comment" ICD="File.xml:ANA_Signal_in1" ElectricalUnit="" ByteOffset="4"/>

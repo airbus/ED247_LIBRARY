@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -35,16 +35,16 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
 			<Header TransportTimestamp="No"/>
 			<Streams>
-				<NAD_Stream UID="0" Name="Stream0" Direction="In" SampleMaxNumber="10">
+				<NAD_Stream UID="0" Name="Stream0" Direction="In" SampleMaxSizeBytes="2" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal00" ByteOffset="0" Type="uint8"/>
                         <Signal Name="Signal01" ByteOffset="1" Type="uint8"/>
                     </Signals>
 				</NAD_Stream>
-				<NAD_Stream UID="1" Name="Stream1" Direction="In" SampleMaxNumber="10">
+				<NAD_Stream UID="1" Name="Stream1" Direction="In" SampleMaxSizeBytes="17" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal10" ByteOffset="0" Type="uint8"/>
-                        <Signal Name="Signal11" ByteOffset="1" Type="uint8"/>
+                        <!-- <Signal Name="Signal10" ByteOffset="0" Type="uint8"/> -->
+                        <Signal Name="Signal11" ByteOffset="1" Type="float32" Dimensions="2x2"/>
                     </Signals>
 				</NAD_Stream>
 			</Streams>

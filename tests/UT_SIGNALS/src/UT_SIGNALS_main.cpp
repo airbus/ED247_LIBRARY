@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -53,11 +53,17 @@ TEST_P(SignalContext, SinglePushPop)
 
     // Retrieve the pool of signals
     auto pool_signals = context->getPoolSignals();
-    ASSERT_EQ(pool_signals->size(), (size_t)12);
+    if(GetParam() == "nad.xml")
+        ASSERT_EQ(pool_signals->size(), (size_t)25);
+    else
+        ASSERT_EQ(pool_signals->size(), (size_t)12);
 
     // Check finder for find all
     auto signals = pool_signals->find(".*");
-    ASSERT_EQ(signals.size(), (size_t)12);
+    if(GetParam() == "nad.xml")
+        ASSERT_EQ(signals.size(), (size_t)25);
+    else
+        ASSERT_EQ(signals.size(), (size_t)12);
 
     // Check stream finder
     auto pool_streams = context->getPoolStreams();

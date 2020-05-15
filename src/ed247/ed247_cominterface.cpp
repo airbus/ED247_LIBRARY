@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -128,7 +128,7 @@ void UdpSocket::send_frame(Channel & channel, const void * frame, const size_t f
         if(!MemoryHooksManager::getInstance().isEnabled())
             LOG_INFO() << "# Socket [" << _socket_infos << "] send to [" << destination << "] a frame of [" << frame_size << "] bytes" << LOG_END;
         if(!MemoryHooksManager::getInstance().isEnabled()){
-            LOG_DEBUG() << "Received frame of [" << frame_size << "] bytes" << LOG_END;
+            LOG_DEBUG() << "Sent frame of [" << frame_size << "] bytes" << LOG_END;
             std::ostringstream oss;
             oss.str("");
             for(unsigned i = 0 ; i < frame_size ; i++){
@@ -369,7 +369,7 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
 
     if(!is_multicast){
         // UNICAST
-        if(is_host_ip_address(socket_infos_dst.sin_addr) && configuration.direction & ED247_DIRECTION_IN){ 
+        if(is_host_ip_address(socket_infos_dst.sin_addr) && (configuration.direction & ED247_DIRECTION_IN)){ 
             // receiver (dst)
             socket_pair.second = find_or_create(socket_infos_dst);
         }
@@ -396,7 +396,7 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
         }
     }
 
-    LOG_DEBUG() << "# Socket[" << configuration.toString() << "] " <<
+    LOG_INFO() << "# Socket[" << configuration.toString() << "] " <<
     "[" << (is_multicast ? std::string("MULTICAST") : std::string("UNICAST")) << "] " << 
     "Emitter[" << (socket_pair.emitter() ? std::string(socket_pair.emitter()->_socket_infos) : std::string("NONE")) << "] " << 
     "Receiver[" << (socket_pair.receiver() ? std::string(socket_pair.receiver()->_socket_infos) : std::string("NONE")) << "]" << LOG_END;
@@ -548,7 +548,7 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
     int             sockerr = 1;
     fd_set          select_fd;
 
-    if(_select_options.nfds <= 0){
+    if(_select_options.nfds < 0){
         if(!MemoryHooksManager::getInstance().isEnabled())
             LOG_WARNING() << "Nothing to wait for, empty socket list" << LOG_END;
         return ED247_STATUS_FAILURE;
@@ -601,7 +601,7 @@ ed247_status_t UdpSocket::Pool::wait_during(int32_t duration_us)
 
     do{
 
-        if(_select_options.nfds <= 0){
+        if(_select_options.nfds < 0){
             if(!MemoryHooksManager::getInstance().isEnabled())
                 LOG_WARNING() << "Nothing to wait for, empty socket list" << LOG_END;
             return ED247_STATUS_FAILURE;

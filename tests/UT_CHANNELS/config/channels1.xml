@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -41,37 +41,37 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="5" Name="Stream5" SampleMaxNumber="10"/>
                 <A664_Stream UID="4" Name="Stream4" Direction="Out" SampleMaxNumber="10"/>
                 <SERIAL_Stream UID="12" Name="Stream12" Direction="Out" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
-                <DIS_Stream UID="6" Name="Stream6" Direction="Out" SampleMaxNumber="2">
+                <DIS_Stream UID="6" Name="Stream6" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" ByteOffset="0"/>
                         <Signal Name="Signal21" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="7" Name="Stream7" Direction="Out" SampleMaxNumber="3">
+                <DIS_Stream UID="7" Name="Stream7" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" ByteOffset="0"/>
                         <Signal Name="Signal31" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
-                <ANA_Stream UID="8" Name="Stream8" Direction="Out" SampleMaxNumber="2">
+                <ANA_Stream UID="8" Name="Stream8" SampleMaxSizeBytes="8" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" ByteOffset="0"/>
                         <Signal Name="Signal21" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="9" Name="Stream9" Direction="Out" SampleMaxNumber="3">
+                <ANA_Stream UID="9" Name="Stream9" SampleMaxSizeBytes="8" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" ByteOffset="0"/>
                         <Signal Name="Signal31" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="10" Name="Stream10" Direction="Out" SampleMaxNumber="2">
+                <NAD_Stream UID="10" Name="Stream10" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" Type="uint8" ByteOffset="0"/>
                         <Signal Name="Signal21" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
-                <NAD_Stream UID="11" Name="Stream11" Direction="Out" SampleMaxNumber="3">
+                <NAD_Stream UID="11" Name="Stream11" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" Type="uint8" ByteOffset="0"/>
                         <Signal Name="Signal31" Type="uint8" ByteOffset="1"/>
@@ -100,54 +100,54 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Header Enable="Yes" TransportTimestamp="Yes"/>
             <Streams>
-                <A429_Stream UID="0" Name="Stream0" Direction="In" SampleMaxNumber="5"/>
-                <A429_Stream UID="1" Name="Stream1" Direction="In" SampleMaxNumber="10"/>
-                <A825_Stream UID="5" Name="Stream5" SampleMaxNumber="10"/>
-                <A664_Stream UID="4" Name="Stream4" Direction="In" SampleMaxNumber="10"/>
-                <SERIAL_Stream UID="12" Name="Stream12" Direction="In" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
-                <DIS_Stream UID="6" Name="Stream6" Direction="In" SampleMaxNumber="2">
+                <A429_Stream UID="0" Name="InStream0" Direction="In" SampleMaxNumber="5"/>
+                <A429_Stream UID="1" Name="InStream1" Direction="In" SampleMaxNumber="10"/>
+                <A825_Stream UID="5" Name="InStream5" SampleMaxNumber="10"/>
+                <A664_Stream UID="4" Name="InStream4" Direction="In" SampleMaxNumber="10"/>
+                <SERIAL_Stream UID="12" Name="InStream12" Direction="In" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
+                <DIS_Stream UID="6" Name="InStream6" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" ByteOffset="0"/>
                         <Signal Name="Signal21" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="7" Name="Stream7" Direction="In" SampleMaxNumber="3">
+                <DIS_Stream UID="7" Name="InStream7" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" ByteOffset="0"/>
                         <Signal Name="Signal31" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
-                <ANA_Stream UID="8" Name="Stream8" Direction="In" SampleMaxNumber="2">
+                <ANA_Stream UID="8" Name="InStream8" SampleMaxSizeBytes="8" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" ByteOffset="0"/>
                         <Signal Name="Signal21" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="9" Name="Stream9" Direction="In" SampleMaxNumber="3">
+                <ANA_Stream UID="9" Name="InStream9" SampleMaxSizeBytes="8" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" ByteOffset="0"/>
                         <Signal Name="Signal31" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="10" Name="Stream10" Direction="In" SampleMaxNumber="2">
+                <NAD_Stream UID="10" Name="InStream10" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" Type="uint8" ByteOffset="0"/>
                         <Signal Name="Signal21" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
-                <NAD_Stream UID="11" Name="Stream11" Direction="In" SampleMaxNumber="3">
+                <NAD_Stream UID="11" Name="InStream11" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" Type="uint8" ByteOffset="0"/>
                         <Signal Name="Signal31" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
-                <VNAD_Stream UID="2" Name="Stream2" Direction="In" SampleMaxNumber="2">
+                <VNAD_Stream UID="2" Name="InStream2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal20" Position="0" Type="uint8" MaxLength="5"/>
                         <Signal Name="Signal21" Position="1" Type="uint8" MaxLength="1"/>
                     </Signals>
                 </VNAD_Stream>
-                <VNAD_Stream UID="3" Name="Stream3" Direction="In" SampleMaxNumber="3">
+                <VNAD_Stream UID="3" Name="InStream3" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal30" Position="0" Type="uint8" MaxLength="1"/>
                         <Signal Name="Signal31" Position="1" Type="uint8" MaxLength="2"/>

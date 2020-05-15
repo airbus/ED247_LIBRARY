@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -191,6 +191,8 @@ TEST_P(StreamContext, SinglePushPop)
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_SERIAL)
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
+        else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_ANALOG)
+            ASSERT_TRUE(memcmp((char*)stream_1->buffer().data(), stream_1_sample->data(), stream_1_sample->size()) != 0); // SWAP
         else
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data(), stream_1_sample->data(), stream_1_sample->size()) == 0);
 
@@ -301,7 +303,9 @@ TEST_P(StreamContext, MultiPushPop)
                     frame_index += sizeof(uint8_t);
                 }
                 str_sample_frame = std::string((char*)stream_1->buffer().data()+frame_index, sample_size);
-                ASSERT_EQ(str_sample, str_sample_frame);
+                if(stream_1->get_configuration()->info.type != ED247_STREAM_TYPE_ANALOG){
+                    ASSERT_EQ(str_sample, str_sample_frame);
+                }
                 frame_index += sample_size;
             }
         }
@@ -455,7 +459,9 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                     frame_index += sizeof(uint8_t);
                 }
                 str_sample_frame = std::string((char*)stream_out->buffer().data()+frame_index, sample_size);
-                ASSERT_EQ(str_sample, str_sample_frame);
+                if(stream_out->get_configuration()->info.type != ED247_STREAM_TYPE_ANALOG){
+                    ASSERT_EQ(str_sample, str_sample_frame);
+                }
                 frame_index += sample_size;
                 // str_sample_frame = std::string((char*)stream_out->buffer().data()+frame_index, stream_out->get_configuration()->info.sample_max_size_bytes);
                 // ASSERT_EQ(str_sample, str_sample_frame);

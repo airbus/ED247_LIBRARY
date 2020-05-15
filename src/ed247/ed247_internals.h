@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -52,18 +52,28 @@
     #include <netdb.h>
     #include <ifaddrs.h>
     #ifndef INVALID_SOCKET
-    #define INVALID_SOCKET (-1)
+        #define INVALID_SOCKET (-1)
     #endif
     #ifndef ED247_SOCKET
-    #define ED247_SOCKET int
+        #define ED247_SOCKET int
     #endif
+    #include <byteswap.h>
 #elif _WIN32
     #include <winsock2.h>
     #include <Ws2tcpip.h>
     #include <mswsock.h>
     #include <windows.h>
     #ifndef ED247_SOCKET
-    #define ED247_SOCKET SOCKET
+        #define ED247_SOCKET SOCKET
+    #endif
+    #ifndef _MSC_VER
+        #define bswap_16(x) __builtin_bswap16(x)
+        #define bswap_32(x) __builtin_bswap32(x)
+        #define bswap_64(x) __builtin_bswap64(x)
+    #else
+        #define bswap_16(x) _byteswap_ushort(x)
+        #define bswap_32(x) _byteswap_ulong(x)
+        #define bswap_64(x) _byteswap_uint64(x)
     #endif
 #endif
 
@@ -75,38 +85,6 @@
 /***********
  * Defines *
  ***********/
-
-#ifdef NDEBUG
-    #define _TEST(x)
-    #define _TEST_TIME_START
-    #define _TEST_TIME_PRINT
-#else
-    #define _TEST(x) LOG_TEST() << std::endl <<     \
-        "####" << std::endl <<                      \
-        "#### TEST [" << #x << "]" << std::endl <<  \
-        "####" << LOG_END
-    #define _TEST_TIME_START(x)                                     \
-        auto __test_time_tic = std::chrono::steady_clock::now();    \
-        auto __test_time_tac = std::chrono::steady_clock::now();    \
-        LOG_TEST() << std::endl << std::endl <<                     \
-        "################" << std::endl <<                          \
-        "################ SESSION [" << #x << "]" << std::endl <<   \
-        "################" << LOG_END
-    #define _TEST_TIME_PRINT do{                                        \
-            auto __test_time_toc = std::chrono::steady_clock::now();    \
-            LOG_TEST() << std::endl <<                                  \
-            "#### ELAPSED TIME" << std::endl <<                         \
-            "##### FROM START    [" <<                                  \
-                std::chrono::duration_cast<std::chrono::microseconds>   \
-                (__test_time_toc - __test_time_tic).count() <<          \
-                "] µs" << std::endl <<                                  \
-            "##### FROM PREVIOUS [" <<                                  \
-                std::chrono::duration_cast<std::chrono::microseconds>   \
-                (__test_time_toc - __test_time_tac).count() <<          \
-                "] µs" << LOG_END;                                      \
-            __test_time_tac = __test_time_toc;                          \
-        } while(0)
-#endif
 
 #if __cplusplus < 201402L
 
@@ -140,6 +118,8 @@ namespace std
         make_unique(Args&&...) = delete;
 }
 
+#endif
+
 inline void hash_combine(std::size_t& seed) { }
 
 template <typename T, typename... Rest>
@@ -148,8 +128,6 @@ inline void hash_combine(std::size_t& seed, const T& v, Rest... rest) {
     seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
     hash_combine(seed, rest...);
 }
-
-#endif
 
 template<typename T>
 struct weak_hash : public std::unary_function<std::weak_ptr<T>, size_t>

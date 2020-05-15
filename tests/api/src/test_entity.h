@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -39,7 +39,10 @@
 #define SOCKET SOCKET
 #endif
 
-#define TIMEOUT_US 30000000
+#define TESTER_ID_MASTER 1
+#define TESTER_ID_SLAVE 2
+
+#define TIMEOUT_US 45000000
 
 struct test_entity_internal_t {};
 
@@ -135,5 +138,11 @@ struct Entity : public test_entity_internal_t
 };
 
 }
+
+void test_init(uint32_t src_id);
+void test_wait(uint32_t remote_id);
+void test_send(uint32_t remote_id);
+void test_sync(uint32_t remote_id);
+void test_stop();
 
 #endif

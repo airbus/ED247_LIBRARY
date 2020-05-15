@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+# Copyright (c) 2020 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,14 +21,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-
-# This first set of applications uses only the original library
-# They consist in simple examples without test assesments
-ADD_SUBDIRECTORY(EXAMPLE_1)
-ADD_SUBDIRECTORY(EXAMPLE_2)
-ADD_SUBDIRECTORY(EXAMPLE_3)
-ADD_SUBDIRECTORY(EXAMPLE_4)
-ADD_SUBDIRECTORY(EXAMPLE_5)
 
 # The second set of applications uses the test api
 # The test api is not compiled for coverage
@@ -60,6 +52,7 @@ ADD_SUBDIRECTORY(test_lib)
 # A first set of tests uses api functions for functionnal validation
 ADD_SUBDIRECTORY(FT_BACKUP)
 ADD_SUBDIRECTORY(FT_EXCHANGE)
+ADD_SUBDIRECTORY(FT_EXCHANGE_DATATIMESTAMP)
 ADD_SUBDIRECTORY(FT_FRAME)
 ADD_SUBDIRECTORY(FT_LIMIT)
 ADD_SUBDIRECTORY(FT_LOAD_ALL)
@@ -80,3 +73,13 @@ ADD_SUBDIRECTORY(UT_SOCKETS)
 ADD_SUBDIRECTORY(UT_STREAMS)
 ADD_SUBDIRECTORY(UT_TIMESTAMP)
 
+# A third set of tests related to the resolver.
+ADD_SUBDIRECTORY(FT_EXCHANGE_EXTERNAL)
+
+# This first set of applications uses only the original library
+# They consist in simple examples without test assesments
+ADD_SUBDIRECTORY(EXAMPLE_WALK_CONFIGURATION)
+ADD_SUBDIRECTORY(EXAMPLE_STREAM_SEND_RECV_WAIT_FRAME)
+ADD_SUBDIRECTORY(EXAMPLE_STREAM_SEND_RECV_WAIT_DURING)
+ADD_SUBDIRECTORY(EXAMPLE_STREAM_SEND_RECV_EVENT)
+ADD_SUBDIRECTORY(EXAMPLE_SIGNAL_SEND_RECV_WAIT_FRAME)

@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -104,6 +104,8 @@ TEST_P(StreamContext, SingleFrame)
     str_send = oss.str();
     memcpy(sample[0], str_send.c_str(), stream_info[0]->sample_max_size_bytes);
     memhooks_section_start();
+    const ed247_stream_info_t *stream_info_tmp;
+    ASSERT_EQ(ed247_stream_get_info(stream[0], &stream_info_tmp), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_push_sample(stream[0], sample[0], sample_size[0], NULL, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(memhooks_section_stop());

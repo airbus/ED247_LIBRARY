@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -281,7 +281,8 @@ std::shared_ptr<Channel> Channel::Pool::get(std::shared_ptr<xml::Channel> & conf
         sp_channel = builder.create(configuration, _pool_interfaces, _pool_streams);
         _channels->push_back(sp_channel);
     }else{
-        sp_channel = *iter;
+        // sp_channel = *iter;
+        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel [" << name << "] already exists");
     }
     
     return sp_channel;

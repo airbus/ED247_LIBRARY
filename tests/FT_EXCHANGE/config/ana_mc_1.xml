@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -34,13 +34,13 @@ DEALINGS IN THE SOFTWARE.
                 </UDP_Sockets>
             </ComInterface>
 			<Streams>
-				<ANA_Stream UID="0" Name="Stream0" Direction="Out" SampleMaxNumber="10">
+				<ANA_Stream UID="0" Name="Stream0" Direction="Out" SampleMaxSizeBytes="8" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal00" ByteOffset="0"/>
                         <Signal Name="Signal01" ByteOffset="4"/>
                     </Signals>
 				</ANA_Stream>
-				<ANA_Stream UID="1" Name="Stream1" Direction="Out" SampleMaxNumber="10">
+				<ANA_Stream UID="1" Name="Stream1" Direction="Out" SampleMaxSizeBytes="8" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal10" ByteOffset="0"/>
                         <Signal Name="Signal11" ByteOffset="4"/>

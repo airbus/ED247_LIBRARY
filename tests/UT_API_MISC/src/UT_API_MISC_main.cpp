@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -143,6 +143,18 @@ TEST(UtApiMisc, InfoGetter)
     ASSERT_FALSE(strcmp(infos->component_version, expected_info_values.component_version));
     ASSERT_FALSE(strcmp(infos->file_producer.identifier, expected_info_values.file_producer.identifier));
     ASSERT_FALSE(strcmp(infos->file_producer.comment, expected_info_values.file_producer.comment));
+
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE__INVALID), (size_t)0);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT8), (size_t)1);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT16), (size_t)2);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT32), (size_t)4);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT64), (size_t)8);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT8), (size_t)1);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT16), (size_t)2);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT32), (size_t)4);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT64), (size_t)8);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_FLOAT32), (size_t)4);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_FLOAT64), (size_t)8);
     
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }

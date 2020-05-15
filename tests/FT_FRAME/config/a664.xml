@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -57,15 +57,15 @@ DEALINGS IN THE SOFTWARE.
                 </UDP_Sockets>
             </ComInterface>
             <Streams>
-				<A664_Stream UID="0" Name="Stream" Direction="In" SampleMaxNumber="3" ICD="File.xml:BUS45">
+				<A664_Stream UID="0" Name="Stream3" Direction="In" SampleMaxNumber="3" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
                 </A664_Stream>
-				<A664_Stream UID="1" Name="Stream1" Direction="In" SampleMaxNumber="5" ICD="File.xml:BUS45">
+				<A664_Stream UID="1" Name="Stream4" Direction="In" SampleMaxNumber="5" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
                 </A664_Stream>
-				<A664_Stream UID="2" Name="Stream2" Direction="In" SampleMaxNumber="1" ICD="File.xml:BUS45">
+				<A664_Stream UID="2" Name="Stream5" Direction="In" SampleMaxNumber="1" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <MessageSize Enable="No"/>
                     <Errors Enable="No"/>

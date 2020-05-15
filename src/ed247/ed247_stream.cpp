@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -160,10 +160,11 @@ std::shared_ptr<BaseStream> BaseStream::Pool::get(std::shared_ptr<xml::Stream> &
         sp_base_stream = std::static_pointer_cast<BaseStream>(sp_stream);
         _streams->push_back(sp_base_stream);
     }else{
-        sp_base_stream = *iter;
-        // Update direction flag if necessary
-        sp_base_stream->_configuration->info.direction =
-            (ed247_direction_t)((uint8_t)sp_base_stream->_configuration->info.direction | (uint8_t)configuration->info.direction);
+        // sp_base_stream = *iter;
+        // // Update direction flag if necessary
+        // sp_base_stream->_configuration->info.direction =
+        //     (ed247_direction_t)((uint8_t)sp_base_stream->_configuration->info.direction | (uint8_t)configuration->info.direction);
+        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream [" << name << "] already exists");
     }
 
     return sp_base_stream;    
@@ -313,6 +314,10 @@ bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, size_t frame_siz
         auto && sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -404,6 +409,10 @@ bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_siz
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, sample_size);
         frame_index += sample->size();
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -488,6 +497,10 @@ bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, size_t frame_siz
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, sample_size);
         frame_index += sample->size();
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -571,6 +584,10 @@ bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_s
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, sample_size);
         frame_index += sample->size();
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -654,6 +671,10 @@ bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, size_t frame_si
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, sample_size);
         frame_index += sample->size();
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -720,6 +741,10 @@ bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, size_t frame
         auto && sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -762,6 +787,13 @@ size_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, size_t frame_size)
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ..." << LOG_END;
+        // SWAP
+        for(auto signal : *_signals){
+            *(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset));
+        }
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ... OK" << LOG_END;
+
         // Write sample data
         memcpy(frame + frame_index, sample->data(), sample->size());
         frame_index += sample->size();
@@ -784,6 +816,18 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_s
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
+
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ..." << LOG_END;
+        // SWAP
+        for(auto signal : *_signals){
+            *(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset));
+        }
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ... OK" << LOG_END;
+
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -814,6 +858,63 @@ void Stream<ED247_STREAM_TYPE_ANALOG>::allocate_buffer()
 
 // Stream<NAD>
 
+void swap_nad(void *sample_data, const ed247_nad_type_t & nad_type, const size_t & sample_element_length)
+{
+    // SWAP
+        switch((uint8_t)nad_type){
+            case ED247_NAD_TYPE_INT16:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint16_t*)sample_data+i) = bswap_16(*((uint16_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_INT32:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint32_t*)sample_data+i) = bswap_32(*((uint32_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_INT64:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint64_t*)sample_data+i) = bswap_64(*((uint64_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_UINT16:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint16_t*)sample_data+i) = bswap_16(*((uint16_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_UINT32:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint32_t*)sample_data+i) = bswap_32(*((uint32_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_UINT64:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint64_t*)sample_data+i) = bswap_64(*((uint64_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_FLOAT32:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint32_t*)sample_data+i) = bswap_32(*((uint32_t*)sample_data+i));
+                    }
+                } break;
+            case ED247_NAD_TYPE_FLOAT64:
+                {
+                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                        *((uint64_t*)sample_data+i) = bswap_64(*((uint64_t*)sample_data+i));
+                    }
+                } break;
+            default:
+                break;
+        }
+}
+
 template<>
 size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
 {
@@ -825,6 +926,15 @@ size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
 
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
+
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ..." << LOG_END;
+        // SWAP
+        for(auto signal : *_signals){
+            void *sample_data = (void*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.nad.byte_offset);
+            size_t sample_element_length = BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) / xml::nad_type_size(signal->get_configuration()->info.info.nad.nad_type);
+            swap_nad(sample_data, signal->get_configuration()->info.info.nad.nad_type, sample_element_length);
+        }
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ... OK" << LOG_END;
 
         // Write sample data
         memcpy(frame + frame_index, sample->data(), sample->size());
@@ -848,6 +958,20 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
+
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ..." << LOG_END;
+        // SWAP
+        for(auto signal : *_signals){
+            void *sample_data = (void*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.nad.byte_offset);
+            size_t sample_element_length = BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) / xml::nad_type_size(signal->get_configuration()->info.info.nad.nad_type);
+            swap_nad(sample_data, signal->get_configuration()->info.info.nad.nad_type, sample_element_length);
+        }
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ... OK" << LOG_END;
+
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header
@@ -890,6 +1014,22 @@ size_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, size_t frame_size)
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ..." << LOG_END;
+        // SWAP
+        size_t cursor = 0;
+        size_t cursor_step = 0;
+        uint32_t isignal = 0;
+        uint16_t sample_size_bytes = 0;
+        while(cursor < sample->size()){
+            sample_size_bytes = ntohs(*(uint16_t*)((char*)sample->data()+cursor));
+            cursor += sizeof(uint16_t);
+            cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type);
+            swap_nad((void*)((char*)sample->data()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
+            cursor += sample_size_bytes;
+            isignal++;
+        }
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ... OK" << LOG_END;
+
         // Write sample size
         if((frame_index + sizeof(uint16_t) + sample->size()) > frame_size)
             THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
@@ -926,6 +1066,27 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, sample_size);
         frame_index += sample->size();
+
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ..." << LOG_END;
+        // SWAP
+        size_t cursor = 0;
+        size_t cursor_step = 0;
+        uint32_t isignal = 0;
+        uint16_t sample_size_bytes = 0;
+        while(cursor < sample->size()){
+            sample_size_bytes = ntohs(*(uint16_t*)((char*)sample->data()+cursor));
+            cursor += sizeof(uint16_t);
+            cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type);
+            swap_nad((void*)((char*)sample->data()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
+            cursor += sample_size_bytes;
+            isignal++;
+        }
+        LOG_DEBUG() << "# SWAP stream [" << _configuration->info.name << "] ... OK" << LOG_END;
+
+        // Update data timestamp
+        if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
+            sample->set_data_timestamp(data_timestamp);
+        }
         // Update simulation time
         sample->update_timestamp();
         // Attach header

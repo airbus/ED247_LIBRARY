@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -82,26 +82,6 @@ const libed247_runtime_metrics_t* Context::get_runtime_metrics()
     return &_runtime_metrics;
 }
 
-#ifndef NBDEBUG
-void Context::__test()
-{
-    _TEST_TIME_START(Context);
-
-    _TEST(Context0);
-    Context context("filepath");
-    context.__dump();
-
-    _TEST_TIME_PRINT;
-}
-
-void Context::__dump()
-{
-    LOG_DEBUG() << "## Context " << std::endl <<
-        "# ECIC [" << _ecic_filepath << "]" << std::endl <<
-        "# Configuration / MemoryHooks [" << int(_configuration.enable_memory_hooks) << "]" << LOG_END;
-}
-#endif
-
 // Context::Builder
 
 Context * Context::Builder::create(std::string ecic_filepath,
@@ -117,9 +97,9 @@ Context * Context::Builder::create(std::string ecic_filepath,
     // Create context
     Context * context = new Context(ecic_filepath, libed247_configuration);
 
-#ifndef NDEBUG
-    context->__dump();
-#endif
+    LOG_DEBUG() << "## Context " << std::endl <<
+        "# ECIC [" << context->_ecic_filepath << "]" << std::endl <<
+        "# Configuration / MemoryHooks [" << int(context->_configuration.enable_memory_hooks) << "]" << LOG_END;
     
     // Load
     try{

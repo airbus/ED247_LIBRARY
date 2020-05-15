@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -36,16 +36,16 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- DIS -->
-                <DIS_Stream UID="0" Name="Stream" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <DIS_Stream UID="0" Name="Stream" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="DIS_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_out0" TrueValue="1" FalseValue="0"/>
-                        <Signal Name="DIS_Signal_out1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_out1" TrueValue="1" FalseValue="0"/>
+                        <Signal Name="DIS_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_out0"/>
+                        <Signal Name="DIS_Signal_out1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_out1"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="1" Name="StreamInput" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <DIS_Stream UID="1" Name="StreamInput" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0" TrueValue="1" FalseValue="0"/>
-                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1" TrueValue="1" FalseValue="0"/>
+                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0"/>
+                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1"/>
                     </Signals>
                 </DIS_Stream>
             </Streams>
@@ -59,30 +59,30 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- DIS -->
-                <DIS_Stream UID="2" Name="Stream1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
+                <DIS_Stream UID="2" Name="Stream1" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="DIS_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_out0" TrueValue="1" FalseValue="0"/>
-                        <Signal Name="DIS_Signal_out1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_out1" TrueValue="1" FalseValue="0"/>
+                        <Signal Name="DIS_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_out0"/>
+                        <Signal Name="DIS_Signal_out1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_out1"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="3" Name="StreamInput1" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <DIS_Stream UID="3" Name="StreamInput1" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0" TrueValue="1" FalseValue="0"/>
-                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1" TrueValue="1" FalseValue="0"/>
+                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0"/>
+                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="4" Name="StreamDatatimestampOut" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <DIS_Stream UID="4" Name="StreamDatatimestampOut" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0" TrueValue="1" FalseValue="0"/>
-                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1" TrueValue="1" FalseValue="0"/>
+                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0"/>
+                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="5" Name="StreamDatatimestampIn" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <DIS_Stream UID="5" Name="StreamDatatimestampIn" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0" TrueValue="1" FalseValue="0"/>
-                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1" TrueValue="1" FalseValue="0"/>
+                        <Signal Name="DIS_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:DIS_Signal_in0"/>
+                        <Signal Name="DIS_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:DIS_Signal_in1"/>
                     </Signals>
                 </DIS_Stream>
             </Streams>

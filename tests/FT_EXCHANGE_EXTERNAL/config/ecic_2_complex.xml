@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The MIT Licence
+
+Copyright (c) 2020 Airbus Operations S.A.S
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_1" Comment="" StandardRevision="A" Identifier="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+	<Channels>
+        <Channel Name="Channel_0">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3000" Direction="In"/>
+                    <UDP_Socket DstIP="127.0.0.1" DstPort="3001" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Stream>
+                <A429_Stream Name="A429_Stream_0_0" SampleMaxNumber="3" Direction="In"/>
+            </Stream>
+        </Channel>
+        <Channel Name="Channel_1">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3002" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Header Enable="Yes"/>
+            <Stream>
+                <A429_Stream Name="A429_Stream_1_0" SampleMaxNumber="2" Direction="In"/>
+            </Stream>
+        </Channel>
+        <Channel Name="Channel_2">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3003" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Header Enable="Yes" TransportTimestamp="Yes"/>
+            <Stream>
+                <A429_Stream Name="A429_Stream_2_0" SampleMaxNumber="2" Direction="In"/>
+            </Stream>
+        </Channel>
+        <Channel Name="Channel_3">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3004" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Stream>
+                <NAD_Stream Name="NAD_Stream_3_0" SampleMaxNumber="4" Direction="In" SampleMaxSizeBytes="42">
+                    <Signals>
+                        <Signal Name="NAD_Signal_3_0_0" Type="int8" ByteOffset="0"/>
+                        <Signal Name="NAD_Signal_3_0_1" Type="int16" ByteOffset="1"/>
+                        <Signal Name="NAD_Signal_3_0_2" Type="int32" ByteOffset="3"/>
+                        <Signal Name="NAD_Signal_3_0_3" Type="int64" ByteOffset="7"/>
+                        <Signal Name="NAD_Signal_3_0_4" Type="uint8" ByteOffset="15"/>
+                        <Signal Name="NAD_Signal_3_0_5" Type="uint16" ByteOffset="16"/>
+                        <Signal Name="NAD_Signal_3_0_6" Type="uint32" ByteOffset="18"/>
+                        <Signal Name="NAD_Signal_3_0_7" Type="uint64" ByteOffset="22"/>
+                        <Signal Name="NAD_Signal_3_0_8" Type="float32" ByteOffset="30"/>
+                        <Signal Name="NAD_Signal_3_0_9" Type="float64" ByteOffset="34"/>
+                    </Signals>
+                </NAD_Stream>
+            </Stream>
+        </Channel>
+        <MultiChannel Name="Channel_4">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3010" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Header Enable="Yes" TransportTimestamp="Yes"/>
+            <Streams>
+                <A429_Stream UID="0" Name="A429_Stream_4_0" SampleMaxNumber="8" Direction="In"/>
+                <A429_Stream UID="2" Name="A429_Stream_4_2" SampleMaxNumber="3" Direction="In"/>
+                <NAD_Stream UID="1" Name="NAD_Stream_4_1" SampleMaxNumber="2" Direction="In" SampleMaxSizeBytes="11">
+                    <Signals>
+                        <Signal Name="NAD_Signal_4_1_0" Type="float32" ByteOffset="0"/>
+                        <Signal Name="NAD_Signal_4_1_1" Type="int8" ByteOffset="4"/>
+                        <Signal Name="NAD_Signal_4_1_2" Type="int32" ByteOffset="5"/>
+                        <Signal Name="NAD_Signal_4_1_3" Type="uint16" ByteOffset="9"/>
+                    </Signals>
+                </NAD_Stream>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="Channel_5">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3020" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="A429_Stream_5_0" SampleMaxNumber="8" Direction="In"/>
+                <A429_Stream UID="3" Name="A429_Stream_5_3" SampleMaxNumber="1" Direction="In"/>
+                <A429_Stream UID="1" Name="A429_Stream_5_1" SampleMaxNumber="8" Direction="In"/>
+                <NAD_Stream UID="2" Name="NAD_Stream_5_2" SampleMaxNumber="3" Direction="In" SampleMaxSizeBytes="20">
+                    <Signals>
+                        <Signal Name="NAD_Signal_5_2_0" Type="uint64" ByteOffset="0"/>
+                        <Signal Name="NAD_Signal_5_2_1" Type="int16" ByteOffset="8"/>
+                        <Signal Name="NAD_Signal_5_2_2" Type="uint16" ByteOffset="10"/>
+                        <Signal Name="NAD_Signal_5_2_3" Type="float64" ByteOffset="12"/>
+                    </Signals>
+                </NAD_Stream>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="Channel_6">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+			        <UDP_Socket DstIP="127.0.0.1" DstPort="3030" Direction="In"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="A429_Stream_6_0" SampleMaxNumber="8" Direction="In">
+                    <DataTimestamp Enable="Yes"/>
+                </A429_Stream>
+                <A429_Stream UID="3" Name="A429_Stream_6_3" SampleMaxNumber="1" Direction="In"/>
+                <A429_Stream UID="1" Name="A429_Stream_6_1" SampleMaxNumber="8" Direction="In">
+                    <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
+                </A429_Stream>
+                <NAD_Stream UID="2" Name="NAD_Stream_6_2" SampleMaxNumber="3" Direction="In" SampleMaxSizeBytes="20">
+                    <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
+                    <Signals>
+                        <Signal Name="NAD_Signal_6_2_0" Type="uint64" ByteOffset="0"/>
+                        <Signal Name="NAD_Signal_6_2_1" Type="int16" ByteOffset="8"/>
+                        <Signal Name="NAD_Signal_6_2_2" Type="uint16" ByteOffset="10"/>
+                        <Signal Name="NAD_Signal_6_2_3" Type="float64" ByteOffset="12"/>
+                    </Signals>
+                </NAD_Stream>
+            </Streams>
+        </MultiChannel>
+	</Channels>
+</ED247ComponentInstanceConfiguration>

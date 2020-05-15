@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -313,6 +313,12 @@ ed247_nad_type_t ed247_nad_type_from_string(
     }else{
         return ED247_NAD_TYPE__INVALID;
     }
+}
+
+size_t ed247_nad_type_size(
+    ed247_nad_type_t nad_type)
+{
+    return ed247::BaseSignal::nad_type_size(nad_type);
 }
 
 /*********
@@ -778,12 +784,12 @@ ed247_status_t libed247_set_simulation_time_ns(ed247_time_sample_t time_sample)
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
     time_sample->epoch_s = (uint32_t)tp.tv_sec;
-    time_sample->offset_ns = (uint32_t)((uint64_t)tp.tv_nsec/1000LL);
+    time_sample->offset_ns = (uint32_t)((uint64_t)tp.tv_nsec);
 #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     time_sample->epoch_s = (uint32_t)tv.tv_sec;
-    time_sample->offset_ns = (uint32_t)tv.tv_usec;
+    time_sample->offset_ns = (uint32_t)tv.tv_usec*1000LL;
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1503,11 +1509,7 @@ ed247_status_t ed247_stream_get_assistant(
     try{
         auto ed247_stream = (ed247::BaseStream*)(stream);
         *assistant = ed247_stream->get_assistant().get();
-        if(!*assistant){
-#ifdef LIBED247_VERBOSE_DEBUG
-            LOG_DEBUG() << "## Get stream signal assistant failed" << LOG_END;
-#endif
-            LOG_ERROR() << "No assistant available" << LOG_END;
+        if(!*assistant || !ed247_stream->get_assistant()->is_valid()){
             return ED247_STATUS_FAILURE;
         }
     }

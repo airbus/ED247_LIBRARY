@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -298,7 +298,7 @@ TEST_P(PerfosStreamsContext, PingPongStreams)
         counter = channels_recv_size;
         while(counter > 0){
             // std::cout << "WAIT" << std::endl;
-            ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS)
+            ASSERT_EQ(ed247_wait_frame(_context, &streams, 45000000), ED247_STATUS_SUCCESS)
                 << "# LOOP [" << loop << "] RECV [" << counter_recv << "] SEND [" << counter_send << "]";
             // std::cout << "WAIT: OK" << std::endl;
             counter--;
@@ -471,7 +471,7 @@ TEST_P(PerfosSignalsContext, PingPongSignals)
         counter = channels_recv_size;
         while(counter > 0){
             // std::cout << "WAIT" << std::endl;
-            if(ed247_wait_frame(_context, &streams, 10000000) != ED247_STATUS_SUCCESS)
+            if(ed247_wait_frame(_context, &streams, 45000000) != ED247_STATUS_SUCCESS)
                 ASSERT_TRUE(false) << "# LOOP [" << loop << "] RECV [" << counter_recv << "] SEND [" << counter_send << "]";
             // std::cout << "WAIT: OK" << std::endl;
             counter--;

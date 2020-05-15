@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -38,19 +38,19 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="8" Name="StreamA825"/>
                 <A664_Stream UID="9" Name="StreamA664" Direction="Out"/>
                 <SERIAL_Stream UID="20" Name="StreamSERIAL" Direction="Out" SampleMaxSizeBytes="123"/>
-                <DIS_Stream UID="3" Name="Stream1" Direction="Out">
+                <DIS_Stream UID="3" Name="Stream1" SampleMaxSizeBytes="2" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="SignalDisMin" ByteOffset="0"/>
-                        <Signal Name="SignalDisMax" TrueValue="4" FalseValue="2" ByteOffset="1" ICD="This" Comment="is"/>
+                        <Signal Name="SignalDisMax" ByteOffset="1" ICD="This" Comment="is"/>
                     </Signals>
                 </DIS_Stream>
-                <ANA_Stream UID="4" Name="Stream2" Direction="In">
+                <ANA_Stream UID="4" Name="Stream2" SampleMaxSizeBytes="8" Direction="In">
                     <Signals SamplingPeriodUs="20000">
                         <Signal Name="SignalAnaMin" ByteOffset="0"/>
                         <Signal Name="SignalAnaMax" ElectricalUnit="mV" ByteOffset="4" ICD="a" Comment="very"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="5" Name="Stream3" Direction="Out">
+                <NAD_Stream UID="5" Name="Stream3" SampleMaxSizeBytes="1602" Direction="Out">
                     <Signals SamplingPeriodUs="100000">
                         <Signal Name="SignalNADmin" Type="uint16" ByteOffset="0"/>
                         <Signal Name="SignalNADmax" Type="int64" Unit="pixels" Dimensions="10x20" ByteOffset="2" ICD="simple" Comment="tiny"/>

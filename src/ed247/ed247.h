@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -246,7 +246,7 @@ typedef enum {
 } ed247_nad_type_t;
 
 /**
- * @brief Discrete values
+ * @brief Discrete values to be used
  * @ingroup signal
  */
 typedef enum {
@@ -397,10 +397,8 @@ typedef struct {
  */
 typedef struct {
     uint32_t byte_offset;
-    double true_value;
-    double false_value;
 } ed247_signal_info_dis_t;
-#define LIBED247_SIGNAL_INFO_DIS_DEFAULT {0, 1.0, 0.0}
+#define LIBED247_SIGNAL_INFO_DIS_DEFAULT {0}
 
 /**
  * @brief ANALOG signal dedicated information subpart
@@ -692,6 +690,15 @@ extern LIBED247_EXPORT const char * ed247_nad_type_string(
  */
 extern LIBED247_EXPORT ed247_nad_type_t ed247_nad_type_from_string(
     const char *nad_type);
+
+/**
+ * @brief Size of a single element of ::ed247_nad_type_t
+ * @ingroup common
+ * @param[in] nad_type The NAD type
+ * @return The size of the NAD type element (sizeof equivalent)
+ */
+extern LIBED247_EXPORT size_t ed247_nad_type_size(
+    ed247_nad_type_t nad_type);
 
 /*********
  * Lists *
@@ -1044,8 +1051,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(
 
 /**
  * @brief Retrieve attributes of the component
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup component
+  * @ingroup component
  * @param[in] context The context identifier
  * @param[out] info Component information
  * @retval ED247_STATUS_SUCCESS
@@ -1081,8 +1087,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_channels(
 
 /**
  * @brief Retrieve attributes of the channel
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup channel
+  * @ingroup channel
  * @param[in] channel The channel identifier
  * @param[out] info Channel information
  * @retval ED247_STATUS_SUCCESS
@@ -1106,8 +1111,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(
 
 /**
  * @brief Retrieve attributes of the stream
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup stream
+  * @ingroup stream
  * @param[in] channel The stream identifier
  * @param[out] info Stream information
  * @retval ED247_STATUS_SUCCESS
@@ -1132,8 +1136,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_channel(
 
 /**
  * @brief Retrieve attributes of the signal
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup signal
+  * @ingroup signal
  * @param[in] signal The signal identifier
  * @param[out] info Signal information
  * @retval ED247_STATUS_SUCCESS
@@ -1244,6 +1247,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_get_stream(
 /**
  * @brief Write signal sample into the assistant buffer. Once all signal are written, use ::ed247_stream_signal_assistant_push_sample() to push the sample on the stream.
  * This function returns an error if the stream direction is not ::ED247_DIRECTION_IN or ::ED247_DIRECTION_INOUT.
+ * In case of DISCRETE Signal, the signal_sample_size equals to 1 byte
+ * In case of ANALOG Signal, the signal_sample_size equals to 4 bytes (float). There is no need to swap the sample.
+ * In case of NAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by all the dimensions (which is invariant). As a reminder, nad_type and dimensions can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
+ * In case of VNAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by the effective size of the sample (which is variable). As a reminder, nad_type can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
  * @ingroup read_write
  * @param[in] assistant Assistant identifier
  * @param[in] signal Signal identifier
@@ -1261,11 +1268,15 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_write_signal(
 /**
  * @brief Read signal sample from the assistant buffer. The assistant internal stream sample buffer is updated by calling ::ed247_stream_signal_assistant_pop_sample().
  * This function returns an error if the stream direction is not ::ED247_DIRECTION_OUT or ::ED247_DIRECTION_INOUT.
+ * In case of DISCRETE Signal, the signal_sample_size equals to 1 byte
+ * In case of ANALOG Signal, the signal_sample_size equals to 4 bytes (float). There is no need to swap the sample.
+ * In case of NAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by all the dimensions (which is invariant). As a reminder, nad_type and dimensions can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
+ * In case of VNAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by the effective size of the sample (which is variable). As a reminder, nad_type can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
  * @ingroup read_write
  * @param[in] assistant Assistant identifier
  * @param[in] signal Signal identifier
- * @param[in] signal_sample_data Retrieve pointer of allocated memory
- * @param[in] signal_sample_size Retrieve size of allocated memory
+ * @param[in] signal_sample_data Retrieve pointer of the stream sample allocated in memory
+ * @param[in] signal_sample_size Retrieve size of the stream sample allocated in memory
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -1555,7 +1566,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_send_callback(
     ed247_com_callback_t callback);
 
 /**
- * @brief Blocks until the first frame is received and processed, and at least a stream has available data.
+ * @brief Blocks until the first frame is received and processed, and at least a stream has available data. 
+ * If several streams are received, it processes only the first one.
  * @ingroup send_recv
  * @param[in] context Context identifier
  * @param[out] streams List of streams that received samples, can be NULL
