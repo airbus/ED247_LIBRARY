@@ -463,7 +463,7 @@ void UdpSocket::Factory::setup()
 
     getifaddrs (&ifap);
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr->sa_family==AF_INET) {
+        if (ifa->ifa_addr!=NULL && ifa->ifa_addr->sa_family==AF_INET) {
             sa = (struct sockaddr_in *) ifa->ifa_addr;
             _host_ip_addresses.emplace_back(sa->sin_addr);
             LOG_DEBUG() << "# Available ip address [" << std::string(inet_ntoa(_host_ip_addresses.back())) << "]" << LOG_END;
