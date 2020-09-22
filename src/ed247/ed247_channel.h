@@ -175,6 +175,8 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         std::vector<std::shared_ptr<BaseStream>> find_streams(std::string strregex);
 
+        std::shared_ptr<BaseStream> get_stream(std::string str_name);
+
         std::shared_ptr<SmartListStreams> sstreams() { return _sstreams; }
 
         uint32_t missed_frames();
@@ -221,6 +223,8 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 std::shared_ptr<Channel> get(std::shared_ptr<xml::Channel> & configuration);
 
                 std::vector<std::shared_ptr<Channel>> find(std::string str_regex);
+                
+                std::shared_ptr<Channel> get(std::string str_name);
 
                 std::shared_ptr<SmartListChannels> channels();
 

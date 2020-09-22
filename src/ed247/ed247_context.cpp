@@ -42,9 +42,8 @@
 namespace ed247
 {
 
-Context::Context(std::string ecic_filepath,
+Context::Context(
     const libed247_configuration_t & libed247_configuration):
-    _ecic_filepath(ecic_filepath),
     _configuration(libed247_configuration),
     _root(),
     _pool_interfaces(std::make_shared<UdpSocket::Pool>()),
@@ -84,7 +83,7 @@ const libed247_runtime_metrics_t* Context::get_runtime_metrics()
 
 // Context::Builder
 
-Context * Context::Builder::create(std::string ecic_filepath,
+Context * Context::Builder::create_filepath(std::string ecic_filepath,
     const libed247_configuration_t & libed247_configuration)
 {
     // Logs
@@ -95,15 +94,44 @@ Context * Context::Builder::create(std::string ecic_filepath,
     // LOG_ERROR() << "## ERROR" << LOG_END;
 
     // Create context
-    Context * context = new Context(ecic_filepath, libed247_configuration);
+    Context * context = new Context(libed247_configuration);
 
     LOG_DEBUG() << "## Context " << std::endl <<
-        "# ECIC [" << context->_ecic_filepath << "]" << std::endl <<
+        "# ECIC [" << ecic_filepath << "]" << std::endl <<
         "# Configuration / MemoryHooks [" << int(context->_configuration.enable_memory_hooks) << "]" << LOG_END;
     
     // Load
     try{
-        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load(context->getFilePath()));
+        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_filepath(ecic_filepath));
+    }catch(...){
+        delete context;
+        context = nullptr;
+        throw;
+    }
+
+    return context;
+}
+
+Context * Context::Builder::create_content(std::string ecic_content,
+    const libed247_configuration_t & libed247_configuration)
+{
+    // Logs
+    LOG_DEBUG() << "# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]" << LOG_END;
+    LOG_DEBUG() << "## DEBUG" << LOG_END;
+    LOG_INFO() << "## INFO" << LOG_END;
+    LOG_WARNING() << "## WARNING" << LOG_END;
+    // LOG_ERROR() << "## ERROR" << LOG_END;
+
+    // Create context
+    Context * context = new Context(libed247_configuration);
+
+    LOG_DEBUG() << "## Context " << std::endl <<
+        "# ECIC [" << ecic_content << "]" << std::endl <<
+        "# Configuration / MemoryHooks [" << int(context->_configuration.enable_memory_hooks) << "]" << LOG_END;
+    
+    // Load
+    try{
+        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_content(ecic_content));
     }catch(...){
         delete context;
         context = nullptr;

@@ -288,7 +288,7 @@ TEST(UtApiStreams, CheckFindStreamMethod)
     ed247_channel_list_t channel_list;
     ed247_channel_t channel, channel_test;
     ed247_stream_list_t stream_list;
-    ed247_stream_t stream;
+    ed247_stream_t stream, stream_test;
     const ed247_stream_info_t* stream_info;
     
     const char* ecic_filename = CONFIG_PATH"/ut_api_streams/ecic_multiple_channels.xml";
@@ -305,6 +305,15 @@ TEST(UtApiStreams, CheckFindStreamMethod)
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(stream_info->name, "Stream2"));
+
+    // Get a single stream, check invalid calls
+    ASSERT_EQ(ed247_get_stream(NULL, "Stream2", &stream_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream(context, NULL, &stream_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream(context, "", &stream_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream(context, "Stream2", NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream(context, "Stream2", &stream_test), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(stream, stream_test);
+
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(stream_info->name, "Stream3"));
@@ -437,7 +446,7 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     ed247_channel_t channel;
     const ed247_channel_info_t* channel_info;
     ed247_stream_list_t stream_list;
-    ed247_stream_t stream;
+    ed247_stream_t stream, stream_test;
     const ed247_stream_info_t* stream_info;
 
     const char* ecic_filename = CONFIG_PATH"/ut_api_streams/ecic_multiple_channels.xml";
@@ -492,6 +501,15 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
 		ASSERT_NE(stream_info, (const ed247_stream_info_t*)NULL);
 		ASSERT_NE(stream_info->name, (const char*)NULL);
         ASSERT_EQ(strcmp(stream_info->name, "Stream11"), 0);
+        
+
+        // Get a single stream, check invalid calls
+        ASSERT_EQ(ed247_get_channel_stream(NULL, "Stream11", &stream_test), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_get_channel_stream(channel, NULL, &stream_test), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_get_channel_stream(channel, "", &stream_test), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_get_channel_stream(channel, "Stream11", NULL), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_get_channel_stream(channel, "Stream11", &stream_test), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(stream, stream_test);
 
     }
 

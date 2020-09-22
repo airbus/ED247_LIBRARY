@@ -318,6 +318,7 @@ DEALINGS IN THE SOFTWARE.
 		</xs:all>
 		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
 		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" default="1471"/>
 		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
 		<xs:attribute name="Comment" type="xs:string" default=""/>
 		<xs:attribute name="Direction" type="direction_single_type" use="required"/>

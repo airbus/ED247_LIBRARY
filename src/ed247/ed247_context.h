@@ -60,7 +60,7 @@ class Context : public ed247_internal_context_t
 {
     public:
 
-        explicit Context(std::string ecic_filepath,
+        explicit Context(
             const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
         ~Context();
         Context(const Context &)                = delete;
@@ -71,8 +71,6 @@ class Context : public ed247_internal_context_t
         Context(std::initializer_list<T>)       = delete;
 
         void initialize();
-
-        std::string getFilePath() const { return _ecic_filepath; }
 
         std::shared_ptr<xml::Root> getRoot() { return _root; }
 
@@ -128,7 +126,9 @@ class Context : public ed247_internal_context_t
         class Builder
         {
             public:
-                static Context * create(std::string ecic_filepath,
+                static Context * create_filepath(std::string ecic_filepath,
+                    const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
+                static Context * create_content(std::string ecic_content,
                     const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
                 static void initialize(Context & context);
 
@@ -144,7 +144,6 @@ class Context : public ed247_internal_context_t
 
     private:
 
-        std::string                             _ecic_filepath;
         const libed247_configuration_t          _configuration;
         std::shared_ptr<xml::Root>              _root;
         std::shared_ptr<ComInterface::Pool>     _pool_interfaces;

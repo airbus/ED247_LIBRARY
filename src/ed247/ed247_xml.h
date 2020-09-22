@@ -443,7 +443,8 @@ class Root: public Node
         
 };
 
-std::shared_ptr<Node> load(const std::string & filepath);
+std::shared_ptr<Node> load_filepath(const std::string & filepath);
+std::shared_ptr<Node> load_content(const std::string & content);
 
 }
 

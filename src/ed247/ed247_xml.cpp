@@ -379,6 +379,8 @@ void A664Stream::fill_attributes(const xmlNodePtr xml_node)
             set_value(info.icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
             set_value(info.sample_max_number,xml_attr);
+        }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
+            set_value(info.sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
@@ -1277,57 +1279,94 @@ void Root::create_children(const xmlNodePtr xml_node)
 }
 
 // load
-std::shared_ptr<Node> load(const std::string & filepath)
-{
-    xmlParserCtxtPtr    _p_xml_context;
-    xmlDocPtr           _p_xml_doc;
-    xmlDocPtr           _p_xsd_doc;
-    xmlSchemaParserCtxtPtr _p_xsd_schema_parser;
-    xmlSchemaPtr _p_xsd_schema;
-    xmlSchemaValidCtxtPtr _p_xsd_valid_context;
 
-    LOG_DEBUG() << "# [XmlParser] load()" << LOG_END;
+std::shared_ptr<Node> load_xml(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_xml_doc)
+{
+    xmlDocPtr           p_xsd_doc;
+    xmlSchemaParserCtxtPtr p_xsd_schema_parser;
+    xmlSchemaPtr p_xsd_schema;
+    xmlSchemaValidCtxtPtr p_xsd_valid_context;
+
+    // Parse XSD
+    if((p_xsd_doc = xmlCtxtReadMemory(p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
+        THROW_PARSER_ERROR("Failed to load schema in memory");
+
+    // Validate XSD
+    if((p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(p_xsd_doc)) == nullptr)
+        THROW_PARSER_ERROR("Failed to create schema parser");
+    if((p_xsd_schema = xmlSchemaParse(p_xsd_schema_parser)) == nullptr)
+        THROW_PARSER_ERROR("Failed to create schema");
+    if((p_xsd_valid_context = xmlSchemaNewValidCtxt(p_xsd_schema)) == nullptr)
+        THROW_PARSER_ERROR("Failed to validate schema context");
+
+    // Validate XML
+    if(xmlSchemaValidateDoc(p_xsd_valid_context, p_xml_doc) != 0)
+        THROW_PARSER_ERROR("Failed to validate XML document");
+
+    // Load Nodes
+    xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
+
+    auto root = std::make_shared<Root>();
+
+    root->load(xmlRootNode);
+
+    return std::dynamic_pointer_cast<Node>(root);
+}
+
+std::shared_ptr<Node> load_filepath(const std::string & filepath)
+{
+    xmlParserCtxtPtr    p_xml_context;
+    xmlDocPtr           p_xml_doc;
+
+    LOG_DEBUG() << "# [XmlParser] load_filepath()" << LOG_END;
     
     // Create context
-    if((_p_xml_context = xmlNewParserCtxt()) == nullptr)
+    if((p_xml_context = xmlNewParserCtxt()) == nullptr)
         THROW_PARSER_ERROR("Failed to create XML context pointer.");
 
     // Setup error handler
     xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
     // Parse XML
-    if((_p_xml_doc = xmlCtxtReadFile(_p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
+    if((p_xml_doc = xmlCtxtReadFile(p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
         THROW_PARSER_ERROR("Failed to read [" << filepath << "]");
 
-    // Parse XSD
-    if((_p_xsd_doc = xmlCtxtReadMemory(_p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
-        THROW_PARSER_ERROR("Failed to load schema in memory");
+    auto root = load_xml(p_xml_context, p_xml_doc);
 
-    // Validate XSD
-    if((_p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(_p_xsd_doc)) == nullptr)
-        THROW_PARSER_ERROR("Failed to create schema parser");
-    if((_p_xsd_schema = xmlSchemaParse(_p_xsd_schema_parser)) == nullptr)
-        THROW_PARSER_ERROR("Failed to create schema");
-    if((_p_xsd_valid_context = xmlSchemaNewValidCtxt(_p_xsd_schema)) == nullptr)
-        THROW_PARSER_ERROR("Failed to validate schema context");
+    if(p_xml_doc)
+        xmlFreeDoc(p_xml_doc);
+    if(p_xml_context)
+        xmlFreeParserCtxt(p_xml_context);
 
-    // Validate XML
-    if(xmlSchemaValidateDoc(_p_xsd_valid_context, _p_xml_doc) != 0)
-        THROW_PARSER_ERROR("Failed to validate XML document");
+    return root;
+}
 
-    // Load Nodes
-    xmlNodePtr xmlRootNode(xmlDocGetRootElement(_p_xml_doc));
+std::shared_ptr<Node> load_content(const std::string & content)
+{
+    xmlParserCtxtPtr    p_xml_context;
+    xmlDocPtr           p_xml_doc;
 
-    auto root = std::make_shared<Root>();
+    LOG_DEBUG() << "# [XmlParser] load_filepath()" << LOG_END;
+    
+    // Create context
+    if((p_xml_context = xmlNewParserCtxt()) == nullptr)
+        THROW_PARSER_ERROR("Failed to create XML context pointer.");
 
-    root->load(xmlRootNode);
+    // Setup error handler
+    xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
-    if(_p_xml_doc)
-        xmlFreeDoc(_p_xml_doc);
-    if(_p_xml_context)
-        xmlFreeParserCtxt(_p_xml_context);
+    // Parse XML
+    if((p_xml_doc = xmlCtxtReadMemory(p_xml_context,content.c_str(),(int)content.length(),nullptr,nullptr,0)) == nullptr)
+        THROW_PARSER_ERROR("Failed to read XML file content");
 
-    return std::dynamic_pointer_cast<Node>(root);
+    auto root = load_xml(p_xml_context, p_xml_doc);
+
+    if(p_xml_doc)
+        xmlFreeDoc(p_xml_doc);
+    if(p_xml_context)
+        xmlFreeParserCtxt(p_xml_context);
+
+    return root;
 }
 
 }

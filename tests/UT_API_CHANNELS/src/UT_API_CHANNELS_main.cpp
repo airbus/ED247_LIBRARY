@@ -50,6 +50,7 @@ TEST(UtApiChannel, ChannelsManipulation)
     ed247_context_t context;
     ed247_channel_list_t channel_list;
     ed247_channel_t channel;
+    ed247_channel_t channel_test;
     const ed247_channel_info_t* channel_info;
     
     const char* ecic_filename = CONFIG_PATH"/ut_api_channels/ecic.xml";
@@ -82,6 +83,14 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "DefaultValues") == 0);
     ASSERT_TRUE(channel_info->comment != NULL && strcmp(channel_info->comment, "") == 0);
     ASSERT_EQ(channel_info->frame_format.standard_revision, ED247_STANDARD_ED247A);
+
+    // Get a single channel, check invalid calls
+    ASSERT_EQ(ed247_get_channel(NULL, "DefaultValues", &channel_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_channel(context, NULL, &channel_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_channel(context, "", &channel_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_channel(context, "DefaultValues", NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_channel(context, "DefaultValues", &channel_test), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(channel, channel_test);
     
     // Get the next channel, get information and and confirm the name and values of the header
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);

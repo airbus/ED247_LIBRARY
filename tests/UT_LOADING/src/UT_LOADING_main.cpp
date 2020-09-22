@@ -48,7 +48,7 @@ TEST_P(LoadingContext, Loading)
 
         std::string filepath{CONFIG_PATH"/ut_loading/"};
         filepath += GetParam();
-        root = std::dynamic_pointer_cast<Root>(load(filepath));
+        root = std::dynamic_pointer_cast<Root>(load_filepath(filepath));
     }
     catch(std::exception & e){
         LOG_ERROR() << "Error: " << e.what() << LOG_END;

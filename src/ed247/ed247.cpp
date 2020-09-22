@@ -806,7 +806,7 @@ ed247_status_t libed247_update_time(
 }
 
 ed247_status_t ed247_load(
-    const char *ed247_ecic_file_path,
+    const char *ecic_file_path,
     const libed247_configuration_t *libed247_configuration,
     ed247_context_t *context)
 {
@@ -821,7 +821,7 @@ ed247_status_t ed247_load(
         return ED247_STATUS_FAILURE;
     }
     *context = nullptr;
-    if(!ed247_ecic_file_path){
+    if(!ecic_file_path){
 #ifdef LIBED247_VERBOSE_DEBUG
         LOG_DEBUG() << "## Load failed" << LOG_END;
 #endif
@@ -829,8 +829,8 @@ ed247_status_t ed247_load(
         return ED247_STATUS_FAILURE;
     }
     try{
-        auto ed247_context = ed247::Context::Builder::create(
-            ed247_ecic_file_path,
+        auto ed247_context = ed247::Context::Builder::create_filepath(
+            ecic_file_path,
             libed247_configuration ?
                 *libed247_configuration : libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
         ed247_context->initialize();
@@ -839,6 +839,44 @@ ed247_status_t ed247_load(
     LIBED247_CATCH("Load")
 #ifdef LIBED247_VERBOSE_DEBUG
     LOG_DEBUG() << "## Load success" << LOG_END;
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_load_content(
+    const char *ecic_file_content,
+    const libed247_configuration_t *libed247_configuration,
+    ed247_context_t *context)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Load content ..." << LOG_END;
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Load content failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Empty context pointer" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    *context = nullptr;
+    if(!ecic_file_content){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Load content failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Empty content" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = ed247::Context::Builder::create_content(
+            ecic_file_content,
+            libed247_configuration ?
+                *libed247_configuration : libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
+        ed247_context->initialize();
+        *context = ed247_context;
+    }
+    LIBED247_CATCH("Load content")
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Load content success" << LOG_END;
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -882,6 +920,48 @@ ed247_status_t ed247_find_channels(
     return ED247_STATUS_SUCCESS;
 }
 
+ed247_status_t ed247_get_channel(
+    ed247_context_t context,
+    const char *name,
+    ed247_channel_t *channel)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get channel ..." << LOG_END;
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get channel failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid context" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get channel failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid name" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!channel){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get channel failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid channel pointer" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+        auto && ed247_channel = ed247_context->getPoolChannels()->get(std::string(name));
+        *channel = ed247_channel ? ed247_channel.get() : nullptr;
+        if(*channel == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get channel")
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get channel success" << LOG_END;
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
 ed247_status_t ed247_find_streams(
     ed247_context_t context,
     const char *regex_name,
@@ -916,6 +996,48 @@ ed247_status_t ed247_find_streams(
     return ED247_STATUS_SUCCESS;
 }
 
+ed247_status_t ed247_get_stream(
+    ed247_context_t context,
+    const char *name,
+    ed247_stream_t *stream)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get stream ..." << LOG_END;
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get stream failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid context" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get stream failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid name" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get stream failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid stream pointer" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+        auto && ed247_stream = ed247_context->getPoolStreams()->get(std::string(name));
+        *stream = ed247_stream ? ed247_stream.get() : nullptr;
+        if(*stream == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get stream")
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get stream success" << LOG_END;
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
 ed247_status_t ed247_find_channel_streams(
     ed247_channel_t channel,
     const char *regex_name,
@@ -946,6 +1068,48 @@ ed247_status_t ed247_find_channel_streams(
     LIBED247_CATCH("Find channel streams")
 #ifdef LIBED247_VERBOSE_DEBUG
     LOG_DEBUG() << "## Find channel streams success" << LOG_END;
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_channel_stream(
+    ed247_channel_t channel,
+    const char *name,
+    ed247_stream_t *stream)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get channel stream ..." << LOG_END;
+#endif
+    if(!channel){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get channel stream failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid channel" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get channel stream failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid name" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get channel stream failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid stream pointer" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_channel = (ed247::Channel*)(channel);
+        auto && ed247_stream = ed247_channel->get_stream(std::string(name));
+        *stream = ed247_stream ? ed247_stream.get() : nullptr;
+        if(*stream == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get channel stream")
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get channel stream success" << LOG_END;
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -985,6 +1149,48 @@ ed247_status_t ed247_find_signals(
     return ED247_STATUS_SUCCESS;
 }
 
+ed247_status_t ed247_get_signal(
+    ed247_context_t context,
+    const char *name,
+    ed247_signal_t *signal)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get signal ..." << LOG_END;
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get signal failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid context" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get signal failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid name" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!signal){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get signal failed ..." << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid signal pointer " << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+        auto && ed247_signal = ed247_context->getPoolSignals()->get(std::string(name));
+        *signal = ed247_signal ? ed247_signal.get() : nullptr;
+        if(*signal == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get signal")
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get signal success" << LOG_END;
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
 ed247_status_t ed247_find_stream_signals(
     ed247_stream_t stream,
     const char *regex_name,
@@ -1015,6 +1221,48 @@ ed247_status_t ed247_find_stream_signals(
     LIBED247_CATCH("Find stream signals")
 #ifdef LIBED247_VERBOSE_DEBUG
     LOG_DEBUG() << "## Find stream signals success" << LOG_END;
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_stream_signal(
+    ed247_stream_t stream,
+    const char *name,
+    ed247_signal_t *signal)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get stream signal ..." << LOG_END;
+#endif
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get stream signal failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid stream" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get stream signal failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid name" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    if(!signal){
+#ifdef LIBED247_VERBOSE_DEBUG
+        LOG_DEBUG() << "## Get stream signal failed" << LOG_END;
+#endif
+        LOG_ERROR() << "Invalid signal pointer" << LOG_END;
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_stream = (ed247::BaseStream*)(stream);
+        auto && ed247_signal = ed247_stream->get_signal(std::string(name));
+        *signal = ed247_signal ? ed247_signal.get() : nullptr;
+        if(*signal == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get stream signal")
+#ifdef LIBED247_VERBOSE_DEBUG
+    LOG_DEBUG() << "## Get stream signal success" << LOG_END;
 #endif
     return ED247_STATUS_SUCCESS;
 }

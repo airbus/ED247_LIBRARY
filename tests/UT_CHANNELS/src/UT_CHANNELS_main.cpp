@@ -99,7 +99,7 @@ TEST_P(ChannelContext, MultiPushPop)
 
         std::string filepath{CONFIG_PATH"/ut_channels/"};
         filepath += GetParam();
-        Context * context = Context::Builder::create(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
+        Context * context = Context::Builder::create_filepath(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
         Context::Builder::initialize(*context);
 
         // Retrieve the pool of channels

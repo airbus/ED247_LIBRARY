@@ -107,6 +107,14 @@ std::vector<std::shared_ptr<BaseSignal>> BaseSignal::Pool::find(std::string str_
     return std::move(founds);
 }
 
+std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::string str_name)
+{
+    for(auto signal : _signals){
+        if(signal->get_name() == str_name) return signal;
+    }
+    return nullptr;
+}
+
 size_t BaseSignal::Pool::size() const
 {
     return _signals.size();

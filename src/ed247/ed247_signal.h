@@ -140,6 +140,8 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
                 std::vector<std::shared_ptr<BaseSignal>> find(std::string str_regex);
 
+                std::shared_ptr<BaseSignal> get(std::string str_name);
+
                 std::vector<std::shared_ptr<BaseSignal>> & signals() { return _signals; }
 
                 size_t size() const;

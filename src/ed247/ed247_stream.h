@@ -503,6 +503,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         }
 
         std::vector<std::shared_ptr<BaseSignal>> find_signals(std::string str_regex);
+
+        std::shared_ptr<BaseSignal> get_signal(std::string str_name);
         
         std::shared_ptr<SmartListSignals> signals() { return _signals; };
 
@@ -650,6 +652,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 std::shared_ptr<BaseStream> get(std::shared_ptr<xml::Stream> & configuration);
 
                 std::vector<std::shared_ptr<BaseStream>> find(std::string str_regex);
+
+                std::shared_ptr<BaseStream> get(std::string str_name);
 
                 std::shared_ptr<SmartListStreams> streams();
 

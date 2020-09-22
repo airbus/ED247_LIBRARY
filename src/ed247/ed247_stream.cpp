@@ -126,6 +126,14 @@ std::vector<std::shared_ptr<BaseSignal>> BaseStream::find_signals(std::string st
     return std::move(founds);
 }
 
+std::shared_ptr<BaseSignal> BaseStream::get_signal(std::string str_name)
+{
+    for(auto signal : *_signals){
+        if(signal->get_name() == str_name) return signal;
+    }
+    return nullptr;
+}
+
 void BaseStream::register_channel(Channel & channel, ed247_direction_t direction)
 {
     auto sp_channel = channel.shared_from_this();
@@ -180,6 +188,14 @@ std::vector<std::shared_ptr<BaseStream>> BaseStream::Pool::find(std::string strr
         }
     }
     return std::move(founds);
+}
+
+std::shared_ptr<BaseStream> BaseStream::Pool::get(std::string str_name)
+{
+    for(auto stream : *_streams){
+        if(stream->get_name() == str_name) return stream;
+    }
+    return nullptr;
 }
 
 std::shared_ptr<SmartListStreams> BaseStream::Pool::streams()

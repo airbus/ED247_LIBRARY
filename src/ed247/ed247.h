@@ -914,6 +914,20 @@ extern LIBED247_EXPORT ed247_status_t ed247_load(
     const libed247_configuration_t *configuration,
     ed247_context_t *context);
 
+/**
+ * @brief Loading function: the entry point of the library
+ * @ingroup load_unload
+ * @param[in] ecic_file_content The content of the ECIC configuration file
+ * @param[in] configuration The configuration of the LIBED247
+ * @param[out] context The loaded context identifier
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE An error occurred during the load phase (xml parsing or internal loading)
+  */
+extern LIBED247_EXPORT ed247_status_t ed247_load_content(
+    const char *ecic_file_content,
+    const libed247_configuration_t *configuration,
+    ed247_context_t *context);
+
 /********
  * Time *
  ********/
@@ -965,7 +979,7 @@ extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
  * <em>The regex do not embed implicit /a .* special characters at the beginning and the end.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
  * @ingroup channel
- * @param[in] context The context identifier
+ * @param[in] context The context identifier.
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
  * @param[out] channels The list of the channels. If no value, set to null.
  * @retval ED247_STATUS_SUCCESS
@@ -976,6 +990,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_channels(
     ed247_context_t context,
     const char *regex_name,
     ed247_channel_list_t *channels);
+
+/**
+ * @brief Find a channel of the component
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup channel
+ * @param[in] context The context identifier.
+ * @param[in] name The name of the channel.
+ * @param[out] channel The channel identifier
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The channel list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_channel(
+    ed247_context_t context,
+    const char *name,
+    ed247_channel_t *channel);
 
 /**
  * @brief Find all streams of the component whose name is matching the regular expression
@@ -995,6 +1024,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_streams(
     ed247_stream_list_t *streams);
 
 /**
+ * @brief Find a stream of the component
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup stream
+ * @param[in] context The context identifier
+ * @param[in] name The name of the stream.
+ * @param[out] stream The stream identifier
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_stream(
+    ed247_context_t context,
+    const char *name,
+    ed247_stream_t *stream);
+
+/**
  * @brief Find all streams of the channel whose name is matching the regular expression
  * <em>For example, to get a list of all the streams, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
@@ -1010,6 +1054,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_channel_streams(
     ed247_channel_t channel,
     const char *regex_name,
     ed247_stream_list_t *streams);
+
+/**
+ * @brief Find a stream in a channel
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup stream
+ * @param[in] channel The channel identifier
+ * @param[in] name The name of the stream.
+ * @param[out] stream The stream identifier.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_channel_stream(
+    ed247_channel_t channel,
+    const char *name,
+    ed247_stream_t *stream);
 
 /**
  * @brief Find all signals of the component whose name is matching the regular expression
@@ -1029,6 +1088,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_signals(
     ed247_signal_list_t *signals);
 
 /**
+ * @brief Find a signal of the component
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup signal
+ * @param[in] context The context identifier
+ * @param[in] name The signal name.
+ * @param[out] signal The signal identifier.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_signal(
+    ed247_context_t context,
+    const char *name,
+    ed247_signal_t *signal);
+
+/**
  * @brief Find all signals of the stream whose name is matching the regular expression
  * <em>For example, to get a list of all the signals, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
@@ -1044,6 +1118,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(
     ed247_stream_t stream,
     const char *regex_name,
     ed247_signal_list_t *signals);
+
+/**
+ * @brief Get a signal of the stream
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup signal
+ * @param[in] stream The stream identifier
+ * @param[in] name The stream name.
+ * @param[out] signal The signal identifier.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_stream_signal(
+    ed247_stream_t stream,
+    const char *name,
+    ed247_signal_t *signal);
 
 /***********
  * Getters *

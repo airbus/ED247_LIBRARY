@@ -59,7 +59,7 @@ TEST(UtApiSignals, CheckSignalLoading)
     ed247_stream_t stream;
     ed247_stream_t stream_test;
     ed247_signal_list_t signal_list;
-    ed247_signal_t signal;
+    ed247_signal_t signal, signal_test;
     const ed247_signal_info_t* signal_info;
     
     const char* ecic_filename = CONFIG_PATH"/ut_api_signals/ecic.xml";
@@ -84,6 +84,14 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_EQ(ed247_signal_list_next(signal_list, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_signal_list_next(NULL, &signal), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
+
+    // Get a single channel, check invalid calls
+    ASSERT_EQ(ed247_get_signal(NULL, "SignalDisMin", &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_signal(context, NULL, &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_signal(context, "", &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_signal(context, "SignalDisMin", NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_signal(context, "SignalDisMin", &signal_test), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(signal, signal_test);
     
     // Get the signal info and check the values, perform unvalid calls to verify robustness
     ASSERT_EQ(ed247_signal_get_info(NULL, &signal_info), ED247_STATUS_FAILURE);
@@ -192,7 +200,7 @@ TEST(UtApiSignals, CheckOtherMethods)
     ed247_stream_list_t stream_list;
     ed247_stream_t stream;
     ed247_signal_list_t signal_list;
-    ed247_signal_t signal;
+    ed247_signal_t signal, signal_test;
     const ed247_signal_info_t* signal_info;
     
     const char* ecic_filename = CONFIG_PATH"/ut_api_signals/ecic.xml";
@@ -227,6 +235,13 @@ TEST(UtApiSignals, CheckOtherMethods)
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(signal_info->name != NULL && strcmp(signal_info->name, "SignalAnaMin") == 0);
+
+    ASSERT_EQ(ed247_get_stream_signal(NULL, "SignalAnaMin", &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream_signal(stream, NULL, &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream_signal(stream, "", &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream_signal(stream, "SignalAnaMin", NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream_signal(stream, "SignalAnaMin", &signal_test), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(signal, signal_test);
     
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);

@@ -247,6 +247,17 @@ std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strre
     return std::move(founds);
 }
 
+std::shared_ptr<BaseStream> Channel::get_stream(std::string str_name)
+{
+    map_streams_t::iterator iter = _streams.begin();
+    for(iter = _streams.begin() ; iter != _streams.end() ; iter++){
+        if(!iter->second.stream)
+            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel contains an invalid Stream at [" << iter->first << "]");
+        if(iter->second.stream->get_name() == str_name) return iter->second.stream;
+    }
+    return nullptr;
+}
+
 uint32_t Channel::missed_frames()
 {
     return _header.missed_frames();
@@ -298,6 +309,15 @@ std::vector<std::shared_ptr<Channel>> Channel::Pool::find(std::string strregex)
         }
     }
     return founds;
+}
+
+std::shared_ptr<Channel> Channel::Pool::get(std::string str_name)
+{
+    for(auto channel : *_channels){
+        if(channel->get_name() == str_name) return channel;
+    }
+    return nullptr;
+
 }
 
 std::shared_ptr<SmartListChannels> Channel::Pool::channels()

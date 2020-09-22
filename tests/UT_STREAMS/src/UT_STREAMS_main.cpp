@@ -142,7 +142,7 @@ TEST_P(StreamContext, SinglePushPop)
 
         std::string filepath{CONFIG_PATH"/ut_streams/"};
         filepath += GetParam();
-        Context * context = Context::Builder::create(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
+        Context * context = Context::Builder::create_filepath(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
         Context::Builder::initialize(*context);
 
         // Retrieve the pool of streams
@@ -233,7 +233,7 @@ TEST_P(StreamContext, MultiPushPop)
 
         std::string filepath{CONFIG_PATH"/ut_streams/"};
         filepath += GetParam();
-        Context * context = Context::Builder::create(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
+        Context * context = Context::Builder::create_filepath(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
         Context::Builder::initialize(*context);
 
         // Retrieve the pool of streams
@@ -357,7 +357,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
 
         std::string filepath{CONFIG_PATH"/ut_streams/"};
         filepath += GetParam();
-        Context * context = Context::Builder::create(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
+        Context * context = Context::Builder::create_filepath(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
         Context::Builder::initialize(*context);
 
         // Retrieve the pool of streams
