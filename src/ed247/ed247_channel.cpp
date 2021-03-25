@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,6 @@
  *****************************************************************************/
 
 #include "ed247_channel.h"
-#include "ed247_memhooks.h"
 #include "ed247_stream.h"
 
 #include <regex>
@@ -171,6 +170,7 @@ void Channel::encode(const ed247_uid_t & component_identifier)
     size_t stream_data_size = 0;
     // Encode header
     _header.encode((char*)_buffer.data(), _buffer.capacity(), buffer_index, component_identifier);
+    size_t header_index = buffer_index;
     // Encode channel payload
     if(!_configuration->simple){
         for(auto & p : _streams){
@@ -200,14 +200,16 @@ void Channel::encode(const ed247_uid_t & component_identifier)
         stream_data_size = s->encode((char*)_buffer.data()+buffer_index,_buffer.capacity());
         buffer_index += stream_data_size;
     }
-    _buffer.set_size(buffer_index);
+    if(buffer_index == header_index){ // Check if something had been written in the buffer after the header
+        _buffer.reset();
+    }else{
+        _buffer.set_size(buffer_index);
+    }
 }
 
 bool Channel::decode(const char * frame, size_t frame_size)
 {
     bool stop = false;
-    // if(!MemoryHooksManager::getInstance().isEnabled())
-    //     LOG_DEBUG() << "Channel [" << get_name() << "] decode a frame of size [" << frame_size << "]" << LOG_END;
     size_t frame_index = 0;
     _header.decode(frame, frame_size, frame_index);
     if(!_configuration->simple){
@@ -247,6 +249,17 @@ std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strre
     return std::move(founds);
 }
 
+std::shared_ptr<BaseStream> Channel::get_stream(std::string str_name)
+{
+    map_streams_t::iterator iter = _streams.begin();
+    for(iter = _streams.begin() ; iter != _streams.end() ; iter++){
+        if(!iter->second.stream)
+            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel contains an invalid Stream at [" << iter->first << "]");
+        if(iter->second.stream->get_name() == str_name) return iter->second.stream;
+    }
+    return nullptr;
+}
+
 uint32_t Channel::missed_frames()
 {
     return _header.missed_frames();
@@ -281,7 +294,8 @@ std::shared_ptr<Channel> Channel::Pool::get(std::shared_ptr<xml::Channel> & conf
         sp_channel = builder.create(configuration, _pool_interfaces, _pool_streams);
         _channels->push_back(sp_channel);
     }else{
-        sp_channel = *iter;
+        // sp_channel = *iter;
+        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel [" << name << "] already exists");
     }
     
     return sp_channel;
@@ -297,6 +311,15 @@ std::vector<std::shared_ptr<Channel>> Channel::Pool::find(std::string strregex)
         }
     }
     return founds;
+}
+
+std::shared_ptr<Channel> Channel::Pool::get(std::string str_name)
+{
+    for(auto channel : *_channels){
+        if(channel->get_name() == str_name) return channel;
+    }
+    return nullptr;
+
 }
 
 std::shared_ptr<SmartListChannels> Channel::Pool::channels()

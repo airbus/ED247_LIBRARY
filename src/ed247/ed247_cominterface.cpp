@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,6 @@
 
 #include "ed247_cominterface.h"
 #include "ed247_channel.h"
-#include "ed247_memhooks.h"
 #include "ed247_internals.h"
 
 #include <utility>
@@ -121,21 +120,19 @@ std::string UdpSocket::get_last_error()
 
 void UdpSocket::send_frame(Channel & channel, const void * frame, const size_t frame_size)
 {
-    if(!MemoryHooksManager::getInstance().isEnabled())
-        LOG_INFO() << "# Socket [" << _socket_infos << "] sends a frame of channel [" << channel.get_name() << "]" << LOG_END;
+    IF_PRINT PRINT_DEBUG("# Socket [" << _socket_infos << "] sends a frame of channel [" << channel.get_name() << "]");
     auto & destinations = *(_destinations[&channel]);
     for(auto & destination : destinations){
-        if(!MemoryHooksManager::getInstance().isEnabled())
-            LOG_INFO() << "# Socket [" << _socket_infos << "] send to [" << destination << "] a frame of [" << frame_size << "] bytes" << LOG_END;
-        if(!MemoryHooksManager::getInstance().isEnabled()){
-            LOG_DEBUG() << "Received frame of [" << frame_size << "] bytes" << LOG_END;
+        IF_PRINT {
+            PRINT_DEBUG("# Socket [" << _socket_infos << "] send to [" << destination << "] a frame of [" << frame_size << "] bytes");
+            PRINT_DEBUG("Sent frame of [" << frame_size << "] bytes");
             std::ostringstream oss;
             oss.str("");
             for(unsigned i = 0 ; i < frame_size ; i++){
                 oss << std::setw(2) << std::setfill('0') << std::hex << (int)(((const char*)frame)[i]);
                 oss << " ";
             }
-            LOG_DEBUG() << "Frame: " << oss.str() << LOG_END;
+            PRINT_DEBUG("Frame: " << oss.str());
         }
         run_send_callbacks();
         int32_t sent_size = sendto(_socket, static_cast<const char *>(frame), (int)frame_size, 0, (struct sockaddr *)&destination, sizeof(struct sockaddr_in));
@@ -161,15 +158,15 @@ bool UdpSocket::recv()
         run_recv_callbacks();
 
         _recv.size = sockerr;
-        if(!MemoryHooksManager::getInstance().isEnabled()){
-            LOG_DEBUG() << "Received frame of [" << _recv.size << "] bytes" << LOG_END;
+        IF_PRINT {
+            PRINT_DEBUG("Received frame of [" << _recv.size << "] bytes");
             std::ostringstream oss;
             oss.str("");
             for(unsigned i = 0 ; i < _recv.size ; i++){
                 oss << std::setw(2) << std::setfill('0') << std::hex << (int)_recv.frame[i];
                 oss << " ";
             }
-            LOG_DEBUG() << "Frame: " << oss.str() << LOG_END;
+            PRINT_DEBUG("Frame: " << oss.str());
         }
 
         // Decode frames in channels
@@ -195,13 +192,13 @@ std::string UdpSocket::get_name()
 
 void UdpSocket::initialize()
 {
-    LOG_DEBUG() << "# Initialize socket [" << _socket_infos << "]" << LOG_END;
+    PRINT_DEBUG("# Initialize socket [" << _socket_infos << "]");
     int sockerr;
 
     if(_socket != INVALID_SOCKET)
         THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to initialize socket [" << _socket_infos << "], already initialized !");
 
-    LOG_DEBUG() << "# Create socket [" << _socket_infos << "]" << LOG_END;
+    PRINT_DEBUG("# Create socket [" << _socket_infos << "]");
     _socket = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     if(_socket == INVALID_SOCKET)
         THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to create the socket [" << _socket_infos << "]");
@@ -247,7 +244,7 @@ void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket
     std::weak_ptr<Channel> weak_channel = channel.shared_from_this();
     if(dest_iter == _destinations.end())
         dest_iter = (_destinations.insert(std::make_pair(&channel,std::make_shared<std::vector<SocketInfos>>()))).first;
-    LOG_DEBUG() << "# Socket [" << _socket_infos << "] appends the destination [" << socket_infos_dst << "] for channel [" << std::string(channel.get_configuration()->info.name) << "]" << LOG_END;
+    PRINT_DEBUG("# Socket [" << _socket_infos << "] appends the destination [" << socket_infos_dst << "] for channel [" << std::string(channel.get_configuration()->info.name) << "]");
     dest_iter->second->push_back(socket_infos_dst);
     channel.add_emitter(*this);
 
@@ -330,11 +327,11 @@ void UdpSocket::unregister_channel(Channel & channel)
 
 void UdpSocket::close()
 {
-    // LOG_DEBUG() << "# Close socket [" << _socket_infos << "]" << LOG_END;
+    PRINT_DEBUG("# Close socket [" << _socket_infos << "]");
 
     if(_socket != INVALID_SOCKET){
         shutdown(_socket, 2);
-#ifdef __linux
+#ifdef __linux__
         ::close(_socket);
 #elif _WIN32
         closesocket(_socket);
@@ -369,7 +366,7 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
 
     if(!is_multicast){
         // UNICAST
-        if(is_host_ip_address(socket_infos_dst.sin_addr) && configuration.direction & ED247_DIRECTION_IN){ 
+        if(is_host_ip_address(socket_infos_dst.sin_addr) && (configuration.direction & ED247_DIRECTION_IN)){ 
             // receiver (dst)
             socket_pair.second = find_or_create(socket_infos_dst);
         }
@@ -396,10 +393,10 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
         }
     }
 
-    LOG_DEBUG() << "# Socket[" << configuration.toString() << "] " <<
+    PRINT_INFO("# Socket[" << configuration.toString() << "] " <<
     "[" << (is_multicast ? std::string("MULTICAST") : std::string("UNICAST")) << "] " << 
     "Emitter[" << (socket_pair.emitter() ? std::string(socket_pair.emitter()->_socket_infos) : std::string("NONE")) << "] " << 
-    "Receiver[" << (socket_pair.receiver() ? std::string(socket_pair.receiver()->_socket_infos) : std::string("NONE")) << "]" << LOG_END;
+    "Receiver[" << (socket_pair.receiver() ? std::string(socket_pair.receiver()->_socket_infos) : std::string("NONE")) << "]");
 
     return socket_pair;
 }
@@ -409,11 +406,10 @@ void UdpSocket::Factory::unregister(const SocketInfos & socket_infos)
     auto iter = _sockets.find(socket_infos);
     if(iter != _sockets.end()){
         if(iter->second->_destinations.size() == 0 && iter->second->_sources.size() == 0){
-            LOG_DEBUG() << "# Socket [" << socket_infos << "] is not needed anymore, destroy it" << LOG_END;
+            PRINT_DEBUG("# Socket [" << socket_infos << "] is not needed anymore, destroy it");
             _sockets.erase(iter);
-            // LOG_DEBUG() << "# Factory socket number: " << _sockets.size() << LOG_END;
         }else{
-            LOG_DEBUG() << "# Socket [" << socket_infos << "] is used elsewhere, do not destroy it" << LOG_END;
+            PRINT_DEBUG("# Socket [" << socket_infos << "] is used elsewhere, do not destroy it");
         }
     }
 }
@@ -421,10 +417,7 @@ void UdpSocket::Factory::unregister(const SocketInfos & socket_infos)
 void UdpSocket::Factory::setup()
 {
 #ifdef _WIN32
-    // int i;
     char host_buffer[256];
-    // struct hostent *host_entry;
-    // struct in_addr **addr_list;
     WSADATA wsaData;
     struct addrinfo *info;
     struct addrinfo *iter;
@@ -435,7 +428,7 @@ void UdpSocket::Factory::setup()
     if(gethostname(host_buffer, sizeof(host_buffer)) == -1)
         THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to retrieve hostname.");
 
-    LOG_DEBUG() << "# Host [" << std::string(host_buffer) << "]" << LOG_END;
+    PRINT_DEBUG("# Host [" << std::string(host_buffer) << "]");
 
     if(getaddrinfo(host_buffer, nullptr, nullptr, &info) != 0)
         THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to retrieve host addr info");
@@ -454,7 +447,7 @@ void UdpSocket::Factory::setup()
 #else
             ipaddr = std::string(inet_ntoa(_host_ip_addresses.back()));
 #endif
-            LOG_DEBUG() << "# Available ip address [" << ipaddr << "]" << LOG_END;
+            PRINT_DEBUG("# Available ip address [" << ipaddr << "]");
         }
     }
 #else
@@ -463,10 +456,10 @@ void UdpSocket::Factory::setup()
 
     getifaddrs (&ifap);
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr->sa_family==AF_INET) {
+        if (ifa->ifa_addr != nullptr && ifa->ifa_addr->sa_family==AF_INET) {
             sa = (struct sockaddr_in *) ifa->ifa_addr;
             _host_ip_addresses.emplace_back(sa->sin_addr);
-            LOG_DEBUG() << "# Available ip address [" << std::string(inet_ntoa(_host_ip_addresses.back())) << "]" << LOG_END;
+            PRINT_DEBUG("# Available ip address [" << std::string(inet_ntoa(_host_ip_addresses.back())) << "]");
         }
     }
 
@@ -481,11 +474,10 @@ std::shared_ptr<UdpSocket> UdpSocket::Factory::find_or_create(SocketInfos & sock
         std::shared_ptr<UdpSocket> socket = std::make_shared<UdpSocket>(socket_infos);
         _sockets.insert(std::make_pair(socket_infos,socket));
         socket->initialize();
-        LOG_DEBUG() << "# Socket [" << socket_infos << "] created" << LOG_END;
-            LOG_DEBUG() << "# Factory socket number: " << _sockets.size() << LOG_END;
+        PRINT_DEBUG("# Socket [" << socket_infos << "] created");
         return socket;
     }else{
-        LOG_DEBUG() << "# Socket [" << socket_infos << "] found (Destinations [" << socket_iter->second->_destinations.size() << "] / Receivers [" << socket_iter->second->_sources.size() << "])" << LOG_END;
+        PRINT_DEBUG("# Socket [" << socket_infos << "] found (Destinations [" << socket_iter->second->_destinations.size() << "] / Receivers [" << socket_iter->second->_sources.size() << "])");
         return socket_iter->second;
     }
 }
@@ -507,13 +499,11 @@ UdpSocket::Pool::~Pool()
 {
     for(auto iter = _outputs.begin() ; iter != _outputs.end(); ){
         SocketInfos & socket_infos = (*iter)->_socket_infos;
-        // LOG_DEBUG() << "Socket use count [" << (*iter).use_count() << "]" << LOG_END;
         iter = _outputs.erase(iter);
         UdpSocket::Factory::getInstance().unregister(socket_infos);
     }
     for(auto iter = _inputs.begin() ; iter != _inputs.end(); ){
         SocketInfos & socket_infos = (*iter)->_socket_infos;
-        // LOG_DEBUG() << "Socket use count [" << (*iter).use_count() << "]" << LOG_END;
         iter = _inputs.erase(iter);
         UdpSocket::Factory::getInstance().unregister(socket_infos);
     }
@@ -541,106 +531,69 @@ UdpSocket::Pair UdpSocket::Pool::get(const xml::UdpSocket & configuration)
 
 ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
 {
-    if(!MemoryHooksManager::getInstance().isEnabled())
-        LOG_DEBUG() << "Socket pool waiting for first frame to be received" << LOG_END;
+    IF_PRINT PRINT_DEBUG("Socket pool waiting for first frame to be received");
 
-    struct ::timeval  timeout;
-    int             sockerr = 1;
-    fd_set          select_fd;
+    ed247_status_t  status = ED247_STATUS_TIMEOUT;
+    struct ::timeval timeout;
+    int sockerr = 1;
+    fd_set select_fd;
 
-    if(_select_options.nfds <= 0){
-        if(!MemoryHooksManager::getInstance().isEnabled())
-            LOG_WARNING() << "Nothing to wait for, empty socket list" << LOG_END;
+    if(_select_options.nfds < 0){
+        IF_PRINT PRINT_DEBUG("Nothing to wait for, empty socket list");
         return ED247_STATUS_FAILURE;
-    }else if(timeout_us >= 0){
+    }
+    
+    if(timeout_us >= 0){
         timeout.tv_sec = (uint32_t)timeout_us / 1000000;
         timeout.tv_usec = (uint32_t)timeout_us % 1000000;
-        memcpy(&select_fd, &_select_options.fd, sizeof(fd_set));
-        sockerr = select(_select_options.nfds, &select_fd, NULL, NULL, &timeout);
-    }else{
-        memcpy(&select_fd, &_select_options.fd, sizeof(fd_set));
-        sockerr = select(_select_options.nfds, &select_fd, NULL, NULL, NULL);
     }
+
+    do {
+        memcpy(&select_fd, &_select_options.fd, sizeof(fd_set));
+        sockerr = select(_select_options.nfds, &select_fd, NULL, NULL, timeout_us >= 0 ? &timeout : NULL);
+        if(sockerr > 0){
+            // Something received
+            IF_PRINT PRINT_DEBUG("Data received !");
+            for(auto & input : _inputs){
+                const auto & socket = input->get_socket();
+                if(socket != INVALID_SOCKET && FD_ISSET(socket, &select_fd)){
+                    IF_PRINT PRINT_DEBUG("Data received on [" << input->get_socket_infos() << "]");
+                    input->recv();
+                    status = ED247_STATUS_SUCCESS;
+                }
+            }
+            // Discard timeout as something has been received
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 0;
+        }
+    }while(sockerr > 0 || (sockerr < 0 && errno == EINTR));
 
     if(sockerr < 0){
+        status = ED247_STATUS_FAILURE;
         THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to perform select() (" << sockerr << ":" << get_last_error() << ")");
-    }else if(sockerr == 0){
-        // Timeout
-        return ED247_STATUS_TIMEOUT;
-    }else if(sockerr > 0){
-        // Something received
-        if(!MemoryHooksManager::getInstance().isEnabled())
-            LOG_INFO() << "Data received !" << LOG_END;
-        for(auto & input : _inputs){
-            const auto & socket = input->get_socket();
-            if(socket != INVALID_SOCKET && FD_ISSET(socket, &select_fd)){
-                if(!MemoryHooksManager::getInstance().isEnabled())
-                    LOG_INFO() << "Data received on [" << input->get_socket_infos() << "]" << LOG_END;
-                input->recv();
-                return ED247_STATUS_SUCCESS;
-            }
-        }
-
     }
 
-    return ED247_STATUS_NODATA;
+    return status;
 }
 
 ed247_status_t UdpSocket::Pool::wait_during(int32_t duration_us)
 {
-    if(!MemoryHooksManager::getInstance().isEnabled())
-        LOG_INFO() << "Socket pool waiting during [" << duration_us << "] us" << LOG_END;
+    IF_PRINT PRINT_DEBUG("Socket pool waiting during [" << duration_us << "] us");
 
     ed247_status_t  status = ED247_STATUS_NODATA;
+    ed247_status_t  tmp_status = status;
     int64_t         begin_us = (int64_t)get_time_us();
-    struct timeval  timeout;
-    int             sockerr = 1;
     int64_t         remaining_us = duration_us;
-    fd_set          select_fd;
-    bool            stop = false;
 
-    do{
-
-        if(_select_options.nfds <= 0){
-            if(!MemoryHooksManager::getInstance().isEnabled())
-                LOG_WARNING() << "Nothing to wait for, empty socket list" << LOG_END;
-            return ED247_STATUS_FAILURE;
-        }else if(duration_us >= 0){
-            memcpy(&select_fd, &_select_options.fd, sizeof(fd_set));
-            remaining_us = duration_us - ((int64_t)get_time_us() - begin_us);
-            timeout.tv_sec = (long)(remaining_us >= 0 ? (remaining_us / 1000000) : 0);
-            timeout.tv_usec = (long)(remaining_us >= 0 ? (remaining_us % 1000000) : 0);
-            sockerr = select(_select_options.nfds, &select_fd, NULL, NULL, &timeout);
-        }else{
-            memcpy(&select_fd, &_select_options.fd, sizeof(fd_set));
-            sockerr = select(_select_options.nfds, &select_fd, NULL, NULL, NULL);
+    do {
+        tmp_status = wait_frame(remaining_us);
+        if(tmp_status == ED247_STATUS_SUCCESS){
+            status = ED247_STATUS_SUCCESS;
+        }else if(tmp_status == ED247_STATUS_FAILURE){
+            status = ED247_STATUS_FAILURE;
         }
-
-        if(sockerr < 0){
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to perform select() (" << sockerr << ":" << get_last_error() << ")");
-        }else if(sockerr == 0){
-            // Timeout
-            return status;
-        }else if(sockerr > 0){
-            // Something received
-            if(!MemoryHooksManager::getInstance().isEnabled())
-                LOG_INFO() << "Data received !" << LOG_END;
-            for(auto & input : _inputs){
-                const auto & socket = input->get_socket();
-                if(socket != INVALID_SOCKET && FD_ISSET(socket, &select_fd)){
-                    if(!MemoryHooksManager::getInstance().isEnabled())
-                        LOG_INFO() << "Data received on [" << input->get_socket_infos() << "]" << LOG_END;
-                    if(!input->recv()) stop = true;
-                    status = ED247_STATUS_SUCCESS;
-                    if(stop) return status;
-                }
-            }
-        }
-        
-        if(duration_us >= 0)
-            remaining_us = (int64_t)duration_us - ((int64_t)get_time_us() - begin_us);
-
-    }while(remaining_us > 0);
+        remaining_us = duration_us - ((int64_t)get_time_us() - begin_us);
+    }while(remaining_us > 0 && status != ED247_STATUS_FAILURE);
 
     return status;
 }

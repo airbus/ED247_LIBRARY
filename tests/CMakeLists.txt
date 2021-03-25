@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2019 Airbus Operations S.A.S                                  #
+# Copyright (c) 2020 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -22,61 +22,35 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
 
-# This first set of applications uses only the original library
-# They consist in simple examples without test assesments
-ADD_SUBDIRECTORY(EXAMPLE_1)
-ADD_SUBDIRECTORY(EXAMPLE_2)
-ADD_SUBDIRECTORY(EXAMPLE_3)
-ADD_SUBDIRECTORY(EXAMPLE_4)
-ADD_SUBDIRECTORY(EXAMPLE_5)
+add_subdirectory(memhooks)
+add_subdirectory(test_context)
 
-# The second set of applications uses the test api
-# The test api is not compiled for coverage
-ADD_SUBDIRECTORY(api)
+add_subdirectory(func_load_all)
+add_subdirectory(func_rev0_compliance)
+add_subdirectory(func_exchange)
+add_subdirectory(func_exchange_datatimestamp)
+add_subdirectory(func_frame)
+add_subdirectory(func_limit)
+add_subdirectory(func_logging)
 
-IF(NOT MSVC)
-# # For all the remaining builds, the coverage must be used
-SET(CMAKE_C_FLAGS_OLD           "${CMAKE_C_FLAGS}")
-SET(CMAKE_C_LINK_FLAGS_OLD      "${CMAKE_C_LINK_FLAGS}")
-SET(CMAKE_CXX_FLAGS_OLD         "${CMAKE_CXX_FLAGS}")
-SET(CMAKE_CXX_LINK_FLAGS_OLD    "${CMAKE_CXX_LINK_FLAGS}")
-SET(CMAKE_EXE_LINKER_FLAGS_OLD  "${CMAKE_EXE_LINKER_FLAGS}")
-ENDIF()
+add_subdirectory(unit_api_channels)
+add_subdirectory(unit_api_converters)
+add_subdirectory(unit_api_metrics)
+add_subdirectory(unit_api_misc)
+add_subdirectory(unit_api_signals)
+add_subdirectory(unit_api_streams)
+add_subdirectory(unit_api_user_feedback)
+add_subdirectory(unit_channels)
+add_subdirectory(unit_loading)
+add_subdirectory(unit_signals)
+add_subdirectory(unit_sockets)
+add_subdirectory(unit_streams)
+add_subdirectory(unit_timestamp)
 
-ADD_SUBDIRECTORY(FT_PERFOS)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/../doc/tests/report.md "
+# Test report
 
-IF(NOT MSVC)
-# For all the remaining builds, the coverage must be used
-SET(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS_OLD} --coverage -ggdb")
-SET(CMAKE_C_LINK_FLAGS          "${CMAKE_C_LINK_FLAGS_OLD} --coverage -ggdb")
-SET(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS_OLD} --coverage -ggdb")
-SET(CMAKE_CXX_LINK_FLAGS        "${CMAKE_CXX_LINK_FLAGS_OLD} --coverage -ggdb")
-SET(CMAKE_EXE_LINKER_FLAGS      "${CMAKE_EXE_LINKER_FLAGS_OLD} --coverage")
-ENDIF()
-
-# A common test lib is built with the exact same sources as the delivered library
-ADD_SUBDIRECTORY(test_lib)
-
-# A first set of tests uses api functions for functionnal validation
-ADD_SUBDIRECTORY(FT_BACKUP)
-ADD_SUBDIRECTORY(FT_EXCHANGE)
-ADD_SUBDIRECTORY(FT_FRAME)
-ADD_SUBDIRECTORY(FT_LIMIT)
-ADD_SUBDIRECTORY(FT_LOAD_ALL)
-ADD_SUBDIRECTORY(FT_LOGGING)
-ADD_SUBDIRECTORY(UT_API_CHANNELS)
-ADD_SUBDIRECTORY(UT_API_CONVERTERS)
-ADD_SUBDIRECTORY(UT_API_METRICS)
-ADD_SUBDIRECTORY(UT_API_MISC)
-ADD_SUBDIRECTORY(UT_API_SIGNALS)
-ADD_SUBDIRECTORY(UT_API_STREAMS)
-ADD_SUBDIRECTORY(UT_API_USER_FEEDBACK)
-
-# A second set of tests uses internal structures of the library to perform unit tests
-ADD_SUBDIRECTORY(UT_CHANNELS)
-ADD_SUBDIRECTORY(UT_LOADING)
-ADD_SUBDIRECTORY(UT_SIGNALS)
-ADD_SUBDIRECTORY(UT_SOCKETS)
-ADD_SUBDIRECTORY(UT_STREAMS)
-ADD_SUBDIRECTORY(UT_TIMESTAMP)
-
+| Test | Status |
+|:----:|:------:|
+")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../doc/tests/report.md DESTINATION doc/tests)

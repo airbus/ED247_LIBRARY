@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,6 @@
 #include <algorithm>
 
 namespace {
-    const std::string LOG_LABEL_TEST =    "TEST";
     const std::string LOG_LABEL_DEBUG =   "DEBUG";
     const std::string LOG_LABEL_INFO =    "INFO";
     const std::string LOG_LABEL_WARNING = "WARNING";
@@ -75,9 +74,9 @@ void Logs::setLogLevel(
     {
         _log_level = ED247_LOG_LEVEL_ERROR;
     }
-    else if (log_level > (int)ED247_LOG_LEVEL_TEST)
+    else if (log_level > (int)ED247_LOG_LEVEL_DEBUG)
     {
-        _log_level = ED247_LOG_LEVEL_TEST;
+        _log_level = ED247_LOG_LEVEL_DEBUG;
     }
     else
     {
@@ -100,7 +99,7 @@ void Logs::prepare(
     const ed247_log_level_t & log_current)
 {
     setLogCurrent(log_current);
-    if(_log_current <= _log_level && _log_current != ED247_LOG_LEVEL_TEST){
+    if(_log_current <= _log_level){
         std::ostream & stream = (_log_current == ED247_LOG_LEVEL_ERROR) ? _stream_err : _stream_out;
         stream << "[ " << std::left << std::setfill(' ') << std::setw(8) << Logs::strLogLevel(_log_current) << std::setfill(' ') << " ] ";
         _stream_file << "[ " << std::left << std::setfill(' ') << std::setw(8) << Logs::strLogLevel(_log_current) << std::setfill(' ') << " ] ";
@@ -110,8 +109,6 @@ void Logs::prepare(
 const std::string & Logs::strLogLevel(ed247_log_level_t log_level)
 {
     switch(log_level){
-        case ED247_LOG_LEVEL_TEST:
-            return LOG_LABEL_TEST;
         case ED247_LOG_LEVEL_DEBUG:
             return LOG_LABEL_DEBUG;
         case ED247_LOG_LEVEL_INFO:

@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -42,28 +42,37 @@
 #include <iterator>
 #include <vector>
 
-//#define NDEBUG
 #include <assert.h>
 #include <chrono>
 
-#ifdef __linux
+#ifdef __linux__
     #include <arpa/inet.h>
     #include <string.h>
     #include <netdb.h>
     #include <ifaddrs.h>
     #ifndef INVALID_SOCKET
-    #define INVALID_SOCKET (-1)
+        #define INVALID_SOCKET (-1)
     #endif
     #ifndef ED247_SOCKET
-    #define ED247_SOCKET int
+        #define ED247_SOCKET int
     #endif
+    #include <byteswap.h>
 #elif _WIN32
     #include <winsock2.h>
     #include <Ws2tcpip.h>
     #include <mswsock.h>
     #include <windows.h>
     #ifndef ED247_SOCKET
-    #define ED247_SOCKET SOCKET
+        #define ED247_SOCKET SOCKET
+    #endif
+    #ifndef _MSC_VER
+        #define bswap_16(x) __builtin_bswap16(x)
+        #define bswap_32(x) __builtin_bswap32(x)
+        #define bswap_64(x) __builtin_bswap64(x)
+    #else
+        #define bswap_16(x) _byteswap_ushort(x)
+        #define bswap_32(x) _byteswap_ulong(x)
+        #define bswap_64(x) _byteswap_uint64(x)
     #endif
 #endif
 
@@ -72,41 +81,19 @@
     #include <sys/time.h>
 #endif
 
+#ifndef NDEBUG
+    #define DEBUG_ONLY if(true)
+#else
+    #define DEBUG_ONLY if(false)
+#endif
+
+#ifndef _UNUSED
+#define _UNUSED(x) (void)x
+#endif
+
 /***********
  * Defines *
  ***********/
-
-#ifdef NDEBUG
-    #define _TEST(x)
-    #define _TEST_TIME_START
-    #define _TEST_TIME_PRINT
-#else
-    #define _TEST(x) LOG_TEST() << std::endl <<     \
-        "####" << std::endl <<                      \
-        "#### TEST [" << #x << "]" << std::endl <<  \
-        "####" << LOG_END
-    #define _TEST_TIME_START(x)                                     \
-        auto __test_time_tic = std::chrono::steady_clock::now();    \
-        auto __test_time_tac = std::chrono::steady_clock::now();    \
-        LOG_TEST() << std::endl << std::endl <<                     \
-        "################" << std::endl <<                          \
-        "################ SESSION [" << #x << "]" << std::endl <<   \
-        "################" << LOG_END
-    #define _TEST_TIME_PRINT do{                                        \
-            auto __test_time_toc = std::chrono::steady_clock::now();    \
-            LOG_TEST() << std::endl <<                                  \
-            "#### ELAPSED TIME" << std::endl <<                         \
-            "##### FROM START    [" <<                                  \
-                std::chrono::duration_cast<std::chrono::microseconds>   \
-                (__test_time_toc - __test_time_tic).count() <<          \
-                "] µs" << std::endl <<                                  \
-            "##### FROM PREVIOUS [" <<                                  \
-                std::chrono::duration_cast<std::chrono::microseconds>   \
-                (__test_time_toc - __test_time_tac).count() <<          \
-                "] µs" << LOG_END;                                      \
-            __test_time_tac = __test_time_toc;                          \
-        } while(0)
-#endif
 
 #if __cplusplus < 201402L
 
@@ -140,7 +127,9 @@ namespace std
         make_unique(Args&&...) = delete;
 }
 
-inline void hash_combine(std::size_t& seed) { }
+#endif
+
+inline void hash_combine(std::size_t& seed) {_UNUSED(seed);}
 
 template <typename T, typename... Rest>
 inline void hash_combine(std::size_t& seed, const T& v, Rest... rest) {
@@ -148,8 +137,6 @@ inline void hash_combine(std::size_t& seed, const T& v, Rest... rest) {
     seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
     hash_combine(seed, rest...);
 }
-
-#endif
 
 template<typename T>
 struct weak_hash : public std::unary_function<std::weak_ptr<T>, size_t>
@@ -245,6 +232,24 @@ struct ed247_internal_time_sample_t : public ed247_timestamp_t {};
 namespace ed247
 {
 
+class Configuration
+{
+    public:
+        static Configuration & getInstance() {
+            static Configuration instance;
+            return instance;
+        }
+        const libed247_configuration_t & get() const {
+            return _configuration;
+        }
+        void set(const libed247_configuration_t & configuration) {
+            _configuration = configuration;
+        }
+
+    private:
+        libed247_configuration_t _configuration;
+};
+
 class SimulationTimeHandler
 {
     public:
@@ -254,15 +259,16 @@ class SimulationTimeHandler
             return s;
         }
 
-        void set_handler(libed247_set_simulation_time_ns_t handler)
+        void set_handler(libed247_set_simulation_time_ns_t handler, void *user_data)
         {
             _handler = handler;
+            _user_data = user_data;
         }
 
         bool update_timestamp(ed247_timestamp_t & timestamp)
         {
             if(is_valid())
-                return (*_handler)((ed247_internal_time_sample_t*)(&timestamp)) != ED247_STATUS_SUCCESS;
+                return (*_handler)((ed247_internal_time_sample_t*)(&timestamp), _user_data) != ED247_STATUS_SUCCESS;
             else
                 return true;
         }
@@ -274,9 +280,11 @@ class SimulationTimeHandler
 
     protected:
         libed247_set_simulation_time_ns_t _handler;
+        void *_user_data;
 
         SimulationTimeHandler():
-            _handler(nullptr)
+            _handler(nullptr),
+            _user_data(nullptr)
         {}
 };
 

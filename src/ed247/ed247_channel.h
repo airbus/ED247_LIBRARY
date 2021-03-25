@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -128,7 +128,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void add_emitter(ComInterface & com_interface)
         {
-            LOG_DEBUG() << "# Channel [" << get_name() << "] append emitter [" << com_interface.get_name() << "]" << LOG_END;
+            PRINT_DEBUG("# Channel [" << get_name() << "] append emitter [" << com_interface.get_name() << "]");
             _emitters.push_back(com_interface.shared_from_this());
         }
 
@@ -140,7 +140,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void add_receiver(ComInterface & com_interface)
         {
-            LOG_DEBUG() << "# Channel [" << get_name() << "] append receiver [" << com_interface.get_name() << "]" << LOG_END;
+            PRINT_DEBUG("# Channel [" << get_name() << "] append receiver [" << com_interface.get_name() << "]");
             _receivers.push_back(com_interface.shared_from_this());
         }
 
@@ -152,12 +152,12 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void add_stream(BaseStream & stream, ed247_direction_t direction)
         {
-            LOG_DEBUG() << "# Channel [" << get_name() << "] append stream [" << stream.get_name() << "]" << LOG_END;
+            PRINT_DEBUG("# Channel [" << get_name() << "] append stream [" << stream.get_name() << "]");
             if(_streams.find(stream.get_configuration()->info.uid) != _streams.end())
                 THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream [" << stream.get_name() << "] uses an UID already registered in Channel [" << get_name() << "]");
             stream_dir_t stream_dir= {stream.shared_from_this(), direction};
             _streams.insert(std::make_pair(stream.get_configuration()->info.uid, stream_dir));
-            LOG_DEBUG() << "# Size [" << _streams.size() << "]" << LOG_END;
+            PRINT_DEBUG("# Size [" << _streams.size() << "]");
         }
 
         void send();
@@ -174,6 +174,8 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         map_streams_t & streams() { return _streams; }
 
         std::vector<std::shared_ptr<BaseStream>> find_streams(std::string strregex);
+
+        std::shared_ptr<BaseStream> get_stream(std::string str_name);
 
         std::shared_ptr<SmartListStreams> sstreams() { return _sstreams; }
 
@@ -197,7 +199,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 capacity += sizeof(ed247_uid_t) + sizeof(uint16_t);
                 capacity += p.second.stream->buffer().capacity();
             }
-            LOG_DEBUG() << "# Allocate Channel internal buffer with [" << capacity << "] bytes" << LOG_END;
+            PRINT_DEBUG("# Allocate Channel internal buffer with [" << capacity << "] bytes");
             _buffer.allocate(capacity);
         }
 
@@ -221,6 +223,8 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 std::shared_ptr<Channel> get(std::shared_ptr<xml::Channel> & configuration);
 
                 std::vector<std::shared_ptr<Channel>> find(std::string str_regex);
+                
+                std::shared_ptr<Channel> get(std::string str_name);
 
                 std::shared_ptr<SmartListChannels> channels();
 

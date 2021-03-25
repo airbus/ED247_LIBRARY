@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -105,6 +105,14 @@ std::vector<std::shared_ptr<BaseSignal>> BaseSignal::Pool::find(std::string str_
         }
     }
     return std::move(founds);
+}
+
+std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::string str_name)
+{
+    for(auto signal : _signals){
+        if(signal->get_name() == str_name) return signal;
+    }
+    return nullptr;
 }
 
 size_t BaseSignal::Pool::size() const

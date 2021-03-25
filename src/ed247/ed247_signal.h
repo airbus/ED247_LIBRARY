@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -66,6 +66,23 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
         virtual ~BaseSignal(){}
 
+        static size_t nad_type_size(const ed247_nad_type_t & nad_type)
+        {
+            switch(nad_type){
+                case ED247_NAD_TYPE_INT8:       return sizeof(int8_t);
+                case ED247_NAD_TYPE_INT16:      return sizeof(int16_t);
+                case ED247_NAD_TYPE_INT32:      return sizeof(int32_t);
+                case ED247_NAD_TYPE_INT64:      return sizeof(int64_t);
+                case ED247_NAD_TYPE_UINT8:      return sizeof(uint8_t);
+                case ED247_NAD_TYPE_UINT16:     return sizeof(uint16_t);
+                case ED247_NAD_TYPE_UINT32:     return sizeof(uint32_t);
+                case ED247_NAD_TYPE_UINT64:     return sizeof(uint64_t);
+                case ED247_NAD_TYPE_FLOAT32:    return sizeof(float);
+                case ED247_NAD_TYPE_FLOAT64:    return sizeof(double);
+                default:                        return 0;
+            }
+        }
+
         static size_t sample_max_size_bytes(const ed247_signal_info_t & info)
         {
             switch(info.type){
@@ -122,6 +139,8 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
                 std::shared_ptr<BaseSignal> get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
 
                 std::vector<std::shared_ptr<BaseSignal>> find(std::string str_regex);
+
+                std::shared_ptr<BaseSignal> get(std::string str_name);
 
                 std::vector<std::shared_ptr<BaseSignal>> & signals() { return _signals; }
 

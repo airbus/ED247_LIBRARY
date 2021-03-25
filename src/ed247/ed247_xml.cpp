@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -107,6 +107,7 @@ DECL_STREAM_OPERATOR(
 static xmlError libxml_error;
 static void libxml_structured_error(void * user_data, xmlErrorPtr error)
 {
+    _UNUSED(user_data);
     xmlResetError(&libxml_error);
     xmlCopyError(error, &libxml_error);
 }
@@ -195,7 +196,7 @@ void DataTimestamp::fill_attributes(const xmlNodePtr xml_node)
 
 void DataTimestamp::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // Errors
@@ -219,7 +220,7 @@ void Errors::fill_attributes(const xmlNodePtr xml_node)
 
 void Errors::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // UdpSocket
@@ -268,7 +269,7 @@ void UdpSocket::fill_attributes(const xmlNodePtr xml_node)
 
 void UdpSocket::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // ComInterface
@@ -280,7 +281,7 @@ void ComInterface::reset()
 
 void ComInterface::fill_attributes(const xmlNodePtr xml_node)
 {
-    
+    _UNUSED(xml_node);
 }
 
 void ComInterface::create_children(const xmlNodePtr xml_node)
@@ -379,6 +380,8 @@ void A664Stream::fill_attributes(const xmlNodePtr xml_node)
             set_value(info.icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
             set_value(info.sample_max_number,xml_attr);
+        }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
+            set_value(info.sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
@@ -533,10 +536,6 @@ void DISSignal::fill_attributes(const xmlNodePtr xml_node)
             set_value(info.comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
             set_value(info.icd,xml_attr);
-        }else if(attr_name.compare(attr::TrueValue) == 0){
-            set_value(info.info.dis.true_value,xml_attr);
-        }else if(attr_name.compare(attr::FalseValue) == 0){
-            set_value(info.info.dis.false_value,xml_attr);
         }else if(attr_name.compare(attr::ByteOffset) == 0){
             set_value(info.info.dis.byte_offset,xml_attr);
         }else{
@@ -547,7 +546,7 @@ void DISSignal::fill_attributes(const xmlNodePtr xml_node)
 
 void DISSignal::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // ANASignal
@@ -583,7 +582,7 @@ void ANASignal::fill_attributes(const xmlNodePtr xml_node)
 
 void ANASignal::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // NADSignal
@@ -662,7 +661,7 @@ void NADSignal::fill_attributes(const xmlNodePtr xml_node)
 
 void NADSignal::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // VNADSignal
@@ -702,7 +701,7 @@ void VNADSignal::fill_attributes(const xmlNodePtr xml_node)
 
 void VNADSignal::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // DISStream
@@ -730,6 +729,8 @@ void DISStream::fill_attributes(const xmlNodePtr xml_node)
             set_value(info.icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
             set_value(info.sample_max_number,xml_attr);
+        }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
+            set_value(info.sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
@@ -760,7 +761,8 @@ void DISStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<DISSignal> signal = std::make_unique<DISSignal>();
                     signal->load(xml_node_child_iter);
-                    info.sample_max_size_bytes += BaseSignal::sample_max_size_bytes(signal->info);
+                    if(signal->info.info.dis.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
+                        THROW_PARSER_ERROR("Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.dis.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]"); 
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -776,15 +778,9 @@ void DISStream::create_children(const xmlNodePtr xml_node)
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
         return (a == nullptr || b == nullptr) ? false : (a->info.info.dis.byte_offset < b->info.info.dis.byte_offset);
     });
-    // Check ByteOffsets & update position attribute
-    size_t size = 0;
-    size_t signal_size;
+    // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        signal_size = BaseSignal::sample_max_size_bytes(s->info);
-        if(size != s->info.info.dis.byte_offset)
-            THROW_PARSER_ERROR("The signal [" << s->info.name << "] has a wrong ByteOffset attribute [" << s->info.info.dis.byte_offset << "] != [" << size << "]");
-        size += signal_size;
         s->position = p++;
     }
 }
@@ -846,7 +842,8 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<ANASignal> signal = std::make_unique<ANASignal>();
                     signal->load(xml_node_child_iter);
-                    info.sample_max_size_bytes += BaseSignal::sample_max_size_bytes(signal->info);
+                    if(signal->info.info.ana.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
+                        THROW_PARSER_ERROR("Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.ana.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]"); 
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -862,15 +859,9 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
         return (a == nullptr || b == nullptr) ? false : (a->info.info.ana.byte_offset < b->info.info.ana.byte_offset);
     });
-    // Check ByteOffsets & update position attribute
-    size_t size = 0;
-    size_t signal_size;
+    // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        signal_size = BaseSignal::sample_max_size_bytes(s->info);
-        if(size != s->info.info.ana.byte_offset)
-            THROW_PARSER_ERROR("The signal [" << s->info.name << "] has a wrong ByteOffset attribute [" << s->info.info.ana.byte_offset << "] != [" << size << "]");
-        size += signal_size;
         s->position = p++;
     }
 }
@@ -932,7 +923,8 @@ void NADStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<NADSignal> signal = std::make_unique<NADSignal>();
                     signal->load(xml_node_child_iter);
-                    info.sample_max_size_bytes += BaseSignal::sample_max_size_bytes(signal->info);
+                    if(signal->info.info.nad.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
+                        THROW_PARSER_ERROR("Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.nad.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]"); 
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -948,15 +940,9 @@ void NADStream::create_children(const xmlNodePtr xml_node)
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
         return (a == nullptr || b == nullptr) ? false : (a->info.info.nad.byte_offset < b->info.info.nad.byte_offset);
     });
-    // Check ByteOffsets
-    size_t size = 0;
-    size_t signal_size;
+    // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        signal_size = BaseSignal::sample_max_size_bytes(s->info);
-        if(size != s->info.info.nad.byte_offset)
-            THROW_PARSER_ERROR("The signal [" << s->info.name << "] has a wrong ByteOffset attribute [" << s->info.info.nad.byte_offset << "] != [" << size << "]");
-        size += signal_size;
         s->position = p++;
     }
 }
@@ -1022,7 +1008,7 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
                     THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
-            LOG_DEBUG() << "VNAD Stream [" << info.name << "] SampleMaxSizeBytes[" << info.sample_max_size_bytes << "] SampleMaxNumber[" << info.sample_max_number << "]" << LOG_END;
+            PRINT_DEBUG("VNAD Stream [" << info.name << "] SampleMaxSizeBytes[" << info.sample_max_size_bytes << "] SampleMaxNumber[" << info.sample_max_number << "]");
         }else if(node_name.compare(node::DataTimestamp) == 0){
             data_timestamp.load(xml_node_iter);
         }else{
@@ -1064,7 +1050,7 @@ void Header::fill_attributes(const xmlNodePtr xml_node)
 
 void Header::create_children(const xmlNodePtr xml_node)
 {
-
+    _UNUSED(xml_node);
 }
 
 // Channel
@@ -1294,57 +1280,90 @@ void Root::create_children(const xmlNodePtr xml_node)
 }
 
 // load
-std::shared_ptr<Node> load(const std::string & filepath)
-{
-    xmlParserCtxtPtr    _p_xml_context;
-    xmlDocPtr           _p_xml_doc;
-    xmlDocPtr           _p_xsd_doc;
-    xmlSchemaParserCtxtPtr _p_xsd_schema_parser;
-    xmlSchemaPtr _p_xsd_schema;
-    xmlSchemaValidCtxtPtr _p_xsd_valid_context;
 
-    LOG_DEBUG() << "# [XmlParser] load()" << LOG_END;
+std::shared_ptr<Node> load_xml(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_xml_doc)
+{
+    xmlDocPtr           p_xsd_doc;
+    xmlSchemaParserCtxtPtr p_xsd_schema_parser;
+    xmlSchemaPtr p_xsd_schema;
+    xmlSchemaValidCtxtPtr p_xsd_valid_context;
+
+    // Parse XSD
+    if((p_xsd_doc = xmlCtxtReadMemory(p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
+        THROW_PARSER_ERROR("Failed to load schema in memory");
+
+    // Validate XSD
+    if((p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(p_xsd_doc)) == nullptr)
+        THROW_PARSER_ERROR("Failed to create schema parser");
+    if((p_xsd_schema = xmlSchemaParse(p_xsd_schema_parser)) == nullptr)
+        THROW_PARSER_ERROR("Failed to create schema");
+    if((p_xsd_valid_context = xmlSchemaNewValidCtxt(p_xsd_schema)) == nullptr)
+        THROW_PARSER_ERROR("Failed to validate schema context");
+
+    // Validate XML
+    if(xmlSchemaValidateDoc(p_xsd_valid_context, p_xml_doc) != 0)
+        THROW_PARSER_ERROR("Failed to validate XML document");
+
+    // Load Nodes
+    xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
+
+    auto root = std::make_shared<Root>();
+
+    root->load(xmlRootNode);
+
+    return std::dynamic_pointer_cast<Node>(root);
+}
+
+std::shared_ptr<Node> load_filepath(const std::string & filepath)
+{
+    xmlParserCtxtPtr    p_xml_context;
+    xmlDocPtr           p_xml_doc;
     
     // Create context
-    if((_p_xml_context = xmlNewParserCtxt()) == nullptr)
+    if((p_xml_context = xmlNewParserCtxt()) == nullptr)
         THROW_PARSER_ERROR("Failed to create XML context pointer.");
 
     // Setup error handler
     xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
     // Parse XML
-    if((_p_xml_doc = xmlCtxtReadFile(_p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
+    if((p_xml_doc = xmlCtxtReadFile(p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
         THROW_PARSER_ERROR("Failed to read [" << filepath << "]");
 
-    // Parse XSD
-    if((_p_xsd_doc = xmlCtxtReadMemory(_p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
-        THROW_PARSER_ERROR("Failed to load schema in memory");
+    auto root = load_xml(p_xml_context, p_xml_doc);
 
-    // Validate XSD
-    if((_p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(_p_xsd_doc)) == nullptr)
-        THROW_PARSER_ERROR("Failed to create schema parser");
-    if((_p_xsd_schema = xmlSchemaParse(_p_xsd_schema_parser)) == nullptr)
-        THROW_PARSER_ERROR("Failed to create schema");
-    if((_p_xsd_valid_context = xmlSchemaNewValidCtxt(_p_xsd_schema)) == nullptr)
-        THROW_PARSER_ERROR("Failed to validate schema context");
+    if(p_xml_doc)
+        xmlFreeDoc(p_xml_doc);
+    if(p_xml_context)
+        xmlFreeParserCtxt(p_xml_context);
 
-    // Validate XML
-    if(xmlSchemaValidateDoc(_p_xsd_valid_context, _p_xml_doc) != 0)
-        THROW_PARSER_ERROR("Failed to validate XML document");
+    return root;
+}
 
-    // Load Nodes
-    xmlNodePtr xmlRootNode(xmlDocGetRootElement(_p_xml_doc));
+std::shared_ptr<Node> load_content(const std::string & content)
+{
+    xmlParserCtxtPtr    p_xml_context;
+    xmlDocPtr           p_xml_doc;
+    
+    // Create context
+    if((p_xml_context = xmlNewParserCtxt()) == nullptr)
+        THROW_PARSER_ERROR("Failed to create XML context pointer.");
 
-    auto root = std::make_shared<Root>();
+    // Setup error handler
+    xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
-    root->load(xmlRootNode);
+    // Parse XML
+    if((p_xml_doc = xmlCtxtReadMemory(p_xml_context,content.c_str(),(int)content.length(),nullptr,nullptr,0)) == nullptr)
+        THROW_PARSER_ERROR("Failed to read XML file content");
 
-    if(_p_xml_doc)
-        xmlFreeDoc(_p_xml_doc);
-    if(_p_xml_context)
-        xmlFreeParserCtxt(_p_xml_context);
+    auto root = load_xml(p_xml_context, p_xml_doc);
 
-    return std::dynamic_pointer_cast<Node>(root);
+    if(p_xml_doc)
+        xmlFreeDoc(p_xml_doc);
+    if(p_xml_context)
+        xmlFreeParserCtxt(p_xml_context);
+
+    return root;
 }
 
 }

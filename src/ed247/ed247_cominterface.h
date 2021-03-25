@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -157,24 +157,35 @@ class ComInterface : public std::enable_shared_from_this<ComInterface>
     public:
         virtual ~ComInterface() {}
 
-        virtual void unregister_channel(Channel & channel) {}
+        virtual void unregister_channel(Channel & channel) {
+            _UNUSED(channel);
+        }
 
-        virtual std::string get_name() { return ""; }
+        virtual std::string get_name() {
+            return "";
+        }
+        
         virtual void send_frame(Channel & from, const void * frame, const size_t frame_size) = 0;
 
-        ed247_status_t register_send_callback(ed247_com_callback_t callback)
+        ed247_status_t register_send_callback(ed247_com_callback_t callback, ed247_context_t context)
         {
-            auto it = std::find(_send_callbacks.begin(), _send_callbacks.end(), callback);
+            auto it = std::find_if(_send_callbacks.begin(), _send_callbacks.end(),
+                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
+                    return element.first == context && element.second == callback;
+                });
             if(it != _send_callbacks.end()){
                 return ED247_STATUS_FAILURE;
             }
-            _send_callbacks.push_back(callback);
+            _send_callbacks.push_back(std::make_pair(context,callback));
             return ED247_STATUS_SUCCESS;
         }
 
-        ed247_status_t unregister_send_callback(ed247_com_callback_t callback)
+        ed247_status_t unregister_send_callback(ed247_com_callback_t callback, ed247_context_t context)
         {
-            auto it = std::find(_send_callbacks.begin(), _send_callbacks.end(), callback);
+            auto it = std::find_if(_send_callbacks.begin(), _send_callbacks.end(),
+                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
+                    return element.first == context && element.second == callback;
+                });
             if(it == _send_callbacks.end()){
                 return ED247_STATUS_FAILURE;
             }
@@ -182,19 +193,25 @@ class ComInterface : public std::enable_shared_from_this<ComInterface>
             return ED247_STATUS_SUCCESS;
         }
 
-        ed247_status_t register_recv_callback(ed247_com_callback_t callback)
+        ed247_status_t register_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
         {
-            auto it = std::find(_recv_callbacks.begin(), _recv_callbacks.end(), callback);
+            auto it = std::find_if(_recv_callbacks.begin(), _recv_callbacks.end(),
+                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
+                    return element.first == context && element.second == callback;
+                });
             if(it != _recv_callbacks.end()){
                 return ED247_STATUS_FAILURE;
             }
-            _recv_callbacks.push_back(callback);
+            _recv_callbacks.push_back(std::make_pair(context, callback));
             return ED247_STATUS_SUCCESS;
         }
 
-        ed247_status_t unregister_recv_callback(ed247_com_callback_t callback)
+        ed247_status_t unregister_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
         {
-            auto it = std::find(_recv_callbacks.begin(), _recv_callbacks.end(), callback);
+            auto it = std::find_if(_recv_callbacks.begin(), _recv_callbacks.end(),
+                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
+                    return element.first == context && element.second == callback;
+                });
             if(it == _recv_callbacks.end()){
                 return ED247_STATUS_FAILURE;
             }
@@ -204,28 +221,28 @@ class ComInterface : public std::enable_shared_from_this<ComInterface>
 
     protected:
         std::vector<std::weak_ptr<Channel>> _channels;
-        std::vector<ed247_com_callback_t> _send_callbacks;
-        std::vector<ed247_com_callback_t> _recv_callbacks;
+        std::vector<std::pair<ed247_context_t,ed247_com_callback_t>> _send_callbacks;
+        std::vector<std::pair<ed247_context_t,ed247_com_callback_t>> _recv_callbacks;
 
         void run_send_callbacks()
         {
-            for(auto & callback : _send_callbacks)
+            for(auto & pair : _send_callbacks)
             {
-                if(callback){
-                    (*callback)();
+                if(pair.second){
+                    (*pair.second)(pair.first);
                 }else
-                    LOG_WARNING() << "Callback [" << callback << "] is not callable." << LOG_END;
+                    PRINT_WARNING("Callback [" << pair.second << "] is not callable.");
             }
         }
 
         void run_recv_callbacks()
         {
-            for(auto & callback : _recv_callbacks)
+            for(auto & pair : _recv_callbacks)
             {
-                if(callback){
-                    (*callback)();
+                if(pair.second){
+                    (*pair.second)(pair.first);
                 }else
-                    LOG_WARNING() << "Callback [" << callback << "] is not callable." << LOG_END;
+                    PRINT_WARNING("Callback [" << pair.second << "] is not callable.");
             }
         }
 
@@ -234,8 +251,15 @@ class ComInterface : public std::enable_shared_from_this<ComInterface>
         {
             virtual ~Pool() {};
             
-            virtual ed247_status_t wait_frame(int32_t timeout_us) { return ED247_STATUS_FAILURE; };
-            virtual ed247_status_t wait_during(int32_t duration_us) { return ED247_STATUS_FAILURE; };
+            virtual ed247_status_t wait_frame(int32_t timeout_us) {
+                _UNUSED(timeout_us);
+                return ED247_STATUS_FAILURE;
+            };
+
+            virtual ed247_status_t wait_during(int32_t duration_us) {
+                _UNUSED(duration_us);
+                return ED247_STATUS_FAILURE;
+            };
         };
         class Builder
         {
@@ -280,7 +304,7 @@ class UdpSocket : public ComInterface
             _socket_infos(socket_infos) {}
         ~UdpSocket() override
         {
-            // LOG_DEBUG() << "# Delete Socket [" << _socket_infos << "]" << LOG_END;
+            PRINT_DEBUG("# Delete Socket [" << _socket_infos << "]");
             close();
         };
 
@@ -330,28 +354,52 @@ class UdpSocket : public ComInterface
                 virtual ed247_status_t wait_frame(int32_t timeout_us) final;
                 virtual ed247_status_t wait_during(int32_t duration_us) final;
 
-                void register_send_callback(ed247_com_callback_t callback)
+                ed247_status_t register_send_callback(ed247_com_callback_t callback, ed247_context_t context)
                 {
-                    for(auto & i : _outputs)
-                        i->register_send_callback(callback);
+                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
+                    ed247_status_t status = ED247_STATUS_SUCCESS;
+                    for(auto & i : _outputs){
+                        tmp_status = i->register_send_callback(callback, context);
+                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    }
+                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    return status;
                 }
 
-                void unregister_send_callback(ed247_com_callback_t callback)
+                ed247_status_t unregister_send_callback(ed247_com_callback_t callback, ed247_context_t context)
                 {
-                    for(auto & i : _outputs)
-                        i->unregister_send_callback(callback);
+                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
+                    ed247_status_t status = ED247_STATUS_SUCCESS;
+                    for(auto & i : _outputs){
+                        tmp_status = i->unregister_send_callback(callback, context);
+                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    }
+                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    return status;
                 }
 
-                void register_recv_callback(ed247_com_callback_t callback)
+                ed247_status_t register_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
                 {
-                    for(auto & i : _inputs)
-                        i->register_recv_callback(callback);
+                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
+                    ed247_status_t status = ED247_STATUS_SUCCESS;
+                    for(auto & i : _inputs){
+                        tmp_status = i->register_recv_callback(callback, context);
+                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    }
+                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    return status;
                 }
 
-                void unregister_recv_callback(ed247_com_callback_t callback)
+                ed247_status_t unregister_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
                 {
-                    for(auto & i : _inputs)
-                        i->unregister_recv_callback(callback);
+                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
+                    ed247_status_t status = ED247_STATUS_SUCCESS;
+                    for(auto & i : _inputs){
+                        tmp_status = i->unregister_recv_callback(callback, context);
+                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    }
+                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
+                    return status;
                 }
 
             private:

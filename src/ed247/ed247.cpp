@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,7 +30,6 @@
 #include "ed247_internals.h"
 #include "ed247_logs.h"
 #include "ed247_context.h"
-#include "ed247_memhooks.h"
 
 #include <memory>
 
@@ -38,12 +37,16 @@
  * Defines *
  ***********/
 
-#ifdef LIBED247_VERSION
-# define QUOTE(x) #x
-# define EXPAND(x) QUOTE(x)
-const char* _ed247_version = EXPAND(LIBED247_VERSION);
+#ifdef _PRODUCT_VERSION
+const char* _ed247_version = _PRODUCT_VERSION;
 #else
 const char* _ed247_version = "unversioned";
+#endif
+
+#ifdef _PRODUCT_NAME
+const char* _ed247_name = _PRODUCT_NAME;
+#else
+const char* _ed247_name = "unnamed";
 #endif
 
 #define LIBED247_CATCH(topic)                                   \
@@ -146,17 +149,9 @@ ed247_yesno_t ed247_yesno_from_string(
     const char *yesno)
 {
     using namespace ed247::defines::yesno;
-    std::string yn(yesno);
-    std::transform(yn.begin(), yn.end(), yn.begin(), ::toupper);
-    if(yn.compare("NO") == 0){
+    if(strcmp(yesno,"No") == 0){
         return ED247_YESNO_NO;
-    }else if(yn.compare("0") == 0){
-        LOG_WARNING() << "0 is also accepted to say NO" << LOG_END
-        return ED247_YESNO_NO;
-    }else if(yn.compare("YES") == 0){
-        return ED247_YESNO_YES;
-    }else if(yn.compare("1") == 0){
-        LOG_WARNING() << "1 is also accepted to say YES" << LOG_END
+    }else if(strcmp(yesno,"Yes") == 0){
         return ED247_YESNO_YES;
     }else{
         return ED247_YESNO__INVALID;
@@ -315,6 +310,12 @@ ed247_nad_type_t ed247_nad_type_from_string(
     }
 }
 
+size_t ed247_nad_type_size(
+    ed247_nad_type_t nad_type)
+{
+    return ed247::BaseSignal::nad_type_size(nad_type);
+}
+
 /*********
  * Lists *
  *********/
@@ -324,20 +325,20 @@ ed247_status_t ed247_channel_list_next(
     ed247_channel_t *channel)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Channel list next ..." << LOG_END
+    PRINT_DEBUG("## Channel list next ...");
 #endif
     if(!channels){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Channel list next failed" << LOG_END;
+        PRINT_DEBUG("## Channel list next failed");
 #endif
-        LOG_ERROR() << "Invalid channels" << LOG_END;
+        PRINT_ERROR("Invalid channels");
         return ED247_STATUS_FAILURE;
     }
     if(!channel){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Channel list next failed" << LOG_END;
+        PRINT_DEBUG("## Channel list next failed");
 #endif
-        LOG_ERROR() << "Empty channel pointer" << LOG_END;
+        PRINT_ERROR("Empty channel pointer");
         return ED247_STATUS_FAILURE;
     }
     *channel = nullptr;
@@ -348,7 +349,7 @@ ed247_status_t ed247_channel_list_next(
     }
     LIBED247_CATCH("Channel list next")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Channel list next success" << LOG_END;
+    PRINT_DEBUG("## Channel list next success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -357,27 +358,27 @@ ed247_status_t ed247_channel_list_free(
     ed247_channel_list_t channels)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Channel list free ..." << LOG_END;
+    PRINT_DEBUG("## Channel list free ...");
 #endif
     if(!channels){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Channel list free failed" << LOG_END;
+        PRINT_DEBUG("## Channel list free failed");
 #endif
-        LOG_ERROR() << "Invalid channels" << LOG_END;
+        PRINT_ERROR("Invalid channels");
         return ED247_STATUS_FAILURE;
     }
     try{
         auto ed247_channels = static_cast<ed247::SmartListChannels*>(channels);
         if(!ed247_channels->managed()){
 #ifdef LIBED247_VERBOSE_DEBUG
-            LOG_DEBUG() << "## Channel list deleted" << LOG_END;
+            PRINT_DEBUG("## Channel list deleted");
 #endif
             delete ed247_channels;
         }
     }
     LIBED247_CATCH("Channel list free")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Channel list free success" << LOG_END;
+    PRINT_DEBUG("## Channel list free success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -387,20 +388,20 @@ ed247_status_t ed247_channel_list_size(
     size_t * size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Channel list size ..." << LOG_END;
+    PRINT_DEBUG("## Channel list size ...");
 #endif
     if(!channels){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Channel list size failed" << LOG_END;
+        PRINT_DEBUG("## Channel list size failed");
 #endif
-        LOG_ERROR() << "Invalid channels" << LOG_END;
+        PRINT_ERROR("Invalid channels");
         return ED247_STATUS_FAILURE;
     }
     if(!size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Channel list size failed" << LOG_END;
+        PRINT_DEBUG("## Channel list size failed");
 #endif
-        LOG_ERROR() << "Invalid size pointer" << LOG_END;
+        PRINT_ERROR("Invalid size pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -409,7 +410,7 @@ ed247_status_t ed247_channel_list_size(
     }
     LIBED247_CATCH("Channel list size")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Channel list size success" << LOG_END;
+    PRINT_DEBUG("## Channel list size success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -419,20 +420,20 @@ ed247_status_t ed247_stream_list_next(
     ed247_stream_t *stream)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream list next ..." << LOG_END;
+    PRINT_DEBUG("## Stream list next ...");
 #endif
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream list next failed" << LOG_END;
+        PRINT_DEBUG("## Stream list next failed");
 #endif
-        LOG_ERROR() << "Invalid streams" << LOG_END;
+        PRINT_ERROR("Invalid streams");
         return ED247_STATUS_FAILURE;
     }
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream list next failed" << LOG_END;
+        PRINT_DEBUG("## Stream list next failed");
 #endif
-        LOG_ERROR() << "Empty stream pointer" << LOG_END;
+        PRINT_ERROR("Empty stream pointer");
         return ED247_STATUS_FAILURE;
     }
     *stream = nullptr;
@@ -443,7 +444,7 @@ ed247_status_t ed247_stream_list_next(
     }
     LIBED247_CATCH("Stream list next")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream list next success" << LOG_END;
+    PRINT_DEBUG("## Stream list next success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -452,13 +453,13 @@ ed247_status_t ed247_stream_list_free(
     ed247_stream_list_t streams)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream list free ..." << LOG_END;
+    PRINT_DEBUG("## Stream list free ...");
 #endif
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream list free failed" << LOG_END;
+        PRINT_DEBUG("## Stream list free failed");
 #endif
-        LOG_ERROR() << "Invalid streams" << LOG_END;
+        PRINT_ERROR("Invalid streams");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -468,7 +469,7 @@ ed247_status_t ed247_stream_list_free(
     }
     LIBED247_CATCH("Stream list free")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream list free success" << LOG_END;
+    PRINT_DEBUG("## Stream list free success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -478,20 +479,20 @@ ed247_status_t ed247_stream_list_size(
     size_t * size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream list size ..." << LOG_END;
+    PRINT_DEBUG("## Stream list size ...");
 #endif
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream list size failed" << LOG_END;
+        PRINT_DEBUG("## Stream list size failed");
 #endif
-        LOG_ERROR() << "Invalid streams" << LOG_END;
+        PRINT_ERROR("Invalid streams");
         return ED247_STATUS_FAILURE;
     }
     if(!size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream list size failed" << LOG_END;
+        PRINT_DEBUG("## Stream list size failed");
 #endif
-        LOG_ERROR() << "Invalid size pointer" << LOG_END;
+        PRINT_ERROR("Invalid size pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -500,7 +501,7 @@ ed247_status_t ed247_stream_list_size(
     }
     LIBED247_CATCH("Stream list size")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream list size success" << LOG_END;
+    PRINT_DEBUG("## Stream list size success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -510,34 +511,34 @@ ed247_status_t ed247_signal_list_next(
     ed247_signal_t *signal)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Signal list next ..." << LOG_END;
+    PRINT_DEBUG("## Signal list next ...");
 #endif
     if(!signals){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Signal list next failed" << LOG_END;
+        PRINT_DEBUG("## Signal list next failed");
 #endif
-        LOG_ERROR() << "Invalid signals" << LOG_END;
+        PRINT_ERROR("Invalid signals");
         return ED247_STATUS_FAILURE;
     }
     if(!signal){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Signal list next failed" << LOG_END;
+        PRINT_DEBUG("## Signal list next failed");
 #endif
-        LOG_ERROR() << "Empty signal pointer" << LOG_END;
+        PRINT_ERROR("Empty signal pointer");
         return ED247_STATUS_FAILURE;
     }
     *signal = nullptr;
     try{
         auto ed247_signals = (ed247::SmartListSignals*)(signals);
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "# Size [" << ed247_signals->size() << "]" << LOG_END;
+        PRINT_DEBUG("# Size [" << ed247_signals->size() << "]");
 #endif
         auto && next = ed247_signals->next_ok();
         *signal = next ? next->get() : nullptr;
     }
     LIBED247_CATCH("Signal list next")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Signal list next success" << LOG_END;
+    PRINT_DEBUG("## Signal list next success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -546,13 +547,13 @@ ed247_status_t ed247_signal_list_free(
     ed247_signal_list_t signals)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Signal list free ..." << LOG_END;
+    PRINT_DEBUG("## Signal list free ...");
 #endif
     if(!signals){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Signal list free failed" << LOG_END;
+        PRINT_DEBUG("## Signal list free failed");
 #endif
-        LOG_ERROR() << "Invalid signals" << LOG_END;
+        PRINT_ERROR("Invalid signals");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -562,7 +563,7 @@ ed247_status_t ed247_signal_list_free(
     }
     LIBED247_CATCH("Signal list free")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Signal list free success" << LOG_END;
+    PRINT_DEBUG("## Signal list free success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -572,20 +573,20 @@ ed247_status_t ed247_signal_list_size(
     size_t * size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Signal list size ..." << LOG_END;
+    PRINT_DEBUG("## Signal list size ...");
 #endif
     if(!signals){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Signal list size failed" << LOG_END;
+        PRINT_DEBUG("## Signal list size failed");
 #endif
-        LOG_ERROR() << "Invalid signals" << LOG_END;
+        PRINT_ERROR("Invalid signals");
         return ED247_STATUS_FAILURE;
     }
     if(!size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Signal list size failed" << LOG_END;
+        PRINT_DEBUG("## Signal list size failed");
 #endif
-        LOG_ERROR() << "Invalid size pointer" << LOG_END;
+        PRINT_ERROR("Invalid size pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -594,7 +595,7 @@ ed247_status_t ed247_signal_list_size(
     }
     LIBED247_CATCH("Signal list size")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Signal list size success" << LOG_END;
+    PRINT_DEBUG("## Signal list size success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -604,20 +605,20 @@ ed247_status_t ed247_frame_list_next(
     const ed247_frame_t ** frame)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame list next ..." << LOG_END;
+    PRINT_DEBUG("## Frame list next ...");
 #endif
     if(!frames){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame list next failed" << LOG_END;
+        PRINT_DEBUG("## Frame list next failed");
 #endif
-        LOG_ERROR() << "Invalid frames" << LOG_END;
+        PRINT_ERROR("Invalid frames");
         return ED247_STATUS_FAILURE;
     }
     if(!frame){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame list next failed" << LOG_END;
+        PRINT_DEBUG("## Frame list next failed");
 #endif
-        LOG_ERROR() << "Empty frame pointer" << LOG_END;
+        PRINT_ERROR("Empty frame pointer");
         return ED247_STATUS_FAILURE;
     }
     *frame = nullptr;
@@ -629,7 +630,7 @@ ed247_status_t ed247_frame_list_next(
     }
     LIBED247_CATCH("Frame list next")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame list next success" << LOG_END;
+    PRINT_DEBUG("## Frame list next success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -638,13 +639,13 @@ ed247_status_t ed247_frame_list_free(
     ed247_frame_list_t frames)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame list free ..." << LOG_END;
+    PRINT_DEBUG("## Frame list free ...");
 #endif
     if(!frames){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame list free failed" << LOG_END;
+        PRINT_DEBUG("## Frame list free failed");
 #endif
-        LOG_ERROR() << "Invalid frames" << LOG_END;
+        PRINT_ERROR("Invalid frames");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -654,7 +655,7 @@ ed247_status_t ed247_frame_list_free(
     }
     LIBED247_CATCH("Frame list free")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame list free success" << LOG_END;
+    PRINT_DEBUG("## Frame list free success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -664,20 +665,20 @@ ed247_status_t ed247_frame_list_size(
     size_t * size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame list size ..." << LOG_END;
+    PRINT_DEBUG("## Frame list size ...");
 #endif
     if(!frames){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame list size failed" << LOG_END;
+        PRINT_DEBUG("## Frame list size failed");
 #endif
-        LOG_ERROR() << "Invalid frames" << LOG_END;
+        PRINT_ERROR("Invalid frames");
         return ED247_STATUS_FAILURE;
     }
     if(!size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame list size failed" << LOG_END;
+        PRINT_DEBUG("## Frame list size failed");
 #endif
-        LOG_ERROR() << "Invalid size pointer" << LOG_END;
+        PRINT_ERROR("Invalid size pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -686,7 +687,7 @@ ed247_status_t ed247_frame_list_size(
     }
     LIBED247_CATCH("Frame list size")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame list size success" << LOG_END;
+    PRINT_DEBUG("## Frame list size success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -697,12 +698,12 @@ ed247_status_t ed247_frame_list_size(
 
 const char * ed247_get_implementation_name()
 {
-    return LIBED247_NAME;
+    return _ed247_name;
 }
 
 const char * ed247_get_implementation_version()
 {
-    return LIBED247_VERSION;
+    return _ed247_version;
 }
 
 ed247_status_t ed247_get_runtime_metrics(
@@ -711,16 +712,16 @@ ed247_status_t ed247_get_runtime_metrics(
 {
     if(!metrics){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get metrics failed" << LOG_END;
+        PRINT_DEBUG("## Get metrics failed");
 #endif
-        LOG_ERROR() << "Invalid metrics pointer" << LOG_END;
+        PRINT_ERROR("Invalid metrics pointer");
         return ED247_STATUS_FAILURE;
     }
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get metrics failed" << LOG_END;
+        PRINT_DEBUG("## Get metrics failed");
 #endif
-        LOG_ERROR() << "Invalid context pointer" << LOG_END;
+        PRINT_ERROR("Invalid context pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -730,7 +731,7 @@ ed247_status_t ed247_get_runtime_metrics(
     }
     LIBED247_CATCH("Get metrics")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get metrics success" << LOG_END;
+    PRINT_DEBUG("## Get metrics success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -750,40 +751,45 @@ ed247_status_t ed247_get_log_level(
 }
 
 ed247_status_t libed247_register_set_simulation_time_ns_handler(
-    libed247_set_simulation_time_ns_t handler)
+    libed247_set_simulation_time_ns_t handler,
+    void *user_data)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register simulation time handler ..." << LOG_END;
+    PRINT_DEBUG("## Register simulation time handler ...");
 #endif
     if(!handler){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register simulation time handler failed" << LOG_END;
+        PRINT_DEBUG("## Register simulation time handler failed");
 #endif
-        LOG_ERROR() << "Invalid handler" << LOG_END;
+        PRINT_ERROR("Invalid handler");
         return ED247_STATUS_FAILURE;
     }
     try{
-        ed247::SimulationTimeHandler::get().set_handler(handler);
+        ed247::SimulationTimeHandler::get().set_handler(handler, user_data);
     }
     LIBED247_CATCH("Register simulation time handler")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register simulation time handler success" << LOG_END;
+    PRINT_DEBUG("## Register simulation time handler success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t libed247_set_simulation_time_ns(ed247_time_sample_t time_sample)
+ed247_status_t libed247_set_simulation_time_ns(
+    ed247_time_sample_t time_sample,
+    void *user_data)
 {
+    _UNUSED(user_data);
+    if(!time_sample) return ED247_STATUS_FAILURE;
 #ifdef __linux__
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
     time_sample->epoch_s = (uint32_t)tp.tv_sec;
-    time_sample->offset_ns = (uint32_t)((uint64_t)tp.tv_nsec/1000LL);
+    time_sample->offset_ns = (uint32_t)((uint64_t)tp.tv_nsec);
 #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     time_sample->epoch_s = (uint32_t)tv.tv_sec;
-    time_sample->offset_ns = (uint32_t)tv.tv_usec;
+    time_sample->offset_ns = (uint32_t)tv.tv_usec*1000LL;
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -800,31 +806,31 @@ ed247_status_t libed247_update_time(
 }
 
 ed247_status_t ed247_load(
-    const char *ed247_ecic_file_path,
+    const char *ecic_file_path,
     const libed247_configuration_t *libed247_configuration,
     ed247_context_t *context)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Load ..." << LOG_END;
+    PRINT_DEBUG("## Load ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Load failed" << LOG_END;
+        PRINT_DEBUG("## Load failed");
 #endif
-        LOG_ERROR() << "Empty context pointer" << LOG_END;
+        PRINT_ERROR("Empty context pointer");
         return ED247_STATUS_FAILURE;
     }
     *context = nullptr;
-    if(!ed247_ecic_file_path){
+    if(!ecic_file_path){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Load failed" << LOG_END;
+        PRINT_DEBUG("## Load failed");
 #endif
-        LOG_ERROR() << "Empty file" << LOG_END;
+        PRINT_ERROR("Empty file");
         return ED247_STATUS_FAILURE;
     }
     try{
-        auto ed247_context = ed247::Context::Builder::create(
-            ed247_ecic_file_path,
+        auto ed247_context = ed247::Context::Builder::create_filepath(
+            ecic_file_path,
             libed247_configuration ?
                 *libed247_configuration : libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
         ed247_context->initialize();
@@ -832,7 +838,45 @@ ed247_status_t ed247_load(
     }
     LIBED247_CATCH("Load")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Load success" << LOG_END;
+    PRINT_DEBUG("## Load success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_load_content(
+    const char *ecic_file_content,
+    const libed247_configuration_t *libed247_configuration,
+    ed247_context_t *context)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Load content ...");
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Load content failed");
+#endif
+        PRINT_ERROR("Empty context pointer");
+        return ED247_STATUS_FAILURE;
+    }
+    *context = nullptr;
+    if(!ecic_file_content){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Load content failed");
+#endif
+        PRINT_ERROR("Empty content");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = ed247::Context::Builder::create_content(
+            ecic_file_content,
+            libed247_configuration ?
+                *libed247_configuration : libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
+        ed247_context->initialize();
+        *context = ed247_context;
+    }
+    LIBED247_CATCH("Load content")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Load content success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -847,20 +891,20 @@ ed247_status_t ed247_find_channels(
     ed247_channel_list_t *channels)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find channels ..." << LOG_END;
+    PRINT_DEBUG("## Find channels ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find channels failed" << LOG_END;
+        PRINT_DEBUG("## Find channels failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!channels){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find channels failed" << LOG_END;
+        PRINT_DEBUG("## Find channels failed");
 #endif
-        LOG_ERROR() << "Invalid channels pointer" << LOG_END;
+        PRINT_ERROR("Invalid channels pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -871,7 +915,49 @@ ed247_status_t ed247_find_channels(
     }
     LIBED247_CATCH("Find channels")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find channels success" << LOG_END;
+    PRINT_DEBUG("## Find channels success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_channel(
+    ed247_context_t context,
+    const char *name,
+    ed247_channel_t *channel)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get channel ...");
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel failed");
+#endif
+        PRINT_ERROR("Invalid name");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!channel){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel failed");
+#endif
+        PRINT_ERROR("Invalid channel pointer");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+        auto && ed247_channel = ed247_context->getPoolChannels()->get(std::string(name));
+        *channel = ed247_channel ? ed247_channel.get() : nullptr;
+        if(*channel == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get channel")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get channel success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -882,20 +968,20 @@ ed247_status_t ed247_find_streams(
     ed247_stream_list_t *streams)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find streams ..." << LOG_END;
+    PRINT_DEBUG("## Find streams ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find streams failed" << LOG_END;
+        PRINT_DEBUG("## Find streams failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find streams failed ..." << LOG_END;
+        PRINT_DEBUG("## Find streams failed ...");
 #endif
-        LOG_ERROR() << "Invalid streams pointer " << LOG_END;
+        PRINT_ERROR("Invalid streams pointer ");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -905,7 +991,49 @@ ed247_status_t ed247_find_streams(
     }
     LIBED247_CATCH("Find streams")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find streams success" << LOG_END;
+    PRINT_DEBUG("## Find streams success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_stream(
+    ed247_context_t context,
+    const char *name,
+    ed247_stream_t *stream)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get stream ...");
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream failed");
+#endif
+        PRINT_ERROR("Invalid name");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream failed");
+#endif
+        PRINT_ERROR("Invalid stream pointer");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+        auto && ed247_stream = ed247_context->getPoolStreams()->get(std::string(name));
+        *stream = ed247_stream ? ed247_stream.get() : nullptr;
+        if(*stream == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get stream")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get stream success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -916,20 +1044,20 @@ ed247_status_t ed247_find_channel_streams(
     ed247_stream_list_t *streams)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find channel streams ..." << LOG_END;
+    PRINT_DEBUG("## Find channel streams ...");
 #endif
     if(!channel){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find channel streams failed" << LOG_END;
+        PRINT_DEBUG("## Find channel streams failed");
 #endif
-        LOG_ERROR() << "Invalid channel" << LOG_END;
+        PRINT_ERROR("Invalid channel");
         return ED247_STATUS_FAILURE;
     }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find channel streams failed" << LOG_END;
+        PRINT_DEBUG("## Find channel streams failed");
 #endif
-        LOG_ERROR() << "Invalid streams pointer" << LOG_END;
+        PRINT_ERROR("Invalid streams pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -939,7 +1067,49 @@ ed247_status_t ed247_find_channel_streams(
     }
     LIBED247_CATCH("Find channel streams")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find channel streams success" << LOG_END;
+    PRINT_DEBUG("## Find channel streams success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_channel_stream(
+    ed247_channel_t channel,
+    const char *name,
+    ed247_stream_t *stream)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get channel stream ...");
+#endif
+    if(!channel){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel stream failed");
+#endif
+        PRINT_ERROR("Invalid channel");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel stream failed");
+#endif
+        PRINT_ERROR("Invalid name");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel stream failed");
+#endif
+        PRINT_ERROR("Invalid stream pointer");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_channel = (ed247::Channel*)(channel);
+        auto && ed247_stream = ed247_channel->get_stream(std::string(name));
+        *stream = ed247_stream ? ed247_stream.get() : nullptr;
+        if(*stream == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get channel stream")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get channel stream success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -950,20 +1120,20 @@ ed247_status_t ed247_find_signals(
     ed247_signal_list_t *signals)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find signals ..." << LOG_END;
+    PRINT_DEBUG("## Find signals ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find signals failed" << LOG_END;
+        PRINT_DEBUG("## Find signals failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!signals){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find signals failed ..." << LOG_END;
+        PRINT_DEBUG("## Find signals failed ...");
 #endif
-        LOG_ERROR() << "Invalid signals pointer " << LOG_END;
+        PRINT_ERROR("Invalid signals pointer ");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -974,7 +1144,49 @@ ed247_status_t ed247_find_signals(
     }
     LIBED247_CATCH("Find signals")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find signals success" << LOG_END;
+    PRINT_DEBUG("## Find signals success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_signal(
+    ed247_context_t context,
+    const char *name,
+    ed247_signal_t *signal)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get signal ...");
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get signal failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get signal failed");
+#endif
+        PRINT_ERROR("Invalid name");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!signal){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get signal failed ...");
+#endif
+        PRINT_ERROR("Invalid signal pointer ");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+        auto && ed247_signal = ed247_context->getPoolSignals()->get(std::string(name));
+        *signal = ed247_signal ? ed247_signal.get() : nullptr;
+        if(*signal == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get signal")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get signal success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -985,20 +1197,20 @@ ed247_status_t ed247_find_stream_signals(
     ed247_signal_list_t *signals)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find stream signals ..." << LOG_END;
+    PRINT_DEBUG("## Find stream signals ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find stream signals failed" << LOG_END;
+        PRINT_DEBUG("## Find stream signals failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!signals){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Find stream signals failed" << LOG_END;
+        PRINT_DEBUG("## Find stream signals failed");
 #endif
-        LOG_ERROR() << "Invalid signals pointer" << LOG_END;
+        PRINT_ERROR("Invalid signals pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -1008,7 +1220,49 @@ ed247_status_t ed247_find_stream_signals(
     }
     LIBED247_CATCH("Find stream signals")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Find stream signals success" << LOG_END;
+    PRINT_DEBUG("## Find stream signals success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_get_stream_signal(
+    ed247_stream_t stream,
+    const char *name,
+    ed247_signal_t *signal)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get stream signal ...");
+#endif
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream signal failed");
+#endif
+        PRINT_ERROR("Invalid stream");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!name){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream signal failed");
+#endif
+        PRINT_ERROR("Invalid name");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!signal){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream signal failed");
+#endif
+        PRINT_ERROR("Invalid signal pointer");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_stream = (ed247::BaseStream*)(stream);
+        auto && ed247_signal = ed247_stream->get_signal(std::string(name));
+        *signal = ed247_signal ? ed247_signal.get() : nullptr;
+        if(*signal == nullptr) return ED247_STATUS_FAILURE;
+    }
+    LIBED247_CATCH("Get stream signal")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get stream signal success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1022,20 +1276,20 @@ ed247_status_t ed247_component_get_info(
     const ed247_component_info_t **info)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get component info ..." << LOG_END;
+    PRINT_DEBUG("## Get component info ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get component info failed" << LOG_END;
+        PRINT_DEBUG("## Get component info failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!info){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get component info failed" << LOG_END;
+        PRINT_DEBUG("## Get component info failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
     *info = nullptr;
@@ -1045,7 +1299,7 @@ ed247_status_t ed247_component_get_info(
     }
     LIBED247_CATCH("Get component info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get component info success" << LOG_END;
+    PRINT_DEBUG("## Get component info success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1055,20 +1309,20 @@ ed247_status_t ed247_component_get_streams(
     ed247_stream_list_t *streams)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get streams ..." << LOG_END;
+    PRINT_DEBUG("## Get streams ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get streams failed" << LOG_END;
+        PRINT_DEBUG("## Get streams failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get streams failed" << LOG_END;
+        PRINT_DEBUG("## Get streams failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
     *streams = nullptr;
@@ -1078,7 +1332,7 @@ ed247_status_t ed247_component_get_streams(
     }
     LIBED247_CATCH("Get streams info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get streams success" << LOG_END;
+    PRINT_DEBUG("## Get streams success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1088,20 +1342,20 @@ ed247_status_t ed247_component_get_channels(
 	ed247_channel_list_t *channels)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-	LOG_DEBUG() << "## Get channels ..." << LOG_END;
+	PRINT_DEBUG("## Get channels ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get channels failed" << LOG_END;
+        PRINT_DEBUG("## Get channels failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!channels){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get channels failed" << LOG_END;
+        PRINT_DEBUG("## Get channels failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
 	*channels = nullptr;
@@ -1113,7 +1367,64 @@ ed247_status_t ed247_component_get_channels(
 	}
     LIBED247_CATCH("Get channels info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get channels success" << LOG_END;
+    PRINT_DEBUG("## Get channels success");
+#endif
+    return ED247_STATUS_SUCCESS;	
+}
+
+ed247_status_t ed247_component_set_user_data(
+    ed247_context_t context,
+	void *user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+	PRINT_DEBUG("## Set user data ...");
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Set user data failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
+	try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+		ed247_context->set_user_data(user_data);
+	}
+    LIBED247_CATCH("Set user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set user data success");
+#endif
+    return ED247_STATUS_SUCCESS;	
+}
+
+ed247_status_t ed247_component_get_user_data(
+    ed247_context_t context,
+	void **user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+	PRINT_DEBUG("## Get user data ...");
+#endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get user data failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!user_data){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get user data failed");
+#endif
+        PRINT_ERROR("Empty user_data pointer");
+        return ED247_STATUS_FAILURE;
+    }
+	try{
+        auto ed247_context = static_cast<ed247::Context*>(context);
+		*user_data = ed247_context->get_user_data();
+	}
+    LIBED247_CATCH("Get user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get user data success");
 #endif
     return ED247_STATUS_SUCCESS;	
 }
@@ -1123,20 +1434,20 @@ ed247_status_t ed247_channel_get_info(
     const ed247_channel_info_t **info)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get channel info ..." << LOG_END;
+    PRINT_DEBUG("## Get channel info ...");
 #endif
     if(!channel){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get channel info failed" << LOG_END;
+        PRINT_DEBUG("## Get channel info failed");
 #endif
-        LOG_ERROR() << "Invalid channel" << LOG_END;
+        PRINT_ERROR("Invalid channel");
         return ED247_STATUS_FAILURE;
     }
     if(!info){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get channel info failed" << LOG_END;
+        PRINT_DEBUG("## Get channel info failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
     *info = nullptr;
@@ -1146,7 +1457,7 @@ ed247_status_t ed247_channel_get_info(
     }
     LIBED247_CATCH("Get channel info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get channel info success" << LOG_END;
+    PRINT_DEBUG("## Get channel info success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1157,20 +1468,20 @@ ed247_status_t ed247_channel_get_streams(
     ed247_stream_list_t *streams)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get streams ..." << LOG_END;
+    PRINT_DEBUG("## Get streams ...");
 #endif
     if(!channel){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get streams failed" << LOG_END;
+        PRINT_DEBUG("## Get streams failed");
 #endif
-        LOG_ERROR() << "Invalid channel" << LOG_END;
+        PRINT_ERROR("Invalid channel");
         return ED247_STATUS_FAILURE;
     }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get streams failed" << LOG_END;
+        PRINT_DEBUG("## Get streams failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
     *streams = nullptr;
@@ -1180,7 +1491,7 @@ ed247_status_t ed247_channel_get_streams(
     }
     LIBED247_CATCH("Get streams info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get streams success" << LOG_END;
+    PRINT_DEBUG("## Get streams success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1190,20 +1501,20 @@ ed247_status_t ed247_stream_get_info(
     const ed247_stream_info_t **info)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream info ..." << LOG_END;
+    PRINT_DEBUG("## Get stream info ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream info failed" << LOG_END;
+        PRINT_DEBUG("## Get stream info failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!info){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream info failed" << LOG_END;
+        PRINT_DEBUG("## Get stream info failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
     *info = nullptr;
@@ -1213,7 +1524,7 @@ ed247_status_t ed247_stream_get_info(
     }
     LIBED247_CATCH("Get stream info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream info success" << LOG_END;
+    PRINT_DEBUG("## Get stream info success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1223,20 +1534,20 @@ ed247_status_t ed247_stream_get_channel(
     ed247_channel_t *channel)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream channel ..." << LOG_END;
+    PRINT_DEBUG("## Get stream channel ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream channel failed" << LOG_END;
+        PRINT_DEBUG("## Get stream channel failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!channel){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream channel failed" << LOG_END;
+        PRINT_DEBUG("## Get stream channel failed");
 #endif
-        LOG_ERROR() << "Empty channel pointer" << LOG_END;
+        PRINT_ERROR("Empty channel pointer");
         return ED247_STATUS_FAILURE;
     }
     *channel = nullptr;
@@ -1247,7 +1558,7 @@ ed247_status_t ed247_stream_get_channel(
     }
     LIBED247_CATCH("Get stream channel")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream channel success" << LOG_END;
+    PRINT_DEBUG("## Get stream channel success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1257,20 +1568,20 @@ ed247_status_t ed247_signal_get_info(
     const ed247_signal_info_t **info)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get signal info ..." << LOG_END;
+    PRINT_DEBUG("## Get signal info ...");
 #endif
     if(!signal){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get signal info failed" << LOG_END;
+        PRINT_DEBUG("## Get signal info failed");
 #endif
-        LOG_ERROR() << "Invalid signal" << LOG_END;
+        PRINT_ERROR("Invalid signal");
         return ED247_STATUS_FAILURE;
     }
     if(!info){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get signal info failed" << LOG_END;
+        PRINT_DEBUG("## Get signal info failed");
 #endif
-        LOG_ERROR() << "Empty info pointer" << LOG_END;
+        PRINT_ERROR("Empty info pointer");
         return ED247_STATUS_FAILURE;
     }
     *info = nullptr;
@@ -1280,7 +1591,7 @@ ed247_status_t ed247_signal_get_info(
     }
     LIBED247_CATCH("Get signal info")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get signal info success" << LOG_END;
+    PRINT_DEBUG("## Get signal info success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1290,20 +1601,20 @@ ed247_status_t ed247_signal_get_stream(
     ed247_stream_t *stream)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get signal stream ..." << LOG_END;
+    PRINT_DEBUG("## Get signal stream ...");
 #endif
     if(!signal){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get signal stream failed" << LOG_END;
+        PRINT_DEBUG("## Get signal stream failed");
 #endif
-        LOG_ERROR() << "Invalid signal" << LOG_END;
+        PRINT_ERROR("Invalid signal");
         return ED247_STATUS_FAILURE;
     }
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get signal stream failed" << LOG_END;
+        PRINT_DEBUG("## Get signal stream failed");
 #endif
-        LOG_ERROR() << "Empty stream pointer" << LOG_END;
+        PRINT_ERROR("Empty stream pointer");
         return ED247_STATUS_FAILURE;
     }
     *stream = nullptr;
@@ -1314,7 +1625,7 @@ ed247_status_t ed247_signal_get_stream(
     }
     LIBED247_CATCH("Get signal stream")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get signal stream success" << LOG_END;
+    PRINT_DEBUG("## Get signal stream success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1324,20 +1635,20 @@ ed247_status_t ed247_stream_get_signals(
     ed247_signal_list_t *signals)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream get signals ..." << LOG_END;
+    PRINT_DEBUG("## Stream get signals ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream get signals failed" << LOG_END;
+        PRINT_DEBUG("## Stream get signals failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!signals){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream get signals failed" << LOG_END;
+        PRINT_DEBUG("## Stream get signals failed");
 #endif
-        LOG_ERROR() << "Empty signals pointer" << LOG_END;
+        PRINT_ERROR("Empty signals pointer");
         return ED247_STATUS_FAILURE;
     }
     *signals = nullptr;
@@ -1348,7 +1659,7 @@ ed247_status_t ed247_stream_get_signals(
     }
     LIBED247_CATCH("Stream get signals")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream get signals success" << LOG_END;
+    PRINT_DEBUG("## Stream get signals success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1358,20 +1669,20 @@ ed247_status_t ed247_stream_contains_signals(
     uint8_t *yesno)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream contains signals ..." << LOG_END;
+    PRINT_DEBUG("## Stream contains signals ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream contains signals failed" << LOG_END;
+        PRINT_DEBUG("## Stream contains signals failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!yesno){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream contains signals failed" << LOG_END;
+        PRINT_DEBUG("## Stream contains signals failed");
 #endif
-        LOG_ERROR() << "Empty yesno pointer" << LOG_END;
+        PRINT_ERROR("Empty yesno pointer");
         return ED247_STATUS_FAILURE;
     }
     *yesno = 0;
@@ -1381,7 +1692,7 @@ ed247_status_t ed247_stream_contains_signals(
     }
     LIBED247_CATCH("Stream contains signals")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream contains signals success" << LOG_END;
+    PRINT_DEBUG("## Stream contains signals success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1396,27 +1707,27 @@ ed247_status_t ed247_stream_allocate_sample(
     size_t * sample_size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Allocate stream sample ..." << LOG_END;
+    PRINT_DEBUG("## Allocate stream sample ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Allocate stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Allocate stream sample failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!sample_data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Allocate stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Allocate stream sample failed");
 #endif
-        LOG_ERROR() << "Empty sample_data pointer" << LOG_END;
+        PRINT_ERROR("Empty sample_data pointer");
         return ED247_STATUS_FAILURE;
     }
     if(!sample_size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Allocate stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Allocate stream sample failed");
 #endif
-        LOG_ERROR() << "Empty sample_size pointer" << LOG_END;
+        PRINT_ERROR("Empty sample_size pointer");
         return ED247_STATUS_FAILURE;
     }
     *sample_data = nullptr;
@@ -1429,7 +1740,7 @@ ed247_status_t ed247_stream_allocate_sample(
     }
     LIBED247_CATCH("Allocate stream sample")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Allocate stream sample success" << LOG_END;
+    PRINT_DEBUG("## Allocate stream sample success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1440,27 +1751,27 @@ ed247_status_t ed247_signal_allocate_sample(
     size_t * sample_size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Allocate signal sample ..." << LOG_END;
+    PRINT_DEBUG("## Allocate signal sample ...");
 #endif
     if(!signal){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Allocate signal sample failed" << LOG_END;
+        PRINT_DEBUG("## Allocate signal sample failed");
 #endif
-        LOG_ERROR() << "Invalid signal" << LOG_END;
+        PRINT_ERROR("Invalid signal");
         return ED247_STATUS_FAILURE;
     }
     if(!sample_data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Allocate signal sample failed" << LOG_END;
+        PRINT_DEBUG("## Allocate signal sample failed");
 #endif
-        LOG_ERROR() << "Empty sample_data pointer" << LOG_END;
+        PRINT_ERROR("Empty sample_data pointer");
         return ED247_STATUS_FAILURE;
     }
     if(!sample_size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Allocate signal sample failed" << LOG_END;
+        PRINT_DEBUG("## Allocate signal sample failed");
 #endif
-        LOG_ERROR() << "Empty sample_size pointer" << LOG_END;
+        PRINT_ERROR("Empty sample_size pointer");
         return ED247_STATUS_FAILURE;
     }
     *sample_data = nullptr;
@@ -1473,7 +1784,7 @@ ed247_status_t ed247_signal_allocate_sample(
     }
     LIBED247_CATCH("Allocate stream sample")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Allocate stream sample success" << LOG_END;
+    PRINT_DEBUG("## Allocate stream sample success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1483,37 +1794,33 @@ ed247_status_t ed247_stream_get_assistant(
     ed247_stream_assistant_t *assistant)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream signal assistant ..." << LOG_END;
+    PRINT_DEBUG("## Get stream signal assistant ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream signal assistant failed" << LOG_END;
+        PRINT_DEBUG("## Get stream signal assistant failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!assistant){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream signal assistant failed" << LOG_END;
+        PRINT_DEBUG("## Get stream signal assistant failed");
 #endif
-        LOG_ERROR() << "Empty assistant pointer" << LOG_END;
+        PRINT_ERROR("Empty assistant pointer");
         return ED247_STATUS_FAILURE;
     }
     *assistant = nullptr;
     try{
         auto ed247_stream = (ed247::BaseStream*)(stream);
         *assistant = ed247_stream->get_assistant().get();
-        if(!*assistant){
-#ifdef LIBED247_VERBOSE_DEBUG
-            LOG_DEBUG() << "## Get stream signal assistant failed" << LOG_END;
-#endif
-            LOG_ERROR() << "No assistant available" << LOG_END;
+        if(!*assistant || !ed247_stream->get_assistant()->is_valid()){
             return ED247_STATUS_FAILURE;
         }
     }
     LIBED247_CATCH("Get stream signal assistant")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream signal assistant success" << LOG_END;
+    PRINT_DEBUG("## Get stream signal assistant success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1523,20 +1830,20 @@ ed247_status_t ed247_stream_assistant_get_stream(
     ed247_stream_t *stream)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream of assistant ..." << LOG_END;
+    PRINT_DEBUG("## Get stream of assistant ...");
 #endif
     if(!assistant){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream of assistant failed" << LOG_END;
+        PRINT_DEBUG("## Get stream of assistant failed");
 #endif
-        LOG_ERROR() << "Invalid assistant" << LOG_END;
+        PRINT_ERROR("Invalid assistant");
         return ED247_STATUS_FAILURE;
     }
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Get stream of assistant failed" << LOG_END;
+        PRINT_DEBUG("## Get stream of assistant failed");
 #endif
-        LOG_ERROR() << "Empty stream pointer" << LOG_END;
+        PRINT_ERROR("Empty stream pointer");
         return ED247_STATUS_FAILURE;
     }
     *stream = nullptr;
@@ -1546,7 +1853,7 @@ ed247_status_t ed247_stream_assistant_get_stream(
     }
     LIBED247_CATCH("Get stream of assistant")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Get stream of assistant success" << LOG_END;
+    PRINT_DEBUG("## Get stream of assistant success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1558,27 +1865,27 @@ ed247_status_t ed247_stream_assistant_write_signal(
     size_t signal_sample_size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Write signal sample in assistant ..." << LOG_END;
+    PRINT_DEBUG("## Write signal sample in assistant ...");
 #endif
     if(!assistant){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Write signal sample in assistant failed" << LOG_END;
+        PRINT_DEBUG("## Write signal sample in assistant failed");
 #endif
-        LOG_ERROR() << "Invalid assistant" << LOG_END;
+        PRINT_ERROR("Invalid assistant");
         return ED247_STATUS_FAILURE;
     }
     if(!signal){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Write signal sample in assistant failed" << LOG_END;
+        PRINT_DEBUG("## Write signal sample in assistant failed");
 #endif
-        LOG_ERROR() << "Invalid signal" << LOG_END;
+        PRINT_ERROR("Invalid signal");
         return ED247_STATUS_FAILURE;
     }
     if(!signal_sample_data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Write signal sample in assistant failed" << LOG_END;
+        PRINT_DEBUG("## Write signal sample in assistant failed");
 #endif
-        LOG_ERROR() << "Empty signal sample data pointer" << LOG_END;
+        PRINT_ERROR("Empty signal sample data pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -1588,7 +1895,7 @@ ed247_status_t ed247_stream_assistant_write_signal(
     }
     LIBED247_CATCH("Write signal sample in assistant")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Write signal sample in assistant" << LOG_END;
+    PRINT_DEBUG("## Write signal sample in assistant");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1600,34 +1907,34 @@ ed247_status_t ed247_stream_assistant_read_signal(
     size_t *signal_sample_size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Read signal sample from assistant ..." << LOG_END;
+    PRINT_DEBUG("## Read signal sample from assistant ...");
 #endif
     if(!assistant){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Read signal sample from assistant failed" << LOG_END;
+        PRINT_DEBUG("## Read signal sample from assistant failed");
 #endif
-        LOG_ERROR() << "Invalid assistant" << LOG_END;
+        PRINT_ERROR("Invalid assistant");
         return ED247_STATUS_FAILURE;
     }
     if(!signal){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Read signal sample from assistant failed" << LOG_END;
+        PRINT_DEBUG("## Read signal sample from assistant failed");
 #endif
-        LOG_ERROR() << "Invalid signal" << LOG_END;
+        PRINT_ERROR("Invalid signal");
         return ED247_STATUS_FAILURE;
     }
     if(!signal_sample_data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Read signal sample from assistant failed" << LOG_END;
+        PRINT_DEBUG("## Read signal sample from assistant failed");
 #endif
-        LOG_ERROR() << "Empty signal sample data pointer" << LOG_END;
+        PRINT_ERROR("Empty signal sample data pointer");
         return ED247_STATUS_FAILURE;
     }
     if(!signal_sample_size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Read signal sample from assistant failed" << LOG_END;
+        PRINT_DEBUG("## Read signal sample from assistant failed");
 #endif
-        LOG_ERROR() << "Empty signal sample size pointer" << LOG_END;
+        PRINT_ERROR("Empty signal sample size pointer");
         return ED247_STATUS_FAILURE;
     }
     *signal_sample_data = nullptr;
@@ -1639,82 +1946,7 @@ ed247_status_t ed247_stream_assistant_read_signal(
     }
     LIBED247_CATCH("Read signal sample from assistant")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Read signal sample from assistant" << LOG_END;
-#endif
-    return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t ed247_stream_assistant_set_sample(
-    ed247_stream_assistant_t assistant,
-    const void *sample_data,
-    size_t sample_size)
-{
-#ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Update assistant stream sample ..." << LOG_END;
-#endif
-    if(!assistant){
-#ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Update assistant stream sample failed" << LOG_END;
-#endif
-        LOG_ERROR() << "Invalid assistant" << LOG_END;
-        return ED247_STATUS_FAILURE;
-    }
-    if(!sample_data){
-#ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Update assistant stream sample failed" << LOG_END;
-#endif
-        LOG_ERROR() << "Empty sample data pointer" << LOG_END;
-        return ED247_STATUS_FAILURE;
-    }
-    try{
-        auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
-        ed247_assistant->read_sample(sample_data, sample_size);
-    }
-    LIBED247_CATCH("Update assistant stream sample")
-#ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Update assistant stream sample" << LOG_END;
-#endif
-    return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t ed247_stream_assistant_get_sample(
-    ed247_stream_assistant_t assistant,
-    const void **sample_data,
-    size_t *sample_size)
-{
-#ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Retrieve assistant stream sample ..." << LOG_END;
-#endif
-    if(!assistant){
-#ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Retrieve assistant stream sample failed" << LOG_END;
-#endif
-        LOG_ERROR() << "Invalid assistant" << LOG_END;
-        return ED247_STATUS_FAILURE;
-    }
-    if(!sample_data){
-#ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Retrieve assistant stream sample failed" << LOG_END;
-#endif
-        LOG_ERROR() << "Empty sample data pointer" << LOG_END;
-        return ED247_STATUS_FAILURE;
-    }
-    if(!sample_size){
-#ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Retrieve assistant stream sample failed" << LOG_END;
-#endif
-        LOG_ERROR() << "Empty sample size pointer" << LOG_END;
-        return ED247_STATUS_FAILURE;
-    }
-    *sample_data = nullptr;
-    *sample_size = 0;
-    try{
-        auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
-        ed247_assistant->write_sample(sample_data, sample_size);
-    }
-    LIBED247_CATCH("Retrieve assistant stream sample")
-#ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Retrieve assistant stream sample" << LOG_END;
+    PRINT_DEBUG("## Read signal sample from assistant");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1731,20 +1963,20 @@ ed247_status_t ed247_stream_push_sample(
     bool *full)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Push stream sample ..." << LOG_END;
+    PRINT_DEBUG("## Push stream sample ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Push stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Push stream sample failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!sample_data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Push stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Push stream sample failed");
 #endif
-        LOG_ERROR() << "Invalid sample data" << LOG_END;
+        PRINT_ERROR("Invalid sample data");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -1752,7 +1984,7 @@ ed247_status_t ed247_stream_push_sample(
     }
     LIBED247_CATCH("Push stream sample")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Push stream sample success" << LOG_END;
+    PRINT_DEBUG("## Push stream sample success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1766,27 +1998,27 @@ ed247_status_t ed247_stream_push_samples(
     bool *full)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Push stream samples ..." << LOG_END;
+    PRINT_DEBUG("## Push stream samples ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream push samples failed" << LOG_END;
+        PRINT_DEBUG("## Stream push samples failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!samples_data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Push stream samples failed" << LOG_END;
+        PRINT_DEBUG("## Push stream samples failed");
 #endif
-        LOG_ERROR() << "Invalid sample data" << LOG_END;
+        PRINT_ERROR("Invalid sample data");
         return ED247_STATUS_FAILURE;
     }
     if(!samples_size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Push stream samples failed" << LOG_END;
+        PRINT_DEBUG("## Push stream samples failed");
 #endif
-        LOG_ERROR() << "Invalid sample size" << LOG_END;
+        PRINT_ERROR("Invalid sample size");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -1799,7 +2031,7 @@ ed247_status_t ed247_stream_push_samples(
     }
     LIBED247_CATCH("Push stream samples")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Push stream samples success" << LOG_END;
+    PRINT_DEBUG("## Push stream samples success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1810,13 +2042,13 @@ ed247_status_t ed247_stream_assistant_push_sample(
     bool *full)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Push stream sample with assistant ..." << LOG_END;
+    PRINT_DEBUG("## Push stream sample with assistant ...");
 #endif
     if(!assistant){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Push stream sample with assistant failed" << LOG_END;
+        PRINT_DEBUG("## Push stream sample with assistant failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -1825,7 +2057,7 @@ ed247_status_t ed247_stream_assistant_push_sample(
     }
     LIBED247_CATCH("Push stream sample with assistant")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Push stream sample with assistant success" << LOG_END;
+    PRINT_DEBUG("## Push stream sample with assistant success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1840,27 +2072,27 @@ ed247_status_t ed247_stream_pop_sample(
     bool *empty)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Pop stream sample ..." << LOG_END;
+    PRINT_DEBUG("## Pop stream sample ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Pop stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Pop stream sample failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(sample_data == nullptr){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Pop stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Pop stream sample failed");
 #endif
-        LOG_ERROR() << "Empty sample_data pointer" << LOG_END;
+        PRINT_ERROR("Empty sample_data pointer");
         return ED247_STATUS_FAILURE;
     }
     if(sample_size == nullptr){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Pop stream sample failed" << LOG_END;
+        PRINT_DEBUG("## Pop stream sample failed");
 #endif
-        LOG_ERROR() << "Empty sample_size pointer" << LOG_END;
+        PRINT_ERROR("Empty sample_size pointer");
         return ED247_STATUS_FAILURE;
     }
     *sample_data = nullptr;
@@ -1877,7 +2109,7 @@ ed247_status_t ed247_stream_pop_sample(
     }
     LIBED247_CATCH("Pop stream sample")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Pop stream sample success" << LOG_END;
+    PRINT_DEBUG("## Pop stream sample success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1890,13 +2122,13 @@ ed247_status_t ed247_stream_assistant_pop_sample(
     bool *empty)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Pop stream sample with assistant ..." << LOG_END;
+    PRINT_DEBUG("## Pop stream sample with assistant ...");
 #endif
     if(!assistant){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Pop stream sample with assistant failed" << LOG_END;
+        PRINT_DEBUG("## Pop stream sample with assistant failed");
 #endif
-        LOG_ERROR() << "Invalid assistant" << LOG_END;
+        PRINT_ERROR("Invalid assistant");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -1906,7 +2138,7 @@ ed247_status_t ed247_stream_assistant_pop_sample(
     }
     LIBED247_CATCH("Pop stream sample with assistant")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Pop stream sample with assistant success" << LOG_END;
+    PRINT_DEBUG("## Pop stream sample with assistant success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1917,27 +2149,27 @@ ed247_status_t ed247_stream_samples_number(
     size_t *size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream samples number ..." << LOG_END;
+    PRINT_DEBUG("## Stream samples number ...");
 #endif
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream samples number failed" << LOG_END;
+        PRINT_DEBUG("## Stream samples number failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!size){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream samples number failed" << LOG_END;
+        PRINT_DEBUG("## Stream samples number failed");
 #endif
-        LOG_ERROR() << "Empty size pointer" << LOG_END;
+        PRINT_ERROR("Empty size pointer");
         return ED247_STATUS_FAILURE;
     }
     if(direction != ED247_DIRECTION_IN && direction != ED247_DIRECTION_OUT){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream samples number failed" << LOG_END;
+        PRINT_DEBUG("## Stream samples number failed");
 #endif
-        LOG_ERROR() << "Unknown direction" << LOG_END;
+        PRINT_ERROR("Unknown direction");
         return ED247_STATUS_FAILURE;
     }
     *size = 0;
@@ -1947,7 +2179,7 @@ ed247_status_t ed247_stream_samples_number(
     }
     LIBED247_CATCH("Stream samples number")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream samples number success" << LOG_END;
+    PRINT_DEBUG("## Stream samples number success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -1956,147 +2188,187 @@ ed247_status_t ed247_stream_samples_number(
  * Receive & Send *
  ******************/
 ed247_status_t ed247_stream_register_recv_callback(
+    ed247_context_t context,
     ed247_stream_t stream,
     ed247_stream_recv_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream register callback ..." << LOG_END;
+    PRINT_DEBUG("## Stream register callback ...");
 #endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Stream register callback failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream register callback failed" << LOG_END;
+        PRINT_DEBUG("## Stream register callback failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream register callback failed" << LOG_END;
+        PRINT_DEBUG("## Stream register callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_SUCCESS;
     try{
         auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-        if(ed247_stream->register_callback(callback) == ED247_STATUS_FAILURE){
-            LOG_WARNING() << "Cannot register callback in stream [" << ed247_stream->get_name() << "]" << LOG_END;
+        if(ed247_stream->register_callback(context, callback) == ED247_STATUS_FAILURE){
+            status = ED247_STATUS_FAILURE;
+            PRINT_WARNING("Cannot register callback in stream [" << ed247_stream->get_name() << "]");
         }
     }
     LIBED247_CATCH("Stream register callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream register callback success" << LOG_END;
+    PRINT_DEBUG("## Stream register callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 ed247_status_t ed247_stream_unregister_recv_callback(
+    ed247_context_t context,
     ed247_stream_t stream,
     ed247_stream_recv_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream unregister callback ..." << LOG_END;
+    PRINT_DEBUG("## Stream unregister callback ...");
 #endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Stream unregister callback failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
     if(!stream){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream unregister callback failed" << LOG_END;
+        PRINT_DEBUG("## Stream unregister callback failed");
 #endif
-        LOG_ERROR() << "Invalid stream" << LOG_END;
+        PRINT_ERROR("Invalid stream");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Stream unregister callback failed" << LOG_END;
+        PRINT_DEBUG("## Stream unregister callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_SUCCESS;
     try{
         auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-        if(ed247_stream->unregister_callback(callback) == ED247_STATUS_FAILURE){
-            LOG_WARNING() << "Cannot unregister callback in stream [" << ed247_stream->get_name() << "]" << LOG_END;
+        if(ed247_stream->unregister_callback(context, callback) == ED247_STATUS_FAILURE){
+            status = ED247_STATUS_FAILURE;
+            PRINT_WARNING("Cannot unregister callback in stream [" << ed247_stream->get_name() << "]");
         }
     }
     LIBED247_CATCH("Stream unregister callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Stream unregister callback success" << LOG_END;
+    PRINT_DEBUG("## Stream unregister callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 ed247_status_t ed247_streams_register_recv_callback(
+    ed247_context_t context,
     ed247_stream_list_t streams,
     ed247_stream_recv_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Streams register callback ..." << LOG_END;
+    PRINT_DEBUG("## Streams register callback ...");
 #endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Streams register callback failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Streams register callback failed" << LOG_END;
+        PRINT_DEBUG("## Streams register callback failed");
 #endif
-        LOG_ERROR() << "Invalid streams" << LOG_END;
+        PRINT_ERROR("Invalid streams");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Streams register callback failed" << LOG_END;
+        PRINT_DEBUG("## Streams register callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_SUCCESS;
     try{
         auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
         ed247_streams->reset(); // Reset internal iterator
         std::shared_ptr<ed247::BaseStream> * next;
         while((next = ed247_streams->next_ok()) != nullptr){
-            if((*next)->register_callback(callback) != ED247_STATUS_SUCCESS){
-                LOG_WARNING() << "Cannot register callback in stream [" << (*next)->get_name() << "]" << LOG_END;
+            if((*next)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
+                status = ED247_STATUS_FAILURE;
+                PRINT_WARNING("Cannot register callback in stream [" << (*next)->get_name() << "]");
             }
         }
     }
     LIBED247_CATCH("Streams register callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Streams register callback success" << LOG_END;
+    PRINT_DEBUG("## Streams register callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 ed247_status_t ed247_streams_unregister_recv_callback(
+    ed247_context_t context,
     ed247_stream_list_t streams,
     ed247_stream_recv_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Streams unregister callback ..." << LOG_END;
+    PRINT_DEBUG("## Streams unregister callback ...");
 #endif
+    if(!context){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Streams unregister callback failed");
+#endif
+        PRINT_ERROR("Invalid context");
+        return ED247_STATUS_FAILURE;
+    }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Streams unregister callback failed" << LOG_END;
+        PRINT_DEBUG("## Streams unregister callback failed");
 #endif
-        LOG_ERROR() << "Invalid streams" << LOG_END;
+        PRINT_ERROR("Invalid streams");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Streams unregister callback failed" << LOG_END;
+        PRINT_DEBUG("## Streams unregister callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_SUCCESS;
     try{
         auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
         ed247_streams->reset(); // Reset internal iterator
         std::shared_ptr<ed247::BaseStream> * next;
         while((next = ed247_streams->next_ok()) != nullptr){
-            if((*next)->unregister_callback(callback) != ED247_STATUS_SUCCESS){
-                LOG_WARNING() << "Cannot unregister callback in stream [" << (*next)->get_name() << "]" << LOG_END;
+            if((*next)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
+                status = ED247_STATUS_FAILURE;
+                PRINT_WARNING("Cannot unregister callback in stream [" << (*next)->get_name() << "]");
             }
         }
     }
     LIBED247_CATCH("Streams unregister callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Streams unregister callback success" << LOG_END;
+    PRINT_DEBUG("## Streams unregister callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 ed247_status_t ed247_register_recv_callback(
@@ -2104,38 +2376,40 @@ ed247_status_t ed247_register_recv_callback(
     ed247_stream_recv_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register streams callback ..." << LOG_END;
+    PRINT_DEBUG("## Register streams callback ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register streams callback failed" << LOG_END;
+        PRINT_DEBUG("## Register streams callback failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register streams callback failed" << LOG_END;
+        PRINT_DEBUG("## Register streams callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_SUCCESS;
     try{
         auto ed247_context = static_cast<ed247::Context*>(context);
         auto ed247_streams = ed247_context->getPoolStreams()->streams();
         ed247_streams->reset(); // Reset internal iterator
         std::shared_ptr<ed247::BaseStream> * next;
         while((next = ed247_streams->next_ok()) != nullptr){
-            if((*next)->register_callback(callback) != ED247_STATUS_SUCCESS){
-                LOG_WARNING() << "Cannot register callback in stream [" << (*next)->get_name() << "]" << LOG_END;
+            if((*next)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
+                status = ED247_STATUS_FAILURE;
+                PRINT_WARNING("Cannot register callback in stream [" << (*next)->get_name() << "]");
             }
         }
     }
     LIBED247_CATCH("Register streams callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register streams callback success" << LOG_END;
+    PRINT_DEBUG("## Register streams callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 ed247_status_t ed247_unregister_recv_callback(
@@ -2143,38 +2417,40 @@ ed247_status_t ed247_unregister_recv_callback(
     ed247_stream_recv_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unregister streams callback ..." << LOG_END;
+    PRINT_DEBUG("## Unregister streams callback ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unregister streams callback failed" << LOG_END;
+        PRINT_DEBUG("## Unregister streams callback failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unregister streams callback failed" << LOG_END;
+        PRINT_DEBUG("## Unregister streams callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_SUCCESS;
     try{
         auto ed247_context = static_cast<ed247::Context*>(context);
         auto ed247_streams = ed247_context->getPoolStreams()->streams();
         ed247_streams->reset(); // Reset internal iterator
         std::shared_ptr<ed247::BaseStream> * next;
         while((next = ed247_streams->next_ok()) != nullptr){
-            if((*next)->unregister_callback(callback) != ED247_STATUS_SUCCESS){
-                LOG_WARNING() << "Cannot unregister callback in stream [" << (*next)->get_name() << "]" << LOG_END;
+            if((*next)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
+                status = ED247_STATUS_FAILURE;
+                PRINT_WARNING("Cannot unregister callback in stream [" << (*next)->get_name() << "]");
             }
         }
     }
     LIBED247_CATCH("Unregister streams callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unregister streams callback success" << LOG_END;
+    PRINT_DEBUG("## Unregister streams callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_register_com_recv_callback(
@@ -2182,32 +2458,33 @@ extern LIBED247_EXPORT ed247_status_t ed247_register_com_recv_callback(
     ed247_com_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register com recv callback ..." << LOG_END;
+    PRINT_DEBUG("## Register com recv callback ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register com recv callback failed" << LOG_END;
+        PRINT_DEBUG("## Register com recv callback failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register com recv callback failed" << LOG_END;
+        PRINT_DEBUG("## Register com recv callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_FAILURE;
     try{
         auto ed247_context = static_cast<ed247::Context*>(context);
         auto ed247_interfaces = std::static_pointer_cast<ed247::UdpSocket::Pool>(ed247_context->getPoolInterfaces());
-        ed247_interfaces->register_recv_callback(callback);
+        status = ed247_interfaces->register_recv_callback(callback, context);
     }
     LIBED247_CATCH("Register com recv callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register com recv callback success" << LOG_END;
+    PRINT_DEBUG("## Register com recv callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_recv_callback(
@@ -2215,32 +2492,33 @@ extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_recv_callback(
     ed247_com_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unregister com recv callback ..." << LOG_END;
+    PRINT_DEBUG("## Unregister com recv callback ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unregister com recv callback failed" << LOG_END;
+        PRINT_DEBUG("## Unregister com recv callback failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unregister com recv callback failed" << LOG_END;
+        PRINT_DEBUG("## Unregister com recv callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_FAILURE;
     try{
         auto ed247_context = static_cast<ed247::Context*>(context);
         auto ed247_interfaces = std::static_pointer_cast<ed247::UdpSocket::Pool>(ed247_context->getPoolInterfaces());
-        ed247_interfaces->unregister_recv_callback(callback);
+        status = ed247_interfaces->unregister_recv_callback(callback, context);
     }
     LIBED247_CATCH("Unregister com recv callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unregister com recv callback success" << LOG_END;
+    PRINT_DEBUG("## Unregister com recv callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_register_com_send_callback(
@@ -2248,32 +2526,33 @@ extern LIBED247_EXPORT ed247_status_t ed247_register_com_send_callback(
     ed247_com_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register com send callback ..." << LOG_END;
+    PRINT_DEBUG("## Register com send callback ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register com send callback failed" << LOG_END;
+        PRINT_DEBUG("## Register com send callback failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Register com send callback failed" << LOG_END;
+        PRINT_DEBUG("## Register com send callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_FAILURE;
     try{
         auto ed247_context = static_cast<ed247::Context*>(context);
         auto ed247_interfaces = std::static_pointer_cast<ed247::UdpSocket::Pool>(ed247_context->getPoolInterfaces());
-        ed247_interfaces->register_send_callback(callback);
+        status = ed247_interfaces->register_send_callback(callback, context);
     }
     LIBED247_CATCH("Register com send callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Register com send callback success" << LOG_END;
+    PRINT_DEBUG("## Register com send callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_send_callback(
@@ -2281,32 +2560,33 @@ extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_send_callback(
     ed247_com_callback_t callback)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unregister com send callback ..." << LOG_END;
+    PRINT_DEBUG("## Unregister com send callback ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unregister com send callback failed" << LOG_END;
+        PRINT_DEBUG("## Unregister com send callback failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!callback){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unregister com send callback failed" << LOG_END;
+        PRINT_DEBUG("## Unregister com send callback failed");
 #endif
-        LOG_ERROR() << "Invalid callback" << LOG_END;
+        PRINT_ERROR("Invalid callback");
         return ED247_STATUS_FAILURE;
     }
+    ed247_status_t status = ED247_STATUS_FAILURE;
     try{
         auto ed247_context = static_cast<ed247::Context*>(context);
         auto ed247_interfaces = std::static_pointer_cast<ed247::UdpSocket::Pool>(ed247_context->getPoolInterfaces());
-        ed247_interfaces->unregister_send_callback(callback);
+        status = ed247_interfaces->unregister_send_callback(callback, context);
     }
     LIBED247_CATCH("Unregister com send callback")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unregister com send callback success" << LOG_END;
+    PRINT_DEBUG("## Unregister com send callback success");
 #endif
-    return ED247_STATUS_SUCCESS;
+    return status;
 }
 
 ed247_status_t ed247_wait_frame(
@@ -2315,20 +2595,20 @@ ed247_status_t ed247_wait_frame(
     int32_t timeout_us)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Wait frame ..." << LOG_END;
+    PRINT_DEBUG("## Wait frame ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Wait frame failed" << LOG_END;
+        PRINT_DEBUG("## Wait frame failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Wait frame failed" << LOG_END;
+        PRINT_DEBUG("## Wait frame failed");
 #endif
-        LOG_ERROR() << "Empty streams pointer" << LOG_END;
+        PRINT_ERROR("Empty streams pointer");
         return ED247_STATUS_FAILURE;
     }
     *streams = nullptr;
@@ -2342,7 +2622,7 @@ ed247_status_t ed247_wait_frame(
     }
     LIBED247_CATCH("Wait frame")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Wait frame success" << LOG_END;
+    PRINT_DEBUG("## Wait frame success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -2353,20 +2633,20 @@ ed247_status_t ed247_wait_during(
     int32_t duration_us)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Wait during ..." << LOG_END;
+    PRINT_DEBUG("## Wait during ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Wait during failed" << LOG_END;
+        PRINT_DEBUG("## Wait during failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(!streams){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Wait during failed" << LOG_END;
+        PRINT_DEBUG("## Wait during failed");
 #endif
-        LOG_ERROR() << "Empty streams pointer" << LOG_END;
+        PRINT_ERROR("Empty streams pointer");
         return ED247_STATUS_FAILURE;
     }
     *streams = nullptr;
@@ -2380,7 +2660,7 @@ ed247_status_t ed247_wait_during(
     }
     LIBED247_CATCH("Wait during")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Wait during success" << LOG_END;
+    PRINT_DEBUG("## Wait during success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -2389,13 +2669,13 @@ ed247_status_t ed247_send_pushed_samples(
     ed247_context_t context)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Send ..." << LOG_END;
+    PRINT_DEBUG("## Send ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Send failed" << LOG_END;
+        PRINT_DEBUG("## Send failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -2404,7 +2684,7 @@ ed247_status_t ed247_send_pushed_samples(
     }
     LIBED247_CATCH("Send")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Send success" << LOG_END;
+    PRINT_DEBUG("## Send success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -2416,20 +2696,20 @@ ed247_status_t ed247_frame_encode(
     ed247_frame_list_t *frames)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame encode ..." << LOG_END;
+    PRINT_DEBUG("## Frame encode ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame encode failed" << LOG_END;
+        PRINT_DEBUG("## Frame encode failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     if(frames == nullptr){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame encode failed" << LOG_END;
+        PRINT_DEBUG("## Frame encode failed");
 #endif
-        LOG_ERROR() << "Empty frames pointer" << LOG_END;
+        PRINT_ERROR("Empty frames pointer");
         return ED247_STATUS_FAILURE;
     }
     *frames = nullptr;
@@ -2440,7 +2720,7 @@ ed247_status_t ed247_frame_encode(
     }
     LIBED247_CATCH("Frame encode")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame encode success" << LOG_END;
+    PRINT_DEBUG("## Frame encode success");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -2451,20 +2731,20 @@ ed247_status_t ed247_frame_decode(
     size_t size)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame decode ..." << LOG_END;
+    PRINT_DEBUG("## Frame decode ...");
 #endif
     if(!channel){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame decode failed" << LOG_END;
+        PRINT_DEBUG("## Frame decode failed");
 #endif
-        LOG_ERROR() << "Invalid channel" << LOG_END;
+        PRINT_ERROR("Invalid channel");
         return ED247_STATUS_FAILURE;
     }
     if(!data){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Frame decode failed" << LOG_END;
+        PRINT_DEBUG("## Frame decode failed");
 #endif
-        LOG_ERROR() << "Empty data pointer" << LOG_END;
+        PRINT_ERROR("Empty data pointer");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -2473,7 +2753,7 @@ ed247_status_t ed247_frame_decode(
     }
     LIBED247_CATCH("Frame decode")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Frame decodesuccess" << LOG_END;
+    PRINT_DEBUG("## Frame decodesuccess");
 #endif
     return ED247_STATUS_SUCCESS;
 }
@@ -2486,13 +2766,13 @@ ed247_status_t ed247_unload(
     ed247_context_t context)
 {
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unload ..." << LOG_END;
+    PRINT_DEBUG("## Unload ...");
 #endif
     if(!context){
 #ifdef LIBED247_VERBOSE_DEBUG
-        LOG_DEBUG() << "## Unload failed" << LOG_END;
+        PRINT_DEBUG("## Unload failed");
 #endif
-        LOG_ERROR() << "Invalid context" << LOG_END;
+        PRINT_ERROR("Invalid context");
         return ED247_STATUS_FAILURE;
     }
     try{
@@ -2502,7 +2782,7 @@ ed247_status_t ed247_unload(
     }
     LIBED247_CATCH("Unload")
 #ifdef LIBED247_VERBOSE_DEBUG
-    LOG_DEBUG() << "## Unload success" << LOG_END;
+    PRINT_DEBUG("## Unload success");
 #endif
     return ED247_STATUS_SUCCESS;
 }

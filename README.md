@@ -1,121 +1,71 @@
 # Introduction
 
-The ED247 LIBRARY / LIBED247 library is an example of implementation of the ED247A communication standard, standardized by the [EUROCAE WG-97][9].
+The ED247 LIBRARY / LIBED247 library is an example of implementation of the ED247A communication standard, standardized by the [EUROCAE WG-97][7].
 
-[9]: https://www.eurocae.net/
+[7]: https://www.eurocae.net/
 
 ## Operating system and compilers
 
 The ED247 LIBRARY / LIBED247 is natively built with the following operating systems and compilers:
-* *Linux (RHEL7)*
-  * GCC 4.8.5 (`gcc4.8.5`)
-    * 32 bits (`x86`)
-    * 64 bits (`x64`)
-* *Windows (10)*
-  * MINGW 4.9.2 (`mingw4.9.2`)
-    * 32 bits (`x86`)
-    * 64 bits (`x64`)
-  * Microsoft Visual Studio C++ 2017 (`msvc2017`)
-    * 32 bits (`x86`)
-    * 64 bits (`x64`)
-  * Microsoft Visual Studio C++ 2015 (`msvc2015`)
-    * 32 bits (`x86`)
-    * 64 bits (`x64`)
+
+-   _Linux (RHEL7)_
+    -   GCC 4.8.5 (32/64 bits)
+-   _Windows (10)_
+    -   MINGW 4.9.2 (32/64 bits)
+    -   Microsoft Visual Studio C++ 2019 (32/64 bits)
+    -   Microsoft Visual Studio C++ 2017 (32/64 bits)
+    -   Microsoft Visual Studio C++ 2015 (32/64 bits)
 
 ## Dependencies
 
-The following tables list the dependencies for both runtime and compilation phasis. They do not take into account the compilers themselves. These dependencies are listed in the `dependencies.sh` dependencies base file or in the one generated after stand alone setup (see *Development/Installation*).
+The repository contains links to automatically build Libxml2 library from its official repository. Moreover, when tests are enabled, Google Test is also automatically built from its repository.
 
-### Runtime
+**CAUTION**: As the source code support C/C++ 11, please make sure you clone the Google Test release `release-1.8.1`, as backward compatibility with C/C++ 11 has been dropped in the next release.
 
-#### Core
+Recommended tools & libraries and associated releases:
 
-| Dependency       | Version |
-|:----------------:|:-------:|
-| [LIBXML2][1]     | 2.9.9   |
+|   Library    |         Purpose         | Release |
+| :----------: | :---------------------: | :-----: |
+| [LIBXML2][1] |        Required         | 2.9.10  |
+|  [GTEST][2]  |       Tests only        |  1.8.1  |
+|  [LCOV][3]   | Tests only (Linux only) |  1.8.1  |
 
 [1]: https://github.com/GNOME/libxml2
-
-#### Tests
-
-| Dependency       | Version |
-|:----------------:|:-------:|
-| [GTEST][2]       | 1.8.1   |
-
 [2]: https://github.com/google/googletest
+[3]: https://github.com/linux-test-project/lcov
 
-### Compilation
+|     Tool     |         Purpose          | Release |
+| :----------: | :----------------------: | :-----: |
+|  [CMAKE][4]  |  Compilation framework   | 3.13.4  |
+|  [NINJA][5]  |       Build system       |  1.8.2  |
+| [DOXYGEN][6] | Documentation generation |  1.8.1  |
 
-*In order to compile on Windows, it is mandatory to use a Cygwin terminal, such as [GitBash][9].*
+[4]: https://github.com/Kitware/CMake
+[5]: https://github.com/ninja-build/ninja
+[6]: https://github.com/doxygen/doxygen
 
-[9]: https://gitforwindows.org/
+## Compilation
 
-#### Core
+The library can be compiled with CMake >= 3.13. The first line of the main `CMakeLists.txt`file contains all options for configuration.
+The folder `scripts` contains compilation scripts examples for both Linux & Windows environments.
 
-| Dependency       | Version |
-|:----------------:|:-------:|
-| [CMAKE][3]       | 3.13.4  |
-| [NINJA][4]       | 1.8.2   |
+**WARNING**: Do not forget to run `git submodule init` & `git submodule update` while clonning the repository.
 
-[3]: https://github.com/Kitware/CMake
-[4]: https://github.com/ninja-build/ninja
+**INFO**: In order to compile only the library you can use the scripts with the `_prod_min` suffix.
 
-#### Tests
-
-| Dependency       | Version |
-|:----------------:|:-------:|
-| [LCOV][6]        | 1.13.0  |
-
-[6]: https://github.com/linux-test-project/lcov
-
-#### Documentation
-
-| Dependency       | Version |
-|:----------------:|:-------:|
-| [DOXYGEN][8]     | 1.8.11  |
-
-[8]: https://github.com/doxygen/doxygen
-
-### Setup
-
-The developper must update the `dependencies.sh` file with the right location of dependencies, taking into account OS type, compiler & wordsize as mentionned in each line.
-
-## Development
-
-All the installation, build and test process is made using the `mgr.sh` script. More help with `mgr.sh help`.
-
-### Installation
-
-The developer can perform a stand alone copy of almost all dependencies with the `mgr.sh setup` command.
-For example `mgr.sh setup mingw4.9.2 x64` will copy main dependencies in a *deps/new* directory where *new* stands for the name of the dependency configuration. It can by customized with the `-n` command line option. After the copy, this command will also generate a *new.sh* configuration which is a duplicate of the *dependencies.sh* file with links to the newly copied depedencies at the end.
-
-### Build
-
-In order to build the ED247 LIBRARY, the developer shall use `mgr.sh build *compiler* *wordsize*` where `*compiler*` and `*wordsize*` are listed in the section *Operating system and compilers* or in the displayed help `mgr.sh help`. Additionally, the developer can use the `-d` option to use a local setup as detailed in the previous section. More help with `mgr.sh help`.
-
-### Tests
-
-The test environment of the ED247 LIBRARY is internally based on a combination of the iotest.sh script (for functional tests) and GTest (for unit tests). The LCOV code coverage tool is used to map the code executable by those ones. The tests run are independant from the building infrastructure, meaning they can be run outside of the compilation environment.
-
-#### Test suite
-
-The test suite can be run with the following `mgr.sh tests *compiler* *wordsize*` where `*compiler*` and `*wordsize*` are listed in the section *Operating system and compilers* or in the displayed help `mgr.sh help`. More help with `mgr.sh help`.
-
-#### Single run
-
-In addition to the test suite, it is possible to run a single test executable with the command line `mgr.sh test *compiler* *wordsize* *test_executable*` where `*compiler*` and `*wordsize*` are listed in the section *Operating system and compilers* or in the displayed help `mgr.sh help` and the `*test_executable*` specifies the test to run (without any suffix such as *.exe*).
+The following tables list the dependencies for both runtime and compilation phasis. They do not take into account the compilers themselves. These dependencies are listed in the `dependencies.sh` dependencies base file or in the one generated after stand alone setup (see _Development/Installation_).
 
 ## Limitations
 
-- ED247 Packetization strategy mechanism is not implemented.
+-   ED247 Packetization strategy mechanism is not implemented.
 
-- ED247 Error handling is not implemented.
+-   ED247 Error handling is not implemented.
 
-- The implementation is compliant only with A664, A429, A825, SERIAL, ANALOG, DISCRETE, NAD & VNAD protocols.
+-   The implementation is compliant only with A664, A429, A825, SERIAL, ANALOG, DISCRETE, NAD & VNAD protocols.
 
-- FrameFormatRevision & StandardRevision options are not entirely supported. This library implements only the "A" revision. Asking for a different revision will lead to a loading error.
+-   FrameFormatRevision & StandardRevision options are not entirely supported. This library implements only the "A" revision. Asking for a different revision will lead to a loading error.
 
-- The regular expressions are not fully supported by gcc4.8.x. Therefore the default linux compilation does not authorize to use complex requests in getters. In particular the use of square brackets has inevitably provoked many failures. Because the behaviour is unspecified the symptoms may vary from a user to an other.
+-   The regular expressions are not fully supported by gcc4.8.x. Therefore the default linux compilation does not authorize to use complex requests in getters. In particular the use of square brackets has inevitably provoked many failures. Because the behaviour is unspecified the symptoms may vary from a user to an other.
 
 ## Miscellaneous
 
@@ -123,10 +73,10 @@ In addition to the test suite, it is possible to run a single test executable wi
 
 The logging strategy can be controlled through the API with `ed247_set_log_level()` or with following environment variables
 
-| Variable            | Purpose                                            |
-|:-------------------:|:--------------------------------------------------:|
-|`ED247_LOG_LEVEL`    | Set the level of logs (see `ed247_log_level_t()`)  |
-|`ED247_LOG_FILEPATH` | Set the filepath of the logging file, if necessary |
+| Environment Variable |                      Purpose                       |
+| :------------------: | :------------------------------------------------: |
+|  `ED247_LOG_LEVEL`   | Set the level of logs (see `ed247_log_level_t()`)  |
+| `ED247_LOG_FILEPATH` | Set the filepath of the logging file, if necessary |
 
 ## License
 

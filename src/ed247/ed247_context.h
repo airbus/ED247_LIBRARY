@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -60,7 +60,7 @@ class Context : public ed247_internal_context_t
 {
     public:
 
-        explicit Context(std::string ecic_filepath,
+        explicit Context(
             const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
         ~Context();
         Context(const Context &)                = delete;
@@ -71,8 +71,6 @@ class Context : public ed247_internal_context_t
         Context(std::initializer_list<T>)       = delete;
 
         void initialize();
-
-        std::string getFilePath() const { return _ecic_filepath; }
 
         std::shared_ptr<xml::Root> getRoot() { return _root; }
 
@@ -105,10 +103,9 @@ class Context : public ed247_internal_context_t
 
         void send_pushed_samples()
         {
-            //encode(_root->info.identifier);
-            //_pool_channels.send();
             _pool_channels.encode_and_send(_root->info.identifier);
         }
+        
         ed247_status_t wait_frame(int32_t timeout_us)
         {
             _active_streams->reset();
@@ -125,16 +122,20 @@ class Context : public ed247_internal_context_t
 
         const libed247_runtime_metrics_t* get_runtime_metrics();
 
-        // Test
-#ifndef NDEBUG
-        static void __test();
-        void __dump();
-#endif
+        void set_user_data(void *user_data){
+            _user_data = user_data;
+        }
+
+        void *get_user_data(){
+            return _user_data;
+        }
 
         class Builder
         {
             public:
-                static Context * create(std::string ecic_filepath,
+                static Context * create_filepath(std::string ecic_filepath,
+                    const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
+                static Context * create_content(std::string ecic_content,
                     const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
                 static void initialize(Context & context);
 
@@ -150,7 +151,6 @@ class Context : public ed247_internal_context_t
 
     private:
 
-        std::string                             _ecic_filepath;
         const libed247_configuration_t          _configuration;
         std::shared_ptr<xml::Root>              _root;
         std::shared_ptr<ComInterface::Pool>     _pool_interfaces;
@@ -160,6 +160,7 @@ class Context : public ed247_internal_context_t
         std::shared_ptr<SmartListActiveFrames>  _active_frames;
         std::shared_ptr<SmartListActiveStreams> _active_streams;
         libed247_runtime_metrics_t              _runtime_metrics;
+        void                                    *_user_data;
 
         void encode(ed247_uid_t component_identifier)
         {

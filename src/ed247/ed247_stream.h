@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,6 @@
 #include "ed247_internals.h"
 #include "ed247_xml.h"
 #include "ed247_signal.h"
-#include "ed247_memhooks.h"
 
 #include <memory>
 #include <tuple>
@@ -312,7 +311,7 @@ class CircularStreamSampleBuffer {
                 update_size();
                 return size() == _sample_max_number; // Ok
             }else{
-                LOG_WARNING() << "Circular buffer is full ! Dropping latest data to push back newest" << LOG_END;
+                PRINT_WARNING("Circular buffer is full ! Dropping latest data to push back newest");
                 _samples[_index_write]->copy(sample);
                 _index_write = (_index_write+1) % _samples.size();
                 _index_read = (_index_read+1) % _samples.size();
@@ -343,9 +342,7 @@ class CircularStreamSampleBuffer {
         std::shared_ptr<StreamSample> & pop_front(bool * empty = nullptr) // True if empty after pop
         {
             if(size() == 0){
-                //LOG_WARNING() << "Circular buffer is empty ! Avoid pop front" << LOG_END;
                 if(empty) *empty = true;
-                // return nullptr;
                 return _samples[_index_read];
             }else{
                 size_t index_read = _index_read;
@@ -469,6 +466,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
         virtual ed247_status_t check_sample_size(size_t sample_size) const
         {
+            _UNUSED(sample_size);
             ASSERT_ED247(false, "Cannot check sample in a BaseStream");
             return ED247_STATUS_FAILURE;
         }
@@ -487,12 +485,17 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
         virtual size_t encode(char * frame, size_t frame_size)
         {
+            _UNUSED(frame);
+            _UNUSED(frame_size);
             ASSERT_ED247(false, "Cannot encode in a BaseStream");
             return 0;
         }
 
         virtual bool decode(const char * frame, size_t frame_size, const FrameHeader * header = nullptr)
         {
+            _UNUSED(frame);
+            _UNUSED(frame_size);
+            _UNUSED(header);
             ASSERT_ED247(false, "Cannot decode in a BaseStream");
             return false;
         }
@@ -503,22 +506,30 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         }
 
         std::vector<std::shared_ptr<BaseSignal>> find_signals(std::string str_regex);
+
+        std::shared_ptr<BaseSignal> get_signal(std::string str_name);
         
         std::shared_ptr<SmartListSignals> signals() { return _signals; };
 
-        ed247_status_t register_callback(ed247_stream_recv_callback_t callback)
+        ed247_status_t register_callback(ed247_context_t context, ed247_stream_recv_callback_t callback)
         {
-            auto it = std::find(_callbacks.begin(), _callbacks.end(), callback);
+            auto it = std::find_if(_callbacks.begin(), _callbacks.end(),
+                [&context, &callback](const std::pair<ed247_context_t,ed247_stream_recv_callback_t> & element){
+                    return element.first == context && element.second == callback;
+                });
             if(it != _callbacks.end()){
                 return ED247_STATUS_FAILURE;
             }
-            _callbacks.push_back(callback);
+            _callbacks.push_back(std::make_pair(context, callback));
             return ED247_STATUS_SUCCESS;
         }
 
-        ed247_status_t unregister_callback(ed247_stream_recv_callback_t callback)
+        ed247_status_t unregister_callback(ed247_context_t context, ed247_stream_recv_callback_t callback)
         {
-            auto it = std::find(_callbacks.begin(), _callbacks.end(), callback);
+            auto it = std::find_if(_callbacks.begin(), _callbacks.end(),
+                [&context, &callback](const std::pair<ed247_context_t,ed247_stream_recv_callback_t> & element){
+                    return element.first == context && element.second == callback;
+                });
             if(it == _callbacks.end()){
                 return ED247_STATUS_FAILURE;
             }
@@ -542,7 +553,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         BaseSample _buffer;
         StreamSample _working_sample;
         std::shared_ptr<SmartListSignals> _signals;
-        std::vector<ed247_stream_recv_callback_t> _callbacks;
+        std::vector<std::pair<ed247_context_t,ed247_stream_recv_callback_t>> _callbacks;
 
     private:
 
@@ -571,17 +582,17 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         {
             ed247_status_t status;
             bool stop = false;
-            for(auto & callback : _callbacks)
+            for(auto & pcallback : _callbacks)
             {
-                if(callback){
-                    status = (*callback)(this);
+                if(pcallback.second){
+                    status = (*pcallback.second)(pcallback.first, this);
                     if(status == ED247_STATUS_STOP){
                         stop = true;
                     }else if(status != ED247_STATUS_SUCCESS){
                         THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Callback returned an error.");
                     }
                 }else
-                    LOG_WARNING() << "Callback [" << callback << "] is not callable." << LOG_END;
+                    PRINT_WARNING("Callback [" << pcallback.second << "] is not callable.");
             }
             return !stop;
         }
@@ -651,6 +662,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
                 std::vector<std::shared_ptr<BaseStream>> find(std::string str_regex);
 
+                std::shared_ptr<BaseStream> get(std::string str_name);
+
                 std::shared_ptr<SmartListStreams> streams();
 
                 size_t size() const;
@@ -714,6 +727,16 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 std::shared_ptr<BaseStream> get_stream()
                 {
                     return _stream;
+                }
+
+                bool is_valid()
+                {
+                    auto type = _stream->get_configuration()->info.type;
+                    return _stream ? (
+                        type == ED247_STREAM_TYPE_DISCRETE ||
+                        type == ED247_STREAM_TYPE_ANALOG ||
+                        type == ED247_STREAM_TYPE_NAD ||
+                        type == ED247_STREAM_TYPE_VNAD) : false;
                 }
 
                 void write(std::shared_ptr<BaseSignal> signal, const void *data, size_t size)
@@ -783,7 +806,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                             continue;
                         if(!pair.second.flag){
                             // THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << pair.first->get_name() << "] has not been updated before pushing the sample");
-                            if(!MemoryHooksManager::getInstance().isEnabled()) LOG_WARNING() << "Signal [" << pair.first->get_name() << "] has not been updated before pushing the sample" << LOG_END;
+                            IF_PRINT PRINT_WARNING("Signal [" << pair.first->get_name() << "] has not been updated before pushing the sample");
                         }
                         pair.second.flag = false;
                         if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
@@ -846,84 +869,6 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         if(vnad_behaviour)
                             buffer_index += sample_size;
                     }
-                }
-
-                void read_sample(const void * sample, size_t size)
-                {
-                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_OUT))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot write sample as Stream is not writable");
-                    size_t buffer_index = 0;
-                    size_t sample_size = 0;
-                    bool vnad_behaviour = false;
-                    for(auto & pair : _send_samples){
-                        if(!pair.first)
-                            continue;
-                        if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                            if(buffer_index + sizeof(uint16_t) > size)
-                                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Invalid signal size, not enough space in buffer");
-                            sample_size = (*(uint16_t*)((char*)sample+buffer_index)); // no ntohs !
-                            if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                                size_t sample_max_size = pair.first->get_configuration()->info.info.vnad.max_length * (BaseSignal::sample_max_size_bytes(pair.first->get_configuration()->info) + sizeof(uint16_t));
-                                if(size > sample_max_size)
-                                    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot write Signal [" << pair.first->get_name() << "] as Signal SampleMaxSizeBytes is [" << sample_max_size << "] and data to write is of size [" << size << "]");
-                            }
-                            buffer_index += sizeof(uint16_t);
-                            vnad_behaviour = true;
-                        }else{
-                            sample_size = BaseSignal::sample_max_size_bytes(pair.first->get_configuration()->info);
-                            if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_ANALOG){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.ana.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_DISCRETE){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.dis.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_NAD){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.nad.byte_offset;
-                            }else{
-                                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << pair.first->get_name() << "] has not a valid type");
-                            }
-                        }
-                        pair.second.sample->copy((char*)sample+buffer_index, sample_size);
-                        pair.second.flag = true;
-                        if(vnad_behaviour)
-                            buffer_index += sample_size;
-                    }
-                }
-
-                void write_sample(const void **sample, size_t *size)
-                {
-                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_IN))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot read as Stream is not readable");
-                    size_t buffer_index = 0;
-                    bool vnad_behaviour = false;
-                    for(auto & pair : _recv_samples){
-                        if(!pair.first)
-                            continue;
-                        pair.second.flag = false;
-                        if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                            *(uint16_t*)((char*)_buffer.data()+buffer_index) = (uint16_t)htons((uint16_t)pair.second.sample->size());
-                            buffer_index += sizeof(uint16_t);
-                        }else{
-                            if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_ANALOG){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.ana.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_DISCRETE){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.dis.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_NAD){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.nad.byte_offset;
-                            }else{
-                                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << pair.first->get_name() << "] has not a valid type");
-                            }
-                        }
-                        memcpy((char*)_buffer.data()+buffer_index, pair.second.sample->data(), pair.second.sample->size());
-                        if(vnad_behaviour)
-                            buffer_index += pair.second.sample->size();
-                        pair.second.sample->set_size(0);
-                    }
-                    if(vnad_behaviour)
-                        _buffer.set_size(buffer_index);
-                    else
-                        _buffer.set_size(_stream->get_configuration()->info.sample_max_size_bytes);
-                    
-                    *sample = _buffer.data();
-                    *size = _buffer.size();
                 }
 
             protected:

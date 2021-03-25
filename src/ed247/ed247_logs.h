@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,12 +35,18 @@
 #include <fstream>
 #include <sstream>
 
-#define LOG_TEST()      ed247::Logs::log(ED247_LOG_LEVEL_TEST)
 #define LOG_DEBUG()     ed247::Logs::log(ED247_LOG_LEVEL_DEBUG)
 #define LOG_INFO()      ed247::Logs::log(ED247_LOG_LEVEL_INFO)
 #define LOG_WARNING()   ed247::Logs::log(ED247_LOG_LEVEL_WARNING)
 #define LOG_ERROR()     ed247::Logs::log(ED247_LOG_LEVEL_ERROR)
 #define LOG_END         std::endl;
+
+#define IF_PRINT if(Configuration::getInstance().get().enable_logs_during_send_receive)
+
+#define PRINT_DEBUG(x) LOG_DEBUG() << x << LOG_END
+#define PRINT_INFO(x) LOG_INFO() << x << LOG_END
+#define PRINT_WARNING(x) LOG_WARNING() << x << LOG_END
+#define PRINT_ERROR(x) LOG_ERROR() << x << LOG_END
 
 #define THROW_ED247_ERROR(ex,message)                               \
     do{                                                             \
@@ -160,7 +166,7 @@ class exception : public std::exception
             _status(status),
             _what(what)
         {}
-        virtual ~exception() noexcept {}
+        virtual ~exception() {}
         
         virtual const char *what() const noexcept;
         ed247_status_t getStatus() const

@@ -1,0 +1,13 @@
+/*!
+
+\page reports Reports
+
+\section tests_report Tests
+
+<a href="../../tests/report.md">Tests report</a>
+
+\section code_coverage Code coverage
+
+<a href="../../lcov/index.html">Code coverage report</a>
+
+*/

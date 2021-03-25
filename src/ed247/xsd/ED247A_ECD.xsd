@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2019 Airbus Operations S.A.S
+Copyright (c) 2020 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
     <xs:simpleType name="empty_or_ip_address_type">
         <xs:restriction base="xs:normalizedString">
-            <xs:pattern value="(^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)?"/>
+            <xs:pattern value="((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))?"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -92,7 +92,6 @@ DEALINGS IN THE SOFTWARE.
 
     <xs:simpleType name="a429_label_type">
         <xs:restriction base="xs:normalizedString">
-            <!-- TODO: Complete -->
         </xs:restriction>
     </xs:simpleType>
 
@@ -108,7 +107,6 @@ DEALINGS IN THE SOFTWARE.
 
     <xs:simpleType name="a825_identifier_type">
         <xs:restriction base="xs:normalizedString">
-            <!-- TODO: Complete -->
         </xs:restriction>
     </xs:simpleType>
 
@@ -127,7 +125,6 @@ DEALINGS IN THE SOFTWARE.
 
     <xs:simpleType name="electrical_unit_type">
         <xs:restriction base="xs:normalizedString">
-            <!-- TODO: Any enumeration needed ?-->
         </xs:restriction>
     </xs:simpleType>
 
@@ -196,36 +193,6 @@ DEALINGS IN THE SOFTWARE.
         <xs:attribute name="Need" type="yes_no_type" default="Yes"/>
     </xs:complexType>
 
-    <xs:complexType name="packet_strategy_type">
-        <xs:sequence>
-            <xs:element name="Periodic" minOccurs="0">
-                <xs:complexType>
-                    <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="packet_strategy_capa_type">
-        <xs:sequence>
-            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="periodic_need_type">
-        <xs:complexContent>
-            <xs:extension base="need_type_yes">
-                <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="packet_strategy_need_type">
-        <xs:sequence>
-            <xs:element name="Periodic" type="periodic_need_type" minOccurs="0"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="data_timestamp_type">
         <xs:complexContent>
             <xs:extension base="enable_type_no">
@@ -250,26 +217,6 @@ DEALINGS IN THE SOFTWARE.
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="frame_format_type">
-        <xs:attribute name="StandardRevision" type="standard_revision_type" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="frame_format_list_type">
-        <xs:sequence>
-            <xs:element name="FrameFormat" type="frame_format_type" minOccurs="1" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="stream_abstract_type" abstract="true">
-        <xs:sequence>
-            <xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
-        </xs:sequence>
-        <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
-        <xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
-        <xs:attribute name="ICD" type="xs:normalizedString" default=""/>
-        <xs:attribute name="Comment" type="xs:string" default=""/>
-    </xs:complexType>
-
     <xs:complexType name="signal_abstract_type" abstract="true">
         <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
         <xs:attribute name="ICD" type="xs:normalizedString" default=""/>
@@ -282,98 +229,91 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- A429 -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="a429_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type">
-                <xs:sequence>
-                    <xs:element name="Gap" type="capable_type_no" minOccurs="0"/>
-                    <xs:element name="TriggerWords" type="capable_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="trigger_words_need_type">
-        <xs:complexContent>
-            <xs:extension base="need_type_no">
-                <xs:sequence>
-                    <xs:element name="TriggerWord" maxOccurs="unbounded">
-                        <xs:complexType>
-                            <xs:attribute name="Label" type="a429_label_type" use="required"/>
-                            <xs:attribute name="SDI" type="a429_sdi_type" default="Any"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="a429_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="Gap" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="TriggerWords" type="trigger_words_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="a429_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type">
-                <xs:sequence>
-                    <xs:element name="Gap" minOccurs="0">
-                        <xs:complexType>
-                            <xs:attribute name="DurationNs" type="xs:positiveInteger" use="required"/>
-                            <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="TriggerWords" minOccurs="0">
-                        <xs:complexType>
+		<xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Gap" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="DurationNs" type="xs:positiveInteger" use="required"/>
+					<xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="TriggerWords" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="TriggerWord" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:attribute name="Label" type="a429_label_type" use="required"/>
+								<xs:attribute name="SDI" type="a429_sdi_type" default="Any"/>
+								<xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="a429_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Gap" type="capable_type_no" minOccurs="0"/>
+            <xs:element name="TriggerWords" type="capable_type_no" minOccurs="0"/>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="a429_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Gap" type="need_type_no" minOccurs="0"/>
+            <xs:element name="TriggerWords" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_no">
                             <xs:sequence>
                                 <xs:element name="TriggerWord" maxOccurs="unbounded">
                                     <xs:complexType>
                                         <xs:attribute name="Label" type="a429_label_type" use="required"/>
                                         <xs:attribute name="SDI" type="a429_sdi_type" default="Any"/>
-                                        <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
                                     </xs:complexType>
                                 </xs:element>
                             </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="a429_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="a429_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="a429_stream_abstract_type">
-                <xs:sequence>
-                    <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="a429_packet_strategy_type" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="a429_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="a429_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="a429_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="a429_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="a429_packet_strategy_need_type" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+		<xs:attribute name="Direction" type="direction_single_type" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="a429_stream_multi_type">
@@ -386,98 +326,91 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- A825 -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="a825_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type">
-                <xs:sequence>
-                    <xs:element name="Frames" type="capable_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="frames_need_type">
-        <xs:complexContent>
-            <xs:extension base="need_type_no">
-                <xs:sequence>
-                    <xs:element name="Frame" minOccurs="0" maxOccurs="unbounded">
-                        <xs:complexType>
-                            <xs:attribute name="Identifier" type="a825_identifier_type" use="required"/>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="LCC" minOccurs="0" maxOccurs="unbounded">
-                        <xs:complexType>
-                            <xs:attribute name="LCC" type="a825_lcc_type" use="required"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="a825_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="Frames" type="frames_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="a825_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type">
-                <xs:sequence>
-                    <xs:element name="Frames" minOccurs="0">
-                        <xs:complexType>
+		<xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+            <xs:element name="Frames" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Frame" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="Identifier" type="a825_identifier_type" use="required"/>
+                                <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="LCC" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="LCC" type="a825_lcc_type" use="required"/>
+                                <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="a825_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+            <xs:element name="Frames" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="a825_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Frames" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_no">
                             <xs:sequence>
                                 <xs:element name="Frame" minOccurs="0" maxOccurs="unbounded">
                                     <xs:complexType>
                                         <xs:attribute name="Identifier" type="a825_identifier_type" use="required"/>
-                                        <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
                                     </xs:complexType>
                                 </xs:element>
                                 <xs:element name="LCC" minOccurs="0" maxOccurs="unbounded">
                                     <xs:complexType>
                                         <xs:attribute name="LCC" type="a825_lcc_type" use="required"/>
-                                        <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
                                     </xs:complexType>
                                 </xs:element>
                             </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="a825_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type"/>
-            <!-- No Direction attribute -->
-        </xs:complexContent>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="a825_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="a825_stream_abstract_type">
-                <xs:sequence>
-                    <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="a825_packet_strategy_type" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="a825_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="a825_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="a825_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="a825_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="a825_packet_strategy_need_type" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
     </xs:complexType>
 
     <xs:complexType name="a825_stream_multi_type">
@@ -490,54 +423,55 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- A664 -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="a664_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="a664_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="a664_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+        <xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+        </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="a664_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="MessageSize" type="enable_type_yes" minOccurs="0"/>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- ECD only --> <xs:complexType name="a664_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="a664_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="a664_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="a664_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="a664_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="a664_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="a664_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="a664_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="a664_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="a664_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="MessageSize" type="enable_type_yes" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" default="1471"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="a664_stream_multi_type">
@@ -550,101 +484,93 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- M1553 -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="m1553_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type">
-                <xs:sequence>
-                    <xs:element name="Messages" type="capable_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="messages_need_type">
-        <xs:complexContent>
-            <xs:extension base="need_type_no">
-                <xs:sequence>
-                    <xs:element name="Message" maxOccurs="unbounded">
-                        <xs:complexType>
-                            <xs:attribute name="CommandWord" type="xs:string" use="required"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="m1553_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="Messages" type="messages_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="m1553_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type">
-                <xs:sequence>
-                    <xs:element name="Messages" minOccurs="0">
-                        <xs:complexType>
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Messages" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Message" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="CommandWord" type="xs:string" use="required"/>
+                                <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="m1553_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+            <xs:element name="Messages" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="m1553_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Messages" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_no">
                             <xs:sequence>
                                 <xs:element name="Message" maxOccurs="unbounded">
                                     <xs:complexType>
                                         <xs:attribute name="CommandWord" type="xs:string" use="required"/>
-                                        <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
                                     </xs:complexType>
                                 </xs:element>
                             </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="m1553_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Terminals">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="Terminal" minOccurs="0" maxOccurs="31">
-                                    <xs:complexType>
-                                        <xs:attribute name="Address" type="m1553_address_type" use="required"/>
-                                    </xs:complexType>
-                                </xs:element>
-                            </xs:sequence>
-                            <xs:attribute name="BCCapable" type="yes_no_type" default="No"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="m1553_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="m1553_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="m1553_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="m1553_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="m1553_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="m1553_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="m1553_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="m1553_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="MessageSize" type="enable_type_yes" minOccurs="0"/>
+            <xs:element name="Terminals">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Terminal" minOccurs="0" maxOccurs="31">
+                            <xs:complexType>
+                                <xs:attribute name="Address" type="m1553_address_type" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="BCCapable" type="yes_no_type" default="No"/>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
     </xs:complexType>
 
     <xs:complexType name="m1553_stream_multi_type">
@@ -657,69 +583,62 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- SERIAL -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="serial_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type">
-                <xs:sequence>
-                    <xs:element name="Gap" type="capable_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="serial_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="Gap" type="need_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="serial_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type">
-                <xs:sequence>
-                    <xs:element name="Gap" minOccurs="0">
-                        <xs:complexType>
-                            <xs:attribute name="DurationNs" type="xs:positiveInteger" use="required"/>
-                            <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Gap" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="DurationNs" type="xs:positiveInteger" use="required"/>
+                    <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="serial_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:attribute name="Direction" type="direction_bidir_type" use="required"/>
-                <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="serial_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+            <xs:element name="Gap" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="serial_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Gap" type="need_type_no" minOccurs="0"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="serial_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="serial_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="serial_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="serial_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="serial_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="serial_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="serial_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="serial_packet_strategy_need_type" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_bidir_type" use="required"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="serial_stream_multi_type">
@@ -732,67 +651,67 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- AUDIO -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="audio_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="audio_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="audio_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="audio_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Encoding">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="EncodingParameter" minOccurs="0" maxOccurs="unbounded">
-                                    <xs:complexType>
-                                        <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
-                                        <xs:attribute name="Value" type="xs:normalizedString" use="required"/>
-                                    </xs:complexType>
-                                </xs:element>
-                            </xs:sequence>
-                            <xs:attribute name="Format" type="xs:normalizedString" use="required"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-                <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="audio_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="audio_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="audio_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="audio_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="audio_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="audio_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="audio_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="audio_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="audio_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="audio_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Encoding">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="EncodingParameter" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+                                <xs:attribute name="Value" type="xs:normalizedString" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="Format" type="xs:normalizedString" use="required"/>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="audio_stream_multi_type">
@@ -805,71 +724,71 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- VIDEO -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="video_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="video_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="video_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="video_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Encoding">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="EncodingParameter" minOccurs="0" maxOccurs="unbounded">
-                                    <xs:complexType>
-                                        <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
-                                        <xs:attribute name="Value" type="xs:normalizedString" use="required"/>
-                                    </xs:complexType>
-                                </xs:element>
-                            </xs:sequence>
-                            <xs:attribute name="Format" type="xs:normalizedString" use="required"/>
-                            <xs:attribute name="BandwidthBitsPerSec" type="xs:positiveInteger" use="required"/>
-                            <xs:attribute name="FramePerSec" type="xs:positiveInteger" use="required"/>
-                            <xs:attribute name="ResolutionWidthPx" type="xs:positiveInteger" use="required"/>
-                            <xs:attribute name="ResolutionHeightPx" type="xs:positiveInteger" use="required"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-                <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="video_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="video_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="video_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="video_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="video_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="video_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="video_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="video_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="video_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="video_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Encoding">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="EncodingParameter" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+                                <xs:attribute name="Value" type="xs:normalizedString" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="Format" type="xs:normalizedString" use="required"/>
+                    <xs:attribute name="BandwidthBitsPerSec" type="xs:positiveInteger" use="required"/>
+                    <xs:attribute name="FramePerSec" type="xs:positiveInteger" use="required"/>
+                    <xs:attribute name="ResolutionWidthPx" type="xs:positiveInteger" use="required"/>
+                    <xs:attribute name="ResolutionHeightPx" type="xs:positiveInteger" use="required"/>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="video_stream_multi_type">
@@ -882,59 +801,59 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- ETH -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="eth_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="eth_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="eth_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="eth_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Frame">
-                        <xs:complexType>
-                            <xs:attribute name="Layer" type="eth_frame_layer_type" default="Network"/>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="FrameSize" type="enable_type_yes" minOccurs="0"/>
-                </xs:sequence>
-                <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="eth_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="eth_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="eth_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="eth_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="eth_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="eth_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="eth_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsCapability" type="capable_type_no" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="ErrorsNeed" type="need_type_no" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="eth_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="eth_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="eth_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Frame">
+                <xs:complexType>
+                    <xs:attribute name="Layer" type="eth_frame_layer_type" default="Network"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="FrameSize" type="enable_type_yes" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="eth_stream_multi_type">
@@ -947,40 +866,14 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- DIS -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="dis_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type">
-                <xs:sequence>
-                    <xs:element name="OnTransition" type="capable_type_yes" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="dis_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="OnTransition" type="need_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="dis_signal_type">
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
-                <xs:attribute name="TrueValue" type="xs:normalizedString" default=""/>
-                <xs:attribute name="FalseValue" type="xs:normalizedString" default=""/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="dis_signal_pool_type">
+    <!-- ECD only --> <xs:complexType name="dis_signal_pool_type">
         <xs:complexContent>
             <xs:extension base="dis_signal_type">
                 <xs:attribute name="Direction" type="direction_single_type" use="required"/>
@@ -990,60 +883,76 @@ DEALINGS IN THE SOFTWARE.
     </xs:complexType>
 
     <xs:complexType name="dis_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type">
-                <xs:sequence>
-                    <xs:element name="OnTransition" minOccurs="0">
-                        <xs:complexType>
-                            <xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="OnTransition" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="ResetPeriodicTimer" type="yes_no_type" default="Yes"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
     </xs:complexType>
 
-    <xs:complexType name="dis_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Signals">
-                        <xs:complexType>
-                            <xs:complexContent>
-                                <xs:extension base="signals_abstract_type">
-                                    <xs:sequence>
-                                        <xs:element name="Signal" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:complexContent>
-                                                    <xs:extension base="dis_signal_type">
-                                                        <xs:attribute name="ByteOffset" type="xs:nonNegativeInteger" use="required"/>
-                                                    </xs:extension>
-                                                </xs:complexContent>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:extension>
-                            </xs:complexContent>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="dis_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+            <xs:element name="OnTransition" type="capable_type_yes" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="dis_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="OnTransition" type="need_type_no" minOccurs="0"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="dis_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="dis_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="dis_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="dis_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="dis_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="dis_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="dis_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="dis_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Signals">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="signals_abstract_type">
+                            <xs:sequence>
+                                <xs:element name="Signal" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:complexContent>
+                                            <xs:extension base="dis_signal_type">
+                                                <xs:attribute name="ByteOffset" type="xs:nonNegativeInteger"/>
+                                            </xs:extension>
+                                        </xs:complexContent>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="dis_stream_multi_type">
@@ -1056,26 +965,6 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- ANA -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="ana_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="ana_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="OnTransition" type="need_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="ana_signal_type">
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
@@ -1084,7 +973,7 @@ DEALINGS IN THE SOFTWARE.
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="ana_signal_pool_type">
+    <!-- EDC only --> <xs:complexType name="ana_signal_pool_type">
         <xs:complexContent>
             <xs:extension base="ana_signal_type">
                 <xs:attribute name="Direction" type="direction_single_type" use="required"/>
@@ -1094,52 +983,69 @@ DEALINGS IN THE SOFTWARE.
     </xs:complexType>
 
     <xs:complexType name="ana_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
     </xs:complexType>
 
-    <xs:complexType name="ana_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Signals">
-                        <xs:complexType>
-                            <xs:complexContent>
-                                <xs:extension base="signals_abstract_type">
-                                    <xs:sequence>
-                                        <xs:element name="Signal" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:complexContent>
-                                                    <xs:extension base="ana_signal_type">
-                                                        <xs:attribute name="ByteOffset" type="xs:nonNegativeInteger" use="required"/>
-                                                    </xs:extension>
-                                                </xs:complexContent>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:extension>
-                            </xs:complexContent>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="ana_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="ana_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="ana_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="ana_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="ana_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="ana_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="ana_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="ana_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="ana_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="ana_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Signals">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="signals_abstract_type">
+                            <xs:sequence>
+                                <xs:element name="Signal" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:complexContent>
+                                            <xs:extension base="ana_signal_type">
+                                                <xs:attribute name="ByteOffset" type="xs:nonNegativeInteger"/>
+                                            </xs:extension>
+                                        </xs:complexContent>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>   
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="ana_stream_multi_type">
@@ -1152,26 +1058,6 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- NAD -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="nad_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="nad_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="OnTransition" type="need_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="nad_signal_type">
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
@@ -1182,7 +1068,7 @@ DEALINGS IN THE SOFTWARE.
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="nad_signal_pool_type">
+    <!-- EDC only --> <xs:complexType name="nad_signal_pool_type">
         <xs:complexContent>
             <xs:extension base="nad_signal_type">
                 <xs:attribute name="Direction" type="direction_single_type" use="required"/>
@@ -1192,52 +1078,69 @@ DEALINGS IN THE SOFTWARE.
     </xs:complexType>
 
     <xs:complexType name="nad_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
     </xs:complexType>
 
-    <xs:complexType name="nad_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Signals">
-                        <xs:complexType>
-                            <xs:complexContent>
-                                <xs:extension base="signals_abstract_type">
-                                    <xs:sequence>
-                                        <xs:element name="Signal" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:complexContent>
-                                                    <xs:extension base="nad_signal_type">
-                                                        <xs:attribute name="ByteOffset" type="xs:nonNegativeInteger" use="required"/>
-                                                    </xs:extension>
-                                                </xs:complexContent>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:extension>
-                            </xs:complexContent>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="nad_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="nad_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="nad_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="nad_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="nad_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="nad_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="nad_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="nad_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="nad_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="nad_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Signals">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="signals_abstract_type">
+                            <xs:sequence>
+                                <xs:element name="Signal" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:complexContent>
+                                            <xs:extension base="nad_signal_type">
+                                                <xs:attribute name="ByteOffset" type="xs:nonNegativeInteger"/>
+                                            </xs:extension>
+                                        </xs:complexContent>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
+        <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="nad_stream_multi_type">
@@ -1250,26 +1153,6 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- VNAD -->
 
-    <!-- ECD only -->
-
-    <xs:complexType name="vnad_packet_strategy_capa_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_capa_type"/>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="vnad_packet_strategy_need_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_need_type">
-                <xs:sequence>
-                    <xs:element name="OnTransition" type="need_type_no" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- -->
-
     <xs:complexType name="vnad_signal_type">
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
@@ -1280,7 +1163,7 @@ DEALINGS IN THE SOFTWARE.
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="vnad_signal_pool_type">
+    <!-- EDC only --> <xs:complexType name="vnad_signal_pool_type">
         <xs:complexContent>
             <xs:extension base="vnad_signal_type">
                 <xs:attribute name="Direction" type="direction_single_type" use="required"/>
@@ -1288,54 +1171,70 @@ DEALINGS IN THE SOFTWARE.
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-
+    
     <xs:complexType name="vnad_packet_strategy_type">
-        <xs:complexContent>
-            <xs:extension base="packet_strategy_type"/>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="Periodic" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
     </xs:complexType>
 
-    <xs:complexType name="vnad_stream_abstract_type" abstract="true">
-        <xs:complexContent>
-            <xs:extension base="stream_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Signals">
-                        <xs:complexType>
-                            <xs:complexContent>
-                                <xs:extension base="signals_abstract_type">
-                                    <xs:sequence>
-                                        <xs:element name="Signal" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:complexContent>
-                                                    <xs:extension base="vnad_signal_type">
-                                                        <xs:attribute name="Position" type="xs:nonNegativeInteger" use="required"/>
-                                                    </xs:extension>
-                                                </xs:complexContent>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:extension>
-                            </xs:complexContent>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:attribute name="Direction" type="direction_single_type" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+    <!-- EDC only --> <xs:complexType name="vnad_packet_strategy_capa_type">
+        <xs:all>
+            <xs:element name="Periodic" type="capable_type_no" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- EDC only --> <xs:complexType name="vnad_packet_strategy_need_type">
+        <xs:all>
+            <xs:element name="Periodic" minOccurs="0">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="need_type_yes">
+                            <xs:attribute name="PeriodNs" type="xs:nonNegativeInteger" default="0"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="vnad_stream_simple_type">
-        <xs:complexContent>
-            <xs:extension base="vnad_stream_abstract_type">
-                <xs:sequence>
-                    <!-- ECD only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
-                    <xs:element name="PacketStrategy" type="vnad_packet_strategy_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyCapabilities" type="vnad_packet_strategy_capa_type" minOccurs="0"/>
-                    <!-- ECD only --> <xs:element name="PacketStrategyNeeds" type="vnad_packet_strategy_need_type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+		<xs:all>
+			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampCapability" type="data_timestamp_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="DataTimestampNeed" type="data_timestamp_need_type" minOccurs="0"/>
+			<xs:element name="PacketStrategy" type="vnad_packet_strategy_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="vnad_packet_strategy_capa_type" minOccurs="0"/>
+            <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="vnad_packet_strategy_need_type" minOccurs="0"/>
+            <xs:element name="Signals">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="signals_abstract_type">
+                            <xs:sequence>
+                                <xs:element name="Signal" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                        <xs:complexContent>
+                                            <xs:extension base="vnad_signal_type">
+                                                <xs:attribute name="Position" type="xs:nonNegativeInteger"/>
+                                            </xs:extension>
+                                        </xs:complexContent>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+		</xs:all>
+		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
+		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
+		<xs:attribute name="Comment" type="xs:string" default=""/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="vnad_stream_multi_type">
@@ -1344,6 +1243,18 @@ DEALINGS IN THE SOFTWARE.
                 <xs:attribute name="UID" type="xs:nonNegativeInteger" use="required"/>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <!-- FrameFormat -->
+
+    <xs:complexType name="frame_format_type">
+        <xs:attribute name="StandardRevision" type="standard_revision_type" use="required"/>
+    </xs:complexType>
+
+    <!-- ECD only --> <xs:complexType name="frame_format_list_type">
+        <xs:sequence>
+            <xs:element name="FrameFormat" type="frame_format_type" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
     </xs:complexType>
 
     <!-- UDP Socket -->
@@ -1368,102 +1279,18 @@ DEALINGS IN THE SOFTWARE.
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="header_capa_type">
+    <!-- ECD only --> <xs:complexType name="header_capa_type">
         <xs:attribute name="TransportTimestamp" type="yes_no_type" default="No"/>
     </xs:complexType>
 
-    <xs:complexType name="header_need_type">
+    <!-- ECD only --> <xs:complexType name="header_need_type">
         <xs:attribute name="TransportTimestamp" type="yes_no_type" default="No"/>
     </xs:complexType>
 
-    <!-- MultiChannel -->
+    <!-- Pool -->
 
-    <xs:complexType name="channel_abstract_type" abstract="true">
-        <xs:sequence>
-            <xs:element name="FrameFormat" type="frame_format_type" minOccurs="0"/>
-            <xs:element name="FrameFormatCapabilities" type="frame_format_list_type" minOccurs="0"/>
-            <xs:element name="FrameFormatNeeds" type="frame_format_list_type" minOccurs="0"/>
-            <xs:element name="ComInterface" minOccurs="0"> <!-- ECD only for minOccurs -->
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="UDP_Sockets">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="UDP_Socket" type="udp_socket_type" maxOccurs="unbounded"/>
-                                </xs:sequence>
-                            </xs:complexType>
-                        </xs:element>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="Header" type="header_type" minOccurs="0"/>
-            <!-- ECD only --> <xs:element name="HeaderCapabilities" type="header_capa_type" minOccurs="0"/>
-            <!-- ECD only --> <xs:element name="HeaderNeeds" type="header_need_type" minOccurs="0"/>
-        </xs:sequence>
-        <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
-        <xs:attribute name="Comment" type="xs:string" default=""/>
-    </xs:complexType>
-
-    <xs:complexType name="multi_channel_type">
-        <xs:complexContent>
-            <xs:extension base="channel_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Streams">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="A429_Stream" type="a429_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="A825_Stream" type="a825_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="A664_Stream" type="a664_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="M1553_Stream" type="m1553_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="SERIAL_Stream" type="serial_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="AUDIO_Stream" type="audio_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="VIDEO_Stream" type="video_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="ETH_Stream" type="eth_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="DIS_Stream" type="dis_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="ANA_Stream" type="ana_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="NAD_Stream" type="nad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="VNAD_Stream" type="vnad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                            </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- Channel -->
-
-    <xs:complexType name="channel_type">
-        <xs:complexContent>
-            <xs:extension base="channel_abstract_type">
-                <xs:sequence>
-                    <xs:element name="Stream">
-                        <xs:complexType>
-                            <xs:choice>
-                                <xs:element name="A429_Stream" type="a429_stream_simple_type"/>
-                                <xs:element name="A825_Stream" type="a825_stream_simple_type"/>
-                                <xs:element name="A664_Stream" type="a664_stream_simple_type"/>
-                                <xs:element name="M1553_Stream" type="m1553_stream_simple_type"/>
-                                <xs:element name="SERIAL_Stream" type="serial_stream_simple_type"/>
-                                <xs:element name="AUDIO_Stream" type="audio_stream_simple_type"/>
-                                <xs:element name="VIDEO_Stream" type="video_stream_simple_type"/>
-                                <xs:element name="ETH_Stream" type="eth_stream_simple_type"/>
-                                <xs:element name="DIS_Stream" type="dis_stream_simple_type" />
-                                <xs:element name="ANA_Stream" type="ana_stream_simple_type" />
-                                <xs:element name="NAD_Stream" type="nad_stream_simple_type" />
-                                <xs:element name="VNAD_Stream" type="vnad_stream_simple_type"/>
-                            </xs:choice>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- Pools -->
-
-    <xs:complexType name="pool_type">
-        <xs:sequence>
+    <!-- ECD only --> <xs:complexType name="pool_type">
+        <xs:all>
             <xs:element name="FrameFormat" type="frame_format_type" minOccurs="0"/>
             <xs:element name="FrameFormatCapabilities" type="frame_format_list_type" minOccurs="0"/>
             <xs:element name="FrameFormatNeeds" type="frame_format_list_type" minOccurs="0"/>
@@ -1497,13 +1324,105 @@ DEALINGS IN THE SOFTWARE.
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-        </xs:sequence>
+        </xs:all>
         <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+    </xs:complexType>
+
+    <!-- Channel -->
+
+    <xs:complexType name="channel_type">
+        <xs:all>
+            <xs:element name="FrameFormat" type="frame_format_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="FrameFormatCapabilities" type="frame_format_list_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="FrameFormatNeeds" type="frame_format_list_type" minOccurs="0"/>
+            <xs:element name="ComInterface" minOccurs="0">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="UDP_Sockets">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="UDP_Socket" type="udp_socket_type" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Header" type="header_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="HeaderCapabilities" type="header_capa_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="HeaderNeeds" type="header_need_type" minOccurs="0"/>
+            <xs:element name="Stream">
+                <xs:complexType>
+                    <xs:choice>
+                        <xs:element name="A429_Stream" type="a429_stream_simple_type"/>
+                        <xs:element name="A825_Stream" type="a825_stream_simple_type"/>
+                        <xs:element name="A664_Stream" type="a664_stream_simple_type"/>
+                        <xs:element name="M1553_Stream" type="m1553_stream_simple_type"/>
+                        <xs:element name="SERIAL_Stream" type="serial_stream_simple_type"/>
+                        <xs:element name="AUDIO_Stream" type="audio_stream_simple_type"/>
+                        <xs:element name="VIDEO_Stream" type="video_stream_simple_type"/>
+                        <xs:element name="ETH_Stream" type="eth_stream_simple_type"/>
+                        <xs:element name="DIS_Stream" type="dis_stream_simple_type" />
+                        <xs:element name="ANA_Stream" type="ana_stream_simple_type" />
+                        <xs:element name="NAD_Stream" type="nad_stream_simple_type" />
+                        <xs:element name="VNAD_Stream" type="vnad_stream_simple_type"/>
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+        <xs:attribute name="Comment" type="xs:string" default=""/>
+    </xs:complexType>
+
+    <!-- MultiChannel -->
+
+    <xs:complexType name="multi_channel_type">
+        <xs:all>
+            <xs:element name="FrameFormat" type="frame_format_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="FrameFormatCapabilities" type="frame_format_list_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="FrameFormatNeeds" type="frame_format_list_type" minOccurs="0"/>
+            <xs:element name="ComInterface" minOccurs="0">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="UDP_Sockets">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="UDP_Socket" type="udp_socket_type" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Header" type="header_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="HeaderCapabilities" type="header_capa_type" minOccurs="0"/>
+            <!-- ECD only --> <xs:element name="HeaderNeeds" type="header_need_type" minOccurs="0"/>
+            <xs:element name="Streams">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="A429_Stream" type="a429_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="A825_Stream" type="a825_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="A664_Stream" type="a664_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="M1553_Stream" type="m1553_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="SERIAL_Stream" type="serial_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="AUDIO_Stream" type="audio_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="VIDEO_Stream" type="video_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="ETH_Stream" type="eth_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="DIS_Stream" type="dis_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="ANA_Stream" type="ana_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="NAD_Stream" type="nad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="VNAD_Stream" type="vnad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="Name" type="xs:normalizedString" use="required"/>
+        <xs:attribute name="Comment" type="xs:string" default=""/>
     </xs:complexType>
 
     <!-- Root -->
 
-    <xs:complexType name="root_type">
+     <xs:complexType name="root_type">
         <xs:all>
             <xs:element name="Pools" minOccurs="0">
                 <xs:complexType>
@@ -1529,7 +1448,7 @@ DEALINGS IN THE SOFTWARE.
         <xs:attribute name="Identifier" type="xs:nonNegativeInteger" default="0"/>
     </xs:complexType>
 
-    <!-- Node element -->
+    <!-- Main -->
 
     <xs:element name="ED247ComponentDescription" type="root_type"/>
 

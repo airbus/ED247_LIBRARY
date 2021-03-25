@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -139,8 +139,7 @@ typedef enum {
     ED247_LOG_LEVEL_ERROR = 0,
     ED247_LOG_LEVEL_WARNING,
     ED247_LOG_LEVEL_INFO,
-    ED247_LOG_LEVEL_DEBUG,
-    ED247_LOG_LEVEL_TEST
+    ED247_LOG_LEVEL_DEBUG
 } ed247_log_level_t;
 
 /**
@@ -246,7 +245,7 @@ typedef enum {
 } ed247_nad_type_t;
 
 /**
- * @brief Discrete values
+ * @brief Discrete values to be used
  * @ingroup signal
  */
 typedef enum {
@@ -260,7 +259,7 @@ typedef enum {
  * @ingroup common
  */
 typedef struct {
-    uint8_t enable_memory_hooks;
+    uint8_t enable_logs_during_send_receive;
 } libed247_configuration_t;
 #define LIBED247_CONFIGURATION_DEFAULT {0}
 
@@ -397,10 +396,8 @@ typedef struct {
  */
 typedef struct {
     uint32_t byte_offset;
-    double true_value;
-    double false_value;
 } ed247_signal_info_dis_t;
-#define LIBED247_SIGNAL_INFO_DIS_DEFAULT {0, 1.0, 0.0}
+#define LIBED247_SIGNAL_INFO_DIS_DEFAULT {0}
 
 /**
  * @brief ANALOG signal dedicated information subpart
@@ -535,7 +532,7 @@ typedef struct ed247_internal_time_sample_t *ed247_time_sample_t;
  * @brief Pointer to the function called when timestamping at reception (simulation time)
  * @ingroup common
  */
-typedef ed247_status_t (*libed247_set_simulation_time_ns_t)(ed247_time_sample_t time_sample);
+typedef ed247_status_t (*libed247_set_simulation_time_ns_t)(ed247_time_sample_t time_sample, void *user_data);
 
 /**
  * @brief Channel & frame data
@@ -692,6 +689,15 @@ extern LIBED247_EXPORT const char * ed247_nad_type_string(
  */
 extern LIBED247_EXPORT ed247_nad_type_t ed247_nad_type_from_string(
     const char *nad_type);
+
+/**
+ * @brief Size of a single element of ::ed247_nad_type_t
+ * @ingroup common
+ * @param[in] nad_type The NAD type
+ * @return The size of the NAD type element (sizeof equivalent)
+ */
+extern LIBED247_EXPORT size_t ed247_nad_type_size(
+    ed247_nad_type_t nad_type);
 
 /*********
  * Lists *
@@ -907,6 +913,20 @@ extern LIBED247_EXPORT ed247_status_t ed247_load(
     const libed247_configuration_t *configuration,
     ed247_context_t *context);
 
+/**
+ * @brief Loading function: the entry point of the library
+ * @ingroup load_unload
+ * @param[in] ecic_file_content The content of the ECIC configuration file
+ * @param[in] configuration The configuration of the LIBED247
+ * @param[out] context The loaded context identifier
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE An error occurred during the load phase (xml parsing or internal loading)
+  */
+extern LIBED247_EXPORT ed247_status_t ed247_load_content(
+    const char *ecic_file_content,
+    const libed247_configuration_t *configuration,
+    ed247_context_t *context);
+
 /********
  * Time *
  ********/
@@ -921,7 +941,18 @@ extern LIBED247_EXPORT ed247_status_t ed247_load(
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t libed247_register_set_simulation_time_ns_handler(
-    libed247_set_simulation_time_ns_t handler);
+    libed247_set_simulation_time_ns_t handler,
+    void *user_data);
+
+/**
+ * @brief Default function to retrieve current time
+ * If not overrided by the user, this function is the default one registered by libed247_register_set_simulation_time_ns_handler().
+ * @ingroup time
+ * @return Current time
+ */
+extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
+    ed247_time_sample_t time_sample,
+    void *user_data);
 
 /**
  * @brief Update time in Simulation time calllback
@@ -938,15 +969,6 @@ extern LIBED247_EXPORT ed247_status_t libed247_update_time(
     uint32_t epoch_s,
     uint32_t offset_ns);
 
-/**
- * @brief Default function to retrieve current time
- * If not overrided by the user, this function is the default one registered by libed247_register_set_simulation_time_ns_handler().
- * @ingroup time
- * @return Current time
- */
-extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
-    ed247_time_sample_t time_sample);
-
 /***********
  * Finders *
  ***********/
@@ -958,7 +980,7 @@ extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
  * <em>The regex do not embed implicit /a .* special characters at the beginning and the end.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
  * @ingroup channel
- * @param[in] context The context identifier
+ * @param[in] context The context identifier.
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
  * @param[out] channels The list of the channels. If no value, set to null.
  * @retval ED247_STATUS_SUCCESS
@@ -969,6 +991,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_channels(
     ed247_context_t context,
     const char *regex_name,
     ed247_channel_list_t *channels);
+
+/**
+ * @brief Find a channel of the component
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup channel
+ * @param[in] context The context identifier.
+ * @param[in] name The name of the channel.
+ * @param[out] channel The channel identifier
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The channel list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_channel(
+    ed247_context_t context,
+    const char *name,
+    ed247_channel_t *channel);
 
 /**
  * @brief Find all streams of the component whose name is matching the regular expression
@@ -988,6 +1025,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_streams(
     ed247_stream_list_t *streams);
 
 /**
+ * @brief Find a stream of the component
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup stream
+ * @param[in] context The context identifier
+ * @param[in] name The name of the stream.
+ * @param[out] stream The stream identifier
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_stream(
+    ed247_context_t context,
+    const char *name,
+    ed247_stream_t *stream);
+
+/**
  * @brief Find all streams of the channel whose name is matching the regular expression
  * <em>For example, to get a list of all the streams, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
@@ -1003,6 +1055,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_channel_streams(
     ed247_channel_t channel,
     const char *regex_name,
     ed247_stream_list_t *streams);
+
+/**
+ * @brief Find a stream in a channel
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup stream
+ * @param[in] channel The channel identifier
+ * @param[in] name The name of the stream.
+ * @param[out] stream The stream identifier.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_channel_stream(
+    ed247_channel_t channel,
+    const char *name,
+    ed247_stream_t *stream);
 
 /**
  * @brief Find all signals of the component whose name is matching the regular expression
@@ -1022,6 +1089,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_signals(
     ed247_signal_list_t *signals);
 
 /**
+ * @brief Find a signal of the component
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup signal
+ * @param[in] context The context identifier
+ * @param[in] name The signal name.
+ * @param[out] signal The signal identifier.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_signal(
+    ed247_context_t context,
+    const char *name,
+    ed247_signal_t *signal);
+
+/**
  * @brief Find all signals of the stream whose name is matching the regular expression
  * <em>For example, to get a list of all the signals, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
@@ -1038,14 +1120,28 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(
     const char *regex_name,
     ed247_signal_list_t *signals);
 
+/**
+ * @brief Get a signal of the stream
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup signal
+ * @param[in] stream The stream identifier
+ * @param[in] name The stream name.
+ * @param[out] signal The signal identifier.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE The stream list is empty
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_stream_signal(
+    ed247_stream_t stream,
+    const char *name,
+    ed247_signal_t *signal);
+
 /***********
  * Getters *
  ***********/
 
 /**
  * @brief Retrieve attributes of the component
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup component
+  * @ingroup component
  * @param[in] context The context identifier
  * @param[out] info Component information
  * @retval ED247_STATUS_SUCCESS
@@ -1080,9 +1176,33 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_channels(
     ed247_channel_list_t *channels);
 
 /**
+ * @brief Assign user data to the context
+ * <b>When unloading the component, there is no memory free on this item. Free it yourself.</b>
+ * @ingroup component
+ * @param[in] context The context identifier
+ * @param[in] user_data A pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_component_set_user_data(
+    ed247_context_t context,
+    void *user_data);
+
+/**
+ * @brief Retrieve user data pointer form the context
+ * @ingroup component
+ * @param[in] context The context identifier
+ * @param[out] user_data A pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
+    ed247_context_t context,
+    void **user_data);
+
+/**
  * @brief Retrieve attributes of the channel
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup channel
+  * @ingroup channel
  * @param[in] channel The channel identifier
  * @param[out] info Channel information
  * @retval ED247_STATUS_SUCCESS
@@ -1106,8 +1226,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(
 
 /**
  * @brief Retrieve attributes of the stream
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup stream
+  * @ingroup stream
  * @param[in] channel The stream identifier
  * @param[out] info Stream information
  * @retval ED247_STATUS_SUCCESS
@@ -1132,8 +1251,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_channel(
 
 /**
  * @brief Retrieve attributes of the signal
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup signal
+  * @ingroup signal
  * @param[in] signal The signal identifier
  * @param[out] info Signal information
  * @retval ED247_STATUS_SUCCESS
@@ -1244,6 +1362,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_get_stream(
 /**
  * @brief Write signal sample into the assistant buffer. Once all signal are written, use ::ed247_stream_signal_assistant_push_sample() to push the sample on the stream.
  * This function returns an error if the stream direction is not ::ED247_DIRECTION_IN or ::ED247_DIRECTION_INOUT.
+ * In case of DISCRETE Signal, the signal_sample_size equals to 1 byte
+ * In case of ANALOG Signal, the signal_sample_size equals to 4 bytes (float). There is no need to swap the sample.
+ * In case of NAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by all the dimensions (which is invariant). As a reminder, nad_type and dimensions can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
+ * In case of VNAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by the effective size of the sample (which is variable). As a reminder, nad_type can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
  * @ingroup read_write
  * @param[in] assistant Assistant identifier
  * @param[in] signal Signal identifier
@@ -1261,11 +1383,15 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_write_signal(
 /**
  * @brief Read signal sample from the assistant buffer. The assistant internal stream sample buffer is updated by calling ::ed247_stream_signal_assistant_pop_sample().
  * This function returns an error if the stream direction is not ::ED247_DIRECTION_OUT or ::ED247_DIRECTION_INOUT.
+ * In case of DISCRETE Signal, the signal_sample_size equals to 1 byte
+ * In case of ANALOG Signal, the signal_sample_size equals to 4 bytes (float). There is no need to swap the sample.
+ * In case of NAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by all the dimensions (which is invariant). As a reminder, nad_type and dimensions can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
+ * In case of VNAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type), multiplied by the effective size of the sample (which is variable). As a reminder, nad_type can be retrieved with ::ed247_signal_get_info(). There is no need to swap the samples.
  * @ingroup read_write
  * @param[in] assistant Assistant identifier
  * @param[in] signal Signal identifier
- * @param[in] signal_sample_data Retrieve pointer of allocated memory
- * @param[in] signal_sample_size Retrieve size of allocated memory
+ * @param[in] signal_sample_data Retrieve pointer of the stream sample allocated in memory
+ * @param[in] signal_sample_size Retrieve size of the stream sample allocated in memory
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -1274,34 +1400,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_read_signal(
     ed247_signal_t signal,
     const void **signal_sample_data,
     size_t *signal_sample_size);
-
-/**
- * @brief Update the internal buffer of the assistant. Prefer using ::ed247_stream_signal_assistant_pop_sample().
- * @ingroup read_write
- * @param[in] assistant Assistant identifier
- * @param[in] sample_data Retrieve pointer of the internal stream sample
- * @param[in] sample_size Retrieve size of internal stream sample
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_set_sample(
-    ed247_stream_assistant_t assistant,
-    const void *sample_data,
-    size_t sample_size);
-
-/**
- * @brief Expose the internal stream sample buffer of the assistant. If you want to push the sample, prefer using ::ed247_stream_signal_assistant_push_sample().
- * @ingroup read_write
- * @param[in] assistant Assistant identifier
- * @param[out] sample_data Retrieve pointer of the internal stream sample
- * @param[out] sample_size Retrieve size of internal stream sample
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_get_sample(
-    ed247_stream_assistant_t assistant,
-    const void **sample_data,
-    size_t *sample_size);
 
 /*******************************
  * Read & write stream samples *
@@ -1430,9 +1528,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_samples_number(
  * The argument stream is the stream identifier that received something.
  * @ingroup send_recv
  */
-typedef ed247_status_t (*ed247_stream_recv_callback_t)(ed247_stream_t stream);
+typedef ed247_status_t (*ed247_stream_recv_callback_t)(ed247_context_t context, ed247_stream_t stream);
 
-typedef void (*ed247_com_callback_t)();
+typedef ed247_status_t (*ed247_com_callback_t)(ed247_context_t context);
 
 /**
  * @brief Register a callback (in a stream) which is called once a frame is received and decoded.
@@ -1443,6 +1541,7 @@ typedef void (*ed247_com_callback_t)();
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_register_recv_callback(
+    ed247_context_t context,
     ed247_stream_t stream,
     ed247_stream_recv_callback_t callback);
 
@@ -1455,6 +1554,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_register_recv_callback(
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_unregister_recv_callback(
+    ed247_context_t context,
     ed247_stream_t stream,
     ed247_stream_recv_callback_t callback);
 
@@ -1467,6 +1567,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_unregister_recv_callback(
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_streams_register_recv_callback(
+    ed247_context_t context,
     ed247_stream_list_t streams,
     ed247_stream_recv_callback_t callback);
 
@@ -1479,6 +1580,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_streams_register_recv_callback(
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_streams_unregister_recv_callback(
+    ed247_context_t context,
     ed247_stream_list_t streams,
     ed247_stream_recv_callback_t callback);
 
@@ -1555,7 +1657,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_send_callback(
     ed247_com_callback_t callback);
 
 /**
- * @brief Blocks until the first frame is received and processed, and at least a stream has available data.
+ * @brief Blocks until the first frame is received and processed, and at least a stream has available data. 
+ * If several frames has been received, they are all processed.
  * @ingroup send_recv
  * @param[in] context Context identifier
  * @param[out] streams List of streams that received samples, can be NULL

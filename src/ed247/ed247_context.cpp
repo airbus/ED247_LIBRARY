@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2019 Airbus Operations S.A.S
+ * Copyright (c) 2020 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,7 +27,6 @@
  ************/
 
 #include "ed247_context.h"
-#include "ed247_memhooks.h"
 #include "ed247_xml.h"
 #include "ed247_channel.h"
 
@@ -42,9 +41,8 @@
 namespace ed247
 {
 
-Context::Context(std::string ecic_filepath,
+Context::Context(
     const libed247_configuration_t & libed247_configuration):
-    _ecic_filepath(ecic_filepath),
     _configuration(libed247_configuration),
     _root(),
     _pool_interfaces(std::make_shared<UdpSocket::Pool>()),
@@ -54,22 +52,27 @@ Context::Context(std::string ecic_filepath,
     _active_frames(std::make_shared<SmartListActiveFrames>()),
     _active_streams(std::make_shared<SmartListActiveStreams>())
 {
-    LOG_DEBUG() << "# [Context] Ctor" << LOG_END;
+    PRINT_DEBUG("# [Context] Ctor");
     _active_frames->set_managed(true);
     _active_streams->set_managed(true);
-    SimulationTimeHandler::get().set_handler(libed247_set_simulation_time_ns);
+    SimulationTimeHandler::get().set_handler(libed247_set_simulation_time_ns, NULL);
+    Configuration::getInstance().set(_configuration);
 }
 
 Context::~Context()
 {
-    MemoryHooksManager::getInstance().setEnable(false);
+// #ifdef ENABLE_MEMHOOKS
+//     MemoryHooksManager::getInstance().setEnable(false);
+// #endif
 }
 
 void Context::initialize()
 {
     Context::Builder::initialize(*this);
-    // MemoryHooksManager
-    MemoryHooksManager::getInstance().setEnable(_configuration.enable_memory_hooks==1);
+// #ifdef ENABLE_MEMHOOKS
+//     // MemoryHooksManager
+//     MemoryHooksManager::getInstance().setEnable(_configuration.enable_memory_hooks==1);
+// #endif
 }
 
 const libed247_runtime_metrics_t* Context::get_runtime_metrics()
@@ -82,48 +85,51 @@ const libed247_runtime_metrics_t* Context::get_runtime_metrics()
     return &_runtime_metrics;
 }
 
-#ifndef NBDEBUG
-void Context::__test()
-{
-    _TEST_TIME_START(Context);
-
-    _TEST(Context0);
-    Context context("filepath");
-    context.__dump();
-
-    _TEST_TIME_PRINT;
-}
-
-void Context::__dump()
-{
-    LOG_DEBUG() << "## Context " << std::endl <<
-        "# ECIC [" << _ecic_filepath << "]" << std::endl <<
-        "# Configuration / MemoryHooks [" << int(_configuration.enable_memory_hooks) << "]" << LOG_END;
-}
-#endif
-
 // Context::Builder
 
-Context * Context::Builder::create(std::string ecic_filepath,
+Context * Context::Builder::create_filepath(std::string ecic_filepath,
     const libed247_configuration_t & libed247_configuration)
 {
     // Logs
-    LOG_DEBUG() << "# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]" << LOG_END;
-    LOG_DEBUG() << "## DEBUG" << LOG_END;
-    LOG_INFO() << "## INFO" << LOG_END;
-    LOG_WARNING() << "## WARNING" << LOG_END;
-    // LOG_ERROR() << "## ERROR" << LOG_END;
+    PRINT_DEBUG("# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]");
+    PRINT_DEBUG("## DEBUG logs enabled");
+    PRINT_INFO("## INFO logs enabled");
+    PRINT_WARNING("## WARNING enabled");
 
     // Create context
-    Context * context = new Context(ecic_filepath, libed247_configuration);
+    Context * context = new Context(libed247_configuration);
 
-#ifndef NDEBUG
-    context->__dump();
-#endif
+    PRINT_DEBUG("## ECIC filepath [" << ecic_filepath << "]");
     
     // Load
     try{
-        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load(context->getFilePath()));
+        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_filepath(ecic_filepath));
+    }catch(...){
+        delete context;
+        context = nullptr;
+        throw;
+    }
+
+    return context;
+}
+
+Context * Context::Builder::create_content(std::string ecic_content,
+    const libed247_configuration_t & libed247_configuration)
+{
+    // Logs
+    PRINT_DEBUG("# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]");
+    PRINT_DEBUG("## DEBUG logs enabled");
+    PRINT_INFO("## INFO logs enabled");
+    PRINT_WARNING("## WARNING enabled");
+
+    // Create context
+    Context * context = new Context(libed247_configuration);
+
+    PRINT_DEBUG("## ECIC content [" << ecic_content << "]");
+    
+    // Load
+    try{
+        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_content(ecic_content));
     }catch(...){
         delete context;
         context = nullptr;
