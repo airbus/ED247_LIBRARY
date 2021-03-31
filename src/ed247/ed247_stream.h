@@ -428,15 +428,28 @@ class FrameHeader;
 class BaseStream : public ed247_internal_stream_t, public std::enable_shared_from_this<BaseStream>
 {
     public:
-        BaseStream(){}
+        BaseStream():
+            _user_data(NULL)
+        {}
         BaseStream(std::shared_ptr<xml::Stream> & configuration):
             _configuration(configuration),
-            _signals(std::make_shared<SmartListSignals>())
+            _signals(std::make_shared<SmartListSignals>()),
+            _user_data(NULL)
         {
             _signals->set_managed(true);
         }
 
         virtual ~BaseStream(){}
+
+        void set_user_data(void *user_data)
+        {
+            _user_data = user_data;
+        }
+
+        void get_user_data(void **user_data)
+        {
+            *user_data = _user_data;
+        }
 
         const xml::Stream * get_configuration() const
         {
@@ -558,6 +571,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
     private:
 
         ed247_timestamp_t _data_timestamp;
+        void *_user_data;
 
     protected:
 

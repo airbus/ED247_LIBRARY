@@ -138,6 +138,19 @@ TEST(RobustnessLoad, Loading)
     ASSERT_EQ(ed247_load_content("I am a wrong configuration file content !", NULL, &context), ED247_STATUS_FAILURE);
 }
 
+TEST(NoInputs, Wait)
+{
+    ed247_context_t context;
+    // Context address not provided, unload after error checked
+    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_no_inputs.xml").c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+
+    ed247_stream_list_t streams;
+    ASSERT_EQ(ed247_wait_frame(context, &streams, 1000), ED247_STATUS_TIMEOUT);
+    ASSERT_EQ(ed247_wait_during(context, &streams, 1000), ED247_STATUS_NODATA);
+
+    ASSERT_EQ(ed247_unload(NULL), ED247_STATUS_FAILURE);
+}
+
 
 /******************************************************************************
 Test functional load/unload procedure and check the memhooks are working fine

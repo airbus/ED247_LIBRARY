@@ -18,7 +18,7 @@ fi
 # CMAKE
 export PATH=/home/ioland/DEV/COTS/CMAKE/V3.19.4/BINARIES/Linux/bin:${PATH}
 if [ -z "$1" ]; then
-    compiler=gcc_x64
+    compiler=gcc_x86
 else
     compiler=$1
 fi

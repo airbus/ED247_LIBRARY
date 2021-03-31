@@ -162,6 +162,45 @@ TEST(LogConfigurationTest, NoLogging)
     ASSERT_EQ(retrieve_ptr, (const uint32_t*)NULL);
 }
 
+TEST(LogConfigurationTest, LoggingByArgs)
+{
+    ed247_context_t context;
+    std::string filename = config_path+"/ecic_func_logging.xml";
+
+    // Set an unvalid path (empty) so that the file cannot be written
+
+    std::cout << "Check log file ..." << std::endl;
+
+    // delete logging file if necessary
+    const char* logfile = "./ed247_by_config.logs";
+    const uint32_t* retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
+    if (retrieve_ptr != NULL)
+    {
+#ifdef _MSC_VER
+        _unlink(logfile);
+#else
+        unlink(logfile);
+#endif
+        retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
+    }
+    ASSERT_EQ(retrieve_ptr, (const uint32_t*)NULL);
+
+    std::cout << "Loading ..." << std::endl;
+    
+    // Run the sequence of load
+    libed247_configuration_t configuration = LIBED247_CONFIGURATION_DEFAULT;
+    configuration.log_filepath = logfile;
+    configuration.log_level = ED247_LOG_LEVEL_DEBUG;
+    ASSERT_EQ(ed247_load(filename.c_str(), &configuration, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
+
+    std::cout << "Unloading ..." << std::endl;
+
+    // Check it has not been created
+    retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
+    ASSERT_GT(*retrieve_ptr, 0);
+}
+
 int main(int argc, char **argv)
 {
     if(argc >=1)

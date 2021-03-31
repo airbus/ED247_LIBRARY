@@ -57,13 +57,22 @@ _stream_err(std::cerr)
     _errors.str("");
     if(str_log_level)
         setLogLevel(atoi(str_log_level));
-    if(str_log_filepath){
-        _stream_file.open(str_log_filepath);
-        if(!_stream_file.is_open())
-            std::cerr << "Failed to open logging file [" << std::string(str_log_filepath) << "]" << std::endl;
-        else
-            std::cout << "Logging to file [" << std::string(str_log_filepath) << "]" << std::endl;
+    if(str_log_filepath)
+        setLogFilepath(str_log_filepath);
+}
+
+void Logs::setLogFilepath(
+    const char *filepath)
+{
+    if(_stream_file.is_open()){
+        std::cout << "Close previously defined logging file.";
+        _stream_file.close();
     }
+    _stream_file.open(filepath);
+    if(!_stream_file.is_open())
+            std::cerr << "Failed to open logging file [" << std::string(filepath) << "]" << std::endl;
+        else
+            std::cout << "Logging to file [" << std::string(filepath) << "]" << std::endl;
 }
 
 void Logs::setLogLevel(

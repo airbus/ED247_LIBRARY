@@ -80,6 +80,13 @@ class Logs
             return instance;
         }
 
+        static void configure(const libed247_configuration_t & libed247_configuration)
+        {
+            Logs & instance = getInstance();
+            if(libed247_configuration.log_level != ED247_LOG_LEVEL__INVALID) instance.setLogLevel(libed247_configuration.log_level);
+            if(libed247_configuration.log_filepath != NULL) instance.setLogFilepath(libed247_configuration.log_filepath);
+        }
+
         static Logs & log(const ed247_log_level_t & log_current)
         {
             Logs & instance = getInstance();
@@ -89,6 +96,9 @@ class Logs
 
         void setLogLevel(const int & log_level);
         const ed247_log_level_t & getLogLevel() const;
+
+        void setLogFilepath(const char *filepath);
+
         void prepare(const ed247_log_level_t & log_current);
 
         static const std::string & strLogLevel(ed247_log_level_t);

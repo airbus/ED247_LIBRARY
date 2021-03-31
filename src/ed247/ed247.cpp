@@ -1529,6 +1529,63 @@ ed247_status_t ed247_stream_get_info(
     return ED247_STATUS_SUCCESS;
 }
 
+ed247_status_t ed247_stream_set_user_data(
+    ed247_stream_t stream,
+    void *user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set stream user data ...");
+#endif
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Set stream user data failed");
+#endif
+        PRINT_ERROR("Invalid stream");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+        ed247_stream->set_user_data(user_data);
+    }
+    LIBED247_CATCH("Set stream user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set stream user data success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_stream_get_user_data(
+    ed247_stream_t stream,
+    void **user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get stream user data ...");
+#endif
+    if(!stream){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream user data failed");
+#endif
+        PRINT_ERROR("Invalid stream");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!user_data){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get stream user data failed");
+#endif
+        PRINT_ERROR("Invalid user_data");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+        ed247_stream->get_user_data(user_data);
+    }
+    LIBED247_CATCH("Get stream user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get stream user data success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
 ed247_status_t ed247_stream_get_channel(
     ed247_stream_t stream,
     ed247_channel_t *channel)
@@ -1592,6 +1649,63 @@ ed247_status_t ed247_signal_get_info(
     LIBED247_CATCH("Get signal info")
 #ifdef LIBED247_VERBOSE_DEBUG
     PRINT_DEBUG("## Get signal info success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_signal_set_user_data(
+    ed247_signal_t signal,
+    void *user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set signal user data ...");
+#endif
+    if(!signal){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Set signal user data failed");
+#endif
+        PRINT_ERROR("Invalid signal");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+        ed247_signal->set_user_data(user_data);
+    }
+    LIBED247_CATCH("Set signal user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set signal user data success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_signal_get_user_data(
+    ed247_signal_t signal,
+    void **user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get signal user data ...");
+#endif
+    if(!signal){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get signal user data failed");
+#endif
+        PRINT_ERROR("Invalid signal");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!user_data){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get signal user data failed");
+#endif
+        PRINT_ERROR("Invalid user_data");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+        ed247_signal->get_user_data(user_data);
+    }
+    LIBED247_CATCH("Get signal user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get signal user data success");
 #endif
     return ED247_STATUS_SUCCESS;
 }

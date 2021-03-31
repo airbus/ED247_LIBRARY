@@ -96,6 +96,23 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_EQ(ed247_signal_list_next(NULL, &signal), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
 
+    // Check user_data
+    void *user_data = nullptr;
+    ASSERT_EQ(ed247_signal_get_user_data(NULL, &user_data), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_get_user_data(signal, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_get_user_data(signal, &user_data), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(user_data, nullptr);
+    void *user_data_set = malloc(sizeof(uint8_t));
+    *(uint8_t*)user_data_set = 12;
+    ASSERT_EQ(ed247_signal_set_user_data(signal, user_data_set), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_get_user_data(signal, &user_data), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(*(uint8_t*)user_data_set, 12);
+    ASSERT_EQ(ed247_signal_set_user_data(NULL, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_set_user_data(signal, NULL), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_get_user_data(signal, &user_data), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(user_data, nullptr);
+    free(user_data_set);
+
     // Get a single channel, check invalid calls
     ASSERT_EQ(ed247_get_signal(NULL, "SignalDisMin", &signal_test), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_get_signal(context, NULL, &signal_test), ED247_STATUS_FAILURE);

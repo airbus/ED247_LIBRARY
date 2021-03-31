@@ -492,7 +492,7 @@ bool UdpSocket::Factory::is_host_ip_address(const ip_address_t & ip_address)
 UdpSocket::Pool::Pool()
 {
     FD_ZERO(&_select_options.fd);
-    _select_options.nfds = -1;
+    _select_options.nfds = 0;
 }
 
 UdpSocket::Pool::~Pool()
@@ -537,11 +537,6 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
     struct ::timeval timeout;
     int sockerr = 1;
     fd_set select_fd;
-
-    if(_select_options.nfds < 0){
-        IF_PRINT PRINT_DEBUG("Nothing to wait for, empty socket list");
-        return ED247_STATUS_FAILURE;
-    }
     
     if(timeout_us >= 0){
         timeout.tv_sec = (uint32_t)timeout_us / 1000000;

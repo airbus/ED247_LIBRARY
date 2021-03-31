@@ -38,7 +38,7 @@ int process_streams(ed247_context_t context, ed247_stream_list_t streams);
 ed247_status_t stream_receive(ed247_context_t context, ed247_stream_t stream);
 ed247_status_t stream_receive_callback(ed247_context_t context, ed247_stream_t stream);
 
-int main(int argc, char* argv[], char* envp[])
+int main(int argc, char* argv[])
 {
     ed247_status_t          status;
     ed247_context_t         context;

@@ -61,10 +61,21 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
         BaseSignal(){}
         BaseSignal(std::shared_ptr<xml::Signal> & configuration, std::shared_ptr<BaseStream> & stream):
             _configuration(configuration),
-            _stream(stream)
+            _stream(stream),
+            _user_data(nullptr)
         {}
 
         virtual ~BaseSignal(){}
+
+        void set_user_data(void *user_data)
+        {
+            _user_data = user_data;
+        }
+
+        void get_user_data(void **user_data)
+        {
+            *user_data = _user_data;
+        }
 
         static size_t nad_type_size(const ed247_nad_type_t & nad_type)
         {
@@ -128,6 +139,9 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
     protected:
         std::shared_ptr<xml::Signal> _configuration;
         std::weak_ptr<BaseStream> _stream;
+
+    private:
+        void *_user_data;
 
     public:
         class Pool : public std::enable_shared_from_this<Pool>

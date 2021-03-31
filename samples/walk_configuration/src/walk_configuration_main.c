@@ -38,7 +38,7 @@ ed247_status_t dump_signal(ed247_signal_t signal);
 // The prupose of this example is to show how to walk through the configuration tree of elements only.
 // This example do not contain data exchange loops.
 
-int main(int argc, char* argv[], char* envp[])
+int main(int argc, char* argv[])
 {
     ed247_status_t          status;
     ed247_context_t         context;

@@ -96,6 +96,8 @@ Context * Context::Builder::create_filepath(std::string ecic_filepath,
     PRINT_INFO("## INFO logs enabled");
     PRINT_WARNING("## WARNING enabled");
 
+    Logs::getInstance().configure(libed247_configuration);
+
     // Create context
     Context * context = new Context(libed247_configuration);
 
@@ -121,6 +123,8 @@ Context * Context::Builder::create_content(std::string ecic_content,
     PRINT_DEBUG("## DEBUG logs enabled");
     PRINT_INFO("## INFO logs enabled");
     PRINT_WARNING("## WARNING enabled");
+
+    Logs::getInstance().configure(libed247_configuration);
 
     // Create context
     Context * context = new Context(libed247_configuration);

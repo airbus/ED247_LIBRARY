@@ -139,7 +139,8 @@ typedef enum {
     ED247_LOG_LEVEL_ERROR = 0,
     ED247_LOG_LEVEL_WARNING,
     ED247_LOG_LEVEL_INFO,
-    ED247_LOG_LEVEL_DEBUG
+    ED247_LOG_LEVEL_DEBUG,
+    ED247_LOG_LEVEL__INVALID
 } ed247_log_level_t;
 
 /**
@@ -260,8 +261,10 @@ typedef enum {
  */
 typedef struct {
     uint8_t enable_logs_during_send_receive;
+    const char *  log_filepath;
+    ed247_log_level_t log_level;
 } libed247_configuration_t;
-#define LIBED247_CONFIGURATION_DEFAULT {0}
+#define LIBED247_CONFIGURATION_DEFAULT {0, NULL, ED247_LOG_LEVEL__INVALID}
 
 /**
  * @brief Library runtime metrics
@@ -934,9 +937,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_content(
 /**
  * @brief Register a callback used to timestamp sample at recpection (recv_timestamp)
  * <b>The registered function is called each time the simulation time is needed, in each stream receiving data. It is strongly encouraged to perform a manual increase of simulation time and not clock queries each time the function is called as this might lead to a high execution time.</b>
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
  * @ingroup time
  * @param[in] handler Handler to the function
+ * @param[in] user_data Pointer to custom data
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -948,7 +951,10 @@ extern LIBED247_EXPORT ed247_status_t libed247_register_set_simulation_time_ns_h
  * @brief Default function to retrieve current time
  * If not overrided by the user, this function is the default one registered by libed247_register_set_simulation_time_ns_handler().
  * @ingroup time
- * @return Current time
+ * @param[out] time_sample Time sample to set
+ * @param[out] user_data Pointer to custom data
+ * @return ED247_STATUS_SUCCESS
+ * @return ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
     ed247_time_sample_t time_sample,
@@ -958,7 +964,7 @@ extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
  * @brief Update time in Simulation time calllback
  * <b>This function must be called to update component simulation time in the libed247_set_simulation_time_ns_t handler.</b>
  * @ingroup time
- * @param[in] time Time argument of libed247_set_simulation_time_ns_t
+ * @param[in] time_sample Time sample
  * @param[in] epoch_s Number of seconds since epoch
  * @param[in] offset_ns Offset with reference to epoch_s, in nanoseconds
  * @retval ED247_STATUS_SUCCESS
@@ -1192,7 +1198,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_set_user_data(
  * @brief Retrieve user data pointer form the context
  * @ingroup component
  * @param[in] context The context identifier
- * @param[out] user_data A pointer to user data
+ * @param[out] user_data A pointer to host pointer to user data
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -1226,8 +1232,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(
 
 /**
  * @brief Retrieve attributes of the stream
-  * @ingroup stream
- * @param[in] channel The stream identifier
+ * @ingroup stream
+ * @param[in] stream The stream identifier
  * @param[out] info Stream information
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
@@ -1235,6 +1241,31 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(
 extern LIBED247_EXPORT ed247_status_t ed247_stream_get_info(
     ed247_stream_t stream,
     const ed247_stream_info_t **info);
+
+/**
+ * @brief Assign user data to the stream
+ * Memory has to be free by the user.
+ * @ingroup stream
+ * @param[in] stream The stream identifier
+ * @param[in] user_data Pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_stream_set_user_data(
+    ed247_stream_t stream,
+    void *user_data);
+
+/**
+ * @brief Retrieve user data assigned to the stream
+ * @ingroup stream
+ * @param[in] stream The stream identifier
+ * @param[out] user_data Pointer to host pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_stream_get_user_data(
+    ed247_stream_t stream,
+    void **user_data);
 
 /**
  * @brief Retrieve the channel of the stream
@@ -1260,6 +1291,31 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_channel(
 extern LIBED247_EXPORT ed247_status_t ed247_signal_get_info(
     ed247_signal_t signal,
     const ed247_signal_info_t **info);
+
+/**
+ * @brief Assign user data to the signal
+ * Memory has to be free by the user.
+ * @ingroup signal
+ * @param[in] signal The signal identifier
+ * @param[in] user_data Pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_signal_set_user_data(
+    ed247_signal_t signal,
+    void *user_data);
+
+/**
+ * @brief Retrieve user data assigned to the signal
+ * @ingroup signal
+ * @param[in] signal The signal identifier
+ * @param[out] user_data Pointer to host pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_signal_get_user_data(
+    ed247_signal_t signal,
+    void **user_data);
 
 /**
  * @brief Retrieve the stream of the signal

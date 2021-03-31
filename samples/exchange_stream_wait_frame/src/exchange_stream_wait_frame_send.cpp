@@ -35,7 +35,7 @@
 
 int check_status(ed247_context_t context, ed247_status_t status);
 
-int main(int argc, char* argv[], char* envp[])
+int main(int argc, char* argv[])
 {
     ed247_status_t          status;
     ed247_context_t         context;

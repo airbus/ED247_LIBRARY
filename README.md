@@ -2,9 +2,8 @@
 
 The ED247 LIBRARY / LIBED247 library is an example of implementation of the ED247A communication standard, standardized by the [EUROCAE WG-97][7].
 
-[7]: https://www.eurocae.net/
-
-## Operating system and compilers
+<!--
+# Operating system and compilers
 
 The ED247 LIBRARY / LIBED247 is natively built with the following operating systems and compilers:
 
@@ -16,13 +15,13 @@ The ED247 LIBRARY / LIBED247 is natively built with the following operating syst
     -   Microsoft Visual Studio C++ 2017 (32/64 bits)
     -   Microsoft Visual Studio C++ 2015 (32/64 bits)
 
-## Dependencies
+# Dependencies
 
 The repository contains links to automatically build Libxml2 library from its official repository. Moreover, when tests are enabled, Google Test is also automatically built from its repository.
 
 **CAUTION**: As the source code support C/C++ 11, please make sure you clone the Google Test release `release-1.8.1`, as backward compatibility with C/C++ 11 has been dropped in the next release.
 
-Recommended tools & libraries and associated releases:
+Recommended libraries and associated releases:
 
 |   Library    |         Purpose         | Release |
 | :----------: | :---------------------: | :-----: |
@@ -30,9 +29,7 @@ Recommended tools & libraries and associated releases:
 |  [GTEST][2]  |       Tests only        |  1.8.1  |
 |  [LCOV][3]   | Tests only (Linux only) |  1.8.1  |
 
-[1]: https://github.com/GNOME/libxml2
-[2]: https://github.com/google/googletest
-[3]: https://github.com/linux-test-project/lcov
+Recommended libraries and associated releases:
 
 |     Tool     |         Purpose          | Release |
 | :----------: | :----------------------: | :-----: |
@@ -40,11 +37,7 @@ Recommended tools & libraries and associated releases:
 |  [NINJA][5]  |       Build system       |  1.8.2  |
 | [DOXYGEN][6] | Documentation generation |  1.8.1  |
 
-[4]: https://github.com/Kitware/CMake
-[5]: https://github.com/ninja-build/ninja
-[6]: https://github.com/doxygen/doxygen
-
-## Compilation
+# Compilation
 
 The library can be compiled with CMake >= 3.13. The first line of the main `CMakeLists.txt`file contains all options for configuration.
 The folder `scripts` contains compilation scripts examples for both Linux & Windows environments.
@@ -55,7 +48,7 @@ The folder `scripts` contains compilation scripts examples for both Linux & Wind
 
 The following tables list the dependencies for both runtime and compilation phasis. They do not take into account the compilers themselves. These dependencies are listed in the `dependencies.sh` dependencies base file or in the one generated after stand alone setup (see _Development/Installation_).
 
-## Limitations
+# Limitations
 
 -   ED247 Packetization strategy mechanism is not implemented.
 
@@ -67,9 +60,9 @@ The following tables list the dependencies for both runtime and compilation phas
 
 -   The regular expressions are not fully supported by gcc4.8.x. Therefore the default linux compilation does not authorize to use complex requests in getters. In particular the use of square brackets has inevitably provoked many failures. Because the behaviour is unspecified the symptoms may vary from a user to an other.
 
-## Miscellaneous
+# Miscellaneous
 
-### Logging
+## Logging
 
 The logging strategy can be controlled through the API with `ed247_set_log_level()` or with following environment variables
 
@@ -81,3 +74,11 @@ The logging strategy can be controlled through the API with `ed247_set_log_level
 ## License
 
 The license is detailed in the License section.
+
+[1]: https://github.com/GNOME/libxml2
+[2]: https://github.com/google/googletest
+[3]: https://github.com/linux-test-project/lcov
+[4]: https://github.com/Kitware/CMake
+[5]: https://github.com/ninja-build/ninja
+[6]: https://github.com/doxygen/doxygen
+[7]: https://www.eurocae.net/ -->
