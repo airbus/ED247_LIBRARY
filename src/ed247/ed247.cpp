@@ -1462,6 +1462,62 @@ ed247_status_t ed247_channel_get_info(
     return ED247_STATUS_SUCCESS;
 }
 
+ed247_status_t ed247_channel_set_user_data(
+    ed247_channel_t channel,
+    void *user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set channel user data ...");
+#endif
+    if(!channel){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Set channel user data failed");
+#endif
+        PRINT_ERROR("Invalid channel");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_channel = static_cast<ed247::Channel*>(channel);
+        ed247_channel->set_user_data(user_data);
+    }
+    LIBED247_CATCH("Set channel user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Set channel user data success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_channel_get_user_data(
+    ed247_channel_t channel,
+    void **user_data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get channel user data ...");
+#endif
+    if(!channel){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel user data failed");
+#endif
+        PRINT_ERROR("Invalid channel");
+        return ED247_STATUS_FAILURE;
+    }
+    if(!user_data){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Get channel user data failed");
+#endif
+        PRINT_ERROR("Invalid user_data");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        auto ed247_channel = static_cast<ed247::Channel*>(channel);
+        ed247_channel->get_user_data(user_data);
+    }
+    LIBED247_CATCH("Get channel user data")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Get channel user data success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
 
 ed247_status_t ed247_channel_get_streams(
     ed247_channel_t channel,

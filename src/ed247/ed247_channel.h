@@ -110,15 +110,28 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             ed247_direction_t direction;
         } stream_dir_t;
         using map_streams_t = std::map<ed247_uid_t,stream_dir_t>;
-        Channel() {}
+        Channel():
+            _user_data(NULL)
+        {}
         Channel(std::shared_ptr<xml::Channel> & configuration):
             _configuration(configuration),
             _sstreams(std::make_shared<SmartListStreams>()),
-            _header(configuration->header)
+            _header(configuration->header),
+            _user_data(NULL)
         {
             _sstreams->set_managed(true);
         }
         virtual ~Channel();
+
+        void set_user_data(void *user_data)
+        {
+            _user_data = user_data;
+        }
+
+        void get_user_data(void **user_data)
+        {
+            *user_data = _user_data;
+        }
 
         const xml::Channel * get_configuration() const { return _configuration.get(); }
 
@@ -211,6 +224,9 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             std::unique(_sstreams->begin(), _sstreams->end());
             _sstreams->reset();
         }
+
+    private:
+        void *_user_data;
 
     public:
 

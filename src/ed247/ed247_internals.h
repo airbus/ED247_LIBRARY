@@ -46,6 +46,13 @@
 #include <chrono>
 
 #ifdef __linux__
+    #include <byteswap.h>
+#endif
+
+#ifdef __unix__
+    #include <fcntl.h>
+    #include <sys/types.h>
+    #include <sys/socket.h>
     #include <arpa/inet.h>
     #include <string.h>
     #include <netdb.h>
@@ -56,7 +63,6 @@
     #ifndef ED247_SOCKET
         #define ED247_SOCKET int
     #endif
-    #include <byteswap.h>
 #elif _WIN32
     #include <winsock2.h>
     #include <Ws2tcpip.h>
@@ -74,6 +80,13 @@
         #define bswap_32(x) _byteswap_ulong(x)
         #define bswap_64(x) _byteswap_uint64(x)
     #endif
+#endif
+
+#ifdef _QNX_SOURCE
+    #include <gulliver.h>
+    #define bswap_16(x) ENDIAN_SWAP16(x)
+    #define bswap_32(x) ENDIAN_SWAP32(x)
+    #define bswap_64(x) ENDIAN_SWAP64(x)
 #endif
 
 #ifndef _MSC_VER

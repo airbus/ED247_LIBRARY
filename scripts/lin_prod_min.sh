@@ -7,6 +7,8 @@ if [[ ! $? -eq 0 ]]; then
     exit 1
 fi
 
+# export build_samples=ON
+# export build_utils=ON
 sh ${script_path}/lin_cmake.sh $1
 if [[ ! $? -eq 0 ]]; then
     exit 1

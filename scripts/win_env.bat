@@ -15,6 +15,7 @@ if not exist "%BUILD_PATH%" mkdir "%BUILD_PATH%"
 if not exist "%INSTALL_PATH%" mkdir "%INSTALL_PATH%"
 
 set "IOLAND_ROOT=Y:\"
+set "CROSSTOOLS_ROOT=Z:\"
 
 :: CMAKE
 set "PATH=%IOLAND_ROOT%DEV\COTS\CMAKE\V3.19.4\BINARIES\Windows\bin;%PATH%"
@@ -88,7 +89,15 @@ if "%COMPILER%"=="msvc2015_x86" (
     )
     set "CMAKE_TOOLCHAIN=%WORKSPACE%\cmake\toolchains\windows_msvc_x86.cmake"
 )
-
+if "%COMPILER%"=="qnx" (
+    if "%ALREADY_DONE%"=="1" (
+        echo Environment already setup
+    ) else (
+        call %CROSSTOOLS_ROOT%\ED247\ED247_LIBRARY\Dev\MATLAB\SupportPackages\R2021a\toolbox\slrealtime\target\supportpackage\qnx710\qnxsdp-env.bat
+        set ALREADY_DONE=1
+    )
+    set "CMAKE_TOOLCHAIN=%WORKSPACE%\cmake\toolchains\qnx.cmake"
+)
 
 :: CMAKE TOOLCHAIN
 if not exist "%CMAKE_TOOLCHAIN%" (

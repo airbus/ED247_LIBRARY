@@ -563,7 +563,7 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
         }
     }while(sockerr > 0 || (sockerr < 0 && errno == EINTR));
 
-    if(sockerr < 0){
+    if(sockerr < 0 && _select_options.nfds > 0){
         status = ED247_STATUS_FAILURE;
         THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to perform select() (" << sockerr << ":" << get_last_error() << ")");
     }

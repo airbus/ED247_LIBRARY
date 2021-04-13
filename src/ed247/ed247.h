@@ -41,7 +41,7 @@ extern "C" {
  * Defines *
  ***********/
 
-#ifdef __linux__
+#ifdef __unix__
 #define LIBED247_EXPORT __attribute__ ((visibility ("default")))
 #elif _WIN32
 #ifdef LIBED247_EXPORTS
@@ -1217,6 +1217,31 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
 extern LIBED247_EXPORT ed247_status_t ed247_channel_get_info(
     ed247_channel_t channel,
     const ed247_channel_info_t **info);
+
+/**
+ * @brief Assign user data to the channel
+ * Memory has to be free by the user.
+ * @ingroup channel
+ * @param[in] channel The channel identifier
+ * @param[in] user_data Pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_channel_set_user_data(
+    ed247_channel_t channel,
+    void *user_data);
+
+/**
+ * @brief Retrieve user data assigned to the channel
+ * @ingroup channel
+ * @param[in] channel The channel identifier
+ * @param[out] user_data Pointer to host pointer to user data
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_channel_get_user_data(
+    ed247_channel_t channel,
+    void **user_data);
 
 /**
  * @brief Retrieve all the streams of the channel
