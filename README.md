@@ -2,7 +2,6 @@
 
 The ED247 LIBRARY / LIBED247 library is an example of implementation of the ED247A communication standard, standardized by the [EUROCAE WG-97][7].
 
-<!--
 # Operating system and compilers
 
 The ED247 LIBRARY / LIBED247 is natively built with the following operating systems and compilers:
@@ -14,6 +13,8 @@ The ED247 LIBRARY / LIBED247 is natively built with the following operating syst
     -   Microsoft Visual Studio C++ 2019 (32/64 bits)
     -   Microsoft Visual Studio C++ 2017 (32/64 bits)
     -   Microsoft Visual Studio C++ 2015 (32/64 bits)
+-   _Others_
+    -   QNX 7.1.0
 
 # Dependencies
 
@@ -81,4 +82,4 @@ The license is detailed in the License section.
 [4]: https://github.com/Kitware/CMake
 [5]: https://github.com/ninja-build/ninja
 [6]: https://github.com/doxygen/doxygen
-[7]: https://www.eurocae.net/ -->
+[7]: https://www.eurocae.net/

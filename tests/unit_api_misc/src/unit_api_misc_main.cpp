@@ -181,7 +181,7 @@ TEST(UtApiMisc, IdentificationGetters)
     memhooks_section_start();
     value = ed247_get_implementation_version();
     memhooks_section_stop();
-    ASSERT_STREQ(value, "1.1.0");
+    ASSERT_STREQ(value, "1.1.1");
 }
 
 int main(int argc, char **argv)

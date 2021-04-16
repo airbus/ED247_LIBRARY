@@ -106,7 +106,7 @@ if(BUILD_DEPS_LIBXML2)
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE) # TO TEST
     add_subdirectory(deps/libxml2 EXCLUDE_FROM_ALL)
 else()
-    find_package(LibXml2)
+    find_package(LibXml2 REQUIRED)
 endif()
 ## GTEST
 if(BUILD_DEPS_GTEST)

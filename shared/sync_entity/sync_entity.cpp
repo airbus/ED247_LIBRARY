@@ -29,7 +29,7 @@
 #include <cstring>
 #include <string>
 
-#ifdef __linux__
+#ifdef __unix__
 #include <errno.h>
 #include <arpa/inet.h>
 #include <time.h>

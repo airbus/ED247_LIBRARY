@@ -28,7 +28,7 @@
 #include <inttypes.h>
 #include <string>
 
-#ifdef __linux__
+#ifdef __unix__
 #define SOCKET int
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET (-1)
