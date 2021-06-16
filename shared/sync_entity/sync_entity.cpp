@@ -37,6 +37,7 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 #endif
 #ifdef _WIN32
 #include <winsock2.h>
