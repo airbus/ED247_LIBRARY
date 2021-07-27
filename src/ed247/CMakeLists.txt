@@ -53,21 +53,20 @@ if(ED247_VERBOSE_DEBUG)
     message(STATUS "Enable verbose debug for ED247")
 endif()
 
-# Append link to other libraries
-target_link_libraries(ed247o PUBLIC LibXml2)
-if(WIN32)
-    target_link_libraries(ed247o PUBLIC wsock32 ws2_32)
-endif()
-if(QNXNTO)
-    target_link_libraries(ed247o PUBLIC socket)
-endif()
-if(ENABLE_MEMHOOKS)
-    target_link_libraries(ed247o PUBLIC memhooks)
-endif()
-
 # Define shared and static targets
 add_library(ed247 SHARED $<TARGET_OBJECTS:ed247o>)
 target_include_directories(ed247 PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+# Append link to other libraries
+target_link_libraries(ed247 PUBLIC xml2)
+if(WIN32)
+    target_link_libraries(ed247 PUBLIC wsock32 ws2_32)
+endif()
+if(QNXNTO)
+    target_link_libraries(ed247 PUBLIC socket)
+endif()
+if(ENABLE_MEMHOOKS)
+    target_link_libraries(ed247 PUBLIC memhooks)
+endif()
 # set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
 add_library(ed247_static STATIC $<TARGET_OBJECTS:ed247o>)
 
