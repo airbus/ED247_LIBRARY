@@ -48,6 +48,10 @@ endif()
 if(ENABLE_MEMHOOKS)
     target_compile_definitions(ed247o PUBLIC ENABLE_MEMHOOKS)
 endif()
+if(ED247_VERBOSE_DEBUG)
+    target_compile_definitions(ed247o PUBLIC LIBED247_VERBOSE_DEBUG)
+    message(STATUS "Enable verbose debug for ED247")
+endif()
 
 # Append link to other libraries
 target_link_libraries(ed247o LibXml2)
