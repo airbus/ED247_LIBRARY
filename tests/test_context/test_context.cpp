@@ -24,7 +24,7 @@
 
 #include "test_context.h"
 #include "sync_entity.h"
-#ifdef __linux__
+#ifdef __unix__
     #include "memhooks.h"
 #endif
 
@@ -32,7 +32,7 @@
     #include <windows.h>
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
 void backtrace(
     memhooks_type_t type,
     const memhooks_count_t *count,
@@ -56,7 +56,7 @@ void backtrace(
 void memhooks_section_start()
 {
     std::cout << "### REAL TIME SECTION [START]" << std::endl;
-#ifdef __linux__
+#ifdef __unix__
     memhooks_initialize(&backtrace);
     memhooks_reset_count();
     memhooks_enable(true);
@@ -65,11 +65,11 @@ void memhooks_section_start()
 
 bool memhooks_section_stop()
 {
-#ifdef __linux__
+#ifdef __unix__
     memhooks_enable(false);
 #endif
     std::cout << "### REAL TIME SECTION [STOP]" << std::endl;
-#ifdef __linux__
+#ifdef __unix__
     memhooks_count_t count;
     memhooks_get_count(&count);
     std::cout << "### MEMHOOKS - COUNT ###" << std::endl;

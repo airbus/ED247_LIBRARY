@@ -113,15 +113,11 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 }
 #endif
 
-#ifndef CLOCK_MONOTONIC_RAW
-  #define CLOCK_MONOTONIC_RAW 4
-#endif
-
 uint64_t get_time_us()
 {
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+    clock_gettime(CLOCK_MONOTONIC, &tp);
     return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;
 #else
     struct timeval tv;
@@ -184,7 +180,7 @@ void SocketEntity::close(SOCKET & socket)
 {
     if(socket != INVALID_SOCKET){
         shutdown(socket, 2);
-#ifdef __linux__
+#ifdef __unix__
         ::close(socket);
 #elif _WIN32
         closesocket(socket);

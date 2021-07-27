@@ -22,16 +22,11 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
 
-if(UNIX)
-    add_library(memhooks SHARED memhooks.cpp)
+add_library(memhooks SHARED memhooks.cpp)
 
-    set(MEMHOOKS_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    target_include_directories(memhooks PUBLIC ${MEMHOOKS_INCLUDE_DIR})
+set(MEMHOOKS_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-    if(WIN32)
-        target_compile_definitions(memhooks PUBLIC MEMHOOKS_EXPORTS)
-    endif()
+target_include_directories(memhooks PUBLIC ${MEMHOOKS_INCLUDE_DIR})
 
-    install(TARGETS memhooks
-        RUNTIME DESTINATION tests/bin)
-endif()
+install(TARGETS memhooks
+    RUNTIME DESTINATION tests/bin)

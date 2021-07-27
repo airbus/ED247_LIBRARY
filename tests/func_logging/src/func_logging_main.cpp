@@ -61,7 +61,7 @@ TEST(LogConfigurationTest, Logging)
     ed247_context_t context;
     std::string filename = config_path+"/ecic_func_logging.xml";  
     // Because printing the stacktraces generates more dynamic allocations they have to be deactivated
-#ifdef __linux__
+#ifdef __unix__
     setenv("MEMHOOKS_LEVEL", "1", 1);
     setenv("ED247_LOG_FILEPATH", "./ed247.logs", 1);
 #else
@@ -127,7 +127,7 @@ TEST(LogConfigurationTest, NoLogging)
     std::string filename = config_path+"/ecic_func_logging.xml";
 
     // Set an unvalid path (empty) so that the file cannot be written
-#ifdef __linux__
+#ifdef __unix__
     setenv("ED247_LOG_FILEPATH", "", 1);
 #else
     _putenv_s("ED247_LOG_FILEPATH", "");

@@ -28,8 +28,12 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 add_executable(${TEST_EXECUTABLE}_main src/${CURRENT_DIR_NAME}_main.cpp)
 add_executable(${TEST_EXECUTABLE}_tester src/${CURRENT_DIR_NAME}_tester.cpp)
 
-target_link_libraries(${TEST_EXECUTABLE}_main PUBLIC ed247 sync_entity test_context)
-target_link_libraries(${TEST_EXECUTABLE}_tester PUBLIC ed247 sync_entity test_context)
+target_link_libraries(${TEST_EXECUTABLE}_main
+    PUBLIC ed247 sync_entity test_context
+    PRIVATE $<$<BOOL:${QNXNTO}>:regex>)
+target_link_libraries(${TEST_EXECUTABLE}_tester
+    PUBLIC ed247 sync_entity test_context
+    PRIVATE $<$<BOOL:${QNXNTO}>:regex>)
 
 install(TARGETS ${TEST_EXECUTABLE}_main ${TEST_EXECUTABLE}_tester
     RUNTIME DESTINATION tests/bin)

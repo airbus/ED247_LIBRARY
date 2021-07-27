@@ -30,8 +30,8 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 add_executable(${TEST_EXECUTABLE}_send src/${CURRENT_DIR_NAME}_send.cpp)
 add_executable(${TEST_EXECUTABLE}_recv src/${CURRENT_DIR_NAME}_recv.cpp)
 
-target_link_libraries(${TEST_EXECUTABLE}_send PUBLIC ed247 sync_entity test_context)
-target_link_libraries(${TEST_EXECUTABLE}_recv PUBLIC ed247 sync_entity test_context)
+target_link_libraries(${TEST_EXECUTABLE}_send PUBLIC ed247 sync_entity test_context PRIVATE $<$<BOOL:${QNXNTO}>:regex>)
+target_link_libraries(${TEST_EXECUTABLE}_recv PUBLIC ed247 sync_entity test_context PRIVATE $<$<BOOL:${QNXNTO}>:regex>)
 
 install(TARGETS ${TEST_EXECUTABLE}_send ${TEST_EXECUTABLE}_recv
     RUNTIME DESTINATION tests/bin)

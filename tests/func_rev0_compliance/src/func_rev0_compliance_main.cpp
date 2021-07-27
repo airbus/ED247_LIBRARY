@@ -28,7 +28,7 @@
 
 #include "test_context.h"
 
-#ifdef __linux__
+#ifdef __unix__
     #include <arpa/inet.h>
 #elif _WIN32
     #include <winsock2.h>
