@@ -27,7 +27,9 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.c)
 
-target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247)
+target_link_libraries(${TEST_EXECUTABLE}
+    PUBLIC ed247
+    PRIVATE $<$<BOOL:${QNXNTO}>:socket>)
 
 install(TARGETS ${TEST_EXECUTABLE}
     RUNTIME DESTINATION samples/bin)
