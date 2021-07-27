@@ -63,7 +63,7 @@ TEST(RobustnessTests, DuplicateChannelUID)
 {
     ed247_context_t context;
     
-#ifdef __linux__
+#ifdef __unix__
     setenv("MEMHOOKS_LEVEL", "1", 1);
     setenv("ED247_LOG_FILEPATH", "./ed247.logs", 1);
 #else

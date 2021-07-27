@@ -28,3 +28,7 @@ target_include_directories(sync_entity PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 if(WIN32)
     target_link_libraries(sync_entity wsock32 ws2_32)
 endif()
+
+if(QNXNTO)
+    target_link_libraries(sync_entity socket)
+endif()

@@ -27,7 +27,7 @@
 
 #include <regex>
 
-#ifdef __linux__
+#ifdef __unix__
 #include <time.h>
 #endif
 
@@ -46,7 +46,7 @@ void FrameHeader::fill_transport_timestamp()
     if(_configuration.transport_timestamp == ED247_YESNO_NO)
         return;
 
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
     clock_gettime(CLOCK_REALTIME, &tp);
     _send_header.transport_timestamp.epoch_s = tp.tv_sec;
