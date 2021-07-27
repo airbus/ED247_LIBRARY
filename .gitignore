@@ -1,5 +1,5 @@
-/_install
-/_build
+/_install*
+/_build*
 /.vs*
 /CMakeSettings.json
 /src/ed247/ed247_xsd.h
