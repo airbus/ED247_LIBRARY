@@ -259,7 +259,7 @@ bool Server::wait(uint32_t eid, uint32_t timeout_us)
 
     sockerr = ::select((int)_clients[eid] + 1, &rfds, NULL, NULL, &tv);
     if(sockerr == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timeout waiting for sync entity [" << eid << "] (" << sockerr << ")");
     else if(sockerr <= 0)
         THROW_SYNC_ERROR("Test entity [" << _entity->id << "] server socket select timeout waiting sync entity [" << eid << "] (" << sockerr << ")");
 
@@ -292,7 +292,7 @@ void Server::accept(uint32_t eid, uint32_t timeout_us)
     // Wait for client
     sockerr = ::select((int)_socket + 1, &rfds, NULL, NULL, &tv);
     if(sockerr == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timeout waiting for sync entity [" << eid << "] (" << sockerr << ")");
     else if(sockerr <= 0)
         THROW_SYNC_ERROR("Failed to perform select on server socket of sync entity [" << _entity->id << "] (" << sockerr << ")");
 
@@ -301,7 +301,7 @@ void Server::accept(uint32_t eid, uint32_t timeout_us)
     socklen_t addr_len = sizeof(sockaddr_in);
     _clients[eid] = ::accept(_socket, (struct sockaddr *) & addr, &addr_len);
     if(_clients[eid] == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout accepting sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timeout accepting sync entity [" << eid << "] (" << sockerr << ")");
     else if(_clients[eid] <= 0)
         THROW_SYNC_ERROR("Failed to accept connection on the server socket of sync entity [" << _entity->id << "] (" << _clients[eid] << ")");
 }
