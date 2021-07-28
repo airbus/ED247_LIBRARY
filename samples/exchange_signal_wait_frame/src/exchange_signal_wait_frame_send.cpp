@@ -26,7 +26,7 @@
 
 #include <ed247.h>
 
-#define ECIC_FILEPATH "../config/ECIC_EXAMPLE_SIGNAL_SEND_RECV_WAIT_FRAME_SEND.xml"
+#define ECIC_FILEPATH "../config/ecic_exchange_signal_wait_frame_send.xml"
 
 #include "sync_entity.h"
 
