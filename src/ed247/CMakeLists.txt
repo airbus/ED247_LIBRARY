@@ -53,6 +53,9 @@ if(ED247_VERBOSE_DEBUG)
     message(STATUS "Enable verbose debug for ED247")
 endif()
 
+# Define build dependencies for main library object
+target_link_libraries(ed247o xml2)
+
 # Define shared and static targets
 add_library(ed247 SHARED $<TARGET_OBJECTS:ed247o>)
 target_include_directories(ed247 PUBLIC ${CMAKE_CURRENT_LIST_DIR})
