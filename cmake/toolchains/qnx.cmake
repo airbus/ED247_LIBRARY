@@ -13,3 +13,6 @@ set(CMAKE_CXX_COMPILER q++)
 set(CMAKE_CXX_COMPILER_TARGET ${arch})
 	
 set(CMAKE_SYSROOT $ENV{QNX_TARGET})
+
+# Add additional paths if required
+set(CMAKE_PREFIX_PATH ${CMAKE_SYSROOT}/${ntoarch}/usr)
