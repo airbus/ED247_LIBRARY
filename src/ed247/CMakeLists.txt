@@ -75,7 +75,7 @@ add_library(ed247_static STATIC $<TARGET_OBJECTS:ed247o>)
 set_target_properties(ed247_static PROPERTIES PUBLIC_HEADER ed247.h)
 
 # Install required stuff
-install(TARGETS ed247 ed247_static PUBLIC_HEADER)
+install(TARGETS ed247 ed247_static RUNTIME DESTINATION lib PUBLIC_HEADER)
 
 # Generate XSD header file containing the XSD as a string
 macro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)
