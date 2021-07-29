@@ -96,6 +96,11 @@ if(MSVC)
     set(CMAKE_INSTALL_DEBUG_LIBRARIES TRUE)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
     include(InstallRequiredSystemLibraries)
+
+    # Prefix all shared libraries with 'lib'
+    set(CMAKE_SHARED_LIBRARY_PREFIX "lib")
+    # Prefix all static libraries with 'lib'
+    set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
 endif()
 
 # Dependencies
