@@ -104,6 +104,7 @@ if(BUILD_DEPS_LIBXML2)
     set(LIBXML2_WITH_ZLIB OFF CACHE BOOL "" FORCE)
     set(LIBXML2_WITH_TESTS OFF CACHE BOOL "" FORCE)
     set(LIBXML2_WITH_THREADS ON CACHE BOOL "" FORCE)
+    set(LIBXML2_WITH_PROGRAMS OFF CACHE BOOL "" FORCE)
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE) # TO TEST
     add_subdirectory(deps/libxml2)
     add_library(xml2 ALIAS LibXml2)
@@ -115,6 +116,7 @@ if(BUILD_DEPS_LIBXML2)
 else()
     find_package(LibXml2 REQUIRED)
 endif()
+
 ## GTEST
 if(BUILD_DEPS_GTEST)
     if(MSVC)
