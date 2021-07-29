@@ -107,6 +107,11 @@ if(BUILD_DEPS_LIBXML2)
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE) # TO TEST
     add_subdirectory(deps/libxml2)
     add_library(xml2 ALIAS LibXml2)
+
+    if(QNXNTO)
+        target_link_libraries(LibXml2 PUBLIC socket)
+    endif()
+
 else()
     find_package(LibXml2 REQUIRED)
 endif()
