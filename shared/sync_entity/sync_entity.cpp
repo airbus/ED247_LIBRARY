@@ -235,7 +235,7 @@ Server::~Server()
 
 bool Server::wait(uint32_t eid, uint32_t timeout_us)
 {
-    // printf("SYNC ENTITY [%u]: Waiting [%u] ...\n",_entity->id,eid);
+    printf("SYNC ENTITY [%u]: Waiting [%u] ...\n",_entity->id,eid);
 
     int sockerr;
     uint64_t begin_us = get_time_us();
@@ -324,7 +324,7 @@ Client::~Client()
 
 void Client::send(uint32_t eid, uint32_t timeout_us)
 {
-    // printf("SYNC ENTITY [%u]: [%u] -> [%u] ...\n",_entity->id,_entity->id,eid);
+    printf("SYNC ENTITY [%u]: [%u] -> [%u] ...\n",_entity->id,_entity->id,eid);
     int sockerr;
 
     if(_servers[eid] == INVALID_SOCKET)
