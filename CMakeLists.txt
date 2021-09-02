@@ -58,15 +58,28 @@ option(BUILD_TESTS          "Build tests"                                   OFF)
 option(BUILD_DOCS           "Build documentation"                           OFF)
 option(BUILD_UTILS          "Build utils executables"                       OFF)
 option(BUILD_DEPS_LIBXML2   "Build libxml2 dependency"                      ON)
-if(BUILD_TESTS)
-    option(BUILD_DEPS_GTEST     "Build googletest dependency"                   ON)
-    set(ENABLE_MEMHOOKS ON CACHE STRING "Enable compilation of memory hooks")
-    set(TEST_MULTICAST_INTERFACE_IP "" CACHE STRING "Ip address of the interface to use for multicast when performing the tests")
-endif()
+option(BUILD_DEPS_GTEST     "Build googletest dependency"                   ON)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     option(ED247_VERBOSE_DEBUG  "Enable verbose debug"                      ON)
 else()
     option(ED247_VERBOSE_DEBUG  "Enable verbose debug"                      OFF)
+endif()
+
+# Set up the common directory structure for output libraries and binaries
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  # For Unix-like operating systems we can put all libraries into a dedicated
+  # lib/ folder, whereas for Windows the libraries (dll files) need to be put
+  # into the same directory as the executable, since Windows doesn't have an
+  # RPATH equivalent where a search path can be put into the executable itself
+  if(UNIX)
+      set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  else()
+      set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+  endif()
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -130,7 +143,7 @@ if(BUILD_TESTS)
         set(GTEST_HAS_TR1_TUPLE OFF CACHE BOOL "My option" FORCE)
         add_subdirectory(deps/googletest EXCLUDE_FROM_ALL)
     else()
-        find_package(GTest)
+        find_package(GTest REQUIRED)
     endif()
 endif()
 
@@ -155,6 +168,9 @@ if(BUILD_SAMPLES OR BUILD_TESTS OR BUILD_UTILS)
 endif()
 
 if(BUILD_TESTS)
+    set(ENABLE_MEMHOOKS ON CACHE STRING "Enable compilation of memory hooks")
+    set(TEST_MULTICAST_INTERFACE_IP "" CACHE STRING "Ip address of the interface to use for multicast when performing the tests")
+    
     enable_testing()
     add_subdirectory(tests)
 endif()
