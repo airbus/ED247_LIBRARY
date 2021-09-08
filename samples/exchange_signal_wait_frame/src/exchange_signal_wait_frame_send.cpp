@@ -26,7 +26,7 @@
 
 #include <ed247.h>
 
-#define ECIC_FILEPATH "../config/examples/ECIC_EXAMPLE_SIGNAL_SEND_RECV_WAIT_FRAME_SEND.xml"
+#define ECIC_FILEPATH "../config/ecic_exchange_signal_wait_frame_send.xml"
 
 #include "sync_entity.h"
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     // Loading
     if(argc < 2){
         fprintf(stdout,"Missing the first argument, use default ECIC configuration filepath: %s\n",ECIC_FILEPATH);
-        status = ed247_load(argv[1], NULL, &context);
+        status = ed247_load(ECIC_FILEPATH, NULL, &context);
     }else{
         fprintf(stdout,"Using provided ECIC configuration filepath: %s\n",argv[1]);
         status = ed247_load(argv[1], NULL, &context);
