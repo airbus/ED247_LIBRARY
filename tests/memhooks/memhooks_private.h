@@ -33,10 +33,13 @@
 #ifndef _MSC_VER
     #include <unistd.h>
 #endif
-#ifdef __linux__
+#ifdef __unix__
     #include <unistd.h>
-    #include <execinfo.h>
     #include <sys/types.h>
+#endif
+
+#ifdef __linux__
+    #include <execinfo.h>
     #include <sys/syscall.h>
 #endif
 

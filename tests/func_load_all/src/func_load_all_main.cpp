@@ -174,7 +174,7 @@ TEST_P(LoadContext, Loading)
     void *test = malloc(100000);
     free(test);
 
-#ifdef __linux__
+#ifdef __unix__
     ASSERT_FALSE(memhooks_section_stop());
 #else
     ASSERT_TRUE(memhooks_section_stop());
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-#ifdef __linux__
+#ifdef __unix__
     char *env = getenv("LD_PRELOAD");
     std::cout << "LD_PRELOAD: " << std::string(env ? env : "") << std::endl;
 #endif

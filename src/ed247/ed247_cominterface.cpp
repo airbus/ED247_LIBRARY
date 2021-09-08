@@ -31,7 +31,7 @@
 #include <memory>
 #include <string>
 
-#ifdef __linux__
+#ifdef __unix__
 #include <fcntl.h>
 #include <time.h>
 #include <signal.h>
@@ -63,9 +63,9 @@ int one = 1;
 
 uint64_t get_time_us()
 {
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+    clock_gettime(CLOCK_MONOTONIC, &tp);
     return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;
 #else
     struct timeval tv;
@@ -331,7 +331,7 @@ void UdpSocket::close()
 
     if(_socket != INVALID_SOCKET){
         shutdown(_socket, 2);
-#ifdef __linux__
+#ifdef __unix__
         ::close(_socket);
 #elif _WIN32
         closesocket(_socket);
@@ -440,7 +440,7 @@ void UdpSocket::Factory::setup()
             char straddr[INET_ADDRSTRLEN];
             InetNtop(AF_INET, &_host_ip_addresses.back(), straddr, INET_ADDRSTRLEN);
             ipaddr = std::string(straddr);
-#elif __linux__
+#elif __unix__
             char straddr[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &_host_ip_addresses.back(), straddr, INET_ADDRSTRLEN);
             ipaddr = std::string(straddr);

@@ -305,7 +305,7 @@ INSTANTIATE_TEST_CASE_P(MulticastTests,SocketContext,
 
 int main(int argc, char **argv)
 {
-#ifdef __linux__
+#ifdef __unix__
     setenv("MEMHOOKS_LEVEL", "1", 1);
 #else
     _putenv_s("MEMHOOKS_LEVEL","1");

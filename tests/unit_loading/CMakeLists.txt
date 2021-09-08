@@ -27,7 +27,7 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
 
-target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247o test_context sync_entity gtest gtest_main)
+target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247o test_context sync_entity gtest gtest_main PRIVATE $<$<BOOL:${QNXNTO}>:regex>)
 
 install(TARGETS ${TEST_EXECUTABLE}
     RUNTIME DESTINATION tests/bin)

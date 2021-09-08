@@ -47,6 +47,11 @@
 
 #ifdef __linux__
     #include <byteswap.h>
+#elif __QNXNTO__
+    #include <gulliver.h>
+    #define bswap_16(x) ENDIAN_SWAP16(x)
+    #define bswap_32(x) ENDIAN_SWAP32(x)
+    #define bswap_64(x) ENDIAN_SWAP64(x)
 #endif
 
 #ifdef __unix__
@@ -80,13 +85,6 @@
         #define bswap_32(x) _byteswap_ulong(x)
         #define bswap_64(x) _byteswap_uint64(x)
     #endif
-#endif
-
-#ifdef _QNX_SOURCE
-    #include <gulliver.h>
-    #define bswap_16(x) ENDIAN_SWAP16(x)
-    #define bswap_32(x) ENDIAN_SWAP32(x)
-    #define bswap_64(x) ENDIAN_SWAP64(x)
 #endif
 
 #ifndef _MSC_VER

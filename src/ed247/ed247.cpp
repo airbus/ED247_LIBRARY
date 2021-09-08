@@ -780,9 +780,9 @@ ed247_status_t libed247_set_simulation_time_ns(
 {
     _UNUSED(user_data);
     if(!time_sample) return ED247_STATUS_FAILURE;
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+    clock_gettime(CLOCK_MONOTONIC, &tp);
     time_sample->epoch_s = (uint32_t)tp.tv_sec;
     time_sample->offset_ns = (uint32_t)((uint64_t)tp.tv_nsec);
 #else

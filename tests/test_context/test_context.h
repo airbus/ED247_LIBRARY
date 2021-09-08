@@ -34,7 +34,7 @@
 #include <iostream>
 #include <sstream>
 
-#ifdef __linux__
+#ifdef __unix__
     #define TEST_EXPORT __attribute__ ((visibility ("default")))
 #elif _WIN32
     #ifdef TEST_EXPORTS

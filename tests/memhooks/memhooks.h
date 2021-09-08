@@ -25,7 +25,7 @@
 #ifndef _MEMHOOKS_H_
 #define _MEMHOOKS_H_
 
-#ifdef __linux__
+#ifdef __unix__
     #define MEMHOOKS_EXPORT __attribute__ ((visibility ("default")))
 #elif _WIN32
     #ifdef MEMHOOKS_EXPORTS

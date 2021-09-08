@@ -27,7 +27,7 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
 
-target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247o test_context sync_entity gtest gtest_main)
+target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247o test_context sync_entity gtest gtest_main PRIVATE $<$<BOOL:${QNXNTO}>:regex>)
 
 install(TARGETS ${TEST_EXECUTABLE}
     RUNTIME DESTINATION tests/bin)
@@ -35,8 +35,6 @@ install(TARGETS ${TEST_EXECUTABLE}
 file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
 install(FILES ${CONFIGS}
     DESTINATION tests/config)
-
-message("TEST_MULTICAST_INTERFACE_IP ${TEST_MULTICAST_INTERFACE_IP}")
 
 add_test(NAME ${TEST_EXECUTABLE}
     COMMAND "cmake"

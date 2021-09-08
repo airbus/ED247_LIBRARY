@@ -113,15 +113,11 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 }
 #endif
 
-#ifndef CLOCK_MONOTONIC_RAW
-  #define CLOCK_MONOTONIC_RAW 4
-#endif
-
 uint64_t get_time_us()
 {
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+    clock_gettime(CLOCK_MONOTONIC, &tp);
     return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;
 #else
     struct timeval tv;
@@ -184,7 +180,7 @@ void SocketEntity::close(SOCKET & socket)
 {
     if(socket != INVALID_SOCKET){
         shutdown(socket, 2);
-#ifdef __linux__
+#ifdef __unix__
         ::close(socket);
 #elif _WIN32
         closesocket(socket);
@@ -239,7 +235,7 @@ Server::~Server()
 
 bool Server::wait(uint32_t eid, uint32_t timeout_us)
 {
-    // printf("SYNC ENTITY [%u]: Waiting [%u] ...\n",_entity->id,eid);
+    printf("SYNC ENTITY [%u]: Waiting [%u] ...\n",_entity->id,eid);
 
     int sockerr;
     uint64_t begin_us = get_time_us();
@@ -263,7 +259,7 @@ bool Server::wait(uint32_t eid, uint32_t timeout_us)
 
     sockerr = ::select((int)_clients[eid] + 1, &rfds, NULL, NULL, &tv);
     if(sockerr == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timeout waiting for sync entity [" << eid << "] (" << sockerr << ")");
     else if(sockerr <= 0)
         THROW_SYNC_ERROR("Test entity [" << _entity->id << "] server socket select timeout waiting sync entity [" << eid << "] (" << sockerr << ")");
 
@@ -296,7 +292,7 @@ void Server::accept(uint32_t eid, uint32_t timeout_us)
     // Wait for client
     sockerr = ::select((int)_socket + 1, &rfds, NULL, NULL, &tv);
     if(sockerr == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timeout waiting for sync entity [" << eid << "] (" << sockerr << ")");
     else if(sockerr <= 0)
         THROW_SYNC_ERROR("Failed to perform select on server socket of sync entity [" << _entity->id << "] (" << sockerr << ")");
 
@@ -305,7 +301,7 @@ void Server::accept(uint32_t eid, uint32_t timeout_us)
     socklen_t addr_len = sizeof(sockaddr_in);
     _clients[eid] = ::accept(_socket, (struct sockaddr *) & addr, &addr_len);
     if(_clients[eid] == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout accepting sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timeout accepting sync entity [" << eid << "] (" << sockerr << ")");
     else if(_clients[eid] <= 0)
         THROW_SYNC_ERROR("Failed to accept connection on the server socket of sync entity [" << _entity->id << "] (" << _clients[eid] << ")");
 }
@@ -328,7 +324,7 @@ Client::~Client()
 
 void Client::send(uint32_t eid, uint32_t timeout_us)
 {
-    // printf("SYNC ENTITY [%u]: [%u] -> [%u] ...\n",_entity->id,_entity->id,eid);
+    printf("SYNC ENTITY [%u]: [%u] -> [%u] ...\n",_entity->id,_entity->id,eid);
     int sockerr;
 
     if(_servers[eid] == INVALID_SOCKET)
