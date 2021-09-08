@@ -48,36 +48,34 @@ endif()
 if(ENABLE_MEMHOOKS)
     target_compile_definitions(ed247o PUBLIC ENABLE_MEMHOOKS)
 endif()
+if(ED247_VERBOSE_DEBUG)
+    target_compile_definitions(ed247o PUBLIC LIBED247_VERBOSE_DEBUG)
+    message(STATUS "Enable verbose debug for ED247")
+endif()
 
-# Append link to other libraries
-target_link_libraries(ed247o LibXml2)
-if(WIN32)
-    target_link_libraries(ed247o wsock32 ws2_32)
-endif()
-if(ENABLE_MEMHOOKS)
-    target_link_libraries(ed247o memhooks)
-endif()
+# Define build dependencies for main library object
+target_link_libraries(ed247o xml2)
 
 # Define shared and static targets
 add_library(ed247 SHARED $<TARGET_OBJECTS:ed247o>)
-target_link_libraries(ed247 LibXml2)
-if(ENABLE_MEMHOOKS)
-    target_link_libraries(ed247 memhooks)
-endif()
 target_include_directories(ed247 PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-# set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
+set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
+# Append link to other libraries
+target_link_libraries(ed247 PUBLIC xml2)
+if(WIN32)
+    target_link_libraries(ed247 PUBLIC wsock32 ws2_32)
+endif()
+if(QNXNTO)
+    target_link_libraries(ed247 PUBLIC socket)
+endif()
+if(ENABLE_MEMHOOKS)
+    target_link_libraries(ed247 PUBLIC memhooks)
+endif()
 add_library(ed247_static STATIC $<TARGET_OBJECTS:ed247o>)
+set_target_properties(ed247_static PROPERTIES PUBLIC_HEADER ed247.h)
 
 # Install required stuff
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/ed247.h DESTINATION inc)
-install(TARGETS ed247
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib)
-install(TARGETS ed247_static
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib)
+install(TARGETS ed247 ed247_static PUBLIC_HEADER)
 
 # Generate XSD header file containing the XSD as a string
 macro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)
