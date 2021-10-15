@@ -174,11 +174,7 @@ TEST_P(LoadContext, Loading)
     void *test = malloc(100000);
     free(test);
 
-#ifdef __unix__
-    ASSERT_FALSE(memhooks_section_stop());
-#else
     ASSERT_TRUE(memhooks_section_stop());
-#endif
 }
 
 std::vector<std::string> configuration_files;
