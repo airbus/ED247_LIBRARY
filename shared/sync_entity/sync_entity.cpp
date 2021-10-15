@@ -33,11 +33,11 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <sys/socket.h>
 #endif
 #ifndef _MSC_VER
 #include <unistd.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 #endif
 #ifdef _WIN32
 #include <winsock2.h>
