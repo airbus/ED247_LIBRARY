@@ -20,7 +20,6 @@ jobs:
     runs-on: ${{matrix.os}}
     
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-18.04]
         build_type: [Release, Debug]
@@ -62,7 +61,6 @@ jobs:
     runs-on: ${{matrix.os}}
     
     strategy:
-      fail-fast: false
       matrix:
         os: [windows-latest]
         build_type: [Release, Debug]
