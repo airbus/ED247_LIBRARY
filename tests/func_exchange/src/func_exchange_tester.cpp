@@ -534,6 +534,8 @@ TEST_P(StreamContext, MultipleFrame)
     // Check the received timestamp is the expected one
     ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+	
+    TEST_CONTEXT_SYNC
 
     // Recv the other frames
     ASSERT_EQ(ed247_wait_during(NULL, &streams, 1000000), ED247_STATUS_FAILURE);
