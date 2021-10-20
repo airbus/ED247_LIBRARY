@@ -394,6 +394,9 @@ TEST_P(StreamContext, MultipleFrame)
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         std::cout << "# SEND" << std::endl;
+        if (i == 0) {
+          TEST_CONTEXT_SYNC
+        }
     }
 
     // Checkpoint n°2
