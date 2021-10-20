@@ -45,6 +45,15 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{matrix.build_type}} --output-on-failure
       
+    - name: Archive Logs
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: testLogs_${{matrix.os}}_${{matrix.build_type}}
+        path: |
+          ${{github.workspace}}/build/bin/*.out
+          ${{github.workspace}}/build/bin/*.err
+      
   build_win:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
@@ -80,3 +89,11 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{matrix.build_type}} --output-on-failure
       
+    - name: Archive Logs
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: testLogs_${{matrix.os}}_${{matrix.build_type}}
+        path: |
+          ${{github.workspace}}/build/bin/*.out
+          ${{github.workspace}}/build/bin/*.err
