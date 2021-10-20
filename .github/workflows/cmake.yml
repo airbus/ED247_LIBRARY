@@ -51,7 +51,7 @@ jobs:
       with:
         name: testLogs_${{matrix.os}}_${{matrix.build_type}}
         path: |
-          ${{github.workspace}}/build/bin/*.out
+          ${{github.workspace}}/build/bin/*.log
           ${{github.workspace}}/build/bin/*.err
       
   build_win:
@@ -95,5 +95,5 @@ jobs:
       with:
         name: testLogs_${{matrix.os}}_${{matrix.build_type}}
         path: |
-          ${{github.workspace}}/build/bin/*.out
+          ${{github.workspace}}/build/bin/*.log
           ${{github.workspace}}/build/bin/*.err
