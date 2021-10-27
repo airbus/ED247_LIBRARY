@@ -90,13 +90,13 @@ const libed247_runtime_metrics_t* Context::get_runtime_metrics()
 Context * Context::Builder::create_filepath(std::string ecic_filepath,
     const libed247_configuration_t & libed247_configuration)
 {
+    Logs::getInstance().configure(libed247_configuration);
+
     // Logs
     PRINT_DEBUG("# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]");
     PRINT_DEBUG("## DEBUG logs enabled");
     PRINT_INFO("## INFO logs enabled");
     PRINT_WARNING("## WARNING enabled");
-
-    Logs::getInstance().configure(libed247_configuration);
 
     // Create context
     Context * context = new Context(libed247_configuration);
@@ -118,13 +118,13 @@ Context * Context::Builder::create_filepath(std::string ecic_filepath,
 Context * Context::Builder::create_content(std::string ecic_content,
     const libed247_configuration_t & libed247_configuration)
 {
+    Logs::getInstance().configure(libed247_configuration);
+
     // Logs
     PRINT_DEBUG("# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]");
     PRINT_DEBUG("## DEBUG logs enabled");
     PRINT_INFO("## INFO logs enabled");
     PRINT_WARNING("## WARNING enabled");
-
-    Logs::getInstance().configure(libed247_configuration);
 
     // Create context
     Context * context = new Context(libed247_configuration);
