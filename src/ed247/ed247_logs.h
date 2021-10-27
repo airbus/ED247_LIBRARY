@@ -35,11 +35,24 @@
 #include <fstream>
 #include <sstream>
 
+// Include Logger for Simulink Real-Time
+#ifdef SIMULINK_REAL_TIME
+#include "Logger.hpp"
+#endif
+
+#ifdef SIMULINK_REAL_TIME
+#define LOG_DEBUG()     LOG(debug,0)
+#define LOG_INFO()      LOG(info,0)
+#define LOG_WARNING()   LOG(warning,0)
+#define LOG_ERROR()     LOG(error,0)
+#define LOG_END         std::endl;
+#else
 #define LOG_DEBUG()     ed247::Logs::log(ED247_LOG_LEVEL_DEBUG)
 #define LOG_INFO()      ed247::Logs::log(ED247_LOG_LEVEL_INFO)
 #define LOG_WARNING()   ed247::Logs::log(ED247_LOG_LEVEL_WARNING)
 #define LOG_ERROR()     ed247::Logs::log(ED247_LOG_LEVEL_ERROR)
 #define LOG_END         std::endl;
+#endif
 
 #define IF_PRINT if(Configuration::getInstance().get().enable_logs_during_send_receive)
 

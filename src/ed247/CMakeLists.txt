@@ -33,7 +33,7 @@ add_library(ed247o OBJECT ${SRCS})
 unset(SRCS)
 
 # Append include directories
-target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${EXTRA_INCLUDES})
 if(ENABLE_MEMHOOKS)
     target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../memhooks)
     target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR}/memhooks)
@@ -58,7 +58,7 @@ target_link_libraries(ed247o xml2)
 
 # Define shared and static targets
 add_library(ed247 SHARED $<TARGET_OBJECTS:ed247o>)
-target_include_directories(ed247 PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(ed247 PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${EXTRA_INCLUDES})
 set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
 # Append link to other libraries
 target_link_libraries(ed247 PUBLIC xml2)
