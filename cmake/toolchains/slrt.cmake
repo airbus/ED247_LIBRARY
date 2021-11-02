@@ -1,5 +1,8 @@
 include(${CMAKE_CURRENT_LIST_DIR}/qnx.cmake)
 
+# Print all debug messages and use SLRT tools to filter
+set(ED247_VERBOSE_DEBUG ON)
+
 # Initialize compilation flags
 set(CMAKE_CXX_FLAGS_INIT "-DSIMULINK_REAL_TIME")
 
