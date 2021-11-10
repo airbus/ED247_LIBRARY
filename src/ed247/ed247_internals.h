@@ -49,9 +49,9 @@
     #include <byteswap.h>
 #elif __QNXNTO__
     #include <gulliver.h>
-    #define bswap_16(x) ENDIAN_SWAP16(x)
-    #define bswap_32(x) ENDIAN_SWAP32(x)
-    #define bswap_64(x) ENDIAN_SWAP64(x)
+    #define bswap_16(x) ENDIAN_RET16(x)
+    #define bswap_32(x) ENDIAN_RET32(x)
+    #define bswap_64(x) ENDIAN_RET64(x)
 #endif
 
 #ifdef __unix__
