@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -132,9 +132,9 @@ TEST_P(ChannelContext, MultiPushPop)
                 oss.str("");
                 oss << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
                 sample->copy(oss.str().c_str(),stream.second.stream->get_configuration()->info.sample_max_size_bytes);
-                memhooks_section_start();
+                malloc_count_start();
                 stream.second.stream->push_sample(*sample,&full);
-                ASSERT_TRUE(memhooks_section_stop());
+                ASSERT_EQ(malloc_count_stop(), 0);
                 if(i < (stream.second.stream->get_configuration()->info.sample_max_number-1))
                     ASSERT_FALSE(full);
                 else
@@ -143,9 +143,9 @@ TEST_P(ChannelContext, MultiPushPop)
         }
 
         // Encode channel & check frame
-        memhooks_section_start();
+        malloc_count_start();
         channel0->encode(0);
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         size_t frame_index = 0;
         if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
             uint16_t pid = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
@@ -183,7 +183,7 @@ TEST_P(ChannelContext, MultiPushPop)
             }else if(stream.second.stream->get_configuration()->info.type == ED247_STREAM_TYPE_A825){
                 ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
             }else if(stream.second.stream->get_configuration()->info.type == ED247_STREAM_TYPE_SERIAL){
-                ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
+                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
             }else{
                 ASSERT_EQ(sample_size, (stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
             }
@@ -191,9 +191,9 @@ TEST_P(ChannelContext, MultiPushPop)
         }
 
         // Decode sample
-        memhooks_section_start();
+        malloc_count_start();
         channel1->decode((const char*)channel0->buffer().data(), channel0->buffer().size());
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         // Check frame header
         if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
@@ -211,9 +211,9 @@ TEST_P(ChannelContext, MultiPushPop)
             for(size_t i = 0 ; i < stream.second.stream->get_configuration()->info.sample_max_number ; i++){
                 oss.str("");
                 oss << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
-                memhooks_section_start();
+                malloc_count_start();
                 auto sample = stream.second.stream->pop_sample(&empty);
-                ASSERT_TRUE(memhooks_section_stop());
+                ASSERT_EQ(malloc_count_stop(), 0);
                 auto str_sample = oss.str();
                 auto str_sample_recv = std::string((char*)sample->data(), stream.second.stream->get_configuration()->info.sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);

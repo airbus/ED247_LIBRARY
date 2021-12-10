@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -64,10 +64,8 @@ TEST(RobustnessTests, DuplicateChannelUID)
     ed247_context_t context;
     
 #ifdef __linux__
-    setenv("MEMHOOKS_LEVEL", "1", 1);
     setenv("ED247_LOG_FILEPATH", "./ed247.logs", 1);
 #else
-    _putenv_s("MEMHOOKS_LEVEL","1");
     _putenv_s("ED247_LOG_FILEPATH","./ed247.logs");
 #endif
 

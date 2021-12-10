@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -30,71 +30,60 @@
 #   RECV_EXE            Second executable
 #   RECV_CONFIG         Second configuration file
 
-message("TEST: ${TEST}")
+message("Running test: ${TEST}")
+
+# Set PATH to libED247 on windows (rpath is used on Linux)
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+  if (ED247_LIB_PATH)
+    set(ENV{PATH} "${ED247_LIB_PATH};$ENV{PATH}")
+  endif()
+endif()
 
 if(RUN_EXE)
 
-    if(UNIX)
-    set(ENV{LD_PRELOAD} "${WORKING_DIRECTORY}/../lib/libmemhooks.so")
-        set(ENV{MEMHOOKS_LEVEL} 1)
-    endif()
-
-    execute_process(
-        COMMAND "cmake"
-            -DRUN_EXE=${RUN_EXE}
-            -DRUN_CONFIG=${RUN_CONFIG}
-            -DWORKING_DIRECTORY=${WORKING_DIRECTORY}
-            -P ${CMAKE_CURRENT_LIST_DIR}/run.cmake
-        WORKING_DIRECTORY ${WORKING_DIRECTORY}
-        ERROR_VARIABLE TEST_ERROR
-        RESULT_VARIABLE TEST_RESULT
+  execute_process(
+    COMMAND "cmake"
+    -DRUN_EXE=${RUN_EXE}
+    -DRUN_CONFIG=${RUN_CONFIG}
+    -DWORKING_DIRECTORY=${WORKING_DIRECTORY}
+    -P ${CMAKE_CURRENT_LIST_DIR}/execute_process_redirect.cmake
+    WORKING_DIRECTORY ${WORKING_DIRECTORY}
+    COMMAND_ECHO STDOUT
+    ERROR_VARIABLE TEST_ERROR
+    RESULT_VARIABLE TEST_RESULT
     )
-    if(NOT TEST_RESULT EQUAL 0)
-        file(APPEND ${WORKING_DIRECTORY}/../doc/tests/report.md "| ${TEST} | *NOK* |
-")
-        if("${TEST_ERROR}" STREQUAL "")
-            message(FATAL_ERROR "ERROR\nUnknown error")
-        else()
-            message(FATAL_ERROR "ERROR\n${TEST_ERROR}")
-        endif()
+  if(NOT TEST_RESULT EQUAL 0)
+    if("${TEST_ERROR}" STREQUAL "")
+      message(FATAL_ERROR "Unknown error")
     else()
-        file(APPEND ${WORKING_DIRECTORY}/../doc/tests/report.md "| ${TEST} | OK |
-")
+      message(FATAL_ERROR "${TEST_ERROR}")
     endif()
+  endif()
 
 else()
-
-    if(UNIX)
-        set(ENV{LD_PRELOAD} "/home/CrossTools/ED247/ED247_LIBRARY/Dev/ED247_LIBRARY_NEWBUILD/_build/lib/libmemhooks.so")
-        set(ENV{MEMHOOKS_LEVEL} 1)
-    endif()
-
-    execute_process(
-        COMMAND "cmake"
-            -DRUN_EXE=${SEND_EXE}
-            -DRUN_CONFIG=${SEND_CONFIG}
-            -DWORKING_DIRECTORY=${WORKING_DIRECTORY}
-            -P ${CMAKE_CURRENT_LIST_DIR}/run.cmake
-        COMMAND "cmake"
-            -DRUN_EXE=${RECV_EXE}
-            -DRUN_CONFIG=${RECV_CONFIG}
-            -DWORKING_DIRECTORY=${WORKING_DIRECTORY}
-            -P ${CMAKE_CURRENT_LIST_DIR}/run.cmake
-        WORKING_DIRECTORY ${WORKING_DIRECTORY}
-        ERROR_VARIABLE TEST_ERROR
-        RESULT_VARIABLE TEST_RESULT
+  execute_process(
+    COMMAND "cmake"
+    -DRUN_EXE=${SEND_EXE}
+    -DRUN_CONFIG=${SEND_CONFIG}
+    -DWORKING_DIRECTORY=${WORKING_DIRECTORY}
+    -P ${CMAKE_CURRENT_LIST_DIR}/execute_process_redirect.cmake
+    COMMAND "cmake"
+    -DRUN_EXE=${RECV_EXE}
+    -DRUN_CONFIG=${RECV_CONFIG}
+    -DWORKING_DIRECTORY=${WORKING_DIRECTORY}
+    -P ${CMAKE_CURRENT_LIST_DIR}/execute_process_redirect.cmake
+    WORKING_DIRECTORY ${WORKING_DIRECTORY}
+    COMMAND_ECHO STDOUT
+    ERROR_VARIABLE TEST_ERROR
+    RESULT_VARIABLE TEST_RESULT
     )
-    if(NOT TEST_RESULT EQUAL 0)
-        file(APPEND ${WORKING_DIRECTORY}/../doc/tests/report.md "| ${TEST} | *NOK* |
-")
-        if("${TEST_ERROR}" STREQUAL "")
-            message(FATAL_ERROR "ERROR\nUnknown error")
-        else()
-            message(FATAL_ERROR "ERROR\n${TEST_ERROR}")
-        endif()
+
+  if(NOT TEST_RESULT EQUAL 0)
+    if("${TEST_ERROR}" STREQUAL "")
+      message(FATAL_ERROR "Unknown error")
     else()
-        file(APPEND ${WORKING_DIRECTORY}/../doc/tests/report.md "| ${TEST} | OK |
-")
+      message(FATAL_ERROR "${TEST_ERROR}")
     endif()
+  endif()
 
 endif()

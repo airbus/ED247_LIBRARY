@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -2953,6 +2953,29 @@ ed247_status_t ed247_unload(
     LIBED247_CATCH("Unload")
 #ifdef LIBED247_VERBOSE_DEBUG
     PRINT_DEBUG("## Unload success");
+#endif
+    return ED247_STATUS_SUCCESS;
+}
+
+ed247_status_t ed247_free(
+    void *data)
+{
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Free ...");
+#endif
+    if(!data){
+#ifdef LIBED247_VERBOSE_DEBUG
+        PRINT_DEBUG("## Free failed");
+#endif
+        PRINT_ERROR("Invalid data");
+        return ED247_STATUS_FAILURE;
+    }
+    try{
+        free(data);
+    }
+    LIBED247_CATCH("Free")
+#ifdef LIBED247_VERBOSE_DEBUG
+    PRINT_DEBUG("## Free success");
 #endif
     return ED247_STATUS_SUCCESS;
 }

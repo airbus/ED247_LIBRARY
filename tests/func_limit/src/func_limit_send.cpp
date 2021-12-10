@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,13 +33,10 @@
  * Defines *
  ***********/
 
-#define TEST_ENTITY_SRC_ID 1
-#define TEST_ENTITY_DST_ID 2
+#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
+#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
 
-#define TEST_CONTEXT_SYNC_MAIN TestSend(); TestWait();
-#define TEST_CONTEXT_SYNC_TESTER TestWait(); TestSend();
-
-#define TEST_CONTEXT_SYNC TEST_CONTEXT_SYNC_MAIN
+#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
 
 /********
  * Test *
@@ -67,7 +64,7 @@ TEST_P(StreamContext, LimitOneByOne)
     
     // Synchro at startup
     std::cout << "Startup" << std::endl;
-    TEST_CONTEXT_SYNC
+    TEST_CONTEXT_SYNC();
     
     ASSERT_EQ(ed247_component_get_streams(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
@@ -83,14 +80,14 @@ TEST_P(StreamContext, LimitOneByOne)
         ASSERT_EQ(ed247_stream_push_sample(stream, &content, sizeof(content), NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         
-        TEST_CONTEXT_SYNC
+        TEST_CONTEXT_SYNC();
     }
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     
     uint64_t end = synchro::get_time_us();
     std::cout << "Sending time (1 stream by 1 call) [" << (end-start)/1000 << "] ms" << std::endl;
 
-    TEST_CONTEXT_SYNC
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -106,7 +103,7 @@ TEST_P(StreamContext, LimitAllInOne)
     
     // Synchro at startup
     std::cout << "Startup" << std::endl;
-    TEST_CONTEXT_SYNC
+    TEST_CONTEXT_SYNC();
     
     ASSERT_EQ(ed247_component_get_streams(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
@@ -126,7 +123,7 @@ TEST_P(StreamContext, LimitAllInOne)
     
     uint64_t end = synchro::get_time_us();
     std::cout << "Sending time (all streams by 1 call) [" << (end-start)/1000 << "] ms" << std::endl;
-    TEST_CONTEXT_SYNC
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);

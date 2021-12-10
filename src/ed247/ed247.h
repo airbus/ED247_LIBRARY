@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1387,7 +1387,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_contains_signals(
 /**
  * @brief Allocate memory of a stream sample with the right memory size. The size of the sample is deducted from the SampleMaxSizeBytes ED247 parameter of the stream.
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * <b>When not needed anymore, the memory free shall be made by the user with free(*sample_data).</b>
+ * <b>When not needed anymore, the memory free shall be made by the user with ::ed247_free().</b>
  * @ingroup read_write
  * @param[in] stream Stream identifier
  * @param[out] sample_data Pointer to the allocated memory
@@ -1403,7 +1403,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_allocate_sample(
 /**
  * @brief Allocate memory of a signal sample with the right memory size. The size of the sample is deducted from the SampleMaxSizeBytes ED247 parameter of the signal.
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * <b>When not needed anymore, the memory free shall be made by the user with free(*sample_data).</b>
+ * <b>When not needed anymore, the memory free shall be made by the user with ::ed247_free().</b>
  * @ingroup read_write
  * @param[in] signal Signal identifier
  * @param[out] sample_data Pointer to the allocated memory
@@ -1816,6 +1816,17 @@ extern LIBED247_EXPORT ed247_status_t ed247_frame_decode(
  */
 extern LIBED247_EXPORT ed247_status_t ed247_unload(
     ed247_context_t ed247_context);
+
+/**
+ * @brief Free any allocated element with the library.
+ * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * @ingroup load_unload
+ * @param[in] data Pointer to element to be disposed
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_free(
+    void *data);
 
 #ifdef __cplusplus
 };

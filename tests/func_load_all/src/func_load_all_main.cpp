@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -57,7 +57,7 @@ const char* ecic_content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 "<!--\n"
 "The MIT Licence\n"
 "\n"
-"Copyright (c) 2020 Airbus Operations S.A.S\n"
+"Copyright (c) 2021 Airbus Operations S.A.S\n"
 "\n"
 "Permission is hereby granted, free of charge, to any person obtaining a\n"
 "copy of this software and associated documentation files (the \"Software\"),\n"
@@ -153,7 +153,7 @@ TEST(NoInputs, Wait)
 
 
 /******************************************************************************
-Test functional load/unload procedure and check the memhooks are working fine
+Test functional load/unload procedure and check the malloc count is working fine
 ******************************************************************************/
 class LoadContext : public ::testing::TestWithParam<std::string>{};
 
@@ -168,16 +168,13 @@ TEST_P(LoadContext, Loading)
     ASSERT_EQ(ed247_unload(ed247_context), ED247_STATUS_SUCCESS);
 
     // Test mem hooks
-
-    memhooks_section_start();
-
+    malloc_count_start();
     void *test = malloc(100000);
     free(test);
-
 #ifdef __linux__
-    ASSERT_FALSE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 1);
 #else
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 #endif
 }
 
@@ -192,21 +189,19 @@ INSTANTIATE_TEST_CASE_P(func_load_all, LoadContext,
 
 int main(int argc, char **argv)
 {
-    if(argc >=1)
+    // Parsing argument manage by Google Test framework
+    ::testing::InitGoogleTest(&argc, argv);
+
+    if(argc > 1)
         config_path = argv[1];
     else
         config_path = "../config";
-
-#ifdef __linux__
-    char *env = getenv("LD_PRELOAD");
-    std::cout << "LD_PRELOAD: " << std::string(env ? env : "") << std::endl;
-#endif
 
     std::cout << "Configuration path: " << config_path << std::endl;
 
     configuration_files.push_back(config_path+"/ecic_func_load_all_a429.xml");
 
     ::testing::InitGoogleTest(&argc, argv);
-    // ::testing::InitGoogleMock(&argc, argv);
+  // ::testing::InitGoogleMock(&argc, argv);
     return RUN_ALL_TESTS();
 }

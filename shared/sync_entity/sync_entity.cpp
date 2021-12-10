@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,12 +37,14 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 #endif
 #ifdef _WIN32
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <mswsock.h>
+#endif
+#ifdef _QNX_SOURCE
+#include <sys/socket.h>
 #endif
 
 #include <ostream>

@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,174 +21,76 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
+cmake_minimum_required(VERSION 3.22)
+project(ED247_LIBRARY VERSION 1.1.3) # Define target version ${CMAKE_PROJECT_VERSION})
+include(cmake/version.cmake)         # Compute ${VERSION} according to git
+include(cmake/flags.cmake)
 
-cmake_minimum_required(VERSION 3.13)
-
-# Set CMAKE_BUILD_TYPE to Release by default.
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "Setting build type to 'Release' as none was specified.")
-    set(CMAKE_BUILD_TYPE Release CACHE STRING
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-        FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+# Options multi-platform delivery.
+if (PLATFORM_INSTALL_SUBDIR)
+  if (NOT ${PLATFORM_INSTALL_SUBDIR} MATCHES "/$")
+    set(PLATFORM_INSTALL_SUBDIR "${PLATFORM_INSTALL_SUBDIR}/")
+  endif()
 endif()
-# SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
+set(PLATFORM_INSTALL_SUBDIR "${PLATFORM_INSTALL_SUBDIR}" CACHE STRING "For multi-platform delivery. Sub folder where to install platform dependant binaries." FORCE)
 
-project(ED247_LIBRARY)
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/VERSION ED247_LIBRARY_VERSION)
+# Options: test multicast ip.
+set(TEST_MULTICAST_INTERFACE_IP "" CACHE STRING "Ip address of the interface to use for multicast when performing the tests.")
 
-set (CMAKE_CXX_STANDARD 11)
-set (CMAKE_C_STANDARD 11)
 
-# Print some useful information to screen
-STRING(TIMESTAMP CMAKE_CONFIGURE_DATE UTC)
-MESSAGE("########################################################")
-MESSAGE("# Project      ${PROJECT_NAME}")
-MESSAGE("# Version      ${ED247_LIBRARY_VERSION}")
-MESSAGE("# System Name  ${CMAKE_SYSTEM_NAME}")
-MESSAGE("# Processor    ${CMAKE_SYSTEM_PROCESSOR}")
-MESSAGE("# Directory    ${CMAKE_SOURCE_DIR}")
-MESSAGE("# Date         ${CMAKE_CONFIGURE_DATE}")
-MESSAGE("########################################################")
-
-# Options
-option(BUILD_SAMPLES        "Build samples"                                 OFF)
-option(BUILD_TESTS          "Build tests"                                   OFF)
-option(BUILD_DOCS           "Build documentation"                           OFF)
-option(BUILD_UTILS          "Build utils executables"                       OFF)
-option(BUILD_DEPS_LIBXML2   "Build libxml2 dependency"                      ON)
-if(BUILD_TESTS)
-    option(BUILD_DEPS_GTEST     "Build googletest dependency"                   ON)
-    # option(ENABLE_MEMHOOKS      "Enable compilation of memory hooks"            ON)
-    set(TEST_MULTICAST_INTERFACE_IP "" CACHE STRING "Ip address of the interface to use for multicast when performing the tests")
-else()
-    # option(ENABLE_MEMHOOKS      "Enable compilation of memory hooks"            OFF)
+## LIBXML2
+if (NOT LibXml2_ROOT)
+  # Fix issue while building in 32bits
+  set(LibXml2_ROOT /)
 endif()
-
-# Set up the common directory structure for output libraries and binaries
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  # For Unix-like operating systems we can put all libraries into a dedicated
-  # lib/ folder, whereas for Windows the libraries (dll files) need to be put
-  # into the same directory as the executable, since Windows doesn't have an
-  # RPATH equivalent where a search path can be put into the executable itself
-  if(UNIX)
-      set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-  else()
-      set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+find_package(LibXml2 2.9.1 REQUIRED)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  # Fix iconv.h dependency
+  find_package(Iconv QUIET)
+  if (Iconv_FOUND)
+    message("Using iconv header: ${Iconv_INCLUDE_DIRS}")
+    target_include_directories(LibXml2::LibXml2 INTERFACE ${Iconv_INCLUDE_DIRS})
   endif()
 endif()
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-
-if(MSVC)
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:MSVCRT")
-    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
-    set(CMAKE_INSTALL_DEBUG_LIBRARIES TRUE)
-    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
-    include(InstallRequiredSystemLibraries)
-endif()
-
-# Dependencies
-## LIBXML2
-if(BUILD_DEPS_LIBXML2)
-    set(LIBXML2_WITH_ICONV OFF CACHE BOOL "" FORCE)
-    set(LIBXML2_WITH_LZMA OFF CACHE BOOL "" FORCE)
-    set(LIBXML2_WITH_PYTHON OFF CACHE BOOL "" FORCE)
-    set(LIBXML2_WITH_ZLIB OFF CACHE BOOL "" FORCE)
-    set(LIBXML2_WITH_TESTS OFF CACHE BOOL "" FORCE)
-    set(LIBXML2_WITH_THREADS ON CACHE BOOL "" FORCE)
-    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE) # TO TEST
-    add_subdirectory(deps/libxml2 EXCLUDE_FROM_ALL)
-else()
-    find_package(LibXml2 REQUIRED)
-endif()
-## GTEST
-if(BUILD_DEPS_GTEST)
-    if(MSVC)
-        set(gtest_force_shared_crt ON CACHE BOOL "My option" FORCE)
-    endif()
-    set(gtest_disable_pthreads OFF CACHE BOOL "My option" FORCE)
-    set(BUILD_GMOCK OFF CACHE BOOL "My option" FORCE)
-    set(INSTALL_GTEST OFF CACHE BOOL "My option" FORCE)
-    set(GTEST_USE_OWN_TR1_TUPLE OFF CACHE BOOL "My option" FORCE)
-    set(GTEST_HAS_TR1_TUPLE OFF CACHE BOOL "My option" FORCE)
-    add_subdirectory(deps/googletest EXCLUDE_FROM_ALL)
-else()
-    if(BUILD_TESTS)
-        find_package(GTest)
-    endif()
-endif()
-
-# if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-#     set(CMAKE_EXE_LINKER "${CMAKE_EXE_LINKER} ${CMAKE_EXE_LINKER_DEBUG}")
-# else()
-#     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-#     set(CMAKE_EXE_LINKER "${CMAKE_EXE_LINKER} ${CMAKE_EXE_LINKER_RELEASE}")
-# endif()
-
-# Add compilation flags
-# set(CMAKE_CXX_STANDARD 11)
-if(MSVC)
-
-else()
-    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wno-narrowing")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-narrowing")
-    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -fvisibility=hidden")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -fvisibility=hidden")
-    # if(WIN32)
-    #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static")
-    # else()
-    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE -rdynamic")
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE -rdynamic")
-    # endif()
-endif()
-
-if(UNIX)
-    # if(BUILD_TESTS)
-    #     message("-- Add coverage flags")
-    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -ggdb")
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -ggdb")
-    #     set(CMAKE_EXE_LINKER "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-    # endif()
-    set(CMAKE_SKIP_BUILD_RPATH FALSE)
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    set(CMAKE_SKIP_INSTALL_RPATH FALSE)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN:$ORIGIN/../../lib:$ORIGIN/../lib")
-endif()
 
 # Add source folder
 add_subdirectory(src)
 
-if(BUILD_SAMPLES OR BUILD_TESTS OR BUILD_UTILS)
-    add_subdirectory(shared)
-endif()
+add_subdirectory(shared)
 
-if(BUILD_TESTS)
+add_subdirectory(samples)
+
+add_subdirectory(utils)
+
+# Enable tests only if GTest found
+# To unsure find_package manage properly
+# version information, we force the CONFIG mode.
+find_package(GTest 1.8.1 CONFIG)
+
+if (GTest_FOUND)
+    # We set enable testing here instead of in tests cmake file 
+    # because CTest need it in root directory.
     enable_testing()
     add_subdirectory(tests)
+else()
+    message(WARNING "GTest not found. The tests will not be available!")
 endif()
 
-if(BUILD_SAMPLES)
-    add_subdirectory(samples)
-endif()
+# Doc
+add_subdirectory(doc)
 
-if(BUILD_UTILS)
-    add_subdirectory(utils)
-endif()
+# Install 
+install(FILES LICENSE.md DESTINATION doc)
+set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+include(InstallRequiredSystemLibraries)
 
-if(BUILD_DOCS)
-    add_subdirectory(doc)
-endif()
-
-install(FILES LICENSE.md DESTINATION .)
-
+# Dump info
+MESSAGE("# Configuration:")
+MESSAGE("# Product version:        ${VERSION}")
+MESSAGE("# System Name:            ${CMAKE_SYSTEM_NAME}")
+MESSAGE("# Platform delivery dir:  ${PLATFORM_INSTALL_SUBDIR}")
+MESSAGE("# LibXML2:                ${LIBXML2_LIBRARIES}")
+MESSAGE("# GTEST:                  ${GTest_DIR}")
+MESSAGE("# Doxygen:                ${DOXYGEN_EXECUTABLE}")
+MESSAGE("")

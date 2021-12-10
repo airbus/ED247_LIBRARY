@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,20 +21,13 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-
 get_filename_component(CURRENT_DIR_NAME ${CMAKE_CURRENT_LIST_DIR} NAME)
 string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
+add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247 test_context sync_entity gtest gtest_main)
-
-install(TARGETS ${TEST_EXECUTABLE}
-    RUNTIME DESTINATION tests/bin)
-
-file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
-install(FILES ${CONFIGS}
-    DESTINATION tests/config)
+target_link_libraries(${TEST_EXECUTABLE} PRIVATE test_api tests_unit_ed247_lib)
 
 add_test(NAME ${TEST_EXECUTABLE}
     COMMAND "cmake"
@@ -42,4 +35,4 @@ add_test(NAME ${TEST_EXECUTABLE}
         -DWORKING_DIRECTORY=$<TARGET_FILE_DIR:${TEST_EXECUTABLE}>
         -DRUN_EXE=$<TARGET_FILE:${TEST_EXECUTABLE}>
         -DRUN_CONFIG=${CMAKE_CURRENT_LIST_DIR}/config
-    -P ${CMAKE_SOURCE_DIR}/cmake/runtest.cmake)
+        -P ${CMAKE_SOURCE_DIR}/tests/cmake/execute_test.cmake)

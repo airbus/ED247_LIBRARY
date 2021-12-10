@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -67,7 +67,7 @@ std::unique_ptr<BaseSample> BaseSignal::allocate_sample() const
 {
     auto sample = std::make_unique<BaseSample>();
     sample->allocate(BaseSignal::sample_max_size_bytes(_configuration->info));
-    return std::move(sample);
+    return sample;
 }
 
 size_t BaseSignal::position() const
@@ -104,7 +104,7 @@ std::vector<std::shared_ptr<BaseSignal>> BaseSignal::Pool::find(std::string str_
             founds.push_back(signal);
         }
     }
-    return std::move(founds);
+    return founds;
 }
 
 std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::string str_name)

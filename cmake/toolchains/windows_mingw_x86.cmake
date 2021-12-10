@@ -1,4 +1,0 @@
-include(${CMAKE_CURRENT_LIST_DIR}/windows_mingw_x64.cmake)
-
-set(CMAKE_C_FLAGS_INIT "${CMAKE_C_FLAGS_INIT} -m32")
-set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -m32")

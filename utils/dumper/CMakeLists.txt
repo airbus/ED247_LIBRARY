@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -27,7 +27,6 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
 
-target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247 sync_entity)
+target_link_libraries(${TEST_EXECUTABLE} PRIVATE Ed247::ed247 sync_entity)
 
-install(TARGETS ${TEST_EXECUTABLE}
-    RUNTIME DESTINATION utils/bin)
+install(TARGETS ${TEST_EXECUTABLE} RUNTIME DESTINATION ${PLATFORM_INSTALL_SUBDIR}bin)

@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,13 +38,10 @@
  * Defines *
  ***********/
 
-#define TEST_ENTITY_SRC_ID 1
-#define TEST_ENTITY_DST_ID 2
+#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
+#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
 
-#define TEST_CONTEXT_SYNC_MAIN TestSend(); TestWait();
-#define TEST_CONTEXT_SYNC_TESTER TestWait(); TestSend();
-
-#define TEST_CONTEXT_SYNC TEST_CONTEXT_SYNC_MAIN
+#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
 
 /********
  * Test *
@@ -91,8 +88,8 @@ TEST_P(StreamContext, BackupRecv)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
 
     // Checkpoint
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint" << std::endl;
-    TEST_CONTEXT_SYNC
+    LOG_SELF("Checkpoint");
+    TEST_CONTEXT_SYNC();
 
     for(unsigned i = 0 ; i < 10 ; i++){
     
@@ -106,13 +103,13 @@ TEST_P(StreamContext, BackupRecv)
         ASSERT_EQ(info->sequence_number, (size_t)i);
 
         // Checkpoint
-        std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°" << i << std::endl;
-        TEST_CONTEXT_SYNC
+        LOG_SELF("Checkpoint n~" << i);
+        TEST_CONTEXT_SYNC();
     }
 
     // Checkpoint
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint" << std::endl;
-    TEST_CONTEXT_SYNC
+    LOG_SELF("Checkpoint");
+    TEST_CONTEXT_SYNC();
 
 }
 
@@ -132,8 +129,8 @@ TEST_P(StreamContext, BackupSend)
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
 
     // Checkpoint
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint" << std::endl;
-    TEST_CONTEXT_SYNC
+    LOG_SELF("Checkpoint");
+    TEST_CONTEXT_SYNC();
 
     for(unsigned i = 0 ; i < 10 ; i++){
 
@@ -150,14 +147,14 @@ TEST_P(StreamContext, BackupSend)
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
         // Checkpoint
-        std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°" << i << std::endl;
-        TEST_CONTEXT_SYNC
+        LOG_SELF("Checkpoint n~" << i);
+        TEST_CONTEXT_SYNC();
         
     }
 
     // Checkpoint
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint" << std::endl;
-    TEST_CONTEXT_SYNC
+    LOG_SELF("Checkpoint");
+    TEST_CONTEXT_SYNC();
 
 }
 

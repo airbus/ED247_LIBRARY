@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -111,14 +111,14 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
-        memhooks_section_start();
+        malloc_count_start();
 
         // Send frame
         channel_emitter->get_emitters().front().lock()->send_frame(*channel_emitter, (const void *)msg, msg_size);
         // Recv frame
         ASSERT_EQ(pool_sockets->wait_frame(10000), ED247_STATUS_SUCCESS);
 
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
@@ -129,7 +129,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
-        memhooks_section_start();
+        malloc_count_start();
 
         // Recv frame : timeout expected
         ASSERT_EQ(pool_sockets->wait_frame(10000), ED247_STATUS_TIMEOUT);
@@ -139,7 +139,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         // Recv frame
         ASSERT_EQ(pool_sockets->wait_during(10000), ED247_STATUS_SUCCESS);
         
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
@@ -150,12 +150,12 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
-        memhooks_section_start();
+        malloc_count_start();
 
         // Recv frame : timeout expected
         ASSERT_EQ(pool_sockets->wait_frame(1000), ED247_STATUS_TIMEOUT);
 
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
@@ -242,7 +242,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
-        memhooks_section_start();
+        malloc_count_start();
 
         // Send frame
         channel_emitter->get_emitters().front().lock()->send_frame(*channel_emitter, (const void *)msg_a, msg_size);
@@ -250,7 +250,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         // Recv frame
         ASSERT_EQ(pool_sockets->wait_frame(1000), ED247_STATUS_SUCCESS);
         
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
@@ -261,12 +261,12 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
-        memhooks_section_start();
+        malloc_count_start();
 
         // Recv frame : timeout expected
         ASSERT_EQ(pool_sockets->wait_frame(1000), ED247_STATUS_TIMEOUT);
 
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         LOG_INFO() << "### " << idebug++ << LOG_END;
 
@@ -305,12 +305,6 @@ INSTANTIATE_TEST_CASE_P(MulticastTests,SocketContext,
 
 int main(int argc, char **argv)
 {
-#ifdef __linux__
-    setenv("MEMHOOKS_LEVEL", "1", 1);
-#else
-    _putenv_s("MEMHOOKS_LEVEL","1");
-#endif
-
     std::string multicast_interface_ip = "";
     if(argc >=2)
         multicast_interface_ip = argv[1];

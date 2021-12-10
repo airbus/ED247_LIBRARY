@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     // Loading
     if(argc < 2){
         fprintf(stdout,"Missing the first argument, use default ECIC configuration filepath: %s\n",ECIC_FILEPATH);
-        status = ed247_load(argv[1], NULL, &context);
+        status = ed247_load(ECIC_FILEPATH, NULL, &context);
     }else{
         fprintf(stdout,"Using provided ECIC configuration filepath: %s\n",argv[1]);
         status = ed247_load(argv[1], NULL, &context);

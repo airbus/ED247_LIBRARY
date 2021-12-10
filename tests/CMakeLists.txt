@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,9 +21,12 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
+add_subdirectory(test_utils)
 
-add_subdirectory(memhooks)
-add_subdirectory(test_context)
+set(TEST_REPORT ${CMAKE_BINARY_DIR}/doc/tests_report.txt)
+
+add_custom_target(tests)
+add_custom_target(run_tests ${CMAKE_CTEST_COMMAND} -O ${TEST_REPORT} --output-on-failure DEPENDS tests)
 
 add_subdirectory(func_load_all)
 add_subdirectory(func_rev0_compliance)
@@ -47,10 +50,9 @@ add_subdirectory(unit_sockets)
 add_subdirectory(unit_streams)
 add_subdirectory(unit_timestamp)
 
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/../doc/tests/report.md "
-# Test report
+# Create a default test report
+if(NOT EXISTS ${TEST_REPORT})
+  file(WRITE ${TEST_REPORT} "No tests has been ran.\n")
+endif()
 
-| Test | Status |
-|:----:|:------:|
-")
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../doc/tests/report.md DESTINATION doc/tests)
+install(FILES ${TEST_REPORT} DESTINATION ${PLATFORM_INSTALL_SUBDIR}doc)

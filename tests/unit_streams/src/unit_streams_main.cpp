@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -176,18 +176,18 @@ TEST_P(StreamContext, SinglePushPop)
 
         // Push sample (to send stack)
         bool full;
-        memhooks_section_start();
+        malloc_count_start();
         stream_1->push_sample(*stream_1_sample, &full);
         ASSERT_TRUE(full); // Should be full
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         std::string str_sample_recv = std::string((char *)stream_1->send_stack().front()->data(), stream_1->get_configuration()->info.sample_max_size_bytes);
         ASSERT_TRUE(memcmp(stream_1_sample->data(),stream_1->send_stack().front()->data(),stream_1_sample->size()) == 0);
         ASSERT_EQ(str_sample, str_sample_recv);
 
         // Encode sample
-        memhooks_section_start();
+        malloc_count_start();
         stream_1->encode();
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_VNAD)
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_A664 &&
@@ -196,24 +196,24 @@ TEST_P(StreamContext, SinglePushPop)
         else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_A825)
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_SERIAL)
-            ASSERT_TRUE(memcmp((char*)stream_1->buffer().data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp((char*)stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_ANALOG)
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data(), stream_1_sample->data(), stream_1_sample->size()) != 0); // SWAP
         else
             ASSERT_TRUE(memcmp((char*)stream_1->buffer().data(), stream_1_sample->data(), stream_1_sample->size()) == 0);
 
         // Decode sample
-        memhooks_section_start();
+        malloc_count_start();
         stream_1->decode((const char *)stream_1->buffer().data(), stream_1->buffer().size());
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_1->get_configuration()->info.direction & ED247_DIRECTION_IN) != 0)
         {
             // Pop sample
             bool empty;
-            memhooks_section_start();
+            malloc_count_start();
             auto stream_1_recv_sample = stream_1->pop_sample(&empty);
-            ASSERT_TRUE(memhooks_section_stop());
+            ASSERT_EQ(malloc_count_stop(), 0);
             str_sample_recv = std::string((char *)stream_1_recv_sample->data(), stream_1->get_configuration()->info.sample_max_size_bytes);
             ASSERT_EQ(str_sample, str_sample_recv);
         }
@@ -267,9 +267,9 @@ TEST_P(StreamContext, MultiPushPop)
             oss << std::setw(stream_1->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
             str_sample = oss.str();
             stream_1_sample->copy(str_sample.c_str(), stream_1->get_configuration()->info.sample_max_size_bytes);
-            memhooks_section_start();
+            malloc_count_start();
             stream_1->push_sample(*stream_1_sample, &full);
-            ASSERT_TRUE(memhooks_section_stop());
+            ASSERT_EQ(malloc_count_stop(), 0);
             if(i < 9)
                 ASSERT_FALSE(full); // Should no be full as max sample number is 10
             else
@@ -304,8 +304,8 @@ TEST_P(StreamContext, MultiPushPop)
                     sample_size = *(uint8_t*)((char*)stream_1->buffer().data()+frame_index);
                     frame_index += sizeof(uint8_t);
                 }else if(stream_1->get_configuration()->info.type == ED247_STREAM_TYPE_SERIAL){
-                    sample_size = *(uint8_t*)((char*)stream_1->buffer().data()+frame_index);
-                    frame_index += sizeof(uint8_t);
+                    sample_size = *(uint16_t*)((char*)stream_1->buffer().data()+frame_index);
+                    frame_index += sizeof(uint16_t);
                 }
                 str_sample_frame = std::string((char*)stream_1->buffer().data()+frame_index, sample_size);
                 if(stream_1->get_configuration()->info.type != ED247_STREAM_TYPE_ANALOG){
@@ -316,9 +316,9 @@ TEST_P(StreamContext, MultiPushPop)
         }
 
         // Decode sample
-        memhooks_section_start();
+        malloc_count_start();
         stream_1->decode((const char*)stream_1->buffer().data(), stream_1->buffer().size());
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_1->get_configuration()->info.direction & ED247_DIRECTION_IN) != 0)
         {
@@ -329,9 +329,9 @@ TEST_P(StreamContext, MultiPushPop)
                 oss.str("");
                 oss << std::setw(stream_1->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
                 str_sample = oss.str();
-                memhooks_section_start();
+                malloc_count_start();
                 auto sample = stream_1->pop_sample(&empty);
-                ASSERT_TRUE(memhooks_section_stop());
+                ASSERT_EQ(malloc_count_stop(), 0);
                 str_sample_recv = std::string((char*)sample->data(), stream_1->get_configuration()->info.sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 if(i < 9)
@@ -394,9 +394,9 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
             timestamp.offset_ns = 8910+i;
             stream_out_sample->copy(str_sample.c_str(), stream_out->get_configuration()->info.sample_max_size_bytes);
             stream_out_sample->set_data_timestamp(timestamp);
-            memhooks_section_start();
+            malloc_count_start();
             stream_out->push_sample(*stream_out_sample, &full);
-            ASSERT_TRUE(memhooks_section_stop());
+            ASSERT_EQ(malloc_count_stop(), 0);
             if(i < 9)
                 ASSERT_FALSE(full); // Should no be full as max sample number is 10
             else
@@ -459,8 +459,8 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                     sample_size = *(uint8_t*)((char*)stream_out->buffer().data()+frame_index);
                     frame_index += sizeof(uint8_t);
                 }else if(stream_out->get_configuration()->info.type == ED247_STREAM_TYPE_SERIAL){
-                    sample_size = *(uint8_t*)((char*)stream_out->buffer().data()+frame_index);
-                    frame_index += sizeof(uint8_t);
+                    sample_size = *(uint16_t*)((char*)stream_out->buffer().data()+frame_index);
+                    frame_index += sizeof(uint16_t);
                 }
                 str_sample_frame = std::string((char*)stream_out->buffer().data()+frame_index, sample_size);
                 if(stream_out->get_configuration()->info.type != ED247_STREAM_TYPE_ANALOG){
@@ -471,9 +471,9 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         }
 
         // Decode sample
-        memhooks_section_start();
+        malloc_count_start();
         stream_out->decode((const char*)stream_out->buffer().data(), stream_out->buffer().size());
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_out->get_configuration()->info.direction & ED247_DIRECTION_IN) != 0 &&
             std::string(stream_out->get_configuration()->info.name) != "StreamDatatimestampOut")
@@ -492,9 +492,9 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                     timestamp.epoch_s = 1234567;
                     timestamp.offset_ns = 8910;
                 }
-                memhooks_section_start();
+                malloc_count_start();
                 auto sample = stream_out->pop_sample(&empty);
-                ASSERT_TRUE(memhooks_section_stop());
+                ASSERT_EQ(malloc_count_stop(), 0);
                 str_sample_recv = std::string((char*)sample->data(), stream_out->get_configuration()->info.sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 ASSERT_EQ(sample->data_timestamp()->epoch_s, timestamp.epoch_s);

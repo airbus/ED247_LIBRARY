@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,13 +32,10 @@
  * Defines *
  ***********/
 
-#define TEST_ENTITY_SRC_ID 2
-#define TEST_ENTITY_DST_ID 1
+#define TEST_ENTITY_SRC_ID TEST_ENTITY_TESTER_ID
+#define TEST_ENTITY_DST_ID TEST_ENTITY_MAIN_ID
 
-#define TEST_CONTEXT_SYNC_MAIN TestSend(); TestWait();
-#define TEST_CONTEXT_SYNC_TESTER TestWait(); TestSend();
-
-#define TEST_CONTEXT_SYNC TEST_CONTEXT_SYNC_TESTER
+#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_TESTER()
 
 /********
  * Test *
@@ -71,11 +68,11 @@ TEST_P(StreamContext, SingleFrame)
     std::ostringstream oss;
     const ed247_timestamp_t* timestamp;
     
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
 
-    memhooks_section_start();
+    malloc_count_start();
 
     // Recv a single frame
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
@@ -84,7 +81,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, &timestamp, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
     
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     
     // Extract and check content of payload
     oss.str("");
@@ -96,9 +93,9 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(1234567, timestamp->epoch_s);
     ASSERT_EQ(8910, timestamp->offset_ns);
 
-    // Checkpoint n°2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~2
+    LOG_SELF("Checkpoint n~2");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -133,11 +130,11 @@ TEST_P(StreamContext, Callbacks)
     ASSERT_EQ(ed247_unregister_com_recv_callback(_context, callback), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_register_com_recv_callback(_context, callback), ED247_STATUS_SUCCESS);
 
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
 
-    memhooks_section_start();
+    malloc_count_start();
 
     // Recv a single frame
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
@@ -145,7 +142,7 @@ TEST_P(StreamContext, Callbacks)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
     
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 
     ASSERT_TRUE(com_recv_counter > 0);
 

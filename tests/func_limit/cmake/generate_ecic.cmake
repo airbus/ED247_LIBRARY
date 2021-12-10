@@ -9,7 +9,7 @@ set(CONTENT "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!--
 The MIT Licence
 
-Copyright (c) 2020 Airbus Operations S.A.S
+Copyright (c) 2021 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the \"Software\"),

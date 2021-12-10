@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -97,9 +97,9 @@ TEST_P(FrameContext, Main)
             std::ostringstream oss;
             oss << std::setw(sample_size) << std::setfill('0') << i;
             memcpy(sample_data, oss.str().c_str(), sample_size);
-            memhooks_section_start();
+            malloc_count_start();
             ASSERT_EQ(ed247_stream_push_sample(stream_output, sample_data, sample_size, nullptr, &full), ED247_STATUS_SUCCESS);
-            ASSERT_TRUE(memhooks_section_stop());
+            ASSERT_EQ(malloc_count_stop(), 0);
             if((uint16_t)i < (stream_output_info->sample_max_number-1))
                 ASSERT_FALSE(full);
             else
@@ -108,12 +108,12 @@ TEST_P(FrameContext, Main)
     }
 
     // Encode frame
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_frame_encode(context, &frames), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_frame_list_next(frames, &frame), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(frame->channel, channel_output);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     // Check limit cases
     ASSERT_EQ(ed247_frame_list_next(NULL, &frame), ED247_STATUS_FAILURE);
     size_t size;
@@ -141,7 +141,7 @@ TEST_P(FrameContext, Main)
         }else if(stream_output_info->type == ED247_STREAM_TYPE_A825){
             ASSERT_EQ(ssize, (sizeof(uint8_t)+stream_output_info->sample_max_size_bytes)*stream_output_info->sample_max_number);
         }else if(stream_output_info->type == ED247_STREAM_TYPE_SERIAL){
-            ASSERT_EQ(ssize, (sizeof(uint8_t)+stream_output_info->sample_max_size_bytes)*stream_output_info->sample_max_number);
+            ASSERT_EQ(ssize, (sizeof(uint16_t)+stream_output_info->sample_max_size_bytes)*stream_output_info->sample_max_number);
         }else{
             ASSERT_EQ(ssize, stream_output_info->sample_max_size_bytes*stream_output_info->sample_max_number);
         }
@@ -158,8 +158,8 @@ TEST_P(FrameContext, Main)
                     frame_index += sizeof(uint8_t);
                     ASSERT_EQ(sample_size_tmp, sample_size);
             }else if(stream_output_info->type == ED247_STREAM_TYPE_SERIAL){
-                    auto sample_size_tmp = *(uint8_t*)((char*)frame->data+frame_index);
-                    frame_index += sizeof(uint8_t);
+                    auto sample_size_tmp = *(uint16_t*)((char*)frame->data+frame_index);
+                    frame_index += sizeof(uint16_t);
                     ASSERT_EQ(sample_size_tmp, sample_size);
             }
             std::string strsample((char*)frame->data+frame_index, stream_output_info->sample_max_size_bytes);
@@ -172,11 +172,11 @@ TEST_P(FrameContext, Main)
     ASSERT_EQ(ed247_frame_list_free(NULL), ED247_STATUS_FAILURE);
 
     // Decode frame
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_frame_decode(channel_input, frame->data, frame->size), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_frame_decode(NULL, frame->data, frame->size), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_frame_decode(channel_input, NULL, frame->size), ED247_STATUS_FAILURE);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 
     // Pop stream samples
     ASSERT_EQ(ed247_find_channel_streams(channel_input, "Stream.*", &streams), ED247_STATUS_SUCCESS);
@@ -186,9 +186,9 @@ TEST_P(FrameContext, Main)
         do{
             std::ostringstream oss;
             oss << std::setw(sample_size) << std::setfill('0') << i++;
-            memhooks_section_start();
+            malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream_input, &csample_data, &sample_size, nullptr, nullptr, nullptr, &empty), ED247_STATUS_SUCCESS);
-            ASSERT_TRUE(memhooks_section_stop());
+            ASSERT_EQ(malloc_count_stop(), 0);
             ASSERT_EQ(memcmp(csample_data, oss.str().c_str(), sample_size), 0);
         }while(!empty);
     }

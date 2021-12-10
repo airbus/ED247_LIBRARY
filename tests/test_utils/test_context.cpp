@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,42 +21,27 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-#ifndef _PROBE_HOOKS_PRIVATE_H_
-#define _PROBE_HOOKS_PRIVATE_H_
-
+#include "test_context.h"
 #include "memhooks.h"
 
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#ifndef _MSC_VER
-    #include <unistd.h>
-#endif
+void malloc_count_start()
+{
 #ifdef __linux__
-    #include <unistd.h>
-    #include <execinfo.h>
-    #include <sys/types.h>
-    #include <sys/syscall.h>
+    LOG("[MALLOC COUNT SECTION START]");
+    memhooks_reset_count();
+    memhooks_enable(true);
 #endif
-
-extern "C" {
-
-/**
- * @brief The size of the buffer to print backtrace
- */
-#define BACKTRACE_BUFFER_SIZE 4096
-
-#ifdef __linux__
-
-/************************************
- * GLIBC internal builtin functions *
- ************************************/
-extern void* __libc_malloc(size_t size);
-extern void __libc_free(void* ptr);
-
-#endif
-
 }
 
+int malloc_count_stop()
+{
+#ifdef __linux__
+    memhooks_enable(false);
+    memhooks_count_t count;
+    memhooks_get_count(&count);
+    LOG("[MALLOC COUNT SECTION STOP. Malloc:" << count.malloc_count << ". Free: " << count.free_count << "]");
+    return count.malloc_count;
+#else
+    return 0;
 #endif
+}

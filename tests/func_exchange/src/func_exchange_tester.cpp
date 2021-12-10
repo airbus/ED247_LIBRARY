@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,13 +32,10 @@
  * Defines *
  ***********/
 
-#define TEST_ENTITY_SRC_ID 2
-#define TEST_ENTITY_DST_ID 1
+#define TEST_ENTITY_SRC_ID TEST_ENTITY_TESTER_ID
+#define TEST_ENTITY_DST_ID TEST_ENTITY_MAIN_ID
 
-#define TEST_CONTEXT_SYNC_MAIN TestSend(); TestWait();
-#define TEST_CONTEXT_SYNC_TESTER TestWait(); TestSend();
-
-#define TEST_CONTEXT_SYNC TEST_CONTEXT_SYNC_TESTER
+#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_TESTER()
 
 /********
  * Test *
@@ -104,14 +101,14 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_NE(timestamp1.epoch_s, timestamp2.epoch_s);
     ASSERT_NE(timestamp1.offset_ns, timestamp2.offset_ns);
     
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
 
     // Try to set an unvalid the reveice timestamp handler
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(NULL, NULL), ED247_STATUS_FAILURE);
 
-    memhooks_section_start();
+    // malloc_count_start();
     // Set a first receive handler to timestamp the received frames
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
 
@@ -121,7 +118,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     
-    ASSERT_TRUE(memhooks_section_stop());
+    // ASSERT_EQ(malloc_count_stop(), 0);
 
     // Limit cases
     ASSERT_EQ(ed247_wait_frame(NULL, &streams, 10000000), ED247_STATUS_FAILURE);
@@ -137,12 +134,12 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
 
-    // Checkpoint n°2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~2
+    LOG_SELF("Checkpoint n~2");
+    TEST_CONTEXT_SYNC();
 
     // Receive multiple frames for 10 seconds
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     // Change the reception routine just after reception.
     // The timestamps of the already received frames shall not be changed
@@ -150,18 +147,18 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, &user_data), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
         // Extract and check content of payload for each frame
         oss.str("");
         oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         str_send = oss.str();
-        memhooks_section_start();
+        malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
-        std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Receive stack size [" << stack_size << "]" << std::endl;
+        ASSERT_EQ(malloc_count_stop(), 0);
+        LOG_SELF("Receive stack size [" << stack_size << "]");
         ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
@@ -170,29 +167,29 @@ TEST_P(StreamContext, SingleFrame)
         ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
     }
 
-    // Checkpoint n°3
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°3" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~3
+    LOG_SELF("Checkpoint n~3");
+    TEST_CONTEXT_SYNC();
 
     // Receive other frames with the second handler
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
-        memhooks_section_start();
+        malloc_count_start();
         ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
             // Extract and check content of payload for each frame
             oss.str("");
             oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             str_send = oss.str();
-            memhooks_section_start();
+            malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
-            ASSERT_TRUE(memhooks_section_stop());
-            std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Receive stack size [" << stack_size << "]" << std::endl;
+            ASSERT_EQ(malloc_count_stop(), 0);
+            LOG_SELF("Receive stack size [" << stack_size << "]");
             ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
@@ -202,32 +199,32 @@ TEST_P(StreamContext, SingleFrame)
         }
     }
 
-    // Checkpoint n°4
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°4" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~4
+    LOG_SELF("Checkpoint n~4");
+    TEST_CONTEXT_SYNC();
 
     // Receive other frames with the second handler
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
-        memhooks_section_start();
+        malloc_count_start();
         ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
             // Extract and check content of payload for each frame
             oss.str("");
             oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             str_send = oss.str();
-            memhooks_section_start();
+            malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
-            ASSERT_TRUE(memhooks_section_stop());
-            std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Receive stack size [" << stack_size << "]" << std::endl;
+            ASSERT_EQ(malloc_count_stop(), 0);
+            LOG_SELF("Receive stack size [" << stack_size << "]");
             ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
-            std::cout << "## Received [" << str_recv << "]" << std::endl;
+            LOG_SELF("Received [" << str_recv << "]");
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
             ASSERT_EQ(timestamp2.epoch_s+user_data, frame_timestamp->epoch_s);
@@ -235,9 +232,9 @@ TEST_P(StreamContext, SingleFrame)
         }
     }
 
-    // Checkpoint n°5.1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°5.1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~5.1
+    LOG_SELF("Checkpoint n~5.1");
+    TEST_CONTEXT_SYNC();
 
     // Setup recv callback on a single stream, not all
 
@@ -268,7 +265,7 @@ TEST_P(StreamContext, SingleFrame)
         const ed247_stream_info_t *info;
         ed247_stream_get_info(stream, &info);
         stream_name = info->name;
-        std::cout << "Callback on stream [" << stream_name << "]" << std::endl;
+        LOG_SELF("Callback on stream [" << stream_name << "]");
         checkpoints++;
         return ED247_STATUS_SUCCESS;
     };
@@ -285,14 +282,14 @@ TEST_P(StreamContext, SingleFrame)
     // };
     // TODO: Continue
 
-    // Checkpoint n°5.2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°5.2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~5.2
+    LOG_SELF("Checkpoint n~5.2");
+    TEST_CONTEXT_SYNC();
 
     // Perform reception
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     // Check that the callback was called
     ASSERT_TRUE(recv_counter > 0);
     ASSERT_EQ(checkpoints, (uint32_t)1); // Only once
@@ -307,9 +304,9 @@ TEST_P(StreamContext, SingleFrame)
     recv_counter = 0;
     ASSERT_EQ(ed247_component_set_user_data(_context, NULL), ED247_STATUS_SUCCESS);
 
-    // Checkpoint n°6.1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°6.1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~6.1
+    LOG_SELF("Checkpoint n~6.1");
+    TEST_CONTEXT_SYNC();
 
     // Retrieve stream list
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -328,14 +325,14 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_streams_register_recv_callback(_context, NULL, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_streams_register_recv_callback(NULL, streams, callback), ED247_STATUS_FAILURE);
 
-    // Checkpoint n°6.2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°6.2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~6.2
+    LOG_SELF("Checkpoint n~6.2");
+    TEST_CONTEXT_SYNC();
 
     // Perform reception
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     // Check that the callback was called
     ASSERT_EQ(recv_counter, 0);
     ASSERT_EQ(checkpoints, (uint32_t)1); // Only once
@@ -349,9 +346,9 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_streams_unregister_recv_callback(_context, NULL, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_streams_unregister_recv_callback(_context, streams, NULL), ED247_STATUS_FAILURE);
 
-    // Checkpoint n°7.1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°7.1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~7.1
+    LOG_SELF("Checkpoint n~7.1");
+    TEST_CONTEXT_SYNC();
 
     // Reset globals
     checkpoints = 0;
@@ -363,14 +360,14 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_register_recv_callback(NULL, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_register_recv_callback(_context, NULL), ED247_STATUS_FAILURE);
 
-    // Checkpoint n°7.2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°7.2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~7.2
+    LOG_SELF("Checkpoint n~7.2");
+    TEST_CONTEXT_SYNC();
 
     // Perform reception
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     // Check that the callback was called
     ASSERT_EQ(checkpoints, (uint32_t)2);
     ASSERT_STREQ(stream_name, "Stream1"); // The stream shall be Stream1
@@ -381,9 +378,9 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_unregister_recv_callback(NULL, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unregister_recv_callback(_context, NULL), ED247_STATUS_FAILURE);
 
-    // Checkpoint n°8
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°8" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~8
+    LOG_SELF("Checkpoint n~8");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -401,12 +398,12 @@ TEST_P(SimpleStreamContext, SingleFrame)
     std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
 
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
 
     // Set a dummy receive timestamp handler before reception
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
 
     // Recv a first frame
@@ -414,7 +411,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     
     // Extract and check the content of the received frame
     oss.str("");
@@ -426,30 +423,30 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
 
-    // Checkpoint n°2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~2
+    LOG_SELF("Checkpoint n~2");
+    TEST_CONTEXT_SYNC();
 
     // Wait for more frames to be received
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     // Change the reception routine after reception.
     // It shall not modify the recv timestamps of already received frames
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
         // Extract and check the frame contents
         oss.str("");
         oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         str_send = oss.str();
-        memhooks_section_start();
+        malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
-        std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Receive stack size [" << stack_size << "]" << std::endl;
+        ASSERT_EQ(malloc_count_stop(), 0);
+        LOG_SELF("Receive stack size [" << stack_size << "]");
         ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
@@ -458,29 +455,29 @@ TEST_P(SimpleStreamContext, SingleFrame)
         ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
     }
 
-    // Checkpoint n°3
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°3" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~3
+    LOG_SELF("Checkpoint n~3");
+    TEST_CONTEXT_SYNC();
 
     // Wait for more frames to be received
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
-        memhooks_section_start();
+        malloc_count_start();
         ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
             // Extract and check the frame contents
             oss.str("");
             oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             str_send = oss.str();
-            memhooks_section_start();
+            malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
-            ASSERT_TRUE(memhooks_section_stop());
-            std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Receive stack size [" << stack_size << "]" << std::endl;
+            ASSERT_EQ(malloc_count_stop(), 0);
+            LOG_SELF("Receive stack size [" << stack_size << "]");
             ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
@@ -490,9 +487,9 @@ TEST_P(SimpleStreamContext, SingleFrame)
         }
     }
 
-    // Checkpoint n°4
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°4" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~4
+    LOG_SELF("Checkpoint n~4");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -510,12 +507,12 @@ TEST_P(StreamContext, MultipleFrame)
     std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
 
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
 
     // Set a dummy receive timestamp handler before reception
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
 
     // Recv frames
@@ -523,7 +520,7 @@ TEST_P(StreamContext, MultipleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     
     // Extract and check the content of this frame
     oss.str("");
@@ -535,21 +532,24 @@ TEST_P(StreamContext, MultipleFrame)
     ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
 
+    LOG_SELF("Checkpoint n~1.1");
+    TEST_CONTEXT_SYNC();
+
     // Recv the other frames
     ASSERT_EQ(ed247_wait_during(NULL, &streams, 1000000), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_wait_during(_context, NULL, 1000000), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_wait_during(_context, &streams, 1000000), ED247_STATUS_SUCCESS);
-    memhooks_section_start();
+    malloc_count_start();
     // Change the reception routine after reception.
     // It shall not modify the receive timestamps of the already received frames
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     for(unsigned i = 1 ; i < stream_info->sample_max_number ; i++){
-        memhooks_section_start();
+        malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         // Extract and check the content of the payload
         oss.str("");
         oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
@@ -561,9 +561,9 @@ TEST_P(StreamContext, MultipleFrame)
         ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
     }
 
-    // Checkpoint n°2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~2
+    LOG_SELF("Checkpoint n~2");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -583,12 +583,12 @@ TEST_P(SignalContext, SingleFrame)
     std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
 
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
 
     // Set a dummy receive timestamp handler before reception
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
 
     // Recv a frame containing signals
@@ -598,16 +598,16 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_signals(stream, &signals), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(NULL, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_FAILURE);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
         ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
         const void * sample_data;
         size_t sample_size;
-        memhooks_section_start();
+        malloc_count_start();
         // Extract and check the content of each signal of the frame
         ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, signal, &sample_data, &sample_size), ED247_STATUS_SUCCESS);
-        ASSERT_TRUE(memhooks_section_stop());
+        ASSERT_EQ(malloc_count_stop(), 0);
         oss.str("");
         if(signal_info->type == ED247_SIGNAL_TYPE_DISCRETE || signal_info->type == ED247_SIGNAL_TYPE_NAD){
             oss << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
@@ -622,9 +622,9 @@ TEST_P(SignalContext, SingleFrame)
         ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
     }
 
-    // Checkpoint n°2
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~2
+    LOG_SELF("Checkpoint n~2");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -656,7 +656,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    LOG("Configuration path: " << config_path);
 
     stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_uc_tester.xml"});
     stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_mc_tester.xml"});

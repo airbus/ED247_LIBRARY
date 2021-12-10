@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,20 +21,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 
-# add_subdirectory(test_entity)
-# if(BUILD_TESTS)
-#     add_subdirectory(test_context)
-# endif()
+add_subdirectory(chatbot)
+add_subdirectory(loadonly)
+add_subdirectory(dumper)
 
-if(BUILD_UTILS)
-    install(TARGETS ed247
-        RUNTIME DESTINATION utils/bin)
-    if(ENABLE_MEMHOOKS)
-        install(TARGETS memhooks
-            RUNTIME DESTINATION utils/bin)
-    endif()
-    add_subdirectory(chatbot)
-    add_subdirectory(loadonly)
-    add_subdirectory(dumper)
-endif()
+# Custum target to compile only the utils and there dependencies
+add_custom_target(utils 
+    DEPENDS
+        chatbot
+        loadonly
+        dumper
+)

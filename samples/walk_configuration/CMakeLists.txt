@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,31 +21,15 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-
 get_filename_component(CURRENT_DIR_NAME ${CMAKE_CURRENT_LIST_DIR} NAME)
 string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.c)
 
-target_link_libraries(${TEST_EXECUTABLE} PUBLIC ed247)
-
-install(TARGETS ${TEST_EXECUTABLE}
-    RUNTIME DESTINATION samples/bin)
+target_link_libraries(${TEST_EXECUTABLE} PRIVATE Ed247::ed247)
 
 file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
-install(FILES ${CONFIGS}
-    DESTINATION samples/config)
+install(FILES ${CONFIGS} DESTINATION doc/samples/${TEST_EXECUTABLE}/config)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/config/ecic_${TEST_EXECUTABLE}.xml CONFIG_FILE COPYONLY)
-
-if(BUILD_TESTS)
-    add_test(
-        NAME ${TEST_EXECUTABLE}
-        COMMAND "cmake"
-            -DRUN_EXE=$<TARGET_FILE:${TEST_EXECUTABLE}>
-            -DRUN_CONFIG=${CMAKE_CURRENT_LIST_DIR}/config/ecic_${TEST_EXECUTABLE}.xml
-            -DWORKING_DIRECTORY=$<TARGET_FILE_DIR:${TEST_EXECUTABLE}>
-            -P ${CMAKE_SOURCE_DIR}/cmake/run.cmake
-        WORKING_DIRECTORY $<TARGET_FILE_DIR:${TEST_EXECUTABLE}>
-    )
-endif()
+file(GLOB SRCS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/src/*)
+install(FILES ${SRCS} DESTINATION doc/samples/${TEST_EXECUTABLE}/src)

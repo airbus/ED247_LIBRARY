@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -61,18 +61,11 @@ Context::Context(
 
 Context::~Context()
 {
-// #ifdef ENABLE_MEMHOOKS
-//     MemoryHooksManager::getInstance().setEnable(false);
-// #endif
 }
 
 void Context::initialize()
 {
     Context::Builder::initialize(*this);
-// #ifdef ENABLE_MEMHOOKS
-//     // MemoryHooksManager
-//     MemoryHooksManager::getInstance().setEnable(_configuration.enable_memory_hooks==1);
-// #endif
 }
 
 const libed247_runtime_metrics_t* Context::get_runtime_metrics()

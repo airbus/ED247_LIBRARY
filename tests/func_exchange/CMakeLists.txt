@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,32 +21,34 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-
 get_filename_component(CURRENT_DIR_NAME ${CMAKE_CURRENT_LIST_DIR} NAME)
 string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE}_main src/${CURRENT_DIR_NAME}_main.cpp)
 add_executable(${TEST_EXECUTABLE}_tester src/${CURRENT_DIR_NAME}_tester.cpp)
+add_custom_target(${TEST_EXECUTABLE}
+    DEPENDS
+        ${TEST_EXECUTABLE}_main
+        ${TEST_EXECUTABLE}_tester
+)
+add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE}_main PUBLIC ed247 sync_entity test_context)
-target_link_libraries(${TEST_EXECUTABLE}_tester PUBLIC ed247 sync_entity test_context)
-
-install(TARGETS ${TEST_EXECUTABLE}_main ${TEST_EXECUTABLE}_tester
-    RUNTIME DESTINATION tests/bin)
+target_link_libraries(${TEST_EXECUTABLE}_main PRIVATE test_api Ed247::ed247)
+target_link_libraries(${TEST_EXECUTABLE}_tester PRIVATE test_api Ed247::ed247)
 
 file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
 foreach(CONFIG ${CONFIGS})
     get_filename_component(CONFIG_FILENAME ${CONFIG} NAME)
     configure_file(${CONFIG} ${CMAKE_BINARY_DIR}/config/${CONFIG_FILENAME} @ONLY)
-    install(FILES ${CMAKE_BINARY_DIR}/config/${CONFIG_FILENAME} DESTINATION tests/config)
 endforeach()
 
 add_test(NAME ${TEST_EXECUTABLE}
     COMMAND "cmake"
+            -DED247_LIB_PATH=$<TARGET_FILE_DIR:ed247>
             -DTEST=${TEST_EXECUTABLE}
             -DWORKING_DIRECTORY=$<TARGET_FILE_DIR:${TEST_EXECUTABLE}_main>
             -DSEND_EXE=$<TARGET_FILE:${TEST_EXECUTABLE}_main>
             -DSEND_CONFIG=${CMAKE_BINARY_DIR}/config
             -DRECV_EXE=$<TARGET_FILE:${TEST_EXECUTABLE}_tester>
             -DRECV_CONFIG=${CMAKE_BINARY_DIR}/config
-    -P ${CMAKE_SOURCE_DIR}/cmake/runtest.cmake)
+    -P ${CMAKE_SOURCE_DIR}/tests/cmake/execute_test.cmake)

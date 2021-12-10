@@ -3,7 +3,7 @@
 <!--
 The MIT Licence
 
-Copyright (c) 2020 Airbus Operations S.A.S
+Copyright (c) 2021 Airbus Operations S.A.S
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -34,11 +34,11 @@ DEALINGS IN THE SOFTWARE.
                 </UDP_Sockets>
             </ComInterface>
 			<Streams>
-				<SERIAL_Stream UID="0" Name="Stream0" Direction="Out" SampleMaxNumber="3" SampleMaxSizeBytes="123" ICD="File.xml:BUS45">
+				<SERIAL_Stream UID="0" Name="Stream0" Direction="Out" SampleMaxNumber="3" SampleMaxSizeBytes="2048" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
 				</SERIAL_Stream>
-				<SERIAL_Stream UID="1" Name="Stream1" Direction="Out" SampleMaxNumber="5" SampleMaxSizeBytes="123" ICD="File.xml:BUS45">
+				<SERIAL_Stream UID="1" Name="Stream1" Direction="Out" SampleMaxNumber="5" SampleMaxSizeBytes="2048" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
 				</SERIAL_Stream>

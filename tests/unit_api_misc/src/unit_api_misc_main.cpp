@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -40,9 +40,6 @@
 
 #include <memory>
 
-/***********
- * Defines *
- ***********/
 
 /********
  * Test *
@@ -106,11 +103,11 @@ TEST(UtApiMisc, InfoGetter)
 
     std::string filepath = config_path+"/ecic_unit_api_misc_mini.xml";
     ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_component_get_info(NULL, &infos), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_component_get_info(context, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_component_get_info(context, &infos), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
     
     // Check content information
     ASSERT_EQ(infos->component_type, expected_info_values.component_type);
@@ -137,11 +134,9 @@ TEST(UtApiMisc, InfoGetter)
     
     filepath = config_path+"/ecic_unit_api_misc.xml";
     ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
-    memhooks_section_start();
     ASSERT_EQ(ed247_component_get_info(context, &infos), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_component_get_info(NULL, &infos), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_component_get_info(context, NULL), ED247_STATUS_FAILURE);
-    memhooks_section_stop();
     
     // Check content information
     ASSERT_EQ(infos->component_type, expected_info_values.component_type);
@@ -173,15 +168,11 @@ Check the library identification routines
 TEST(UtApiMisc, IdentificationGetters)
 {
     const char* value = NULL;
-    memhooks_section_start();
     value = ed247_get_implementation_name();
-    memhooks_section_stop();
     ASSERT_STREQ(value, "ED247_LIBRARY");
     
-    memhooks_section_start();
     value = ed247_get_implementation_version();
-    memhooks_section_stop();
-    ASSERT_STREQ(value, "1.1.1");
+    ASSERT_STREQ(value, _PRODUCT_VERSION);
 }
 
 int main(int argc, char **argv)

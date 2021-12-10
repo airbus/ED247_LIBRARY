@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -103,7 +103,9 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_EQ(ed247_stream_set_user_data(stream, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_user_data(stream, &user_data), ED247_STATUS_SUCCESS);
     ASSERT_EQ(user_data, nullptr);
-    free(user_data_set);
+    
+    ASSERT_EQ(ed247_free(nullptr), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_free(user_data_set), ED247_STATUS_SUCCESS);
     
     // Get the stream info and check the values, perform unvalid calls to verify robustness
     ASSERT_EQ(ed247_stream_get_info(NULL, &stream_info), ED247_STATUS_FAILURE);

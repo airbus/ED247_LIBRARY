@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,17 +21,22 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
+if(WIN32)
+  string(REPLACE ".exe" ".log" RUN_LOG ${RUN_EXE})
+else()
+  set(RUN_LOG "${RUN_EXE}.log")
+endif()
 
-if(UNIX)
-    add_library(memhooks SHARED memhooks.cpp)
-
-    set(MEMHOOKS_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    target_include_directories(memhooks PUBLIC ${MEMHOOKS_INCLUDE_DIR})
-
-    if(WIN32)
-        target_compile_definitions(memhooks PUBLIC MEMHOOKS_EXPORTS)
-    endif()
-
-    install(TARGETS memhooks
-        RUNTIME DESTINATION tests/bin)
+execute_process(
+  COMMAND ${RUN_EXE} ${RUN_CONFIG}
+  WORKING_DIRECTORY ${WORKING_DIRECTORY}
+  RESULT_VARIABLE TEST_RESULT
+  COMMAND_ECHO STDOUT
+  OUTPUT_FILE ${RUN_LOG}
+  ERROR_FILE ${RUN_LOG}
+  )
+if(NOT TEST_RESULT EQUAL 0)
+  message(FATAL_ERROR "Test failed! : Result: ${TEST_RESULT} Log file: ${RUN_LOG}")
+else()
+  message(STATUS "Test successed! Log file: ${RUN_LOG}")
 endif()

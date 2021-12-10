@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -246,7 +246,7 @@ std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strre
             founds.push_back(iter->second.stream);
         }
     }
-    return std::move(founds);
+    return founds;
 }
 
 std::shared_ptr<BaseStream> Channel::get_stream(std::string str_name)

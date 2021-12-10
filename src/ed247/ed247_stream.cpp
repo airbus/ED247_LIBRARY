@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -107,11 +107,10 @@ void BaseStream::push_sample(const void * sample_data, size_t sample_size, const
 
 std::shared_ptr<StreamSample> & BaseStream::pop_sample(bool *empty)
 {
-    if(!(_configuration->info.direction & ED247_DIRECTION_IN))
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot read sample on a stream which is not an input one");
-    // const auto & sample = _recv_stack.pop_front(empty);
-    // return sample ? std::move(sample) : nullptr;
-    return _recv_stack.pop_front(empty);
+  if(!(_configuration->info.direction & ED247_DIRECTION_IN)) {
+    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot read sample on a stream which is not an input one");
+  }
+  return _recv_stack.pop_front(empty);
 }
 
 std::vector<std::shared_ptr<BaseSignal>> BaseStream::find_signals(std::string str_regex)
@@ -123,7 +122,7 @@ std::vector<std::shared_ptr<BaseSignal>> BaseStream::find_signals(std::string st
             founds.push_back(signal);
         }
     }
-    return std::move(founds);
+    return founds;
 }
 
 std::shared_ptr<BaseSignal> BaseStream::get_signal(std::string str_name)
@@ -187,7 +186,7 @@ std::vector<std::shared_ptr<BaseStream>> BaseStream::Pool::find(std::string strr
             founds.push_back(stream);
         }
     }
-    return std::move(founds);
+    return founds;
 }
 
 std::shared_ptr<BaseStream> BaseStream::Pool::get(std::string str_name)
@@ -275,7 +274,7 @@ Stream<E>::allocate_sample_impl() const
 {
     auto sample = std::make_unique<StreamSample>();
     sample->allocate(_configuration->info.sample_max_size_bytes);
-    return std::move(sample);
+    return sample;
 }
 
 template<ed247_stream_type_t E>
@@ -285,7 +284,7 @@ Stream<E>::allocate_sample_impl() const
 {
     auto sample = std::make_unique<StreamSample>();
     sample->allocate(_configuration->info.sample_max_size_bytes);
-    return std::move(sample);
+    return sample;
 }
 
 // Stream<A429>
@@ -558,13 +557,13 @@ size_t Stream<ED247_STREAM_TYPE_SERIAL>::encode(char * frame, size_t frame_size)
         encode_data_timestamp(sample, frame, frame_size, frame_index);
         
         // Write sample size
-        if((frame_index + sizeof(uint8_t)) > frame_size)
+        if((frame_index + sizeof(uint16_t)) > frame_size)
             THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
-        if(sample->size() != (uint8_t)sample->size())
+        if(sample->size() != (uint16_t)sample->size())
             THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample size is too high! ");
-        uint8_t size = (uint8_t)sample->size();
-        memcpy(frame + frame_index, &size, sizeof(uint8_t));
-        frame_index += sizeof(uint8_t);
+        uint16_t size = (uint16_t)sample->size();
+        memcpy(frame + frame_index, &size, sizeof(uint16_t));
+        frame_index += sizeof(uint16_t);
         
         // Write sample data
         if((frame_index + sizeof(uint16_t)) > frame_size)
@@ -586,10 +585,10 @@ bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_s
         // Read Data Timestamp if necessary
         decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
         // Read sample size
-        if((frame_size-frame_index) < sizeof(uint8_t))
+        if((frame_size-frame_index) < sizeof(uint16_t))
             THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size size)");
-        sample_size = *(uint8_t*)(frame+frame_index);
-        frame_index += sizeof(uint8_t);
+        sample_size = *(uint16_t*)(frame+frame_index);
+        frame_index += sizeof(uint16_t);
         // Read sample data
         if((frame_size-frame_index) < sample_size)
             THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
@@ -620,7 +619,7 @@ ed247_status_t Stream<ED247_STREAM_TYPE_SERIAL>::check_sample_size(size_t sample
 template<>
 void Stream<ED247_STREAM_TYPE_SERIAL>::allocate_buffer()
 {
-    auto size = _configuration->info.sample_max_number * (_configuration->info.sample_max_size_bytes + sizeof(uint8_t));
+    auto size = _configuration->info.sample_max_number * (_configuration->info.sample_max_size_bytes + sizeof(uint16_t));
     if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
         // Data Timestamp
         size += sizeof(ed247_timestamp_t);

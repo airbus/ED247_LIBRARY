@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -52,9 +52,9 @@ class FromStatusType : public ::testing::TestWithParam<std::pair <ed247_status_t
 
 TEST_P(FromStatusType, StatusConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_status_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_status_t, const char*> > from_status_associations = {
@@ -76,9 +76,9 @@ class FromStandardType : public ::testing::TestWithParam<std::pair <ed247_standa
 
 TEST_P(FromStandardType, FromStandardConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_standard_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_standard_t, const char*> > from_standard_associations = {
@@ -95,9 +95,9 @@ class ToStandardType : public ::testing::TestWithParam<std::pair <const char*, e
 
 TEST_P(ToStandardType, ToStandardConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_standard_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_standard_t> > to_standard_associations = {
@@ -117,9 +117,9 @@ class FromDirectionType : public ::testing::TestWithParam<std::pair <ed247_direc
 
 TEST_P(FromDirectionType, FromDirectionConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_direction_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_direction_t, const char*> > from_direction_associations = {
@@ -137,9 +137,9 @@ class ToDirectionType : public ::testing::TestWithParam<std::pair <const char*, 
 
 TEST_P(ToDirectionType, ToDirectionConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_direction_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_direction_t> > to_direction_associations = {
@@ -159,9 +159,9 @@ class FromYesNoType : public ::testing::TestWithParam<std::pair <ed247_yesno_t, 
 
 TEST_P(FromYesNoType, FromYesNoConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_yesno_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_yesno_t, const char*> > from_yesno_associations = {
@@ -177,9 +177,9 @@ class ToYesNoType : public ::testing::TestWithParam<std::pair <const char*, ed24
 
 TEST_P(ToYesNoType, ToYesNoConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_yesno_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_yesno_t> > to_yesno_associations = {
@@ -202,9 +202,9 @@ class FromComponentType : public ::testing::TestWithParam<std::pair <ed247_compo
 
 TEST_P(FromComponentType, FromComponentConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_component_type_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_component_type_t, const char*> > from_component_associations = {
@@ -221,9 +221,9 @@ class ToComponentType : public ::testing::TestWithParam<std::pair <const char*, 
 
 TEST_P(ToComponentType, ToComponentConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_component_type_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_component_type_t> > to_component_associations = {
@@ -247,9 +247,9 @@ class FromStreamType : public ::testing::TestWithParam<std::pair <ed247_stream_t
 
 TEST_P(FromStreamType, FromStreamConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_stream_type_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_stream_type_t, const char*> > from_stream_associations = {
@@ -276,9 +276,9 @@ class ToStreamType : public ::testing::TestWithParam<std::pair <const char*, ed2
 
 TEST_P(ToStreamType, ToStreamConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_stream_type_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_stream_type_t> > to_stream_associations = {
@@ -307,9 +307,9 @@ class FromSignalType : public ::testing::TestWithParam<std::pair <ed247_signal_t
 
 TEST_P(FromSignalType, FromSignalConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_signal_type_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_signal_type_t, const char*> > from_signal_associations = {
@@ -327,9 +327,9 @@ class ToSignalType : public ::testing::TestWithParam<std::pair <const char*, ed2
 
 TEST_P(ToSignalType, ToSignalConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_signal_type_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_signal_type_t> > to_signal_associations = {
@@ -350,9 +350,9 @@ class FromNADType : public ::testing::TestWithParam<std::pair <ed247_nad_type_t,
 
 TEST_P(FromNADType, FromNADConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(strcmp(ed247_nad_type_string(GetParam().first), GetParam().second), 0);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<ed247_nad_type_t, const char*> > from_nad_associations = {
@@ -377,9 +377,9 @@ class ToNADType : public ::testing::TestWithParam<std::pair <const char*, ed247_
 
 TEST_P(ToNADType, ToNADConverter)
 {
-    memhooks_section_start();
+    malloc_count_start();
     ASSERT_EQ(ed247_nad_type_from_string(GetParam().first), GetParam().second);
-    ASSERT_TRUE(memhooks_section_stop());
+    ASSERT_EQ(malloc_count_stop(), 0);
 }
 
 std::vector<std::pair<const char*, ed247_nad_type_t> > to_nad_associations = {

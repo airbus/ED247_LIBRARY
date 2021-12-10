@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -77,6 +77,9 @@ int main(int argc, char *argv[])
         << "ReceiveTimestampOffsetNs;"
         << "DataTimestampEpochS;"
         << "DataTimestampOffsetNs;"
+        << "StreamData;"
+        << "Signal;"
+        << "SignalData"
         << std::endl;
 
     status = ed247_load(filepath.c_str(), NULL, &context);
@@ -116,12 +119,46 @@ int main(int argc, char *argv[])
                         if(i > 0) dump << " ";
                         dump << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)((unsigned char*)sample)[i];
                     }
-                    dump << std::dec << std::endl;
+                    dump << std::dec << ";";
+                    dump << "" << ";" << "" << std::endl; // Signal & SignalData columns
                 }else if(stream_info->type == ED247_STREAM_TYPE_ANALOG ||
                     stream_info->type == ED247_STREAM_TYPE_DISCRETE ||
                     stream_info->type == ED247_STREAM_TYPE_NAD ||
                     stream_info->type == ED247_STREAM_TYPE_VNAD){
-                    // TODO: To be implemented
+                    ed247_stream_assistant_t assistant;
+                    status = ed247_stream_get_assistant(stream, &assistant);
+                    if(check_status(context, status)) return status;
+                    status = ed247_stream_assistant_pop_sample(assistant, &data_timestamp, &recv_timestamp, &info, NULL);
+                    if(check_status(context, status)) return status;
+                    ed247_signal_list_t signals;
+                    ed247_signal_t signal;
+                    status = ed247_stream_get_signals(stream, &signals);
+                    if(check_status(context, status)) return status;
+                    while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
+                        const ed247_signal_info_t   *signal_info;
+                        status = ed247_signal_get_info(signal, &signal_info);
+                        if(check_status(context, status)) return status;
+                        const void * signal_sample;
+                        size_t signal_sample_size;
+                        status = ed247_stream_assistant_read_signal(assistant, signal, &signal_sample, &signal_sample_size);
+                        if(check_status(context, status)) return status;
+                        dump << info->component_identifier << ";"
+                            << info->sequence_number << ";"
+                            << info->transport_timestamp.epoch_s << ";"
+                            << info->transport_timestamp.offset_ns << ";"
+                            << std::string(stream_info->name) << ";"
+                            << data_timestamp->epoch_s << ";"
+                            << data_timestamp->offset_ns << ";"
+                            << recv_timestamp->epoch_s << ";"
+                            << recv_timestamp->offset_ns << ";"
+                            << "" << ";"
+                            << std::string(signal_info->name) << ";"; // Stream data
+                        for(size_t i = 0 ; i < signal_sample_size ; i++){
+                            if(i > 0) dump << " ";
+                            dump << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)((unsigned char*)signal_sample)[i];
+                        }
+                        dump << std::dec << std::endl;
+                    }
                 }
             }
         }

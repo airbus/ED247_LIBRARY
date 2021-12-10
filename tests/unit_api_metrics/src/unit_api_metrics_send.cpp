@@ -1,7 +1,7 @@
 /******************************************************************************
  * The MIT Licence
  *
- * Copyright (c) 2020 Airbus Operations S.A.S
+ * Copyright (c) 2021 Airbus Operations S.A.S
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,13 +38,10 @@
  * Defines *
  ***********/
 
-#define TEST_ENTITY_SRC_ID 1
-#define TEST_ENTITY_DST_ID 2
+#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
+#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
 
-#define TEST_CONTEXT_SYNC_MAIN TestSend(); TestWait();
-#define TEST_CONTEXT_SYNC_TESTER TestWait(); TestSend();
-
-#define TEST_CONTEXT_SYNC TEST_CONTEXT_SYNC_MAIN
+#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
 
 /********
  * Test *
@@ -132,9 +129,9 @@ TEST_P(Context, Metrics)
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
     
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
     
     // Check limit cases
     ASSERT_EQ(ed247_stream_assistant_write_signal(NULL, dummy_header_pid, pid_value, pid_size), ED247_STATUS_FAILURE);
@@ -158,23 +155,23 @@ TEST_P(Context, Metrics)
         ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         
-        // Checkpoint n°2
-        std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-        TEST_CONTEXT_SYNC
+        // Checkpoint n~2
+        LOG_SELF("Checkpoint n~2");
+        TEST_CONTEXT_SYNC();
         
         // Send the second stream to check the runtime metrics is not disturbed
         *(uint32_t*)second_stream_value = 0x12345678;
         ed247_stream_push_sample(second_stream, second_stream_value, second_stream_size, NULL, NULL);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         
-        // Checkpoint n°3
-        std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°3" << std::endl;
-        TEST_CONTEXT_SYNC
+        // Checkpoint n~3
+        LOG_SELF("Checkpoint n~3");
+        TEST_CONTEXT_SYNC();
     }
     
-    // Checkpoint n°4
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°4" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~4
+    LOG_SELF("Checkpoint n~4");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     // ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -258,9 +255,9 @@ TEST_P(Context, MetricsCross)
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
     
-    // Checkpoint n°1
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°1" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~1
+    LOG_SELF("Checkpoint n~1");
+    TEST_CONTEXT_SYNC();
     
     uint16_t counter = 0;
     for (uint16_t i = 0; i < 4; i++){
@@ -280,26 +277,26 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
             
-            // Checkpoint n°2
-            std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°2" << std::endl;
-            TEST_CONTEXT_SYNC
+            // Checkpoint n~2
+            LOG_SELF("Checkpoint n~2");
+            TEST_CONTEXT_SYNC();
             
             // Send the second stream to check the runtime metrics is not disturbed
             *(uint32_t*)second_stream_value = 0x12345678;
             ed247_stream_push_sample(second_stream, second_stream_value, second_stream_size, NULL, NULL);
             ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
             
-            // Checkpoint n°3
-            std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°3" << std::endl;
-            TEST_CONTEXT_SYNC
+            // Checkpoint n~3
+            LOG_SELF("Checkpoint n~3");
+            TEST_CONTEXT_SYNC();
 
             counter++;
         }
     }
     
-    // Checkpoint n°4
-    std::cout << "TEST ENTITY [" << GetParam().src_id << "]: Checkpoint n°4" << std::endl;
-    TEST_CONTEXT_SYNC
+    // Checkpoint n~4
+    LOG_SELF("Checkpoint n~4");
+    TEST_CONTEXT_SYNC();
 
     // Unload
     // ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);

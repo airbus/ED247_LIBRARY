@@ -1,6 +1,6 @@
-/_install
-/_build
-/.vs*
-/CMakeSettings.json
-/src/ed247/ed247_xsd.h
-tmp
+# Build output
+# .last_build
+# build_Linux32
+# build_Linux64
+# build_Win32_mingw
+# build_Win64_mingw

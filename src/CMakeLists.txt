@@ -1,5 +1,1 @@
-# ADD_SUBDIRECTORY(env)
-# if(ENABLE_MEMHOOKS)
-#     ADD_SUBDIRECTORY(memhooks)
-# endif()
 ADD_SUBDIRECTORY(ed247)

@@ -1,7 +1,7 @@
 ###############################################################################
 # The MIT Licence                                                             #
 #                                                                             #
-# Copyright (c) 2020 Airbus Operations S.A.S                                  #
+# Copyright (c) 2021 Airbus Operations S.A.S                                  #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
 # copy of this software and associated documentation files (the "Software"),  #
@@ -21,66 +21,52 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
+# Special object target that will also be used by unitary tests
+add_library(ed247_objects OBJECT
+    ed247_channel.cpp
+    ed247_cominterface.cpp
+    ed247_context.cpp
+    ed247.cpp
+    ed247_logs.cpp
+    ed247_signal.cpp
+    ed247_stream.cpp
+    ed247_xml.cpp
+)
 
-# Append source files
-unset(SRCS)
-file(GLOB SRCS LIST_DIRECTORIES true ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
-if(ENABLE_MEMHOOKS)
-    file(GLOB SRCS_MEMHOOKS ${CMAKE_CURRENT_LIST_DIR}/memhooks/*.cpp)
-    list(APPEND SRCS ${SRCS_MEMHOOKS})
-endif()
-add_library(ed247o OBJECT ${SRCS})
-unset(SRCS)
+target_link_libraries(ed247_objects
+  PUBLIC
+     LibXml2::LibXml2
+     $<$<PLATFORM_ID:Windows>:wsock32>
+     $<$<PLATFORM_ID:Windows>:ws2_32>
+)
 
-# Append include directories
-target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-if(ENABLE_MEMHOOKS)
-    target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../memhooks)
-    target_include_directories(ed247o PUBLIC ${CMAKE_CURRENT_LIST_DIR}/memhooks)
-endif()
+target_include_directories(ed247_objects
+  PUBLIC
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+     $<INSTALL_INTERFACE:include>
+)
 
-# Append definitions
-target_compile_definitions(ed247o PUBLIC "_PRODUCT_VERSION=\"${ED247_LIBRARY_VERSION}\"")
-target_compile_definitions(ed247o PUBLIC "_PRODUCT_NAME=\"${CMAKE_PROJECT_NAME}\"")
-if(WIN32)
-    target_compile_definitions(ed247o PUBLIC LIBED247_EXPORTS)
-endif()
-if(ENABLE_MEMHOOKS)
-    target_compile_definitions(ed247o PUBLIC ENABLE_MEMHOOKS)
-endif()
+target_compile_definitions(ed247_objects
+    PUBLIC
+        "_PRODUCT_VERSION=\"${VERSION}\""
+        "_PRODUCT_NAME=\"${CMAKE_PROJECT_NAME}\""
+        $<$<PLATFORM_ID:Windows>:LIBED247_EXPORTS>
+)
 
-# Append link to other libraries
-target_link_libraries(ed247o LibXml2)
-if(WIN32)
-    target_link_libraries(ed247o wsock32 ws2_32)
-endif()
-if(ENABLE_MEMHOOKS)
-    target_link_libraries(ed247o memhooks)
-endif()
+# ED247 Library definition
+add_library(ed247 SHARED)
+add_library(Ed247::ed247 ALIAS ed247)
 
-# Define shared and static targets
-add_library(ed247 SHARED $<TARGET_OBJECTS:ed247o>)
-target_link_libraries(ed247 LibXml2)
-if(ENABLE_MEMHOOKS)
-    target_link_libraries(ed247 memhooks)
-endif()
-target_include_directories(ed247 PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-# set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
-add_library(ed247_static STATIC $<TARGET_OBJECTS:ed247o>)
-
-# Install required stuff
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/ed247.h DESTINATION inc)
-install(TARGETS ed247
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib)
-install(TARGETS ed247_static
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib)
+target_link_libraries(ed247
+    PUBLIC
+        ed247_objects
+)
 
 # Generate XSD header file containing the XSD as a string
 macro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)
+  if(${_XSD_PATH}/${_XSD_FILENAME} IS_NEWER_THAN ${_HEADER_FILEPATH})
+    message("Generate ${_HEADER_FILEPATH}...")
     file(READ ${_XSD_PATH}/${_XSD_FILENAME} XSD_CONTENT)
     string(REPLACE "\\" "\\\\" XSD_CONTENT ${XSD_CONTENT})
     string(REPLACE "\"" "\\\"" XSD_CONTENT ${XSD_CONTENT})
@@ -90,9 +76,18 @@ macro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)
 static const char* ${_VAR_NAME} =
 \"${XSD_CONTENT}\\n\";
 ")
+  endif()
 endmacro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)
 
-_generate_xsd_header(${CMAKE_CURRENT_LIST_DIR}/xsd ED247A_ECIC.xsd ${CMAKE_CURRENT_LIST_DIR}/ed247_xsd.h xsd_schema)
+_generate_xsd_header(${CMAKE_CURRENT_LIST_DIR}/xsd ED247A_ECIC.xsd ${CMAKE_CURRENT_BINARY_DIR}/ed247_xsd.h xsd_schema)
 
-install(FILES ./xsd/ED247A_ECIC.xsd DESTINATION xsd)
-install(FILES ./xsd/ED247A_ECD.xsd DESTINATION xsd)
+# Install required stuff
+set(INSTALL_LIBDIR lib)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(INSTALL_LIBDIR bin)
+endif()
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/ed247.h DESTINATION ${PLATFORM_INSTALL_SUBDIR}include)
+install(TARGETS ed247                           DESTINATION ${PLATFORM_INSTALL_SUBDIR}${INSTALL_LIBDIR})
+install(FILES ./xsd/ED247A_ECIC.xsd             DESTINATION doc/xsd)
+install(FILES ./xsd/ED247A_ECD.xsd              DESTINATION doc/xsd)
+
