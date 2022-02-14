@@ -1298,7 +1298,7 @@ DEALINGS IN THE SOFTWARE.
             <xs:element name="HeaderNeeds" type="header_need_type" minOccurs="0"/>
             <xs:element name="Streams" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
                         <xs:element name="A429_Stream" type="a429_stream_simple_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="A825_Stream" type="a825_stream_simple_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="A664_Stream" type="a664_stream_simple_type" minOccurs="0" maxOccurs="unbounded"/>
@@ -1311,17 +1311,17 @@ DEALINGS IN THE SOFTWARE.
                         <xs:element name="ANA_Stream" type="ana_stream_simple_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="NAD_Stream" type="nad_stream_simple_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="VNAD_Stream" type="vnad_stream_simple_type" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
             <xs:element name="Signals" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
                         <xs:element name="DIS_Signal" type="dis_signal_pool_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="ANA_Signal" type="ana_signal_pool_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="NAD_Signal" type="nad_signal_pool_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="VNAD_Signal" type="vnad_signal_pool_type" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
         </xs:all>
@@ -1399,7 +1399,7 @@ DEALINGS IN THE SOFTWARE.
             <!-- ECD only --> <xs:element name="HeaderNeeds" type="header_need_type" minOccurs="0"/>
             <xs:element name="Streams">
                 <xs:complexType>
-                    <xs:sequence>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
                         <xs:element name="A429_Stream" type="a429_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="A825_Stream" type="a825_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="A664_Stream" type="a664_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
@@ -1412,7 +1412,7 @@ DEALINGS IN THE SOFTWARE.
                         <xs:element name="ANA_Stream" type="ana_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="NAD_Stream" type="nad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="VNAD_Stream" type="vnad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
         </xs:all>

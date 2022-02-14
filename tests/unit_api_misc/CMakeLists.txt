@@ -27,7 +27,12 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
 add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE} PRIVATE test_api tests_unit_ed247_lib)
+target_link_libraries(${TEST_EXECUTABLE} libtests_unitary)
+
+target_compile_definitions(${TEST_EXECUTABLE}
+    PRIVATE
+        "_PRODUCT_VERSION=\"${VERSION}\""
+)
 
 add_test(NAME ${TEST_EXECUTABLE}
     COMMAND "cmake"

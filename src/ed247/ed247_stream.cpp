@@ -1,3 +1,4 @@
+
 /******************************************************************************
  * The MIT Licence
  *
@@ -49,14 +50,6 @@ void StreamSample::update_info(const FrameHeader & header)
 }
 
 // StreamBuilder<>
-
-template<ed247_stream_type_t ... E>
-std::shared_ptr<BaseStream> StreamBuilder<E...>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
-{
-    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot create stream [" << std::string(configuration->info.name) << "]");
-    return nullptr;
-}
-
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
 std::shared_ptr<BaseStream> StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
 {
@@ -75,40 +68,34 @@ std::shared_ptr<BaseStream> StreamBuilder<T>::create(const ed247_stream_type_t &
         static typename Stream<T>::Builder builder;
         return builder.create(configuration, pool_signals);
     }else{
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Cannot create stream");
+        THROW_ED247_ERROR("Failed to create stream '" << configuration->info.name << "'");
     }
 }
 
 // BaseStream
-
-void BaseStream::push_sample(const StreamSample & sample, bool * full)
+bool BaseStream::push_sample(const void * sample_data, size_t sample_size, const ed247_timestamp_t * data_timestamp, bool * full)
 {
-    if(!(_configuration->info.direction & ED247_DIRECTION_OUT))
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot write sample on a stream which is not an output one");
-    if(check_sample_size(sample.size()))
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Sample is not consistent with stream requirements");
-    _send_stack.next_write()->copy(sample);
-    bool tmp_full = _send_stack.increment();
-    if(full) *full = tmp_full;
+  if(!(_configuration->info.direction & ED247_DIRECTION_OUT)) {
+    PRINT_ERROR("Stream '" << get_name() << "': Cannot write sample on a stream which is not an output one");
+    return false;
+  }
+  if(sample_size > _configuration->info.sample_max_size_bytes) {
+    PRINT_ERROR("Stream '" << get_name() << "': Invalid sample size (" << sample_size << ")");
+    return false;
+  }
+  auto && sample = _send_stack.next_write();
+  sample->copy(sample_data, sample_size);
+  if(data_timestamp) sample->set_data_timestamp(*data_timestamp);
+  bool tmp_full = _send_stack.increment();
+  if(full) *full = tmp_full;
+  return true;
 }
 
-void BaseStream::push_sample(const void * sample_data, size_t sample_size, const ed247_timestamp_t * data_timestamp, bool * full)
-{
-    if(!(_configuration->info.direction & ED247_DIRECTION_OUT))
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot write sample on a stream which is not an output one");
-    if(sample_size > _configuration->info.sample_max_size_bytes)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Sample is not consistent with stream max size requirements");
-    auto && sample = _send_stack.next_write();
-    sample->copy(sample_data, sample_size);
-    if(data_timestamp) sample->set_data_timestamp(*data_timestamp);
-    bool tmp_full = _send_stack.increment();
-    if(full) *full = tmp_full;
-}
-
-std::shared_ptr<StreamSample> & BaseStream::pop_sample(bool *empty)
+std::shared_ptr<StreamSample> BaseStream::pop_sample(bool *empty)
 {
   if(!(_configuration->info.direction & ED247_DIRECTION_IN)) {
-    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot read sample on a stream which is not an input one");
+    PRINT_ERROR("Stream '" << get_name() << "': Cannot read sample on a stream which is not an input one");
+    return nullptr;
   }
   return _recv_stack.pop_front(empty);
 }
@@ -167,14 +154,10 @@ std::shared_ptr<BaseStream> BaseStream::Pool::get(std::shared_ptr<xml::Stream> &
         sp_base_stream = std::static_pointer_cast<BaseStream>(sp_stream);
         _streams->push_back(sp_base_stream);
     }else{
-        // sp_base_stream = *iter;
-        // // Update direction flag if necessary
-        // sp_base_stream->_configuration->info.direction =
-        //     (ed247_direction_t)((uint8_t)sp_base_stream->_configuration->info.direction | (uint8_t)configuration->info.direction);
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream [" << name << "] already exists");
+        THROW_ED247_ERROR("Stream [" << name << "] already exists");
     }
 
-    return sp_base_stream;    
+    return sp_base_stream;
 }
 
 std::vector<std::shared_ptr<BaseStream>> BaseStream::Pool::find(std::string strregex)
@@ -202,14 +185,6 @@ std::shared_ptr<SmartListStreams> BaseStream::Pool::streams()
     return _streams;
 }
 
-void BaseStream::Pool::encode()
-{
-    for(auto s : *_streams){
-        if(s->get_configuration()->info.direction & ED247_DIRECTION_OUT)
-            s->encode();
-    }
-}
-
 size_t BaseStream::Pool::size() const
 {
     return _streams->size();
@@ -221,22 +196,6 @@ void BaseStream::Builder::build(std::shared_ptr<Pool> & pool, std::shared_ptr<xm
 {
     auto sp_stream = pool->get(configuration);
     sp_stream->register_channel(channel, configuration->info.direction);
-}
-
-// Stream<>
-
-template<ed247_stream_type_t E>
-size_t Stream<E>::encode(char * frame, size_t frame_size)
-{
-    ASSERT_ED247(false, "Stream<> cannot perform encoding");
-    return 0;
-}
-
-template<ed247_stream_type_t E>
-bool Stream<E>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
-{
-    ASSERT_ED247(false, "Stream<> cannot perform decoding");
-    return false;
 }
 
 template<ed247_stream_type_t E>
@@ -252,19 +211,13 @@ void Stream<E>::allocate_stacks()
     _send_working_sample->allocate(_configuration->info.sample_max_size_bytes);
     if(_configuration->info.direction <= ED247_DIRECTION__INVALID ||
         _configuration->info.direction > ED247_DIRECTION_INOUT)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream direction is neigher input nor ouput nor bidirectional");
+        THROW_ED247_ERROR("Stream '" << _configuration->info.name << "' direction is neigher input nor ouput nor bidirectional");
 }
 
 template<ed247_stream_type_t E>
 void Stream<E>::allocate_working_sample()
 {
     _working_sample.allocate(_configuration->info.sample_max_size_bytes);
-}
-
-template<ed247_stream_type_t E>
-void Stream<E>::allocate_buffer()
-{
-    ASSERT_ED247(false, "Cannot allocate buffer in Stream<>");
 }
 
 template<ed247_stream_type_t E>
@@ -302,8 +255,9 @@ size_t Stream<ED247_STREAM_TYPE_A429>::encode(char * frame, size_t frame_size)
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
         // Write sample data
-        if((frame_index + sample->size()) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sample->size()) > frame_size) {
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         memcpy(frame + frame_index, sample->data(), sample->size());
         frame_index += sample->size();
     }while(!empty);
@@ -318,10 +272,12 @@ bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, size_t frame_siz
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample data
-        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto && sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
@@ -362,33 +318,37 @@ void Stream<ED247_STREAM_TYPE_A429>::allocate_buffer()
 template<>
 size_t Stream<ED247_STREAM_TYPE_A664>::encode(char * frame, size_t frame_size)
 {
-    if(_send_stack.size() == 0) return 0;
     auto enable_message_size = std::static_pointer_cast<xml::A664Stream>(_configuration)->enable_message_size == ED247_YESNO_YES;
     size_t frame_index = 0;
-    bool empty;
-    do{
-        const auto & sample = _send_stack.pop_front(&empty);
+    while (_send_stack.size() > 0) {
+        const auto & sample = _send_stack.pop_front();
 
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
         // Write sample size
         if(enable_message_size){
-            if((frame_index + sizeof(uint16_t)) > frame_size)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+            if((frame_index + sizeof(uint16_t)) > frame_size) {
+                THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+            }
             if(sample->size() != (uint16_t)sample->size())
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample size is too high! ");
+                THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample->size() << ")");
             uint16_t size = htons((uint16_t)sample->size());
             memcpy(frame + frame_index, &size, sizeof(uint16_t));
             frame_index += sizeof(uint16_t);
         }
 
         // Write sample data
-        if((frame_index + sizeof(uint16_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint16_t)) > frame_size) {
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         memcpy(frame + frame_index, sample->data(), sample->size());
         frame_index += sample->size();
-    }while(!empty);
+
+        // If message size is disabled, we cannot append more sample.
+        // Remaining ones will be available for next encode() call.
+        if (enable_message_size == false) break;
+    };
     return frame_index;
 }
 
@@ -402,12 +362,14 @@ bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_siz
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Sample size
         if(enable_message_size){
             // Read sample size
-            if((frame_size-frame_index) < sizeof(uint16_t))
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size size)");
+            if((frame_size-frame_index) < sizeof(uint16_t)) {
+              PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+              return false;
+            }
             sample_size = ntohs(*(uint16_t*)(frame+frame_index));
             frame_index += sizeof(uint16_t);
         }else{
@@ -415,10 +377,17 @@ bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_siz
             sample_size = (frame_size-frame_index);
         }
         // Read sample data
-        if((frame_size-frame_index) < sample_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < sample_size) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
+
+        PRINT_CRAZY("AFDX stream '" << get_name() << "' decoded. Size: " << sample_size);
         auto & sample = _recv_stack.next_write();
-        sample->copy(frame+frame_index, sample_size);
+        if (sample->copy(frame+frame_index, sample_size) == false) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         frame_index += sample->size();
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -468,19 +437,21 @@ size_t Stream<ED247_STREAM_TYPE_A825>::encode(char * frame, size_t frame_size)
 
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
-        
+
         // Write sample size
-        if((frame_index + sizeof(uint8_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint8_t)) > frame_size) {
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         if(sample->size() != (uint8_t)sample->size())
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample size is too high! ");
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 8 bits number ! (" << sample->size() << ")");
         uint8_t size = (uint8_t)sample->size();
         memcpy(frame + frame_index, &size, sizeof(uint8_t));
         frame_index += sizeof(uint8_t);
-        
+
         // Write sample data
-        if((frame_index + sizeof(uint16_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+       if((frame_index + sizeof(uint16_t)) > frame_size) {
+         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         memcpy(frame + frame_index, sample->data(), sample->size());
         frame_index += sample->size();
     }while(!empty);
@@ -496,17 +467,24 @@ bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, size_t frame_siz
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample size
-        if((frame_size-frame_index) < sizeof(uint8_t))
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size size)");
+        if((frame_size-frame_index) < sizeof(uint8_t)) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         sample_size = *(uint8_t*)(frame+frame_index);
         frame_index += sizeof(uint8_t);
         // Read sample data
-        if((frame_size-frame_index) < sample_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < sample_size) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto & sample = _recv_stack.next_write();
-        sample->copy(frame+frame_index, sample_size);
+        if (sample->copy(frame+frame_index, sample_size) == false) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         frame_index += sample->size();
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -555,19 +533,21 @@ size_t Stream<ED247_STREAM_TYPE_SERIAL>::encode(char * frame, size_t frame_size)
 
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
-        
+
         // Write sample size
-        if((frame_index + sizeof(uint16_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint16_t)) > frame_size) {
+          THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         if(sample->size() != (uint16_t)sample->size())
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample size is too high! ");
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample->size() << ")");
         uint16_t size = (uint16_t)sample->size();
         memcpy(frame + frame_index, &size, sizeof(uint16_t));
         frame_index += sizeof(uint16_t);
-        
+
         // Write sample data
-        if((frame_index + sizeof(uint16_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint16_t)) > frame_size) {
+          THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         memcpy(frame + frame_index, sample->data(), sample->size());
         frame_index += sample->size();
     }while(!empty);
@@ -583,17 +563,24 @@ bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_s
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample size
-        if((frame_size-frame_index) < sizeof(uint16_t))
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size size)");
+        if((frame_size-frame_index) < sizeof(uint16_t)) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         sample_size = *(uint16_t*)(frame+frame_index);
         frame_index += sizeof(uint16_t);
         // Read sample data
-        if((frame_size-frame_index) < sample_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < sample_size) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto & sample = _recv_stack.next_write();
-        sample->copy(frame+frame_index, sample_size);
+        if (sample->copy(frame+frame_index, sample_size) == false) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         frame_index += sample->size();
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -642,19 +629,21 @@ size_t Stream<ED247_STREAM_TYPE_AUDIO>::encode(char * frame, size_t frame_size)
 
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
-        
+
         // Write sample size
-        if((frame_index + sizeof(uint8_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint8_t)) > frame_size) {
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         if(sample->size() != (uint8_t)sample->size())
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample size is too high! ");
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 8 bits number ! (" << sample->size() << ")");
         uint8_t size = (uint8_t)sample->size();
         memcpy(frame + frame_index, &size, sizeof(uint8_t));
         frame_index += sizeof(uint8_t);
-        
+
         // Write sample data
-        if((frame_index + sizeof(uint16_t)) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint16_t)) > frame_size) {
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         memcpy(frame + frame_index, sample->data(), sample->size());
         frame_index += sample->size();
     }while(!empty);
@@ -670,17 +659,24 @@ bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, size_t frame_si
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample size
-        if((frame_size-frame_index) < sizeof(uint8_t))
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size size)");
+        if((frame_size-frame_index) < sizeof(uint8_t)) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         sample_size = *(uint8_t*)(frame+frame_index);
         frame_index += sizeof(uint8_t);
         // Read sample data
-        if((frame_size-frame_index) < sample_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < sample_size) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto & sample = _recv_stack.next_write();
-        sample->copy(frame+frame_index, sample_size);
+        if (sample->copy(frame+frame_index, sample_size) == false) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         frame_index += sample->size();
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -745,10 +741,12 @@ bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, size_t frame
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample data
-        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto && sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
@@ -798,12 +796,12 @@ size_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, size_t frame_size)
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ...");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            *(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset));
+            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset));
         }
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ... OK");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ... OK");
 
         // Write sample data
         memcpy(frame + frame_index, sample->data(), sample->size());
@@ -820,20 +818,22 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_s
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample data
-        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
 
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ...");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            *(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.ana.byte_offset));
+            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset));
         }
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ... OK");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ... OK");
 
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -938,14 +938,14 @@ size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ...");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            void *sample_data = (void*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.nad.byte_offset);
+            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->info.info.nad.byte_offset);
             size_t sample_element_length = BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) / xml::nad_type_size(signal->get_configuration()->info.info.nad.nad_type);
             swap_nad(sample_data, signal->get_configuration()->info.info.nad.nad_type, sample_element_length);
         }
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ... OK");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ... OK");
 
         // Write sample data
         memcpy(frame + frame_index, sample->data(), sample->size());
@@ -962,22 +962,24 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample data
-        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < _configuration->info.sample_max_size_bytes) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto & sample = _recv_stack.next_write();
         sample->copy(frame+frame_index, _configuration->info.sample_max_size_bytes);
         frame_index += sample->size();
 
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ...");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            void *sample_data = (void*)((uint8_t*)sample->data()+signal->get_configuration()->info.info.nad.byte_offset);
+            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->info.info.nad.byte_offset);
             size_t sample_element_length = BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) / xml::nad_type_size(signal->get_configuration()->info.info.nad.nad_type);
             swap_nad(sample_data, signal->get_configuration()->info.info.nad.nad_type, sample_element_length);
         }
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ... OK");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ... OK");
 
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -1025,27 +1027,28 @@ size_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, size_t frame_size)
         // Write Data Timestamp and Precise Data Timestamp
         encode_data_timestamp(sample, frame, frame_size, frame_index);
 
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ...");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ...");
         // SWAP
         size_t cursor = 0;
         size_t cursor_step = 0;
         uint32_t isignal = 0;
         uint16_t sample_size_bytes = 0;
         while(cursor < sample->size()){
-            sample_size_bytes = ntohs(*(uint16_t*)((char*)sample->data()+cursor));
+            sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
             cursor += sizeof(uint16_t);
             cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type);
-            swap_nad((void*)((char*)sample->data()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
+            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
             cursor += sample_size_bytes;
             isignal++;
         }
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ... OK");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ... OK");
 
         // Write sample size
-        if((frame_index + sizeof(uint16_t) + sample->size()) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+        if((frame_index + sizeof(uint16_t) + sample->size()) > frame_size) {
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+        }
         if(sample->size() != (uint16_t)sample->size())
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample size is too high! ");
+            THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample->size() << ")");
         uint16_t size = htons((uint16_t)sample->size());
         memcpy(frame + frame_index, &size, sizeof(uint16_t));
         frame_index += sizeof(uint16_t);
@@ -1065,34 +1068,41 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
         // Read Data Timestamp if necessary
-        decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp);
+        if (decode_data_timestamp(frame, frame_size, frame_index, data_timestamp, timestamp) == false) return false;
         // Read sample size
-        if((frame_size-frame_index) < sizeof(uint16_t))
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size size)");
+        if((frame_size-frame_index) < sizeof(uint16_t)) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         sample_size = ntohs(*(uint16_t*)(frame+frame_index));
         frame_index += sizeof(uint16_t);
         // Read sample data
-        if((frame_size-frame_index) < sample_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong sample size)");
+        if((frame_size-frame_index) < sample_size) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         auto & sample = _recv_stack.next_write();
-        sample->copy(frame+frame_index, sample_size);
+        if (sample->copy(frame+frame_index, sample_size) == false) {
+          PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
+          return false;
+        }
         frame_index += sample->size();
 
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ...");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ...");
         // SWAP
         size_t cursor = 0;
         size_t cursor_step = 0;
         uint32_t isignal = 0;
         uint16_t sample_size_bytes = 0;
         while(cursor < sample->size()){
-            sample_size_bytes = ntohs(*(uint16_t*)((char*)sample->data()+cursor));
+            sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
             cursor += sizeof(uint16_t);
             cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type);
-            swap_nad((void*)((char*)sample->data()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
+            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
             cursor += sample_size_bytes;
             isignal++;
         }
-        IF_PRINT PRINT_DEBUG("# SWAP stream [" << _configuration->info.name << "] ... OK");
+        PRINT_CRAZY("SWAP stream [" << _configuration->info.name << "] ... OK");
 
         // Update data timestamp
         if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
@@ -1135,13 +1145,13 @@ Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
     std::shared_ptr<BaseSignal::Pool> & pool_signals) const
 {
     _UNUSED(pool_signals);
-    PRINT_DEBUG("# Create stream [" << configuration->info.name << "] ...");
+    PRINT_DEBUG("Create stream [" << configuration->info.name << "] ...");
     auto sp_stream = std::make_shared<Stream<E>>(configuration);
     sp_stream->_assistant = nullptr;
     sp_stream->allocate_stacks();
     sp_stream->allocate_buffer();
     sp_stream->allocate_working_sample();
-    PRINT_DEBUG("# Create stream [" << configuration->info.name << "] OK");
+    PRINT_DEBUG("Create stream [" << configuration->info.name << "] OK");
     return sp_stream;
 }
 
@@ -1153,11 +1163,11 @@ Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
 {
     static BaseSignal::Builder builder;
 
-    PRINT_DEBUG("# Create signal based stream [" << configuration->info.name << "] ...");
+    PRINT_DEBUG("Create signal based stream [" << configuration->info.name << "] ...");
     auto sp_stream = std::make_shared<Stream<E>>(configuration);
     auto sconfiguration = std::static_pointer_cast<xml::StreamSignals>(configuration);
     if(!sconfiguration)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Wrong stream type, not a signal based one");
+        THROW_ED247_ERROR("Stream '" << configuration->info.name << "': Wrong stream type, not a signal based one");
     for(auto signal_configuration : sconfiguration->signals){
         sp_stream->_signals->push_back(builder.build(pool_signals, signal_configuration, *sp_stream));
     }
@@ -1166,7 +1176,7 @@ Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
     sp_stream->allocate_stacks();
     sp_stream->allocate_buffer();
     sp_stream->allocate_working_sample();
-    PRINT_DEBUG("# Create stream [" << configuration->info.name << "] OK");
+    PRINT_DEBUG("Create stream [" << configuration->info.name << "] OK");
     return sp_stream;
 }
 

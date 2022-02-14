@@ -47,14 +47,10 @@
 #include <sys/socket.h>
 #endif
 
-#include <ostream>
-#include <iostream>
-#include <iomanip>
-#include <exception>
 #include <fstream>
-#include <sstream>
 #include <stdexcept>
 #include <regex>
+#include "ed247_logs.h"
 
 #ifndef _MSC_VER
 static const __attribute__((__unused__)) int zero = 0;
@@ -64,18 +60,9 @@ int zero = 0;
 int one = 1;
 #endif
 
-#define THROW_SYNC_ERROR(message)                                   \
-    do{                                                             \
-        std::cerr << __FILE__ << ":" << __LINE__ << std::endl       \
-            << message << std::endl;                                \
-        std::ostringstream oss;                                     \
-        oss << message;                                             \
-        throw std::runtime_error(oss.str());                        \
-    }while(0)
 
 namespace synchro
 {
-
 std::string get_last_socket_error()
 {
 #ifdef _WIN32
@@ -156,30 +143,6 @@ std::string get_env_variable(const std::string & variable)
     return value != NULL ? std::string(value) : std::string();
 }
 
-const uint32_t* count_matching_lines_in_file(const char* filename, const char* trace_to_find)
-{
-    std::ifstream file;
-    std::regex to_look_for(trace_to_find);
-    static uint32_t nb_match;
-    if(!filename) return NULL;
-    file.open (filename);
-    if (file.is_open())
-    {
-        nb_match = 0;
-        for(std::string line; getline(file, line);)
-        {
-            if (regex_match(line.c_str(), to_look_for))
-            {
-                nb_match++;
-            }
-        }
-        file.close();
-    } else {
-        return NULL;
-    }
-    return &nb_match;
-}
-
 // SocketEntity
 
 void SocketEntity::close(SOCKET & socket)
@@ -207,11 +170,11 @@ Server::Server(Entity * entity):
 
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if(_socket == INVALID_SOCKET)
-        THROW_SYNC_ERROR("Failed to create server socket of sync entity [" << _entity->id << "]");
+        THROW_ED247_ERROR("Failed to create server socket of sync entity [" << _entity->id << "]");
     
     sockerr = setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
     if(sockerr)
-        THROW_SYNC_ERROR("Failed to set server socket option SOL_SOCKET of sync entity [" << _entity->id << "] (" << sockerr << ":" << get_last_socket_error() << ")");
+        THROW_ED247_ERROR("Failed to set server socket option SOL_SOCKET of sync entity [" << _entity->id << "] (" << sockerr << ":" << get_last_socket_error() << ")");
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(sockaddr_in));
@@ -219,15 +182,15 @@ Server::Server(Entity * entity):
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(DEFAULT_PORT + _entity->id);
     
-    printf("SYNC ENTITY [%u]: Bind server on port [%u]\n",_entity->id, (uint32_t)(DEFAULT_PORT + _entity->id));
+    SAY("SYNC ENTITY " << _entity->id << ": Bind server on port " << (uint32_t)(DEFAULT_PORT + _entity->id));
 
     sockerr = bind(_socket, (struct sockaddr *) &addr, sizeof(addr));
     if(sockerr)
-        THROW_SYNC_ERROR("Failed to bind server socket of sync entity [" << _entity->id << "] (" << sockerr << ":" << get_last_socket_error() << ")");
+        THROW_ED247_ERROR("Failed to bind server socket of sync entity [" << _entity->id << "] (" << sockerr << ":" << get_last_socket_error() << ")");
 
     sockerr = listen(_socket, MAX_CLIENT_NUMBER);
     if(!_socket)
-        THROW_SYNC_ERROR("Failed to listen by sync entity [" << _entity->id << "] (" << sockerr << ":" << get_last_socket_error() << ")");
+        THROW_ED247_ERROR("Failed to listen by sync entity [" << _entity->id << "] (" << sockerr << ":" << get_last_socket_error() << ")");
 }
 
 Server::~Server()
@@ -241,7 +204,7 @@ Server::~Server()
 
 bool Server::wait(uint32_t eid, uint32_t timeout_us)
 {
-    // printf("SYNC ENTITY [%u]: Waiting [%u] ...\n",_entity->id,eid);
+    PRINT_DEBUG("SYNC ENTITY " << _entity->id << ": Waiting for " << eid << " ...");
 
     int sockerr;
     uint64_t begin_us = get_time_us();
@@ -253,7 +216,7 @@ bool Server::wait(uint32_t eid, uint32_t timeout_us)
     // Wait for data
     uint64_t elapsed_us = get_time_us() - begin_us;
     if (elapsed_us > timeout_us)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] server socket timeout waiting sync entity [" << eid << "]");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] server socket timeout waiting sync entity [" << eid << "]");
 
     struct timeval tv;
     tv.tv_sec = 0;
@@ -265,20 +228,20 @@ bool Server::wait(uint32_t eid, uint32_t timeout_us)
 
     sockerr = ::select((int)_clients[eid] + 1, &rfds, NULL, NULL, &tv);
     if(sockerr == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
     else if(sockerr <= 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] server socket select timeout waiting sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] server socket select timeout waiting sync entity [" << eid << "] (" << sockerr << ")");
 
     // Receive data from remote sync entity
     uint32_t rid = 0;
     if((sockerr = ::recv(_clients[eid], (char*)&rid, 4, 0)) != 4)
-        THROW_SYNC_ERROR("Server receive error [" << sockerr << "]");
+        THROW_ED247_ERROR("Server receive error [" << sockerr << "]");
 
     if(rid == 0)
-        THROW_SYNC_ERROR("Server received id is null");
+        THROW_ED247_ERROR("Server received id is null");
 
     if(rid != eid)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] server socket expect sync entity [" << eid << "] but has received [" << rid << "]");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] server socket expect sync entity [" << eid << "] but has received [" << rid << "]");
 
     return true;
 }
@@ -298,18 +261,18 @@ void Server::accept(uint32_t eid, uint32_t timeout_us)
     // Wait for client
     sockerr = ::select((int)_socket + 1, &rfds, NULL, NULL, &tv);
     if(sockerr == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] timout waiting for sync entity [" << eid << "] (" << sockerr << ")");
     else if(sockerr <= 0)
-        THROW_SYNC_ERROR("Failed to perform select on server socket of sync entity [" << _entity->id << "] (" << sockerr << ")");
+        THROW_ED247_ERROR("Failed to perform select on server socket of sync entity [" << _entity->id << "] (" << sockerr << ")");
 
     // Accept connection
     struct sockaddr_in addr;
     socklen_t addr_len = sizeof(sockaddr_in);
     _clients[eid] = ::accept(_socket, (struct sockaddr *) & addr, &addr_len);
     if(_clients[eid] == 0)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] timout accepting sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] timout accepting sync entity [" << eid << "] (" << sockerr << ")");
     else if(_clients[eid] <= 0)
-        THROW_SYNC_ERROR("Failed to accept connection on the server socket of sync entity [" << _entity->id << "] (" << _clients[eid] << ")");
+        THROW_ED247_ERROR("Failed to accept connection on the server socket of sync entity [" << _entity->id << "] (" << _clients[eid] << ")");
 }
 
 // Client
@@ -323,14 +286,13 @@ Client::Client(Entity * entity):
 
 Client::~Client()
 {
-    // kill();
     for(int i = 0 ; i < MAX_CLIENT_NUMBER ; i++)
         close(_servers[i]);
 }
 
 void Client::send(uint32_t eid, uint32_t timeout_us)
 {
-    // printf("SYNC ENTITY [%u]: [%u] -> [%u] ...\n",_entity->id,_entity->id,eid);
+    PRINT_DEBUG("SYNC ENTITY " << _entity->id << ": Signal to " << eid << " ...");
     int sockerr;
 
     if(_servers[eid] == INVALID_SOCKET)
@@ -338,31 +300,7 @@ void Client::send(uint32_t eid, uint32_t timeout_us)
 
     sockerr = ::send(_servers[eid], (const char*)&_entity->id, 4, 0);
     if(sockerr != 4)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] failed to send data to server of sync entity [" << eid << "] (" << sockerr << ")");
-}
-
-void Client::done(uint32_t eid, uint32_t timeout_us)
-{
-    _UNUSED(timeout_us);
-    int sockerr;
-
-    if(_servers[eid] == INVALID_SOCKET)
-        return;
-
-    printf("SYNC ENTITY [%u]: Done -> [%u]\n",_entity->id,eid);
-
-    uint32_t msg = 0;
-    sockerr = ::send(_servers[eid], (const char*)&msg, 4, 0);
-    if(sockerr != 4)
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] failed to send data to server of sync entity [" << eid << "] (" << sockerr << ")");
-}
-
-void Client::kill()
-{
-    printf("SYNC ENTITY [%u]: Kill\n",_entity->id);
-    for(uint8_t eid = 0 ; eid < MAX_CLIENT_NUMBER ; eid++){
-        done(eid);
-    }
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] failed to send data to server of sync entity [" << eid << "] (" << sockerr << ")");
 }
 
 void Client::connect(uint32_t eid, uint32_t timeout_us)
@@ -372,15 +310,13 @@ void Client::connect(uint32_t eid, uint32_t timeout_us)
 
     _servers[eid] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(_servers[eid] == INVALID_SOCKET)
-        THROW_SYNC_ERROR("Failed to create client socket of sync entity [" << _entity->id << "]");
+        THROW_ED247_ERROR("Failed to create client socket of sync entity [" << _entity->id << "]");
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(sockaddr_in));
     addr.sin_family = AF_INET;
     std::string ip_address = synchro::get_env_variable("ED247_SYNC_IP_ADDRESS");
-    // printf("# IP ADDRESS [%s]\n", ip_address.c_str());
     ip_address = ip_address.empty() ? DEFAULT_IP : ip_address;
-    // printf("# IP ADDRESS [%s]\n", ip_address.c_str());
 #ifdef _MSC_VER
     inet_pton(AF_INET, ip_address.c_str(), &addr.sin_addr.s_addr);
 #else
@@ -394,7 +330,7 @@ void Client::connect(uint32_t eid, uint32_t timeout_us)
     
     if(sockerr){
         close(_servers[eid]);
-        THROW_SYNC_ERROR("Test entity [" << _entity->id << "] failed to connect to sync entity [" << eid << "] (" << sockerr << ")");
+        THROW_ED247_ERROR("Test entity [" << _entity->id << "] failed to connect to sync entity [" << eid << "] (" << sockerr << ")");
     }
 }
 
@@ -412,20 +348,20 @@ synchro::Entity *_syncer;
 
 void sync_wait(uint32_t remote_id)
 {
-    std::cout << "###### SYNC WAIT ######" << std::endl;
+    SAY("###### SYNC WAIT ######");
     if(!_syncer->wait(remote_id))
-        THROW_SYNC_ERROR("Test entity [" << _syncer->id << "] failed to wait for [" << remote_id << "]");
+        THROW_ED247_ERROR("Test entity [" << _syncer->id << "] failed to wait for [" << remote_id << "]");
 }
 
 void sync_send(uint32_t remote_id)
 {
-    std::cout << "###### SYNC SEND ######" << std::endl;
+    SAY("###### SYNC SEND ######");
     _syncer->send(remote_id);
 }
 
 void sync_sync(uint32_t remote_id)
 {
-    std::cout << "###### SYNC SYNC ######" << std::endl;
+    SAY("###### SYNC SYNC ######");
     if(_syncer->id == SYNCER_ID_MASTER){
         sync_wait(remote_id); sync_send(remote_id);
     }else{
@@ -435,13 +371,13 @@ void sync_sync(uint32_t remote_id)
 
 void sync_init(uint32_t src_id)
 {
-    std::cout << "###### SYNC INIT ######" << std::endl;
+    SAY("###### SYNC INIT ######");
     synchro::Entity::init();
     _syncer = new synchro::Entity(src_id);
 }
 
 void sync_stop()
 {
-    std::cout << "###### SYNC STOP ######" << std::endl;
+  SAY("###### SYNC STOP ######");
     delete _syncer;
 }

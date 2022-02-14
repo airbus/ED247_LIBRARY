@@ -22,37 +22,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-#include <ed247_logs.h>
-
-#include <stdio.h>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include <ed247_context.h>
-#include <ed247_channel.h>
-#include <ed247_cominterface.h>
-
-#include <memory>
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "unitary_test.h"
+#include "ed247_context.h"
 
 std::string config_path = "../config";
-
-using namespace ed247;
 
 class ChannelContext : public ::testing::TestWithParam<std::string>
 {
@@ -60,12 +33,12 @@ class ChannelContext : public ::testing::TestWithParam<std::string>
 
         ChannelContext()
         {
-            LOG_DEBUG() << "ChannelContext::Ctor" << LOG_END;
+            SAY("ChannelContext::Ctor");
         }
 
         ~ChannelContext() override
         {
-            LOG_DEBUG() << "ChannelContext::Dtor" << LOG_END;
+            SAY("ChannelContext::Dtor");
         }
 
         // Per-test-suite set-up
@@ -73,7 +46,7 @@ class ChannelContext : public ::testing::TestWithParam<std::string>
         // Can be omitted if not needed
         static void SetUpTestSuite()
         {
-            LOG_DEBUG() << "ChannelContext::SetUpTestSuite" << LOG_END;
+            SAY("ChannelContext::SetUpTestSuite");
         }
 
         // Per-test-suite tear-down
@@ -81,32 +54,30 @@ class ChannelContext : public ::testing::TestWithParam<std::string>
         // Can be omitted if not needed
         static void TearDownTestSuite()
         {
-            LOG_DEBUG() << "ChannelContext::TearDownTestSuite" << LOG_END;
+            SAY("ChannelContext::TearDownTestSuite");
         }
 
         // Per-test set-up logic
         virtual void SetUp()
         {
-            LOG_DEBUG() << "ChannelContext::SetUp" << LOG_END;
+            SAY("ChannelContext::SetUp");
         }
 
         // Per-test tear-down logic
         virtual void TearDown()
         {
-            LOG_DEBUG() << "ChannelContext::TearDown" << LOG_END;
+            SAY("ChannelContext::TearDown");
         }
 };
 
 TEST_P(ChannelContext, MultiPushPop)
 {
     try{
-        std::ostringstream oss;
-        oss << "Load content of [" << GetParam() << "]";
-        RecordProperty("description",oss.str());
+        RecordProperty("description", strize() << "Load content of [" << GetParam() << "]");
 
         std::string filepath = GetParam();
-        Context * context = Context::Builder::create_filepath(filepath,libed247_configuration_t(LIBED247_CONFIGURATION_DEFAULT));
-        Context::Builder::initialize(*context);
+        ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
+        ed247::Context::Builder::initialize(*context);
 
         // Retrieve the pool of channels
         auto pool_channels = context->getPoolChannels();
@@ -129,11 +100,10 @@ TEST_P(ChannelContext, MultiPushPop)
             auto sample = stream.second.stream->allocate_sample();
             bool full;
             for(size_t i = 0 ; i < stream.second.stream->get_configuration()->info.sample_max_number ; i++){
-                oss.str("");
-                oss << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
-                sample->copy(oss.str().c_str(),stream.second.stream->get_configuration()->info.sample_max_size_bytes);
+                std::string sample_str = strize() << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
+                sample->copy(sample_str.c_str(),stream.second.stream->get_configuration()->info.sample_max_size_bytes);
                 malloc_count_start();
-                stream.second.stream->push_sample(*sample,&full);
+                ASSERT_EQ(stream.second.stream->push_sample(sample->data(), sample->size(), NULL, &full), true);
                 ASSERT_EQ(malloc_count_stop(), 0);
                 if(i < (stream.second.stream->get_configuration()->info.sample_max_number-1))
                     ASSERT_FALSE(full);
@@ -209,12 +179,11 @@ TEST_P(ChannelContext, MultiPushPop)
         bool empty;
         for(auto stream : channel1->streams()){
             for(size_t i = 0 ; i < stream.second.stream->get_configuration()->info.sample_max_number ; i++){
-                oss.str("");
-                oss << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
                 malloc_count_start();
                 auto sample = stream.second.stream->pop_sample(&empty);
+                ASSERT_TRUE((bool)sample);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                auto str_sample = oss.str();
+                std::string str_sample = strize() << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
                 auto str_sample_recv = std::string((char*)sample->data(), stream.second.stream->get_configuration()->info.sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
@@ -235,12 +204,12 @@ TEST_P(ChannelContext, MultiPushPop)
     }
     catch(std::exception & e)
     {
-        LOG_INFO() << "Failure: " << e.what() << LOG_END;
+        SAY("Failure: " << e.what());
         ASSERT_TRUE(false);
     }
     catch(...)
     {
-        LOG_INFO() << "Failure" << LOG_END;
+        SAY("Failure");
         ASSERT_TRUE(false);
     }
 }
@@ -261,7 +230,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     configuration_files.push_back(config_path+"/ecic_unit_channels_channels0.xml");
     configuration_files.push_back(config_path+"/ecic_unit_channels_channels1.xml");

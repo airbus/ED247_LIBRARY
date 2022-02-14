@@ -22,20 +22,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-#include "test_context.h"
-
-#include <ed247_logs.h>
-#include <ed247_xml.h>
-
-#include <string>
-
-/********
- * Test *
- ********/
+#include "unitary_test.h"
+#include "ed247_xml.h"
 
 std::string config_path = "../config";
-
-using namespace ed247::xml;
 
 class LoadingContext : public ::testing::TestWithParam<std::string>
 {
@@ -44,21 +34,19 @@ class LoadingContext : public ::testing::TestWithParam<std::string>
 
 TEST_P(LoadingContext, Loading)
 {
-    std::shared_ptr<Root> root;
+    std::shared_ptr<ed247::xml::Root> root;
     try{
-        std::ostringstream oss;
-        oss << "Load content of [" << GetParam() << "]";
-        RecordProperty("description",oss.str());
+        RecordProperty("description", strize() << "Load content of [" << GetParam() << "]");
 
         std::string filepath = GetParam();
-        root = std::dynamic_pointer_cast<Root>(load_filepath(filepath));
+        root = std::dynamic_pointer_cast<ed247::xml::Root>(ed247::xml::load_filepath(filepath));
     }
     catch(std::exception & e){
-        LOG_ERROR() << "Error: " << e.what() << LOG_END;
+        SAY("Error: " << e.what());
         ASSERT_TRUE(false);
     }
     catch(...){
-        LOG_ERROR() << "Error" << LOG_END;
+        SAY("Error");
         ASSERT_TRUE(false);
     }
 };
@@ -75,7 +63,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     configuration_files.push_back(config_path+"/ecic_unit_loading_a429.xml");
     configuration_files.push_back(config_path+"/ecic_unit_loading_a664.xml");

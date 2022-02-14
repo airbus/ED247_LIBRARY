@@ -49,10 +49,10 @@ class FrameHeader
 
         static const uint16_t MAX_PID_SN_TRACKER { 64 };
 
-        FrameHeader() {}
-        FrameHeader(const xml::Header & configuration):
+  FrameHeader(const xml::Header & configuration, const std::string& channel_name):
             _send_header({0, 0, {0, 0}, 0}),
-            _configuration(configuration)
+            _configuration(configuration),
+            _channel_name(channel_name)
         {
             _recv_headers.reserve(MAX_PID_SN_TRACKER);
             _recv_headers_iter = _recv_headers.end();
@@ -64,8 +64,9 @@ class FrameHeader
             _configuration(other._configuration)
         {}
 
+        // Return false on error
         void encode(char * frame, size_t frame_capacity, size_t & frame_index, ed247_uid_t component_identifier);
-        void decode(const char * frame, size_t frame_size, size_t & frame_index);
+        bool decode(const char * frame, size_t frame_size, size_t & frame_index);
 
         size_t length();
 
@@ -100,6 +101,7 @@ class FrameHeader
 
     private:
         xml::Header _configuration;
+        std::string _channel_name;
 };
 
 class Channel : public ed247_internal_channel_t, public std::enable_shared_from_this<Channel>
@@ -110,13 +112,11 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             ed247_direction_t direction;
         } stream_dir_t;
         using map_streams_t = std::map<ed247_uid_t,stream_dir_t>;
-        Channel():
-            _user_data(NULL)
-        {}
+
         Channel(std::shared_ptr<xml::Channel> & configuration):
             _configuration(configuration),
             _sstreams(std::make_shared<SmartListStreams>()),
-            _header(configuration->header),
+            _header(configuration->header, get_name()),
             _user_data(NULL)
         {
             _sstreams->set_managed(true);
@@ -141,7 +141,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void add_emitter(ComInterface & com_interface)
         {
-            PRINT_DEBUG("# Channel [" << get_name() << "] append emitter [" << com_interface.get_name() << "]");
+            PRINT_DEBUG("Channel [" << get_name() << "] append emitter [" << com_interface.get_name() << "]");
             _emitters.push_back(com_interface.shared_from_this());
         }
 
@@ -153,7 +153,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void add_receiver(ComInterface & com_interface)
         {
-            PRINT_DEBUG("# Channel [" << get_name() << "] append receiver [" << com_interface.get_name() << "]");
+            PRINT_DEBUG("Channel [" << get_name() << "] append receiver [" << com_interface.get_name() << "]");
             _receivers.push_back(com_interface.shared_from_this());
         }
 
@@ -165,17 +165,20 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void add_stream(BaseStream & stream, ed247_direction_t direction)
         {
-            PRINT_DEBUG("# Channel [" << get_name() << "] append stream [" << stream.get_name() << "]");
+            PRINT_DEBUG("Channel [" << get_name() << "] append stream [" << stream.get_name() << "]");
             if(_streams.find(stream.get_configuration()->info.uid) != _streams.end())
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream [" << stream.get_name() << "] uses an UID already registered in Channel [" << get_name() << "]");
+                THROW_ED247_ERROR("Stream [" << stream.get_name() << "] uses an UID already registered in Channel [" << get_name() << "]");
             stream_dir_t stream_dir= {stream.shared_from_this(), direction};
             _streams.insert(std::make_pair(stream.get_configuration()->info.uid, stream_dir));
-            PRINT_DEBUG("# Size [" << _streams.size() << "]");
+            PRINT_DEBUG("Size [" << _streams.size() << "]");
         }
+
+        // Return true if at least one of the stream has samples in its send fifo
+        bool has_samples_to_send();
 
         void send();
 
-        // Return 0 if not accepted, return 1 if decoded (can be dumped)
+        // Return false on error
         void encode(const ed247_uid_t & component_identifier);
         bool decode(const char * frame, size_t frame_size);
 
@@ -212,7 +215,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 capacity += sizeof(ed247_uid_t) + sizeof(uint16_t);
                 capacity += p.second.stream->buffer().capacity();
             }
-            PRINT_DEBUG("# Allocate Channel internal buffer with [" << capacity << "] bytes");
+            PRINT_DEBUG("Allocate Channel internal buffer with [" << capacity << "] bytes");
             _buffer.allocate(capacity);
         }
 

@@ -22,31 +22,25 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "ed247.h"
-#include "sync_entity.h"
-
-#include <stdio.h>
-#include <fstream>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include "gtest/gtest.h"
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "functional_test.h"
 
 std::string config_path = "../config";
+
+#ifdef __linux__
+# define env_set(var, value) setenv(var, value, 1)
+# define env_rm(var) unsetenv(var)
+static struct stat unused_stat_buffer;
+# define file_exist(file) (stat(file, &unused_stat_buffer) == 0)
+#else
+# define env_set(var, value) _putenv_s(var, value)
+# define env_rm(var) _putenv_s(var, "")
+static struct _stat unused_stat_buffer;
+# define file_exist(file) (_stat(file, &unused_stat_buffer) == 0)
+# define unlink _unlink
+#endif
+
+
+namespace ed247 {
 
 /******************************************************************************
 Test the log routines and customization of output.
@@ -54,160 +48,181 @@ Execute several time the same sequence (load + unload of a simple ECIC).
 Each time the configuration tells to print more output.
 Check on the out file that output is growing.
 ******************************************************************************/
-class LogConfigurationTest : public ::testing::Test{};
+  class LogConfigurationTest : public ::testing::Test{};
 
-TEST(LogConfigurationTest, Logging)
-{
-    ed247_context_t context;
-    std::string filename = config_path+"/ecic_func_logging.xml";  
-#ifdef __linux__
-    setenv("ED247_LOG_FILEPATH", "./ed247.logs", 1);
-#else
-    _putenv_s("ED247_LOG_FILEPATH","./ed247.logs");
-#endif
-    const char* logfile = std::getenv("ED247_LOG_FILEPATH");
-    ASSERT_NE(logfile, (const char*) NULL);
-    
-    // Ensure the temporary log file does not exist or is empty when starting the sequence.
-    const uint32_t* retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    if (retrieve_ptr != NULL)
-    {
-#ifdef _MSC_VER
-        _unlink(logfile);
-#else
-        unlink(logfile);
-#endif
-        retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    }
-    ASSERT_EQ(retrieve_ptr, (const uint32_t*)NULL);
-    
-    ed247_set_log_level(ED247_LOG_LEVEL_WARNING);
-    ed247_load(filename.c_str(), NULL, &context);
-    ed247_unload(context);
-    retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    ASSERT_NE(retrieve_ptr, (const uint32_t*)NULL);
-    const uint32_t size_log_warning = *retrieve_ptr;
-    
+  TEST(LogConfigurationTest, LoggingByEnv)
+  {
+    constexpr const char* log_filepath = "./ed247_test_log_by_env.log";
+    const uint32_t* match_count = nullptr;
+    ed247_log_level_t level = ED247_LOG_LEVEL_UNSET;
+    std::string level_str;
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+    EXPECT_FALSE(file_exist(log_filepath));
+
+    env_set("ED247_LOG_FILEPATH", log_filepath);
+
+    level_str = strize() << (int)ED247_LOG_LEVEL_ERROR;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
+    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+
+    level_str = strize() << (int)ED247_LOG_LEVEL_WARNING;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
+    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+
+    level_str = strize() << (int)ED247_LOG_LEVEL_INFO;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
+    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+
+    level_str = strize() << (int)ED247_LOG_LEVEL_DEBUG;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
+    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+
+    level_str = strize() << (int)ED247_LOG_LEVEL_CRAZY;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
     ed247_set_log_level(ED247_LOG_LEVEL_INFO);
-    ed247_load(filename.c_str(), NULL, &context);
-    ed247_unload(context);
-    retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    ASSERT_NE(retrieve_ptr, (const uint32_t*)NULL);
-    const uint32_t size_log_info = *retrieve_ptr;
-    
-    ed247_set_log_level(ED247_LOG_LEVEL_DEBUG);
-    ed247_load(filename.c_str(), NULL, &context);
-    ed247_unload(context);
-    retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    ASSERT_NE(retrieve_ptr, (const uint32_t*)NULL);
-    const uint32_t size_log_debug = *retrieve_ptr;
-    
-    // Check such log sizes are consistents
-    ASSERT_GT(size_log_warning, (uint32_t)0);
-    ASSERT_GT(size_log_info, size_log_warning);
-    ASSERT_GT(size_log_debug, size_log_info);
-    
-    // To end this test, verify the robustness of the logger set_level
-    ed247_log_level_t level = ED247_LOG_LEVEL_ERROR;
-    ed247_set_log_level((ed247_log_level_t)((int)ED247_LOG_LEVEL_DEBUG+1));
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+
+    level_str = strize() << (int)(ED247_LOG_LEVEL_MAX) + 1;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
+    ed247_set_log_level(ED247_LOG_LEVEL_INFO);
     ed247_get_log_level(&level);
-    ASSERT_EQ(level, ED247_LOG_LEVEL_DEBUG);
-    ed247_set_log_level((ed247_log_level_t)((int)ED247_LOG_LEVEL_ERROR-1));
+    EXPECT_EQ(level, ED247_LOG_LEVEL_MAX);
+
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+
+    level_str = strize() << (int)(ED247_LOG_LEVEL_MIN) - 1;
+    env_set("ED247_LOG_LEVEL", level_str.c_str());
+    ed247_set_log_level(ED247_LOG_LEVEL_INFO);
     ed247_get_log_level(&level);
-    ASSERT_EQ(level, ED247_LOG_LEVEL_ERROR);
-    
-}
+    EXPECT_EQ(level, ED247_LOG_LEVEL_MIN);
 
-TEST(LogConfigurationTest, NoLogging)
-{
-    ed247_context_t context;
-    std::string filename = config_path+"/ecic_func_logging.xml";
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+  }
 
-    // Set an unvalid path (empty) so that the file cannot be written
-#ifdef __linux__
-    setenv("ED247_LOG_FILEPATH", "", 1);
-#else
-    _putenv_s("ED247_LOG_FILEPATH", "");
-#endif
-    const char* logfile = std::getenv("ED247_LOG_FILEPATH");
+  TEST(LogConfigurationTest, LoggingByArgs)
+  {
+    constexpr const char* log_filepath = "./ed247_test_log_by_args.log";
+    const uint32_t* match_count = nullptr;
+    ed247_log_level_t level = ED247_LOG_LEVEL_UNSET;
 
-    std::cout << "Check log file ..." << std::endl;
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+    EXPECT_FALSE(file_exist(log_filepath));
 
-    // delete logging file if necessary
-    const uint32_t* retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    if (retrieve_ptr != NULL)
-    {
-#ifdef _MSC_VER
-        _unlink(logfile);
-#else
-        unlink(logfile);
-#endif
-        retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    }
-    ASSERT_EQ(retrieve_ptr, (const uint32_t*)NULL);
+    env_rm("ED247_LOG_FILEPATH");
+    env_rm("ED247_LOG_LEVEL");
 
-    std::cout << "Loading ..." << std::endl;
-    
-    // Run the sequence of load
-    ASSERT_EQ(ed247_load(filename.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
+    ed247_set_log(ED247_LOG_LEVEL_ERROR, log_filepath);
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    std::cout << "Unloading ..." << std::endl;
+    ed247_set_log(ED247_LOG_LEVEL_INFO, log_filepath);
+    EXPECT_TRUE(file_exist(log_filepath));
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+    EXPECT_NE(match_count, nullptr);
+    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    // Check it has not been created
-    retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    ASSERT_EQ(retrieve_ptr, (const uint32_t*)NULL);
-}
+    ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MAX + 10));
+    ed247_get_log_level(&level);
+    EXPECT_EQ(level, ED247_LOG_LEVEL_MAX);
 
-TEST(LogConfigurationTest, LoggingByArgs)
-{
-    ed247_context_t context;
-    std::string filename = config_path+"/ecic_func_logging.xml";
+    ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MIN - 1));
+    ed247_get_log_level(&level);
+    EXPECT_EQ(level, ED247_LOG_LEVEL_MIN);
 
-    // Set an unvalid path (empty) so that the file cannot be written
-
-    std::cout << "Check log file ..." << std::endl;
-
-    // delete logging file if necessary
-    const char* logfile = "./ed247_by_config.logs";
-    const uint32_t* retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    if (retrieve_ptr != NULL)
-    {
-#ifdef _MSC_VER
-        _unlink(logfile);
-#else
-        unlink(logfile);
-#endif
-        retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    }
-    ASSERT_EQ(retrieve_ptr, (const uint32_t*)NULL);
-
-    std::cout << "Loading ..." << std::endl;
-    
-    // Run the sequence of load
-    libed247_configuration_t configuration = LIBED247_CONFIGURATION_DEFAULT;
-    configuration.log_filepath = logfile;
-    configuration.log_level = ED247_LOG_LEVEL_DEBUG;
-    ASSERT_EQ(ed247_load(filename.c_str(), &configuration, &context), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
-
-    std::cout << "Unloading ..." << std::endl;
-
-    // Check it has not been created
-    retrieve_ptr = synchro::count_matching_lines_in_file(logfile, ".*");
-    ASSERT_GT(*retrieve_ptr, 0);
+    ed247::log::delete_logger();
+    unlink(log_filepath);
+  }
 }
 
 int main(int argc, char **argv)
 {
-    if(argc >=1)
-        config_path = argv[1];
-    else
-        config_path = "../config";
+  if(argc >=1)
+    config_path = argv[1];
+  else
+    config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+  SAY("Configuration path: " << config_path);
 
-    ::testing::InitGoogleTest(&argc, argv);
-    // ::testing::InitGoogleMock(&argc, argv);
-    return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

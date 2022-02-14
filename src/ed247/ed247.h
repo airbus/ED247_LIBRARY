@@ -42,13 +42,26 @@ extern "C" {
  ***********/
 
 #ifdef __unix__
-#define LIBED247_EXPORT __attribute__ ((visibility ("default")))
+# define LIBED247_EXPORT __attribute__ ((visibility ("default")))
 #elif _WIN32
-#ifdef LIBED247_EXPORTS
-#define  LIBED247_EXPORT __declspec(dllexport)
-#else
-#define  LIBED247_EXPORT __declspec(dllimport)
+# ifdef LIBED247_EXPORTS
+   // We are building the DLL
+#  define  LIBED247_EXPORT __declspec(dllexport)
+# else
+#  ifdef LIBED247_STATIC
+    // We use a static version of the library
+#   define LIBED247_EXPORT
+#  else
+    // Default: we are importing DLL  symbols
+#   define LIBED247_EXPORT __declspec(dllimport)
+#  endif
+# endif
 #endif
+
+#if defined(__GNUC__) || defined(__clang__)
+# define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+# define DEPRECATED __declspec(deprecated)
 #endif
 
 /**
@@ -127,8 +140,7 @@ typedef enum {
     ED247_STATUS_SUCCESS = EXIT_SUCCESS,    // Success
     ED247_STATUS_FAILURE = EXIT_FAILURE,    // Failure
     ED247_STATUS_TIMEOUT,
-    ED247_STATUS_NODATA,
-    ED247_STATUS_STOP
+    ED247_STATUS_NODATA
 } ed247_status_t;
 
 /**
@@ -136,11 +148,15 @@ typedef enum {
  * @ingroup common
  */
 typedef enum {
-    ED247_LOG_LEVEL_ERROR = 0,
-    ED247_LOG_LEVEL_WARNING,
-    ED247_LOG_LEVEL_INFO,
-    ED247_LOG_LEVEL_DEBUG,
-    ED247_LOG_LEVEL__INVALID
+    ED247_LOG_LEVEL_MIN       =   0,
+    ED247_LOG_LEVEL_ERROR     =   ED247_LOG_LEVEL_MIN,
+    ED247_LOG_LEVEL_DEFAULT   =   ED247_LOG_LEVEL_ERROR,
+    ED247_LOG_LEVEL_WARNING   =   1,
+    ED247_LOG_LEVEL_INFO      =   2,
+    ED247_LOG_LEVEL_DEBUG     =   3,
+    ED247_LOG_LEVEL_CRAZY     =  99,      // Will log each payload
+    ED247_LOG_LEVEL_MAX       =   ED247_LOG_LEVEL_CRAZY,
+    ED247_LOG_LEVEL_UNSET     = 100
 } ed247_log_level_t;
 
 /**
@@ -214,10 +230,9 @@ typedef enum {
  */
 typedef enum {
     ED247_DIRECTION__INVALID = 0,
-    ED247_DIRECTION_IN = 1,
-    ED247_DIRECTION_OUT = 2,
-    ED247_DIRECTION_INOUT = 3,
-    ED247_DIRECTION__COUNT
+    ED247_DIRECTION_IN       = 0b01,
+    ED247_DIRECTION_OUT      = 0b10,
+    ED247_DIRECTION_INOUT    = ED247_DIRECTION_IN | ED247_DIRECTION_OUT
 } ed247_direction_t;
 
 /**
@@ -254,17 +269,6 @@ typedef enum {
     ED247_DISCRETE_INVALID = 0xFE,
     ED247_DISCRETE_TRUE = 0xFF
 } ed247_discrete_t;
-
-/**
- * @brief Library configuration structure used during load
- * @ingroup common
- */
-typedef struct {
-    uint8_t enable_logs_during_send_receive;
-    const char *  log_filepath;
-    ed247_log_level_t log_level;
-} libed247_configuration_t;
-#define LIBED247_CONFIGURATION_DEFAULT {0, NULL, ED247_LOG_LEVEL__INVALID}
 
 /**
  * @brief Library runtime metrics
@@ -552,11 +556,9 @@ typedef struct {
  **********/
 
 /**
- * @brief Retrieve the error messages. If there is no error message, the returned message is "No error".
- * @ingroup errors
- * @return Error messages
+ * @brief Deprecated. Return NULL.
  */
-extern LIBED247_EXPORT const char * libed247_errors();
+extern DEPRECATED LIBED247_EXPORT const char * libed247_errors();
 
 /**
  * @brief ::ed247_status_t to string conversion
@@ -885,7 +887,19 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_runtime_metrics(
     const libed247_runtime_metrics_t ** metrics);
 
 /**
+ * @brief Setup the logging parameters
+ * Environment variables have the priority: This function will be ignored if they are set.
+ * @ingroup common
+ * @param[in] Logging level
+ * @retval ED247_STATUS_SUCCESS
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_set_log(
+  ed247_log_level_t log_level,
+  const char* log_filepath);
+
+/**
  * @brief Setup the logging level (see ::ed247_log_level_t)
+ * Environment variables have the priority: This function will be ignored if they are set.
  * @ingroup common
  * @param[in] Logging level
  * @retval ED247_STATUS_SUCCESS
@@ -903,6 +917,14 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
     ed247_log_level_t *log_level);
 
 /**
+ * @brief Deprecated: use ed247_load_file.
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_load(
+    const char *ecic_file_path,
+    void* unused,
+    ed247_context_t *context);
+
+/**
  * @brief Loading function: the entry point of the library
  * @ingroup load_unload
  * @param[in] ecic_file_path The path to the ECIC configuration file
@@ -911,9 +933,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE An error occurred during the load phase (xml parsing or internal loading)
   */
-extern LIBED247_EXPORT ed247_status_t ed247_load(
+extern LIBED247_EXPORT ed247_status_t ed247_load_file(
     const char *ecic_file_path,
-    const libed247_configuration_t *configuration,
     ed247_context_t *context);
 
 /**
@@ -927,7 +948,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_load(
   */
 extern LIBED247_EXPORT ed247_status_t ed247_load_content(
     const char *ecic_file_content,
-    const libed247_configuration_t *configuration,
     ed247_context_t *context);
 
 /********
@@ -1607,6 +1627,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_samples_number(
 /**
  * @brief Stream receive callback function pointer.
  * The argument stream is the stream identifier that received something.
+ * The decoding of the current frame will be aborted if the callback do not return ED247_STATUS_SUCCESS.
  * @ingroup send_recv
  */
 typedef ed247_status_t (*ed247_stream_recv_callback_t)(ed247_context_t context, ed247_stream_t stream);

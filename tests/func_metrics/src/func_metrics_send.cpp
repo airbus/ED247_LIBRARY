@@ -21,31 +21,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-#ifdef __linux__
-    #include <arpa/inet.h>
-#elif _WIN32
-    #include <winsock2.h>
-#endif
-
-/***********
- * Defines *
- ***********/
-
-#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
-#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
-
-#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
-
-/********
- * Test *
- ********/
+#define TEST_ACTOR1_NAME "send"
+#define TEST_ACTOR2_NAME "recv"
+#define TEST_ACTOR_ID TEST_ACTOR1_ID
+#include "functional_test.h"
 
 std::string config_path = "../config";
 
@@ -130,8 +109,8 @@ TEST_P(Context, Metrics)
     ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
     
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
     
     // Check limit cases
     ASSERT_EQ(ed247_stream_assistant_write_signal(NULL, dummy_header_pid, pid_value, pid_size), ED247_STATUS_FAILURE);
@@ -145,7 +124,7 @@ TEST_P(Context, Metrics)
         *(uint32_t*)tts1_value = (uint32_t)10;
         *(uint32_t*)tts2_value = (uint32_t)12;
         *(uint16_t*)data_value = i;
-        std::cout << "Sending frame " << i+1 << ": Simulated SN is " << header_values[i] << std::endl;
+        SAY_SELF("Sending frame " << i+1 << ": Simulated SN is " << header_values[i]);
         ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_pid, pid_value, pid_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_sn, sn_value, sn_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts1, tts1_value, tts1_size), ED247_STATUS_SUCCESS);
@@ -156,8 +135,8 @@ TEST_P(Context, Metrics)
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         
         // Checkpoint n~2
-        LOG_SELF("Checkpoint n~2");
-        TEST_CONTEXT_SYNC();
+        SAY_SELF("Checkpoint n~2");
+        TEST_SYNC();
         
         // Send the second stream to check the runtime metrics is not disturbed
         *(uint32_t*)second_stream_value = 0x12345678;
@@ -165,13 +144,13 @@ TEST_P(Context, Metrics)
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         
         // Checkpoint n~3
-        LOG_SELF("Checkpoint n~3");
-        TEST_CONTEXT_SYNC();
+        SAY_SELF("Checkpoint n~3");
+        TEST_SYNC();
     }
     
     // Checkpoint n~4
-    LOG_SELF("Checkpoint n~4");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~4");
+    TEST_SYNC();
 
     // Unload
     // ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -256,8 +235,8 @@ TEST_P(Context, MetricsCross)
     ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
     
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
     
     uint16_t counter = 0;
     for (uint16_t i = 0; i < 4; i++){
@@ -268,7 +247,7 @@ TEST_P(Context, MetricsCross)
             *(uint32_t*)tts1_value = (uint32_t)10;
             *(uint32_t*)tts2_value = (uint32_t)12;
             *(uint16_t*)data_value = counter;
-            std::cout << "Sending frame [" << counter << "] Simulated SN [" << header_values_cross[j][i] << "] for PID [" << j << "]" << std::endl;
+            SAY_SELF("Sending frame [" << counter << "] Simulated SN [" << header_values_cross[j][i] << "] for PID [" << j << "]");
             ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_pid, pid_value, pid_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_sn, sn_value, sn_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, dummy_header_tts1, tts1_value, tts1_size), ED247_STATUS_SUCCESS);
@@ -278,8 +257,8 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
             
             // Checkpoint n~2
-            LOG_SELF("Checkpoint n~2");
-            TEST_CONTEXT_SYNC();
+            SAY_SELF("Checkpoint n~2");
+            TEST_SYNC();
             
             // Send the second stream to check the runtime metrics is not disturbed
             *(uint32_t*)second_stream_value = 0x12345678;
@@ -287,16 +266,16 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
             
             // Checkpoint n~3
-            LOG_SELF("Checkpoint n~3");
-            TEST_CONTEXT_SYNC();
+            SAY_SELF("Checkpoint n~3");
+            TEST_SYNC();
 
             counter++;
         }
     }
     
     // Checkpoint n~4
-    LOG_SELF("Checkpoint n~4");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~4");
+    TEST_SYNC();
 
     // Unload
     // ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -311,7 +290,7 @@ TEST_P(Context, MetricsCross)
 
 std::vector<TestParams> ecic_files;
 
-INSTANTIATE_TEST_CASE_P(UnitApiMetrics, Context,
+INSTANTIATE_TEST_CASE_P(FuncMetrics, Context,
     ::testing::ValuesIn(ecic_files));
 
 /*************
@@ -325,9 +304,9 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
-    ecic_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_unit_api_metrics_send.xml"});
+    ecic_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_metrics_send.xml"});
     
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

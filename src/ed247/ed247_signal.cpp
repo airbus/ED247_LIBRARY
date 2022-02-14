@@ -35,7 +35,7 @@ namespace ed247
 template<ed247_signal_type_t ... E>
 std::shared_ptr<BaseSignal> SignalBuilder<E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
-    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot create signal [" << std::string(configuration->info.name) << "]");
+    THROW_ED247_ERROR("Cannot create signal [" << std::string(configuration->info.name) << "]");
     return nullptr;
 }
 
@@ -57,7 +57,7 @@ std::shared_ptr<BaseSignal> SignalBuilder<T>::create(const ed247_signal_type_t &
         static typename Signal<T>::Builder builder;
         return builder.create(configuration, stream);
     }else{
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Cannot create signal");
+        THROW_ED247_ERROR("Failed to create singal '" << configuration->info.name << "': type mismatch");
     }
 }
 
@@ -68,12 +68,6 @@ std::unique_ptr<BaseSample> BaseSignal::allocate_sample() const
     auto sample = std::make_unique<BaseSample>();
     sample->allocate(BaseSignal::sample_max_size_bytes(_configuration->info));
     return sample;
-}
-
-size_t BaseSignal::position() const
-{
-    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "BaseSignal cannot return a position");
-    return 0;
 }
 
 // BaseSignal::Pool
@@ -87,7 +81,7 @@ std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::shared_ptr<xml::Signal> &
     auto iter = std::find_if(_signals.begin(), _signals.end(),
         [&name, &sp_stream](const std::shared_ptr<BaseSignal> & s){ return s->get_name() == name && s->_stream.lock() == sp_stream; });
     if(iter != _signals.end())
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << (*iter)->get_name() << "] linked to stream [" << stream.get_name() << "] already exist !");
+        THROW_ED247_ERROR("Signal [" << (*iter)->get_name() << "] linked to stream [" << stream.get_name() << "] already exist !");
     auto sp_signal = _builder.create(configuration->info.type, configuration, stream);
     sp_base_signal = std::static_pointer_cast<BaseSignal>(sp_signal);
     _signals.push_back(sp_base_signal);
@@ -128,13 +122,6 @@ std::shared_ptr<BaseSignal> BaseSignal::Builder::build(std::shared_ptr<Pool> & p
 }
 
 // Signal<>
-
-template<ed247_signal_type_t E>
-size_t Signal<E>::position() const
-{
-    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal<> cannot return a position");
-    return 0;
-}
 
 template<>
 size_t Signal<ED247_SIGNAL_TYPE_DISCRETE>::position() const

@@ -35,8 +35,8 @@ add_custom_target(${TEST_EXECUTABLE}
 )
 add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE}_send PRIVATE test_api Ed247::ed247)
-target_link_libraries(${TEST_EXECUTABLE}_recv PRIVATE test_api Ed247::ed247)
+target_link_libraries(${TEST_EXECUTABLE}_send libtests_functional)
+target_link_libraries(${TEST_EXECUTABLE}_recv libtests_functional)
 
 set(CONFIG_SEND_FILEPATH ${CMAKE_BINARY_DIR}/config/ecic_${TEST_EXECUTABLE}_send.xml)
 generate_ecic(${CONFIG_SEND_FILEPATH} "Out" 10 100)

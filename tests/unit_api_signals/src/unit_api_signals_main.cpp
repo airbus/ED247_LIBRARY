@@ -22,31 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "ed247.h"
-#include "test_context.h"
-
-#include <stdio.h>
-#include <fstream>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include "gtest/gtest.h"
-
-#include <memory>
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "unitary_test.h"
 
 std::string config_path = "../config";
 
@@ -72,7 +48,7 @@ TEST(UtApiSignals, CheckSignalLoading)
     const ed247_signal_info_t* signal_info;
     
     std::string filepath = config_path+"/ecic_unit_api_signals.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // Find stream
     ASSERT_EQ(ed247_find_streams(context, "Stream1", &stream_list), ED247_STATUS_SUCCESS);
@@ -234,7 +210,7 @@ TEST(UtApiSignals, CheckOtherMethods)
     const ed247_signal_info_t* signal_info;
     
     std::string filepath = config_path+"/ecic_unit_api_signals.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
     
     // Get the signals from Stream1
     ASSERT_EQ(ed247_find_streams(context, "Stream1", &stream_list), ED247_STATUS_SUCCESS);
@@ -300,7 +276,7 @@ TEST(UtApiSignals, DetectSignalsInStream)
     uint8_t yes_no;
     
     std::string filepath = config_path+"/ecic_unit_api_signals.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
     
     // Get the streams and request if it contains signals for each of them
     // The first checks verify invalid calls
@@ -368,7 +344,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     ::testing::InitGoogleTest(&argc, argv);
     // ::testing::InitGoogleMock(&argc, argv);

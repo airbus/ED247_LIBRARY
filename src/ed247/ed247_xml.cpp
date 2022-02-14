@@ -34,10 +34,6 @@
 #include <memory>
 
 #define DECL_STREAM_OPERATOR(x,strx,xstr)                       \
-    std::ostream & operator << (std::ostream & os, const x & e) \
-    {                                                           \
-        return os << std::string(xstr(e));                      \
-    }                                                           \
     std::istream & operator >> (std::istream & is, x & e)       \
     {                                                           \
         std::string str;                                        \
@@ -46,33 +42,34 @@
         return is;                                              \
     }
 
-#define THROW_PARSER_ERROR(msg)                                     \
-    do{                                                             \
-        std::ostringstream oss;                                     \
-        if(libxml_error.file != nullptr &&                          \
-            libxml_error.message != nullptr){                       \
-            LOG_ERROR() << __FILE__ << ":" << __LINE__ << std::endl  \
-                << msg << std::endl <<                              \
-                std::string(libxml_error.file) << ":" <<            \
-                libxml_error.line << " " <<                         \
-                std::string(libxml_error.message) << LOG_END;       \
-            oss << msg << std::endl <<                              \
-                std::string(libxml_error.file) << ":" <<            \
-                libxml_error.line << " " <<                         \
-                std::string(libxml_error.message);                  \
-        }else if(libxml_error.message != nullptr){                  \
-            LOG_ERROR() << __FILE__ << ":" << __LINE__ << std::endl  \
-                << msg << std::endl <<                              \
-                "(" << libxml_error.line << ") " <<                 \
-                std::string(libxml_error.message) << LOG_END;       \
-            oss << msg;                                             \
-        }else{                                                      \
-            LOG_ERROR() << __FILE__ << ":" << __LINE__ << std::endl  \
-                << msg << LOG_END;                                  \
-            oss << msg;                                             \
-        }                                                           \
-        throw Exception(oss.str());                                 \
-    }while(0)
+std::string node_2_fileline(xmlNode* node) {
+    std::string file_line;
+    if (node != nullptr) {
+        if (node->doc && node->doc->name && *node->doc->name) {
+            file_line = std::string(node->doc->name) + ":";
+        } else {
+            file_line = "line ";
+        }
+        file_line += strize() << node->line;
+    }
+    return file_line;
+}
+
+#define THROW_PARSER_ERROR(closest_node, msg)                                            \
+  do {                                                                                   \
+    std::string message = strize() << msg;                                               \
+    if (libxml_error.file != nullptr) {                                                  \
+      message += strize() << ". From " << libxml_error.file << ':' << libxml_error.line; \
+    } else if (closest_node != nullptr) {                                                \
+      message += std::string(". Near ") + node_2_fileline(closest_node);                 \
+    }                                                                                    \
+    if (libxml_error.message != nullptr) {                                               \
+      message += strize() << " " << libxml_error.message;                                \
+    }                                                                                    \
+    PRINT_ERROR(message);                                                                \
+    throw xml::exception(message);                                                       \
+  } while (0)
+
 
 DECL_STREAM_OPERATOR(
     ed247_component_type_t,
@@ -152,16 +149,6 @@ void set_value(const char * & variable, const xmlAttrPtr attribute)
     xmlChar * value = xmlGetProp(attribute->parent,attribute->name);
     variable = reinterpret_cast<const char *>(value);
 }
- 
-// Exception
-
-const char * Exception::what() const throw()
-{
-    std::ostringstream oss;
-    oss << "### PARSER Exception [" << _message << "] ###";
-    _what = oss.str();
-    return _what.c_str();
-}
 
 // Node
 
@@ -189,7 +176,7 @@ void DataTimestamp::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::SampleDataTimestampOffset) == 0){
             set_value(enable_sample_offset,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::DataTimestamp << "]"); 
+          THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::DataTimestamp << "]");
         }
     }
 }
@@ -213,7 +200,7 @@ void Errors::fill_attributes(const xmlNodePtr xml_node)
         if(attr_name.compare(attr::Enable) == 0){
             set_value(enable,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::Errors << "]"); 
+          THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Errors << "]");
         }
     }
 }
@@ -227,9 +214,7 @@ void Errors::create_children(const xmlNodePtr xml_node)
 
 std::string UdpSocket::toString() const
 {
-    std::ostringstream oss;
-    oss << "UdpSocket - DstIP[" << dst_ip_address << "] DstPort[" << dst_ip_port<< "] SrcIP[" << src_ip_address << "] SrcPort[" << src_ip_port << "] MulticastInterfaceIP[" << mc_ip_address << "] MulticastTTL[" << mc_ttl << "]";
-    return oss.str();
+  return strize() << "UdpSocket - DstIP[" << dst_ip_address << "] DstPort[" << dst_ip_port<< "] SrcIP[" << src_ip_address << "] SrcPort[" << src_ip_port << "] MulticastInterfaceIP[" << mc_ip_address << "] MulticastTTL[" << mc_ttl << "]";
 }
 
 void UdpSocket::reset()
@@ -262,7 +247,7 @@ void UdpSocket::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::Direction) == 0){
             set_value(direction,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::UdpSocket << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::UdpSocket << "]");
         }
     }
 }
@@ -300,11 +285,11 @@ void ComInterface::create_children(const xmlNodePtr xml_node)
                     udp_socket->load(xml_node_child_iter);
                     udp_sockets.push_back(std::move(udp_socket));
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::UdpSockets << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::UdpSockets << "]");
                 }
             }
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::ComInterface << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::ComInterface << "]");
         }
     }
 }
@@ -335,7 +320,7 @@ void A429Stream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::A429_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::A429_Stream << "]");
         }
     }
 }
@@ -351,7 +336,7 @@ void A429Stream::create_children(const xmlNodePtr xml_node)
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::A429_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::A429_Stream << "]");
         }
     }
 }
@@ -385,7 +370,7 @@ void A664Stream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::A664_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::A664_Stream << "]");
         }
     }
 }
@@ -406,16 +391,17 @@ void A664Stream::create_children(const xmlNodePtr xml_node)
                 if(attr_name.compare(attr::Enable) == 0){
                     set_value(enable_message_size,xml_attr);
                 }else{
-                    THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::MessageSize << "]"); 
+                    THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::MessageSize << "]");
                 }
             }
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::A664_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::A664_Stream << "]");
         }
     }
     // Check message enable size & sample_max_number
-    if(enable_message_size == ED247_YESNO_NO && info.sample_max_number > 1)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "A664 Stream cannot have a SampleMaxNumber of [" << info.sample_max_number << "] and not enabling Message Size encoding in frame.");
+    if(enable_message_size == ED247_YESNO_NO && info.sample_max_number > 1) {
+      THROW_PARSER_ERROR(xml_node, "A664 Stream cannot have a SampleMaxNumber of [" << info.sample_max_number << "] and not enabling Message Size encoding in frame");
+    }
 }
 
 // A825Stream
@@ -445,7 +431,7 @@ void A825Stream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::A825_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::A825_Stream << "]");
         }
     }
 }
@@ -461,7 +447,7 @@ void A825Stream::create_children(const xmlNodePtr xml_node)
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::A825_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::A825_Stream << "]");
         }
     }
 }
@@ -494,7 +480,7 @@ void SERIALStream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::SERIAL_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::SERIAL_Stream << "]");
         }
     }
 }
@@ -510,7 +496,7 @@ void SERIALStream::create_children(const xmlNodePtr xml_node)
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::SERIAL_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::SERIAL_Stream << "]");
         }
     }
 }
@@ -539,7 +525,7 @@ void DISSignal::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::ByteOffset) == 0){
             set_value(info.info.dis.byte_offset,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
     }
 }
@@ -575,7 +561,7 @@ void ANASignal::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::ByteOffset) == 0){
             set_value(info.info.ana.byte_offset,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
     }
 }
@@ -654,7 +640,7 @@ void NADSignal::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::ByteOffset) == 0){
             set_value(info.info.nad.byte_offset,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
     }
 }
@@ -694,7 +680,7 @@ void VNADSignal::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::Position) == 0){
             set_value(info.info.vnad.position,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
     }
 }
@@ -734,7 +720,7 @@ void DISStream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]");
         }
     }
 }
@@ -755,23 +741,23 @@ void DISStream::create_children(const xmlNodePtr xml_node)
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
                         set_value(info.info.dis.sampling_period_us,xml_attr);
                     }else{
-                        THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]");
                     }
                 }
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<DISSignal> signal = std::make_unique<DISSignal>();
                     signal->load(xml_node_child_iter);
                     if(signal->info.info.dis.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
-                        THROW_PARSER_ERROR("Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.dis.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.dis.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
         }else if(node_name.compare(node::DataTimestamp) == 0){
             data_timestamp.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::DIS_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::DIS_Stream << "]");
         }
     }
     // Sort according to ByteOffset
@@ -815,7 +801,7 @@ void ANAStream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::ANA_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::ANA_Stream << "]");
         }
     }
 }
@@ -836,23 +822,23 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
                         set_value(info.info.ana.sampling_period_us,xml_attr);
                     }else{
-                        THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::ANA_Stream << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::ANA_Stream << "]");
                     }
                 }
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<ANASignal> signal = std::make_unique<ANASignal>();
                     signal->load(xml_node_child_iter);
                     if(signal->info.info.ana.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
-                        THROW_PARSER_ERROR("Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.ana.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.ana.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
         }else if(node_name.compare(node::DataTimestamp) == 0){
             data_timestamp.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::ANA_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::ANA_Stream << "]");
         }
     }
     // Sort according to ByteOffset
@@ -896,7 +882,7 @@ void NADStream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::NAD_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::NAD_Stream << "]");
         }
     }
 }
@@ -917,23 +903,23 @@ void NADStream::create_children(const xmlNodePtr xml_node)
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
                         set_value(info.info.nad.sampling_period_us,xml_attr);
                     }else{
-                        THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::NAD_Stream << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::NAD_Stream << "]");
                     }
                 }
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<NADSignal> signal = std::make_unique<NADSignal>();
                     signal->load(xml_node_child_iter);
                     if(signal->info.info.nad.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
-                        THROW_PARSER_ERROR("Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.nad.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.nad.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
         }else if(node_name.compare(node::DataTimestamp) == 0){
             data_timestamp.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::NAD_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::NAD_Stream << "]");
         }
     }
     // Sort according to ByteOffset
@@ -975,7 +961,7 @@ void VNADStream::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::UID) == 0){
             set_value(info.uid,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::VNAD_Stream << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::VNAD_Stream << "]");
         }
     }
 }
@@ -996,7 +982,7 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
                         set_value(info.info.vnad.sampling_period_us,xml_attr);
                     }else{
-                        THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::VNAD_Stream << "]"); 
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::VNAD_Stream << "]");
                     }
                 }
                 if(node_name.compare(node::Signal) == 0){
@@ -1005,14 +991,14 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
                     info.sample_max_size_bytes += (BaseSignal::sample_max_size_bytes(signal->info) + sizeof(uint16_t)) * signal->info.info.vnad.max_length;
                     signals.push_back(std::move(signal));
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
             PRINT_DEBUG("VNAD Stream [" << info.name << "] SampleMaxSizeBytes[" << info.sample_max_size_bytes << "] SampleMaxNumber[" << info.sample_max_number << "]");
         }else if(node_name.compare(node::DataTimestamp) == 0){
             data_timestamp.load(xml_node_iter);
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::VNAD_Stream << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::VNAD_Stream << "]");
         }
     }
     // Sort according to ByteOffset
@@ -1043,7 +1029,7 @@ void Header::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::TransportTimestamp) == 0){
             set_value(transport_timestamp,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::Header << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Header << "]");
         }
     }
 }
@@ -1069,13 +1055,13 @@ void Channel::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::Comment) == 0){
             set_value(info.comment,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::MultiChannel << "] or [" << node::Channel << "]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::MultiChannel << "] or [" << node::Channel << "]");
         }
     }
 }
 
 void Channel::create_children(const xmlNodePtr xml_node)
-{    
+{
     for(auto xml_node_iter = xml_node->children ; xml_node_iter != nullptr ; xml_node_iter = xml_node_iter->next){
         if(xml_node_iter->type != XML_ELEMENT_NODE)
             continue;
@@ -1090,7 +1076,7 @@ void Channel::create_children(const xmlNodePtr xml_node)
                 if(attr_name.compare(attr::StandardRevision) == 0){
                     set_value(info.frame_format.standard_revision,xml_attr);
                 }else{
-                    THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::FrameFormat <<"]"); 
+                    THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::FrameFormat <<"]");
                 }
             }
         }else if(!simple && node_name.compare(node::Streams) == 0){
@@ -1140,7 +1126,7 @@ void Channel::create_children(const xmlNodePtr xml_node)
                     streams.push_back(std::move(stream));
                 // Otherwise
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Streams << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Streams << "]");
                 }
             }
         }else if(simple && node_name.compare(node::Stream) == 0){
@@ -1190,11 +1176,11 @@ void Channel::create_children(const xmlNodePtr xml_node)
                     streams.push_back(std::move(stream));
                 // Otherwise
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Channel << "]");
+                    THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Channel << "]");
                 }
             }
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::MultiChannel << "] or [" << node::Channel << "]");                                 
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::MultiChannel << "] or [" << node::Channel << "]");
         }
     }
 }
@@ -1226,11 +1212,11 @@ void Root::fill_attributes(const xmlNodePtr xml_node)
         }else if(attr_name.compare(attr::Identifier) == 0){
             set_value(info.identifier,xml_attr);
         }else{
-            THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::ED247ComponentInstanceConfiguration <<"]"); 
+            THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::ED247ComponentInstanceConfiguration <<"]");
         }
     }
     if(info.standard_revision != ED247_STANDARD_ED247A)
-        THROW_PARSER_ERROR("This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
+        THROW_PARSER_ERROR(xml_node, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
 }
 
 void Root::create_children(const xmlNodePtr xml_node)
@@ -1249,17 +1235,17 @@ void Root::create_children(const xmlNodePtr xml_node)
                     channel->simple = false; // store if it is a simple channel (only one stream)
                     channel->load(xml_node_channel);
                     if(channel->info.frame_format.standard_revision != ED247_STANDARD_ED247A)
-                        THROW_PARSER_ERROR("This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
+                        THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
                     channels.push_back(std::move(channel));
                 }else if(node_name.compare(node::Channel) == 0){
                     std::unique_ptr<Channel> channel = std::make_unique<Channel>();
                     channel->simple = true; // store if it is a simple channel (only one stream)
                     channel->load(xml_node_channel);
                     if(channel->info.frame_format.standard_revision != ED247_STANDARD_ED247A)
-                        THROW_PARSER_ERROR("This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
+                        THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
                     channels.push_back(std::move(channel));
                 }else{
-                    THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::Channels << "]");
+                    THROW_PARSER_ERROR(xml_node_channel, "Unknown node [" << node_name << "] in tag [" << node::Channels << "]");
                 }
             }
         }else if(node_name.compare(node::FileProducer) == 0){
@@ -1270,11 +1256,11 @@ void Root::create_children(const xmlNodePtr xml_node)
                 }else if(attr_name.compare(attr::Comment) == 0){
                     set_value(info.file_producer.comment,xml_attr);
                 }else{
-                    THROW_PARSER_ERROR("Unknown attribute [" << attr_name << "] in tag [" << node::FileProducer <<"]"); 
+                    THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::FileProducer <<"]");
                 }
             }
         }else{
-            THROW_PARSER_ERROR("Unknown node [" << node_name << "] in tag [" << node::ED247ComponentInstanceConfiguration << "]");
+            THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::ED247ComponentInstanceConfiguration << "]");
         }
     }
 }
@@ -1290,19 +1276,19 @@ std::shared_ptr<Node> load_xml(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_x
 
     // Parse XSD
     if((p_xsd_doc = xmlCtxtReadMemory(p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
-        THROW_PARSER_ERROR("Failed to load schema in memory");
+        THROW_PARSER_ERROR(nullptr, "Failed to load schema in memory");
 
     // Validate XSD
     if((p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(p_xsd_doc)) == nullptr)
-        THROW_PARSER_ERROR("Failed to create schema parser");
+        THROW_PARSER_ERROR(nullptr, "Failed to create schema parser");
     if((p_xsd_schema = xmlSchemaParse(p_xsd_schema_parser)) == nullptr)
-        THROW_PARSER_ERROR("Failed to create schema");
+        THROW_PARSER_ERROR(nullptr, "Failed to create schema");
     if((p_xsd_valid_context = xmlSchemaNewValidCtxt(p_xsd_schema)) == nullptr)
-        THROW_PARSER_ERROR("Failed to validate schema context");
+        THROW_PARSER_ERROR(nullptr, "Failed to validate schema context");
 
     // Validate XML
     if(xmlSchemaValidateDoc(p_xsd_valid_context, p_xml_doc) != 0)
-        THROW_PARSER_ERROR("Failed to validate XML document");
+        THROW_PARSER_ERROR(nullptr, "Failed to validate XML document");
 
     // Load Nodes
     xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
@@ -1318,17 +1304,22 @@ std::shared_ptr<Node> load_filepath(const std::string & filepath)
 {
     xmlParserCtxtPtr    p_xml_context;
     xmlDocPtr           p_xml_doc;
-    
+
     // Create context
     if((p_xml_context = xmlNewParserCtxt()) == nullptr)
-        THROW_PARSER_ERROR("Failed to create XML context pointer.");
+        THROW_PARSER_ERROR(nullptr, "Failed to create XML context pointer");
 
     // Setup error handler
     xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
     // Parse XML
     if((p_xml_doc = xmlCtxtReadFile(p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
-        THROW_PARSER_ERROR("Failed to read [" << filepath << "]");
+        THROW_PARSER_ERROR(nullptr, "Failed to read [" << filepath << "]");
+
+    // Store filename for debugging purpose
+    if (p_xml_doc->name == nullptr) {
+        p_xml_doc->name = strdup(filepath.c_str());
+    }
 
     auto root = load_xml(p_xml_context, p_xml_doc);
 
@@ -1344,17 +1335,17 @@ std::shared_ptr<Node> load_content(const std::string & content)
 {
     xmlParserCtxtPtr    p_xml_context;
     xmlDocPtr           p_xml_doc;
-    
+
     // Create context
     if((p_xml_context = xmlNewParserCtxt()) == nullptr)
-        THROW_PARSER_ERROR("Failed to create XML context pointer.");
+        THROW_PARSER_ERROR(nullptr, "Failed to create XML context pointer");
 
     // Setup error handler
     xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
     // Parse XML
     if((p_xml_doc = xmlCtxtReadMemory(p_xml_context,content.c_str(),(int)content.length(),nullptr,nullptr,0)) == nullptr)
-        THROW_PARSER_ERROR("Failed to read XML file content");
+        THROW_PARSER_ERROR(nullptr, "Failed to read XML file content");
 
     auto root = load_xml(p_xml_context, p_xml_doc);
 

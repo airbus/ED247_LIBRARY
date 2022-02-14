@@ -40,25 +40,25 @@ namespace
 {
 
 #ifndef _MSC_VER
-static const __attribute__((__unused__)) int zero = 0;
-static const __attribute__((__unused__)) int one = 1;
+  static const __attribute__((__unused__)) int zero = 0;
+  static const __attribute__((__unused__)) int one = 1;
 #else
-int zero = 0;
-int one = 1;
+  int zero = 0;
+  int one = 1;
 #endif
 
-// static void sleep_us(uint32_t duration_us)
-// {
-// #ifdef _WIN32
-//     Sleep(duration_us / 1000);
-// #else
-//     struct timespec ts;
-//     ts.tv_sec = duration_us / (1000 * 1000);
-//     ts.tv_nsec = (duration_us % (1000 * 1000)) * 1000;
-//     nanosleep(&ts, NULL);
-// #endif
-// }
 
+  static void sleep_us(uint32_t duration_us)
+  {
+#ifdef _WIN32
+    Sleep(duration_us / 1000);
+#else
+    struct timespec ts;
+    ts.tv_sec = duration_us / (1000 * 1000);
+    ts.tv_nsec = (duration_us % (1000 * 1000)) * 1000;
+    nanosleep(&ts, NULL);
+#endif
+  }
 }
 
 uint64_t get_time_us()
@@ -94,7 +94,7 @@ void ComInterface::Builder::build(std::shared_ptr<Pool> pool, const xml::ComInte
     UdpSocket::Builder udp_socket_builder;
     auto udp_socket_pool = std::dynamic_pointer_cast<UdpSocket::Pool>(pool);
     if(!udp_socket_pool)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to retrieve the UdpSocket pool from base ComInterface pool");
+        THROW_ED247_ERROR("Failed to retrieve the UdpSocket pool from base ComInterface pool");
     for(auto & sp_udp_socket_configuration : configuration.udp_sockets){
         udp_socket_builder.build(udp_socket_pool, *sp_udp_socket_configuration, channel);
     }
@@ -120,36 +120,26 @@ std::string UdpSocket::get_last_error()
 
 void UdpSocket::send_frame(Channel & channel, const void * frame, const size_t frame_size)
 {
-    IF_PRINT PRINT_DEBUG("# Socket [" << _socket_infos << "] sends a frame of channel [" << channel.get_name() << "]");
+    PRINT_CRAZY("Socket [" << _socket_infos << "] sends a frame of channel [" << channel.get_name() << "]");
     auto & destinations = *(_destinations[&channel]);
     for(auto & destination : destinations){
-        IF_PRINT {
-            PRINT_DEBUG("# Socket [" << _socket_infos << "] send to [" << destination << "] a frame of [" << frame_size << "] bytes");
-            PRINT_DEBUG("Sent frame of [" << frame_size << "] bytes");
-            std::ostringstream oss;
-            oss.str("");
-            for(unsigned i = 0 ; i < frame_size ; i++){
-                oss << std::setw(2) << std::setfill('0') << std::hex << (int)(((const char*)frame)[i]);
-                oss << " ";
-            }
-            PRINT_DEBUG("Frame: " << oss.str());
-        }
+        PRINT_CRAZY("Socket [" << _socket_infos << "] send to [" << destination << "] a frame of " << frame_size << " bytes: [" << hex_stream(frame, frame_size) << "]");
         run_send_callbacks();
         int32_t sent_size = sendto(_socket, static_cast<const char *>(frame), (int)frame_size, 0, (struct sockaddr *)&destination, sizeof(struct sockaddr_in));
-        if(sent_size < 0 || (uint32_t)sent_size != frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to send frame from socket socket [" << _socket_infos << "] to [" << destination << "] (" << UdpSocket::get_last_error() << ")");
+        if(sent_size < 0 || (uint32_t)sent_size != frame_size) {
+          PRINT_ERROR("Failed to send frame from socket socket [" << _socket_infos << "] to [" << destination << "] (" << UdpSocket::get_last_error() << ")");
+        }
     }
 }
 
-bool UdpSocket::recv()
+void UdpSocket::recv()
 {
-    bool stop = false;
     int sockerr = 1;
     static SocketInfos client_infos;
     static socklen_t client_infos_size = sizeof(struct sockaddr);
     bool first_loop = true;
 
-    while(sockerr > 0 && !stop){ // Loop until stop order to no more data available or an error occured
+    while(sockerr > 0) {
         sockerr = ::recvfrom(_socket, _recv.frame, MAX_FRAME_SIZE, 0, (struct sockaddr *)&client_infos, &client_infos_size);
         if(sockerr <= 0)
             continue;
@@ -158,50 +148,39 @@ bool UdpSocket::recv()
         run_recv_callbacks();
 
         _recv.size = sockerr;
-        IF_PRINT {
-            PRINT_DEBUG("Received frame of [" << _recv.size << "] bytes");
-            std::ostringstream oss;
-            oss.str("");
-            for(unsigned i = 0 ; i < _recv.size ; i++){
-                oss << std::setw(2) << std::setfill('0') << std::hex << (int)_recv.frame[i];
-                oss << " ";
-            }
-            PRINT_DEBUG("Frame: " << oss.str());
-        }
+        PRINT_CRAZY("Received frame of " << _recv.size << " bytes: [" << hex_stream(_recv.frame, _recv.size) << "]");
 
         // Decode frames in channels
         for(auto & p_channel : _sources){
-            if(p_channel){
-                // Stop if the channel orders to do so (look at callbacks in channel/stream for more info)
-                if(!p_channel->decode(_recv.frame, _recv.size)) stop = true;
+            if(p_channel) {
+              // Ignore decode error: process next frame
+              p_channel->decode(_recv.frame, _recv.size);
             }
         }
     }
     // Check if an error occured during the first loop
-    if(first_loop && sockerr <= 0)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to receive data on socket [" << _socket_infos << "], at recvfrom() level (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
-    return !stop;
+    if(first_loop && sockerr <= 0) {
+      PRINT_ERROR("Failed to receive data on socket [" << _socket_infos << "], at recvfrom() level (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+    }
 }
 
 std::string UdpSocket::get_name()
 {
-    std::ostringstream oss;
-    oss << "UdpSocket[" << _socket_infos << "]";
-    return oss.str();
+  return strize() << "UdpSocket[" << _socket_infos << "]";
 }
 
 void UdpSocket::initialize()
 {
-    PRINT_DEBUG("# Initialize socket [" << _socket_infos << "]");
+    PRINT_DEBUG("Initialize socket [" << _socket_infos << "]");
     int sockerr;
 
     if(_socket != INVALID_SOCKET)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to initialize socket [" << _socket_infos << "], already initialized !");
+        THROW_ED247_ERROR("Failed to initialize socket [" << _socket_infos << "], already initialized !");
 
-    PRINT_DEBUG("# Create socket [" << _socket_infos << "]");
+    PRINT_DEBUG("Create socket [" << _socket_infos << "]");
     _socket = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     if(_socket == INVALID_SOCKET)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to create the socket [" << _socket_infos << "]");
+        THROW_ED247_ERROR("Failed to create the socket [" << _socket_infos << "]");
 
     // Allow to reuse port when socket is dying (restart)
     // On Windows, SO_REUSEADDR mean SO_REUSEPORT + SO_REUSEADDR.
@@ -210,7 +189,7 @@ void UdpSocket::initialize()
     sockerr = setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
     if(sockerr){
         close();
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to setup socket options [SO_REUSEADDR] on socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+        THROW_ED247_ERROR("Failed to setup socket options [SO_REUSEADDR] on socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
     }
 
     // Set to non blocking
@@ -219,20 +198,20 @@ void UdpSocket::initialize()
     sockerr = ioctlsocket(_socket, FIONBIO, (unsigned long *)&ul_one);
     if(sockerr != NO_ERROR){
         close();
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to setup socket to non-blocking [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+        THROW_ED247_ERROR("Failed to setup socket to non-blocking [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
     }
 #else
     int flags = fcntl(_socket, F_GETFL, 0);
     if(fcntl(_socket, F_SETFL, flags | O_NONBLOCK) == -1){
         close();
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to setup socket to non-blocking [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+        THROW_ED247_ERROR("Failed to setup socket to non-blocking [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
     }
 #endif
     
     sockerr = bind(_socket, (struct sockaddr *)&_socket_infos, sizeof(struct sockaddr_in));
     if(sockerr){
         close();
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to bind socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+        THROW_ED247_ERROR("Failed to bind socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
     }
 }
 
@@ -244,7 +223,7 @@ void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket
     std::weak_ptr<Channel> weak_channel = channel.shared_from_this();
     if(dest_iter == _destinations.end())
         dest_iter = (_destinations.insert(std::make_pair(&channel,std::make_shared<std::vector<SocketInfos>>()))).first;
-    PRINT_DEBUG("# Socket [" << _socket_infos << "] appends the destination [" << socket_infos_dst << "] for channel [" << std::string(channel.get_configuration()->info.name) << "]");
+    PRINT_DEBUG("Socket [" << _socket_infos << "] appends the destination [" << socket_infos_dst << "] for channel [" << std::string(channel.get_configuration()->info.name) << "]");
     dest_iter->second->push_back(socket_infos_dst);
     channel.add_emitter(*this);
 
@@ -258,7 +237,7 @@ void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket
         sockerr = setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_IF, (const char*) &iaddr, sizeof(struct ::in_addr));
         if(sockerr){
             close();
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to setup the outgoing interface of socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+            THROW_ED247_ERROR("Failed to setup the outgoing interface of socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
         }
 
         // Set multicast packet TTL
@@ -266,14 +245,14 @@ void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket
         sockerr = setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_TTL, (const char*) &ttl, sizeof(ttl));
         if(sockerr){
             close();
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to setup the outgoing interface of socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+            THROW_ED247_ERROR("Failed to setup the outgoing interface of socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
         }
 
         // Send multicast traffic to myself too
         sockerr = setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &one, sizeof(one));
         if(sockerr){
             close();
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to setup the outgoing interface of socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+            THROW_ED247_ERROR("Failed to setup the outgoing interface of socket [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
         }
     }
 }
@@ -283,7 +262,7 @@ void UdpSocket::register_channel_receiver(Channel & channel, const xml::UdpSocke
     SocketInfos socket_infos_dst{configuration.dst_ip_address, configuration.dst_ip_port};
 
     if(std::find(_sources.begin(), _sources.end(), &channel) != _sources.end())
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel [" << channel.get_name() << "] has already been registered as incoming in socket [" << _socket_infos << "]");
+        THROW_ED247_ERROR("Channel [" << channel.get_name() << "] has already been registered as incoming in socket [" << _socket_infos << "]");
 
     _sources.push_back(&channel);
 
@@ -304,7 +283,7 @@ void UdpSocket::register_channel_receiver(Channel & channel, const xml::UdpSocke
         sockerr = setsockopt(_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&imreq, sizeof(struct ip_mreq));
         if(sockerr){
             close();
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE,"The socket [" << _socket_infos << "] failed to join the multicast group [" << configuration.dst_ip_address << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+            THROW_ED247_ERROR("The socket [" << _socket_infos << "] failed to join the multicast group [" << configuration.dst_ip_address << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
         }
         _socket_infos.mtc_groups.push_back(socket_infos_dst);
     }
@@ -327,7 +306,7 @@ void UdpSocket::unregister_channel(Channel & channel)
 
 void UdpSocket::close()
 {
-    PRINT_DEBUG("# Close socket [" << _socket_infos << "]");
+    PRINT_DEBUG("Close socket [" << _socket_infos << "]");
 
     if(_socket != INVALID_SOCKET){
         shutdown(_socket, 2);
@@ -393,7 +372,7 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
         }
     }
 
-    PRINT_INFO("# Socket[" << configuration.toString() << "] " <<
+    PRINT_INFO("Socket[" << configuration.toString() << "] " <<
     "[" << (is_multicast ? std::string("MULTICAST") : std::string("UNICAST")) << "] " << 
     "Emitter[" << (socket_pair.emitter() ? std::string(socket_pair.emitter()->_socket_infos) : std::string("NONE")) << "] " << 
     "Receiver[" << (socket_pair.receiver() ? std::string(socket_pair.receiver()->_socket_infos) : std::string("NONE")) << "]");
@@ -406,10 +385,10 @@ void UdpSocket::Factory::unregister(const SocketInfos & socket_infos)
     auto iter = _sockets.find(socket_infos);
     if(iter != _sockets.end()){
         if(iter->second->_destinations.size() == 0 && iter->second->_sources.size() == 0){
-            PRINT_DEBUG("# Socket [" << socket_infos << "] is not needed anymore, destroy it");
+            PRINT_DEBUG("Socket [" << socket_infos << "] is not needed anymore, destroy it");
             _sockets.erase(iter);
         }else{
-            PRINT_DEBUG("# Socket [" << socket_infos << "] is used elsewhere, do not destroy it");
+            PRINT_DEBUG("Socket [" << socket_infos << "] is used elsewhere, do not destroy it");
         }
     }
 }
@@ -426,12 +405,12 @@ void UdpSocket::Factory::setup()
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 
     if(gethostname(host_buffer, sizeof(host_buffer)) == -1)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE,"Failed to retrieve hostname.");
+        THROW_ED247_ERROR("Failed to retrieve hostname.");
 
-    PRINT_DEBUG("# Host [" << std::string(host_buffer) << "]");
+    PRINT_DEBUG("Host [" << std::string(host_buffer) << "]");
 
     if(getaddrinfo(host_buffer, nullptr, nullptr, &info) != 0)
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to retrieve host addr info");
+        THROW_ED247_ERROR("Failed to retrieve host addr info");
 
     for(iter = info ; iter != nullptr ; iter = iter->ai_next){
         if(iter->ai_family == AF_INET){
@@ -447,7 +426,7 @@ void UdpSocket::Factory::setup()
 #else
             ipaddr = std::string(inet_ntoa(_host_ip_addresses.back()));
 #endif
-            PRINT_DEBUG("# Available ip address [" << ipaddr << "]");
+            PRINT_DEBUG("Available ip address [" << ipaddr << "]");
         }
     }
 #else
@@ -459,7 +438,7 @@ void UdpSocket::Factory::setup()
         if (ifa->ifa_addr != nullptr && ifa->ifa_addr->sa_family==AF_INET) {
             sa = (struct sockaddr_in *) ifa->ifa_addr;
             _host_ip_addresses.emplace_back(sa->sin_addr);
-            PRINT_DEBUG("# Available ip address [" << std::string(inet_ntoa(_host_ip_addresses.back())) << "]");
+            PRINT_DEBUG("Available ip address [" << std::string(inet_ntoa(_host_ip_addresses.back())) << "]");
         }
     }
 
@@ -474,10 +453,10 @@ std::shared_ptr<UdpSocket> UdpSocket::Factory::find_or_create(SocketInfos & sock
         std::shared_ptr<UdpSocket> socket = std::make_shared<UdpSocket>(socket_infos);
         _sockets.insert(std::make_pair(socket_infos,socket));
         socket->initialize();
-        PRINT_DEBUG("# Socket [" << socket_infos << "] created");
+        PRINT_DEBUG("Socket [" << socket_infos << "] created");
         return socket;
     }else{
-        PRINT_DEBUG("# Socket [" << socket_infos << "] found (Destinations [" << socket_iter->second->_destinations.size() << "] / Receivers [" << socket_iter->second->_sources.size() << "])");
+        PRINT_DEBUG("Socket [" << socket_infos << "] found (Destinations [" << socket_iter->second->_destinations.size() << "] / Receivers [" << socket_iter->second->_sources.size() << "])");
         return socket_iter->second;
     }
 }
@@ -531,7 +510,14 @@ UdpSocket::Pair UdpSocket::Pool::get(const xml::UdpSocket & configuration)
 
 ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
 {
-    IF_PRINT PRINT_DEBUG("Socket pool waiting for first frame to be received");
+    PRINT_CRAZY("Socket pool waiting for first frame to be received");
+
+    if (_select_options.nfds <= 0) {
+      PRINT_DEBUG("wait_frame: No socket opened in reading (no input messages in ECIC ?)");
+      // Select will fail on Windows without errors. Simulate the wait for nothing.
+      sleep_us(timeout_us);
+      return ED247_STATUS_TIMEOUT;
+    };
 
     ed247_status_t  status = ED247_STATUS_TIMEOUT;
     struct ::timeval timeout;
@@ -546,13 +532,14 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
     do {
         memcpy(&select_fd, &_select_options.fd, sizeof(fd_set));
         sockerr = select(_select_options.nfds, &select_fd, NULL, NULL, timeout_us >= 0 ? &timeout : NULL);
+        PRINT_CRAZY("wait_frame select result: " << sockerr << ", errno: " << strerror(errno));
         if(sockerr > 0){
             // Something received
-            IF_PRINT PRINT_DEBUG("Data received !");
+            PRINT_CRAZY("Data received !");
             for(auto & input : _inputs){
                 const auto & socket = input->get_socket();
                 if(socket != INVALID_SOCKET && FD_ISSET(socket, &select_fd)){
-                    IF_PRINT PRINT_DEBUG("Data received on [" << input->get_socket_infos() << "]");
+                    PRINT_CRAZY("Data received on [" << input->get_socket_infos() << "]");
                     input->recv();
                     status = ED247_STATUS_SUCCESS;
                 }
@@ -564,8 +551,8 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
     }while(sockerr > 0 || (sockerr < 0 && errno == EINTR));
 
     if(sockerr < 0 && _select_options.nfds > 0){
+        PRINT_ERROR("Failed to perform select() (" << sockerr << ":" << get_last_error() << ")");
         status = ED247_STATUS_FAILURE;
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to perform select() (" << sockerr << ":" << get_last_error() << ")");
     }
 
     return status;
@@ -573,7 +560,7 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
 
 ed247_status_t UdpSocket::Pool::wait_during(int32_t duration_us)
 {
-    IF_PRINT PRINT_DEBUG("Socket pool waiting during [" << duration_us << "] us");
+    PRINT_CRAZY("Socket pool waiting during [" << duration_us << "] us");
 
     ed247_status_t  status = ED247_STATUS_NODATA;
     ed247_status_t  tmp_status = status;

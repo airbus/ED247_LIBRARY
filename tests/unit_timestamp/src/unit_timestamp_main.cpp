@@ -22,49 +22,24 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-#include <ed247_logs.h>
-
-#include <stdio.h>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include <ed247_context.h>
-#include <ed247_channel.h>
-#include <ed247_cominterface.h>
-
-#include <memory>
-
-/***********
- * Defines *
- ***********/
-
-using namespace ed247;
+#include "unitary_test.h"
+#include "ed247_internals.h"
 
 ed247_timestamp_t timestamp1 = {123, 456};
 ed247_timestamp_t timestamp2 = {456, 789};
 
 ed247_status_t get_time_test1(ed247_time_sample_t time_sample, void *user_data)
 {
-    _UNUSED(user_data);
     return libed247_update_time(time_sample, timestamp1.epoch_s, timestamp1.offset_ns);
 }
 ed247_status_t get_time_test2(ed247_time_sample_t time_sample, void *user_data)
 {
-    _UNUSED(user_data);
     return libed247_update_time(time_sample, timestamp2.epoch_s, timestamp2.offset_ns);
 }
 
 TEST(TimeStamp, ManageHandlers)
 {
-	SimulationTimeHandler single = SimulationTimeHandler::get();
+    ed247::SimulationTimeHandler single = ed247::SimulationTimeHandler::get();
 	ASSERT_EQ(single.is_valid(), false);
 	
 	single.set_handler(get_time_test1, NULL);
@@ -86,7 +61,7 @@ TEST(TimeStamp, ManageHandlers)
 
 TEST(TimeStamp, DefaultTimeHandler)
 {
-	SimulationTimeHandler single = SimulationTimeHandler::get();
+	ed247::SimulationTimeHandler single = ed247::SimulationTimeHandler::get();
 	ASSERT_EQ(single.is_valid(), false);
 	
 	single.set_handler(libed247_set_simulation_time_ns, NULL);

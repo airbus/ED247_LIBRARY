@@ -53,10 +53,10 @@ int main(int argc, char* argv[])
     // Loading
     if(argc < 2){
         fprintf(stdout,"Missing the first argument, use default ECIC configuration filepath: %s\n",ECIC_FILEPATH);
-        status = ed247_load(ECIC_FILEPATH, NULL, &context);
+        status = ed247_load_file(ECIC_FILEPATH, &context);
     }else{
         fprintf(stdout,"Using provided ECIC configuration filepath: %s\n",argv[1]);
-        status = ed247_load(argv[1], NULL, &context);
+        status = ed247_load_file(argv[1], &context);
     }
     if(check_status(context, status)) return EXIT_FAILURE;
 
@@ -101,13 +101,11 @@ int main(int argc, char* argv[])
 
 int check_status(ed247_context_t context, ed247_status_t status)
 {
-    if(status != ED247_STATUS_SUCCESS){
-        fprintf(stderr,"# ED247 ERROR (%s): %s\n",
-            ed247_status_string(status),
-            libed247_errors());
-        ed247_unload(context);
-        return EXIT_FAILURE;
+    if(status != ED247_STATUS_SUCCESS) {
+      fprintf(stderr, "ED247 status: %s\n", ed247_status_string(status));
+      ed247_unload(context);
+      return EXIT_FAILURE;
     }else{
-        return EXIT_SUCCESS;
+      return EXIT_SUCCESS;
     }
 }

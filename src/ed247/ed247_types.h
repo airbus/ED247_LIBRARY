@@ -44,7 +44,6 @@ namespace status {
     static const std::string FAILURE{"FAILURE"};
     static const std::string TIMEOUT{"TIMEOUT"};
     static const std::string NODATA{"NODATA"};
-    static const std::string STOP{"STOP"};
 }
 
 namespace standard {

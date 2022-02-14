@@ -41,9 +41,7 @@
 namespace ed247
 {
 
-Context::Context(
-    const libed247_configuration_t & libed247_configuration):
-    _configuration(libed247_configuration),
+Context::Context():
     _root(),
     _pool_interfaces(std::make_shared<UdpSocket::Pool>()),
     _pool_signals(std::make_shared<BaseSignal::Pool>()),
@@ -52,11 +50,10 @@ Context::Context(
     _active_frames(std::make_shared<SmartListActiveFrames>()),
     _active_streams(std::make_shared<SmartListActiveStreams>())
 {
-    PRINT_DEBUG("# [Context] Ctor");
+    PRINT_DEBUG("[Context] Ctor");
     _active_frames->set_managed(true);
     _active_streams->set_managed(true);
     SimulationTimeHandler::get().set_handler(libed247_set_simulation_time_ns, NULL);
-    Configuration::getInstance().set(_configuration);
 }
 
 Context::~Context()
@@ -80,21 +77,12 @@ const libed247_runtime_metrics_t* Context::get_runtime_metrics()
 
 // Context::Builder
 
-Context * Context::Builder::create_filepath(std::string ecic_filepath,
-    const libed247_configuration_t & libed247_configuration)
+Context * Context::Builder::create_filepath(std::string ecic_filepath)
 {
-    // Logs
-    PRINT_DEBUG("# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]");
-    PRINT_DEBUG("## DEBUG logs enabled");
-    PRINT_INFO("## INFO logs enabled");
-    PRINT_WARNING("## WARNING enabled");
-
-    Logs::getInstance().configure(libed247_configuration);
-
     // Create context
-    Context * context = new Context(libed247_configuration);
+    Context * context = new Context();
 
-    PRINT_DEBUG("## ECIC filepath [" << ecic_filepath << "]");
+    PRINT_DEBUG("ECIC filepath [" << ecic_filepath << "]");
     
     // Load
     try{
@@ -108,21 +96,12 @@ Context * Context::Builder::create_filepath(std::string ecic_filepath,
     return context;
 }
 
-Context * Context::Builder::create_content(std::string ecic_content,
-    const libed247_configuration_t & libed247_configuration)
+Context * Context::Builder::create_content(std::string ecic_content)
 {
-    // Logs
-    PRINT_DEBUG("# Log level [" << Logs::strLogLevel(Logs::getInstance().getLogLevel()) << "]");
-    PRINT_DEBUG("## DEBUG logs enabled");
-    PRINT_INFO("## INFO logs enabled");
-    PRINT_WARNING("## WARNING enabled");
-
-    Logs::getInstance().configure(libed247_configuration);
-
     // Create context
-    Context * context = new Context(libed247_configuration);
+    Context * context = new Context();
 
-    PRINT_DEBUG("## ECIC content [" << ecic_content << "]");
+    PRINT_DEBUG("ECIC content [" << ecic_content << "]");
     
     // Load
     try{

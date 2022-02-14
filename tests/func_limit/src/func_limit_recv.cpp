@@ -21,25 +21,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-/***********
- * Defines *
- ***********/
-
-#define TEST_ENTITY_SRC_ID TEST_ENTITY_TESTER_ID
-#define TEST_ENTITY_DST_ID TEST_ENTITY_MAIN_ID
-
-#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_TESTER()
-
-/********
- * Test *
- ********/
+#define TEST_ACTOR1_NAME "send"
+#define TEST_ACTOR2_NAME "recv"
+#define TEST_ACTOR_ID TEST_ACTOR2_ID
+#include "functional_test.h"
 
 std::string config_path = "../config";
 
@@ -62,20 +47,20 @@ TEST_P(StreamContext, LimitOneByOne)
     size_t size;
     
     // Synchro at startup
-    std::cout << "Startup" << std::endl;
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Startup");
+    TEST_SYNC();
     
     ASSERT_EQ(ed247_component_get_streams(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     // Cornercases
     ASSERT_EQ(ed247_stream_list_size(NULL, &size), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_stream_list_size(streams, NULL), ED247_STATUS_FAILURE);
-    std::cout << "Stream number [" << size << "]" << std::endl;
+    SAY_SELF("Stream number [" << size << "]");
     
     uint64_t start = synchro::get_time_us();
     for (uint32_t i = 0; i < size; i++)
     {
-        std::cout << "Loop [" << i << "/" << size << "]" << std::endl;
+        SAY_SELF("Loop [" << i << "/" << size << "]");
         size_t count = 0;
         const void* content = NULL;
         size_t content_size = 0;
@@ -83,7 +68,7 @@ TEST_P(StreamContext, LimitOneByOne)
 
         ASSERT_EQ(ed247_stream_list_next(temp_list, &tmp_stream), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_get_info(tmp_stream, &stream_info), ED247_STATUS_SUCCESS);
-        // std::cout << "Process Stream [" << stream_info->name << "]" << std::endl;
+        // SAY_SELF("Process Stream [" << stream_info->name << "]");
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
         ASSERT_EQ(stream, tmp_stream);
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
@@ -93,13 +78,13 @@ TEST_P(StreamContext, LimitOneByOne)
         ASSERT_NE(content, (const void*) NULL);
         ASSERT_EQ(*((uint32_t*)content), stream_info->uid);
 
-        TEST_CONTEXT_SYNC();
+        TEST_SYNC();
     }
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     
     uint64_t end = synchro::get_time_us();
-    std::cout << "Receive & processing time (1 stream by 1 call) [" << (end-start)/1000 << "] ms" << std::endl;
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Receive & processing time (1 stream by 1 call) [" << (end-start)/1000 << "] ms");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -115,12 +100,12 @@ TEST_P(StreamContext, LimitAllInOne)
     size_t size;
     
     // Synchro at startup
-    std::cout << "Startup" << std::endl;
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Startup");
+    TEST_SYNC();
     
     ASSERT_EQ(ed247_component_get_streams(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
-    std::cout << "Stream number [" << size << "]" << std::endl;
+    SAY_SELF("Stream number [" << size << "]");
     
     uint64_t start = synchro::get_time_us();
     ASSERT_EQ(ed247_wait_during(_context, &temp_list, 1000*1000*1), ED247_STATUS_SUCCESS);
@@ -131,7 +116,7 @@ TEST_P(StreamContext, LimitAllInOne)
         size_t content_size = 0;
         ASSERT_EQ(ed247_stream_list_next(temp_list, &tmp_stream), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_get_info(tmp_stream, &stream_info), ED247_STATUS_SUCCESS);
-        // std::cout << "Process Stream [" << stream_info->name << "]" << std::endl;
+        // SAY_SELF("Process Stream [" << stream_info->name << "]");
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
         ASSERT_EQ(stream, tmp_stream);
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
@@ -145,8 +130,8 @@ TEST_P(StreamContext, LimitAllInOne)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     
     uint64_t end = synchro::get_time_us();
-    std::cout << "Receive & processing time (all streams by 1 call) [" << (end-start)/1000 << "] ms" << std::endl;
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Receive & processing time (all streams by 1 call) [" << (end-start)/1000 << "] ms");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -168,9 +153,9 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_limit_recv.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_limit_recv.xml"});
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

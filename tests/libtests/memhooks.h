@@ -21,27 +21,32 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-#include "test_context.h"
-#include "memhooks.h"
+#ifndef _MEMHOOKS_H_
+#define _MEMHOOKS_H_
+#include <stdint.h>
 
-void malloc_count_start()
-{
-#ifdef __linux__
-    LOG("[MALLOC COUNT SECTION START]");
-    memhooks_reset_count();
-    memhooks_enable(true);
+#ifdef __cplusplus
+extern "C" {
 #endif
-}
 
-int malloc_count_stop()
-{
-#ifdef __linux__
-    memhooks_enable(false);
-    memhooks_count_t count;
-    memhooks_get_count(&count);
-    LOG("[MALLOC COUNT SECTION STOP. Malloc:" << count.malloc_count << ". Free: " << count.free_count << "]");
-    return count.malloc_count;
-#else
-    return 0;
-#endif
+
+  struct memhooks_count_t
+  {
+    unsigned long malloc_count;
+    unsigned long free_count;
+  };
+
+  // Count malloc. Only on Linux (else return 0).
+  extern void malloc_count_start();
+  extern int malloc_count_stop();
+
+  extern void memhooks_enable(uint8_t enable);
+  extern uint8_t memhooks_is_enabled();
+  extern void memhooks_get_count(memhooks_count_t *count);
+  extern void memhooks_reset_count();
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif

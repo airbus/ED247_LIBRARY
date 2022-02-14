@@ -21,25 +21,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
+#include "functional_test.h"
+#define TEST_ACTOR_ID TEST_ACTOR2_ID
 
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-/***********
- * Defines *
- ***********/
-
-#define TEST_ENTITY_SRC_ID TEST_ENTITY_TESTER_ID
-#define TEST_ENTITY_DST_ID TEST_ENTITY_MAIN_ID
-
-#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_TESTER()
-
-/********
- * Test *
- ********/
 
 std::string config_path = "../config";
 
@@ -63,7 +47,6 @@ ed247_timestamp_t timestamp2 = {456, 789};
 
 ed247_status_t get_time_test1(ed247_time_sample_t time_sample, void *user_data)
 {
-    _UNUSED(user_data);
     return libed247_update_time(time_sample, timestamp1.epoch_s, timestamp1.offset_ns);
 }
 ed247_status_t get_time_test2(ed247_time_sample_t time_sample, void *user_data)
@@ -92,7 +75,6 @@ TEST_P(StreamContext, SingleFrame)
     size_t sample_size;
     bool empty;
     std::string str_send, str_recv;
-    std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
     ed247_stream_t stream0, stream1;
     ed247_stream_recv_callback_t callback;
@@ -102,8 +84,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_NE(timestamp1.offset_ns, timestamp2.offset_ns);
     
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Try to set an unvalid the reveice timestamp handler
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(NULL, NULL), ED247_STATUS_FAILURE);
@@ -125,9 +107,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_wait_frame(_context, NULL, 10000000), ED247_STATUS_FAILURE);
     
     // Extract and check content of payload
-    oss.str("");
-    oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
@@ -135,8 +115,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Receive multiple frames for 10 seconds
     malloc_count_start();
@@ -150,15 +130,13 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
         // Extract and check content of payload for each frame
-        oss.str("");
-        oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
-        LOG_SELF("Receive stack size [" << stack_size << "]");
+        SAY_SELF("Receive stack size [" << stack_size << "]");
         ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
@@ -168,8 +146,8 @@ TEST_P(StreamContext, SingleFrame)
     }
 
     // Checkpoint n~3
-    LOG_SELF("Checkpoint n~3");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~3");
+    TEST_SYNC();
 
     // Receive other frames with the second handler
     malloc_count_start();
@@ -181,15 +159,13 @@ TEST_P(StreamContext, SingleFrame)
         ASSERT_EQ(malloc_count_stop(), 0);
         for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
             // Extract and check content of payload for each frame
-            oss.str("");
-            oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-            str_send = oss.str();
+            str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
-            LOG_SELF("Receive stack size [" << stack_size << "]");
+            SAY_SELF("Receive stack size [" << stack_size << "]");
             ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
@@ -200,8 +176,8 @@ TEST_P(StreamContext, SingleFrame)
     }
 
     // Checkpoint n~4
-    LOG_SELF("Checkpoint n~4");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~4");
+    TEST_SYNC();
 
     // Receive other frames with the second handler
     malloc_count_start();
@@ -213,18 +189,16 @@ TEST_P(StreamContext, SingleFrame)
         ASSERT_EQ(malloc_count_stop(), 0);
         for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
             // Extract and check content of payload for each frame
-            oss.str("");
-            oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-            str_send = oss.str();
+            str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
-            LOG_SELF("Receive stack size [" << stack_size << "]");
+            SAY_SELF("Receive stack size [" << stack_size << "]");
             ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
-            LOG_SELF("Received [" << str_recv << "]");
+            SAY_SELF("Received [" << str_recv << "]");
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
             ASSERT_EQ(timestamp2.epoch_s+user_data, frame_timestamp->epoch_s);
@@ -233,8 +207,8 @@ TEST_P(StreamContext, SingleFrame)
     }
 
     // Checkpoint n~5.1
-    LOG_SELF("Checkpoint n~5.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~5.1");
+    TEST_SYNC();
 
     // Setup recv callback on a single stream, not all
 
@@ -265,7 +239,7 @@ TEST_P(StreamContext, SingleFrame)
         const ed247_stream_info_t *info;
         ed247_stream_get_info(stream, &info);
         stream_name = info->name;
-        LOG_SELF("Callback on stream [" << stream_name << "]");
+        SAY_SELF("Callback on stream [" << stream_name << "]");
         checkpoints++;
         return ED247_STATUS_SUCCESS;
     };
@@ -283,8 +257,8 @@ TEST_P(StreamContext, SingleFrame)
     // TODO: Continue
 
     // Checkpoint n~5.2
-    LOG_SELF("Checkpoint n~5.2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~5.2");
+    TEST_SYNC();
 
     // Perform reception
     malloc_count_start();
@@ -305,8 +279,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_component_set_user_data(_context, NULL), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~6.1
-    LOG_SELF("Checkpoint n~6.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~6.1");
+    TEST_SYNC();
 
     // Retrieve stream list
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -326,8 +300,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_streams_register_recv_callback(NULL, streams, callback), ED247_STATUS_FAILURE);
 
     // Checkpoint n~6.2
-    LOG_SELF("Checkpoint n~6.2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~6.2");
+    TEST_SYNC();
 
     // Perform reception
     malloc_count_start();
@@ -347,8 +321,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_streams_unregister_recv_callback(_context, streams, NULL), ED247_STATUS_FAILURE);
 
     // Checkpoint n~7.1
-    LOG_SELF("Checkpoint n~7.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~7.1");
+    TEST_SYNC();
 
     // Reset globals
     checkpoints = 0;
@@ -361,8 +335,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_register_recv_callback(_context, NULL), ED247_STATUS_FAILURE);
 
     // Checkpoint n~7.2
-    LOG_SELF("Checkpoint n~7.2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~7.2");
+    TEST_SYNC();
 
     // Perform reception
     malloc_count_start();
@@ -379,8 +353,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_unregister_recv_callback(_context, NULL), ED247_STATUS_FAILURE);
 
     // Checkpoint n~8
-    LOG_SELF("Checkpoint n~8");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~8");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -395,12 +369,11 @@ TEST_P(SimpleStreamContext, SingleFrame)
     size_t sample_size;
     bool empty;
     std::string str_send, str_recv;
-    std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
 
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Set a dummy receive timestamp handler before reception
     malloc_count_start();
@@ -414,9 +387,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     
     // Extract and check the content of the received frame
-    oss.str("");
-    oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
@@ -424,8 +395,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Wait for more frames to be received
     malloc_count_start();
@@ -438,15 +409,13 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
         // Extract and check the frame contents
-        oss.str("");
-        oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
-        LOG_SELF("Receive stack size [" << stack_size << "]");
+        SAY_SELF("Receive stack size [" << stack_size << "]");
         ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
@@ -456,8 +425,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
     }
 
     // Checkpoint n~3
-    LOG_SELF("Checkpoint n~3");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~3");
+    TEST_SYNC();
 
     // Wait for more frames to be received
     malloc_count_start();
@@ -469,15 +438,13 @@ TEST_P(SimpleStreamContext, SingleFrame)
         ASSERT_EQ(malloc_count_stop(), 0);
         for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
             // Extract and check the frame contents
-            oss.str("");
-            oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-            str_send = oss.str();
+            str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
-            LOG_SELF("Receive stack size [" << stack_size << "]");
+            SAY_SELF("Receive stack size [" << stack_size << "]");
             ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
@@ -488,8 +455,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
     }
 
     // Checkpoint n~4
-    LOG_SELF("Checkpoint n~4");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~4");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -504,12 +471,11 @@ TEST_P(StreamContext, MultipleFrame)
     size_t sample_size;
     bool empty;
     std::string str_send, str_recv;
-    std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
 
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Set a dummy receive timestamp handler before reception
     malloc_count_start();
@@ -523,17 +489,15 @@ TEST_P(StreamContext, MultipleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     
     // Extract and check the content of this frame
-    oss.str("");
-    oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 0;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 0;
     str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
     ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
     ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
 
-    LOG_SELF("Checkpoint n~1.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1.1");
+    TEST_SYNC();
 
     // Recv the other frames
     ASSERT_EQ(ed247_wait_during(NULL, &streams, 1000000), ED247_STATUS_FAILURE);
@@ -551,9 +515,7 @@ TEST_P(StreamContext, MultipleFrame)
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         // Extract and check the content of the payload
-        oss.str("");
-        oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
@@ -562,8 +524,8 @@ TEST_P(StreamContext, MultipleFrame)
     }
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -580,12 +542,11 @@ TEST_P(SignalContext, SingleFrame)
     const ed247_signal_info_t *signal_info;
     bool empty;
     std::string str_send, str_recv;
-    std::ostringstream oss;
     const ed247_timestamp_t* frame_timestamp;
 
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Set a dummy receive timestamp handler before reception
     malloc_count_start();
@@ -608,13 +569,11 @@ TEST_P(SignalContext, SingleFrame)
         // Extract and check the content of each signal of the frame
         ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, signal, &sample_data, &sample_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
-        oss.str("");
         if(signal_info->type == ED247_SIGNAL_TYPE_DISCRETE || signal_info->type == ED247_SIGNAL_TYPE_NAD){
-            oss << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
+            str_send = strize() << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
         }else{
-            oss << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,2);
+            str_send = strize() << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,2);
         }
-        str_send = oss.str();
         str_recv = std::string((char*)sample_data, sample_size);
         ASSERT_EQ(str_send, str_recv);
         // Check the received timestamp is the expected one
@@ -623,8 +582,8 @@ TEST_P(SignalContext, SingleFrame)
     }
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -656,23 +615,23 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    LOG("Configuration path: " << config_path);
+    SAY("Configuration path: " << config_path);
 
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_uc_tester.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_mc_tester.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a664_mc_tester.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a825_uc_tester.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a825_mc_tester.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_serial_uc_tester.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_serial_mc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a664_mc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a825_uc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a825_mc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_uc_tester.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_mc_tester.xml"});
     
-    simple_stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_uc_tester_simple.xml"});
-    simple_stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_mc_tester_simple.xml"});
+    simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_tester_simple.xml"});
+    simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_tester_simple.xml"});
     
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_dis_mc_tester.xml"});
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_ana_mc_tester.xml"});
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_nad_mc_tester.xml"});
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_vnad_mc_tester.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_dis_mc_tester.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_ana_mc_tester.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_nad_mc_tester.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_vnad_mc_tester.xml"});
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

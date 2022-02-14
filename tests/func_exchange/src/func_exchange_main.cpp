@@ -21,21 +21,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-/***********
- * Defines *
- ***********/
-
-#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
-#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
-
-#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
+#include "functional_test.h"
+#define TEST_ACTOR_ID TEST_ACTOR1_ID
 
 /********
  * Test *
@@ -76,7 +63,6 @@ TEST_P(StreamContext, SingleFrame)
     void *samples[2];
     void *samples_size[2];
     std::string str_send;
-    std::ostringstream oss;
 
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -100,13 +86,11 @@ TEST_P(StreamContext, SingleFrame)
     // Checkpoint n~1
     // For this checkpoint the last byte is filled with 1
     // A single sample is sent on one of the streams of the channel
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Send
-    oss.str("");
-    oss << std::setw(stream_info[0]->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info[0]->sample_max_size_bytes) << std::setfill('0') << 1;
     memcpy(sample[0], str_send.c_str(), stream_info[0]->sample_max_size_bytes);
     malloc_count_start();
     const ed247_stream_info_t *stream_info_tmp;
@@ -124,14 +108,12 @@ TEST_P(StreamContext, SingleFrame)
     // Send the maximum number of samples of one stream of the channel
     // Samples are filled with 0s except for the last byte that is
     // filled with the number of the sample
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Send
     for(unsigned i = 0 ; i < stream_info[0]->sample_max_number ; i++){
-        oss.str("");
-        oss << std::setw(stream_info[0]->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info[0]->sample_max_size_bytes) << std::setfill('0') << i;
         memcpy(sample[0], str_send.c_str(), stream_info[0]->sample_max_size_bytes);
         malloc_count_start();
         ASSERT_EQ(ed247_stream_push_sample(stream[0], sample[0], sample_size[0], NULL, NULL), ED247_STATUS_SUCCESS);
@@ -142,14 +124,12 @@ TEST_P(StreamContext, SingleFrame)
     // Checkpoint n~3
     // For this checkpoint the last byte is filled with the number of the sample for both streams
     // Saturate the frame/channel with all available occurrence of samples from Stream0 and Stream1
-    LOG_SELF("Checkpoint n~3");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~3");
+    TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
         for(unsigned i = 0 ; i < stream_info[j]->sample_max_number ; i++){
-            oss.str("");
-            oss << std::setw(stream_info[j]->sample_max_size_bytes) << std::setfill('0') << i;
-            str_send = oss.str();
+            str_send = strize() << std::setw(stream_info[j]->sample_max_size_bytes) << std::setfill('0') << i;
             memcpy(sample[j], str_send.c_str(), stream_info[j]->sample_max_size_bytes);
             malloc_count_start();
             ASSERT_EQ(ed247_stream_push_sample(stream[j], sample[j], sample_size[j], NULL, NULL), ED247_STATUS_SUCCESS);
@@ -159,23 +139,21 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~4
-    LOG_SELF("Checkpoint n~4");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~4");
+    TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
-        LOG_SELF("Samples data array size [" << stream_info[j]->sample_max_number*stream_info[j]->sample_max_size_bytes << "]");
+        SAY_SELF("Samples data array size [" << stream_info[j]->sample_max_number*stream_info[j]->sample_max_size_bytes << "]");
         samples[j] = malloc(stream_info[j]->sample_max_number*stream_info[j]->sample_max_size_bytes);
-        LOG_SELF("Samples data sizes [" << stream_info[j]->sample_max_number*sizeof(size_t) << "]");
+        SAY_SELF("Samples data sizes [" << stream_info[j]->sample_max_number*sizeof(size_t) << "]");
         samples_size[j] = malloc(stream_info[j]->sample_max_number*sizeof(size_t));
         for(unsigned i = 0 ; i < stream_info[j]->sample_max_number ; i++){
-            oss.str("");
-            oss << std::setw(stream_info[j]->sample_max_size_bytes) << std::setfill('0') << i;
-            str_send = oss.str();
-            LOG_SELF("+ Append [" << str_send << "]");
+            str_send = strize() << std::setw(stream_info[j]->sample_max_size_bytes) << std::setfill('0') << i;
+            SAY_SELF("+ Append [" << str_send << "]");
             memcpy((char*)samples[j]+i*stream_info[j]->sample_max_size_bytes, str_send.c_str(), stream_info[j]->sample_max_size_bytes);
             ((size_t*)samples_size[j])[i] = stream_info[j]->sample_max_size_bytes;
         }
-        LOG_SELF("Push samples");
+        SAY_SELF("Push samples");
         malloc_count_start();
         ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
@@ -184,71 +162,71 @@ TEST_P(StreamContext, SingleFrame)
         ASSERT_EQ(ed247_stream_push_samples(stream[j], NULL, (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_FAILURE);
         ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], NULL, stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_FAILURE);
     }
-    LOG_SELF("Send pushed samples");
+    SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~5.1
-    LOG_SELF("Checkpoint n~5.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~5.1");
+    TEST_SYNC();
 
     // Receiver is setting the callbacks
     
     // Checkpoint n~5.2
-    LOG_SELF("Checkpoint n~5.2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~5.2");
+    TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
-        LOG_SELF("Push samples " << j);
+        SAY_SELF("Push samples " << j);
         malloc_count_start();
         ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     }
-    LOG_SELF("Send pushed samples");
+    SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
     // Receiver is setting the callbacks
     
     // Checkpoint n~6.1
-    LOG_SELF("Checkpoint n~6.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~6.1");
+    TEST_SYNC();
 
     // Receiver is setting callbacks
     
     // Checkpoint n~6.2
-    LOG_SELF("Checkpoint n~6.2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~6.2");
+    TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
-        LOG_SELF("Push samples " << j);
+        SAY_SELF("Push samples " << j);
         malloc_count_start();
         ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     }
-    LOG_SELF("Send pushed samples");
+    SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
     
     // Checkpoint n~7.1
-    LOG_SELF("Checkpoint n~7.1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~7.1");
+    TEST_SYNC();
 
     // Receiver is setting callbacks
     
     // Checkpoint n~7.2
-    LOG_SELF("Checkpoint n~7.2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~7.2");
+    TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
-        LOG_SELF("Push samples " << j);
+        SAY_SELF("Push samples " << j);
         malloc_count_start();
         ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     }
-    LOG_SELF("Send pushed samples");
+    SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
     
     // Checkpoint n~8
-    LOG_SELF("Checkpoint n~8");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~8");
+    TEST_SYNC();
 
     // Free memory
     for(unsigned j = 0 ; j < 2 ; j++){
@@ -280,7 +258,6 @@ TEST_P(SimpleStreamContext, SingleFrame)
     void *sample;
     size_t sample_size;
     std::string str_send;
-    std::ostringstream oss;
 
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -292,13 +269,11 @@ TEST_P(SimpleStreamContext, SingleFrame)
 
     // Checkpoint n~1
     // For this checkpoint the last byte is filled with 1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Send
-    oss.str("");
-    oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
     malloc_count_start();
     ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
@@ -309,14 +284,12 @@ TEST_P(SimpleStreamContext, SingleFrame)
     // Send the maximum number of samples of one Stream0
     // Samples are filled with 0s except for the last byte that is
     // filled with the number of the sample
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Send
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
-        oss.str("");
-        oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
     }
@@ -324,21 +297,19 @@ TEST_P(SimpleStreamContext, SingleFrame)
 
     // Checkpoint n~3
     // This test case is exactly the same as the previous one
-    LOG_SELF("Checkpoint n~3");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~3");
+    TEST_SYNC();
 
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
-        oss.str("");
-        oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
     }
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~4
-    LOG_SELF("Checkpoint n~4");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~4");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -363,7 +334,6 @@ TEST_P(StreamContext, MultipleFrame)
     void *sample;
     size_t sample_size;
     std::string str_send;
-    std::ostringstream oss;
 
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -375,27 +345,25 @@ TEST_P(StreamContext, MultipleFrame)
 
     // Checkpoint n~1
     // Fill the maximum amount of samples for Stream0 and send them at once.
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Send
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
-        oss.str("");
-        oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_send = oss.str();
+        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
-        LOG_SELF("push/send sample " << i);
+        SAY_SELF("push/send sample " << i);
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         if (i == 0) {
-          LOG_SELF("Checkpoint n~1.1");
-          TEST_CONTEXT_SYNC();
+          SAY_SELF("Checkpoint n~1.1");
+          TEST_SYNC();
         }
     }
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -423,7 +391,6 @@ TEST_P(SignalContext, SingleFrame)
     void *samples[2];
     size_t sizes[2];
     std::string str_send;
-    std::ostringstream oss;
 
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -437,7 +404,7 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_find_stream_signals(stream, ".*", &signals), ED247_STATUS_SUCCESS);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != nullptr){
         ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
-        LOG_SELF("Create sample for signal [" << std::string(signal_info->name) << "] ...");
+        SAY_SELF("Create sample for signal [" << std::string(signal_info->name) << "] ...");
         ASSERT_EQ(ed247_signal_allocate_sample(signal, &samples[s], &sizes[s]), ED247_STATUS_SUCCESS);
         // Check limit cases
         ASSERT_EQ(ed247_signal_allocate_sample(NULL, &tmp_sample, &tmp_sample_size), ED247_STATUS_FAILURE);
@@ -448,8 +415,8 @@ TEST_P(SignalContext, SingleFrame)
 
     // Checkpoint n~1
     // Fill the all signals in the sample before sending
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Send
     s = 0;
@@ -459,14 +426,12 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != nullptr){
         ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
-        LOG_SELF("Writing [" << std::string(signal_info->name) << "] ...");
-        oss.str("");
+        SAY_SELF("Writing [" << std::string(signal_info->name) << "] ...");
         if(signal_info->type == ED247_SIGNAL_TYPE_DISCRETE || signal_info->type == ED247_SIGNAL_TYPE_NAD){
-            oss << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
+          str_send = strize() << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
         }else{
-            oss << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_info->name).substr(6,2);
+          str_send = strize() << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_info->name).substr(6,2);
         }
-        str_send = oss.str();
         memcpy(samples[s], str_send.c_str(), sizes[s]);
         malloc_count_start();
         ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, signal, samples[s], sizes[s]), ED247_STATUS_SUCCESS);
@@ -479,8 +444,8 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -512,23 +477,23 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    LOG("Configuration path: " << config_path);
+    SAY("Configuration path: " << config_path);
 
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_uc_main.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_mc_main.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a664_mc_main.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a825_uc_main.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a825_mc_main.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_serial_uc_main.xml"});
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_serial_mc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a664_mc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a825_uc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a825_mc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_uc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_mc_main.xml"});
     
-    simple_stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_uc_main_simple.xml"});
-    simple_stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_a429_mc_main_simple.xml"});
+    simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_main_simple.xml"});
+    simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_main_simple.xml"});
     
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_dis_mc_main.xml"});
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_ana_mc_main.xml"});
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_nad_mc_main.xml"});
-    signal_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_vnad_mc_main.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_dis_mc_main.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_ana_mc_main.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_nad_mc_main.xml"});
+    signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_vnad_mc_main.xml"});
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

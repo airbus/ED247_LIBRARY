@@ -22,23 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-#include <stdio.h>
-
-#include "gtest/gtest.h"
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "functional_test.h"
 
 std::string config_path = "../config";
 
@@ -105,44 +89,44 @@ TEST(RobustnessLoad, Loading)
 {
     ed247_context_t context;
     // Context address not provided, unload after error checked
-    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_a429.xml").c_str(), NULL, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_a429.xml").c_str(), NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unload(NULL), ED247_STATUS_FAILURE);
     
     // ECIC file path not provided, unload after error checked
-    ASSERT_EQ(ed247_load(NULL, NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file(NULL, &context), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_FAILURE);
     
     // ECIC file path is erroneous, unload after error checked
-    ASSERT_EQ(ed247_load("NotExistingFile.xml", NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file("NotExistingFile.xml", &context), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_FAILURE);
     
     // ECIC file path is miss formatted
-    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_missformatted.xml").c_str(), NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_missformatted.xml").c_str(), &context), ED247_STATUS_FAILURE);
     
     // Check the errors did not mess up the loading capabilities
-    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_a429.xml").c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_a429.xml").c_str(), &context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
     
     // ECIC file with duplicated stream
-    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_stream_duplicated.xml").c_str(), NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_stream_duplicated.xml").c_str(), &context), ED247_STATUS_FAILURE);
 
     // ECIC file with duplicated channel
-    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_channel_duplicated.xml").c_str(), NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_channel_duplicated.xml").c_str(), &context), ED247_STATUS_FAILURE);
 
     // Check load by providing ECIC content
-    ASSERT_EQ(ed247_load_content(ecic_content, NULL, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_load_content(NULL, NULL, &context), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_load_content(ecic_content, NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_content(ecic_content, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_content(NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_content(ecic_content, &context), ED247_STATUS_SUCCESS);
 
     // Check load by content fails if wrong ECIC content is provided
-    ASSERT_EQ(ed247_load_content("I am a wrong configuration file content !", NULL, &context), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_content("I am a wrong configuration file content !", &context), ED247_STATUS_FAILURE);
 }
 
 TEST(NoInputs, Wait)
 {
     ed247_context_t context;
     // Context address not provided, unload after error checked
-    ASSERT_EQ(ed247_load((config_path+"/ecic_func_load_all_no_inputs.xml").c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_no_inputs.xml").c_str(), &context), ED247_STATUS_SUCCESS);
 
     ed247_stream_list_t streams;
     ASSERT_EQ(ed247_wait_frame(context, &streams, 1000), ED247_STATUS_TIMEOUT);
@@ -163,7 +147,7 @@ TEST_P(LoadContext, Loading)
 
     std::string filepath = GetParam();
 
-    ASSERT_EQ(ed247_load(filepath.c_str(),NULL,&ed247_context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(),&ed247_context), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_unload(ed247_context), ED247_STATUS_SUCCESS);
 
@@ -197,7 +181,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     configuration_files.push_back(config_path+"/ecic_func_load_all_a429.xml");
 

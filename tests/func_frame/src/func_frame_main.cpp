@@ -22,29 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-#include <stdio.h>
-
-#include "gtest/gtest.h"
-
-#ifdef __linux__
-    #include <arpa/inet.h>
-#elif _WIN32
-    #include <winsock2.h>
-#endif
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "functional_test.h"
 
 std::string config_path = "../config";
 
@@ -72,19 +50,19 @@ TEST_P(FrameContext, Main)
 
     std::string filepath = GetParam();
 
-    ASSERT_EQ(ed247_load(filepath.c_str(),NULL,&context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(),&context), ED247_STATUS_SUCCESS);
 
     // Retrieve channel identifier
     ASSERT_EQ(ed247_find_channels(context, "Channel0", &channels_output), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channels_output, &channel_output), ED247_STATUS_SUCCESS);
     ed247_channel_get_info(channel_output, &channel_info);
-    fprintf(stdout, "Name: %s\n", channel_info->name);
+    SAY("Name: " << channel_info->name);
     ASSERT_EQ(ed247_channel_list_free(channels_output), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_find_channels(context, "Channel1", &channels_input), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channels_input, &channel_input), ED247_STATUS_SUCCESS);
     ed247_channel_get_info(channel_output, &channel_info);
-    fprintf(stdout, "Name: %s\n", channel_info->name);
+    SAY("Name: " << channel_info->name);
     ASSERT_EQ(ed247_channel_list_free(channels_input), ED247_STATUS_SUCCESS);
 
     // Retrieve streams
@@ -94,9 +72,8 @@ TEST_P(FrameContext, Main)
         // Allocate sample & push them
         ASSERT_EQ(ed247_stream_allocate_sample(stream_output, &sample_data, &sample_size), ED247_STATUS_SUCCESS);
         for(uint16_t i = 0 ; i < stream_output_info->sample_max_number ; i++){
-            std::ostringstream oss;
-            oss << std::setw(sample_size) << std::setfill('0') << i;
-            memcpy(sample_data, oss.str().c_str(), sample_size);
+            std::string sample_str = strize() << std::setw(sample_size) << std::setfill('0') << i;
+            memcpy(sample_data, sample_str.c_str(), sample_size);
             malloc_count_start();
             ASSERT_EQ(ed247_stream_push_sample(stream_output, sample_data, sample_size, nullptr, &full), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
@@ -147,8 +124,7 @@ TEST_P(FrameContext, Main)
         }
         frame_index += sizeof(uint16_t);
         for(uint16_t i = 0 ; i < stream_output_info->sample_max_number ; i++){
-            std::ostringstream oss;
-            oss << std::setw(sample_size) << std::setfill('0') << i;
+          std::string expected = strize() << std::setw(sample_size) << std::setfill('0') << i;
             if(stream_output_info->type == ED247_STREAM_TYPE_A664 && stream_output_info->sample_max_number > 1){
                     auto sample_size_tmp = (uint16_t)ntohs(*(uint16_t*)((char*)frame->data+frame_index));
                     frame_index += sizeof(uint16_t);
@@ -163,7 +139,7 @@ TEST_P(FrameContext, Main)
                     ASSERT_EQ(sample_size_tmp, sample_size);
             }
             std::string strsample((char*)frame->data+frame_index, stream_output_info->sample_max_size_bytes);
-            ASSERT_EQ(strsample, oss.str());
+            ASSERT_EQ(strsample, expected);
             frame_index += stream_output_info->sample_max_size_bytes;
         }
     }
@@ -184,12 +160,11 @@ TEST_P(FrameContext, Main)
         ASSERT_EQ(ed247_stream_get_info(stream_input, &stream_input_info), ED247_STATUS_SUCCESS);
         int i = 0;
         do{
-            std::ostringstream oss;
-            oss << std::setw(sample_size) << std::setfill('0') << i++;
+            std::string sample_str = strize() << std::setw(sample_size) << std::setfill('0') << i++;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream_input, &csample_data, &sample_size, nullptr, nullptr, nullptr, &empty), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
-            ASSERT_EQ(memcmp(csample_data, oss.str().c_str(), sample_size), 0);
+            ASSERT_EQ(memcmp(csample_data, sample_str.c_str(), sample_size), 0);
         }while(!empty);
     }
 
@@ -214,7 +189,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     configuration_files.push_back(config_path+"/ecic_func_frame_a429.xml");
     configuration_files.push_back(config_path+"/ecic_func_frame_a664.xml");

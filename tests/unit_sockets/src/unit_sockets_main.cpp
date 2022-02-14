@@ -22,29 +22,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
+#include "unitary_test.h"
+#include "ed247_channel.h"
 
-#include "test_context.h"
-
-#include <ed247_logs.h>
-
-#include <ed247_channel.h>
-
-#include <memory>
-
-/***********
- * Defines *
- ***********/
-
-using namespace ed247;
-
-/*************
- * Functions *
- *************/
-
-class SocketContext : public ::testing::TestWithParam<xml::UdpSocket> {};
+class SocketContext : public ::testing::TestWithParam<ed247::xml::UdpSocket> {};
 
 // Naming convention
 // TEST_EMITTER_<num_frame_per_channel>_<num_channel>_<num_socket>
@@ -53,45 +34,41 @@ class SocketContext : public ::testing::TestWithParam<xml::UdpSocket> {};
 TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 {
     try{
-        int idebug = 0;
-
-        auto pool_sockets = std::make_shared<UdpSocket::Pool>();
-        auto pool_streams = std::make_shared<BaseStream::Pool>();
-        auto pool_interfaces = std::dynamic_pointer_cast<ComInterface::Pool>(pool_sockets);
-        auto pool_channels = std::make_shared<Channel::Pool>(
+        auto pool_sockets = std::make_shared<ed247::UdpSocket::Pool>();
+        auto pool_streams = std::make_shared<ed247::BaseStream::Pool>();
+        auto pool_interfaces = std::dynamic_pointer_cast<ed247::ComInterface::Pool>(pool_sockets);
+        auto pool_channels = std::make_shared<ed247::Channel::Pool>(
                 pool_interfaces,
                 pool_streams);
 
         // Socket
-        auto sp_socket_conf = std::make_shared<xml::UdpSocket>(GetParam());
+        auto sp_socket_conf = std::make_shared<ed247::xml::UdpSocket>(GetParam());
 
-        std::ostringstream oss;
-        oss << "Send a single frame from a single channel with one socket to another channel with another socket. [" << sp_socket_conf->toString() << "]";
-        RecordProperty("description",oss.str());
+        RecordProperty("description", strize() << "Send a single frame from a single channel with one socket to another channel with another socket. [" << sp_socket_conf->toString() << "]");
 
         // Stream (Emitter)
-        auto sp_stream_emitter_conf = std::make_shared<xml::A429Stream>();
+        auto sp_stream_emitter_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_emitter_conf->reset();
         sp_stream_emitter_conf->info.name = "StreamOut";
         sp_stream_emitter_conf->info.direction = ED247_DIRECTION_OUT;
         sp_stream_emitter_conf->info.uid = 0;
 
         // Channel (Emitter)
-        auto sp_channel_emitter_conf = std::make_shared<xml::Channel>();
+        auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
         sp_channel_emitter_conf->info.name = "ChannelOutput";
         sp_channel_emitter_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_emitter_conf->streams.push_back(sp_stream_emitter_conf);
         auto channel_emitter = pool_channels->get(sp_channel_emitter_conf);
 
         // Stream (Receiver)
-        auto sp_stream_receiver_conf = std::make_shared<xml::A429Stream>();
+        auto sp_stream_receiver_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_receiver_conf->reset();
         sp_stream_receiver_conf->info.name = "StreamIn";
         sp_stream_receiver_conf->info.direction = ED247_DIRECTION_IN;
         sp_stream_receiver_conf->info.uid = 0;
 
         // Channel (Receiver)
-        auto sp_channel_receiver_conf = std::make_shared<xml::Channel>();
+        auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
         sp_channel_receiver_conf->info.name = "ChannelInput";
         sp_channel_receiver_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_receiver_conf->streams.push_back(sp_stream_receiver_conf);
@@ -109,8 +86,6 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         const char *recv_frame;
         size_t recv_frame_size;
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         malloc_count_start();
 
         // Send frame
@@ -120,14 +95,10 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         // Retrieve message
-        std::dynamic_pointer_cast<UdpSocket>(channel_receiver->get_receivers().front().lock())->get_recv_frame(recv_frame, recv_frame_size);
+        std::dynamic_pointer_cast<ed247::UdpSocket>(channel_receiver->get_receivers().front().lock())->get_recv_frame(recv_frame, recv_frame_size);
         std::string recv_msg{recv_frame+sizeof(ed247_uid_t)+sizeof(uint16_t), recv_frame_size-sizeof(ed247_uid_t)-sizeof(uint16_t)};
         ASSERT_EQ(send_msg,recv_msg);
-
-        LOG_INFO() << "### " << idebug++ << LOG_END;
 
         malloc_count_start();
 
@@ -141,14 +112,10 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         // Retrieve message
-        std::dynamic_pointer_cast<UdpSocket>(channel_receiver->get_receivers().front().lock())->get_recv_frame(recv_frame, recv_frame_size);
+        std::dynamic_pointer_cast<ed247::UdpSocket>(channel_receiver->get_receivers().front().lock())->get_recv_frame(recv_frame, recv_frame_size);
         recv_msg = std::string{recv_frame+sizeof(ed247_uid_t)+sizeof(uint16_t), recv_frame_size-sizeof(ed247_uid_t)-sizeof(uint16_t)};
         ASSERT_EQ(send_msg,recv_msg);
-
-        LOG_INFO() << "### " << idebug++ << LOG_END;
 
         malloc_count_start();
 
@@ -157,67 +124,61 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         // END
         free(msg);
     }
     catch(std::exception & e)
     {
-        LOG_INFO() << "Failure: " << e.what() << LOG_END;
+        SAY("Failure: " << e.what());
         ASSERT_TRUE(false);
     }
     catch(...)
     {
-        LOG_INFO() << "Failure" << LOG_END;
+        SAY("Failure");
         ASSERT_TRUE(false);
     }
 
-    LOG_INFO() << "END" << LOG_END;
+    SAY("END");
 }
 
 TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 {
     try{
-        int idebug = 0;
-
-        auto pool_sockets = std::make_shared<UdpSocket::Pool>();
-        auto pool_streams = std::make_shared<BaseStream::Pool>();
-        auto pool_interfaces = std::dynamic_pointer_cast<ComInterface::Pool>(pool_sockets);
-        auto pool_channels = std::make_shared<Channel::Pool>(
+        auto pool_sockets = std::make_shared<ed247::UdpSocket::Pool>();
+        auto pool_streams = std::make_shared<ed247::BaseStream::Pool>();
+        auto pool_interfaces = std::dynamic_pointer_cast<ed247::ComInterface::Pool>(pool_sockets);
+        auto pool_channels = std::make_shared<ed247::Channel::Pool>(
                 pool_interfaces,
                 pool_streams);
 
         // Socket
-        auto sp_socket_conf = std::make_shared<xml::UdpSocket>(GetParam());
+        auto sp_socket_conf = std::make_shared<ed247::xml::UdpSocket>(GetParam());
 
-        std::ostringstream oss;
-        oss << "Send two frames from a single channel with one socket to another channel with another socket. [" << sp_socket_conf->toString() << "]";
-        RecordProperty("description",oss.str());
+        RecordProperty("description", strize() << "Send two frames from a single channel with one socket to another channel with another socket. [" << sp_socket_conf->toString() << "]");
 
         // Stream (Emitter)
-        auto sp_stream_emitter_conf = std::make_shared<xml::A429Stream>();
+        auto sp_stream_emitter_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_emitter_conf->reset();
         sp_stream_emitter_conf->info.name = "StreamOut";
         sp_stream_emitter_conf->info.direction = ED247_DIRECTION_OUT;
         sp_stream_emitter_conf->info.uid = 0;
 
         // Channel (Emitter)
-        auto sp_channel_emitter_conf = std::make_shared<xml::Channel>();
+        auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
         sp_channel_emitter_conf->info.name = "ChannelOutput";
         sp_channel_emitter_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_emitter_conf->streams.push_back(sp_stream_emitter_conf);
         auto channel_emitter = pool_channels->get(sp_channel_emitter_conf);
 
         // Stream (Receiver)
-        auto sp_stream_receiver_conf = std::make_shared<xml::A429Stream>();
+        auto sp_stream_receiver_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_receiver_conf->reset();
         sp_stream_receiver_conf->info.name = "StreamIn";
         sp_stream_receiver_conf->info.direction = ED247_DIRECTION_IN;
         sp_stream_receiver_conf->info.uid = 0;
 
         // Channel (Receiver)
-        auto sp_channel_receiver_conf = std::make_shared<xml::Channel>();
+        auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
         sp_channel_receiver_conf->info.name = "ChannelInput";
         sp_channel_receiver_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_receiver_conf->streams.push_back(sp_stream_receiver_conf);
@@ -240,8 +201,6 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         const char *recv_frame;
         size_t recv_frame_size;
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         malloc_count_start();
 
         // Send frame
@@ -252,14 +211,10 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         // Retrieve message
-        std::dynamic_pointer_cast<UdpSocket>(channel_receiver->get_receivers().front().lock())->get_recv_frame(recv_frame, recv_frame_size);
+        std::dynamic_pointer_cast<ed247::UdpSocket>(channel_receiver->get_receivers().front().lock())->get_recv_frame(recv_frame, recv_frame_size);
         std::string recv_msg = std::string{recv_frame+sizeof(ed247_uid_t)+sizeof(uint16_t), recv_frame_size-sizeof(ed247_uid_t)-sizeof(uint16_t)};
         ASSERT_EQ(send_msg_b,recv_msg);
-
-        LOG_INFO() << "### " << idebug++ << LOG_END;
 
         malloc_count_start();
 
@@ -268,34 +223,30 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        LOG_INFO() << "### " << idebug++ << LOG_END;
-
         // END
         free(msg_a);
         free(msg_b);
     }
     catch(std::exception & e)
     {
-        LOG_INFO() << "Failure: " << e.what() << LOG_END;
+        SAY("Failure: " << e.what());
         ASSERT_TRUE(false);
     }
     catch(...)
     {
-        LOG_INFO() << "Failure" << LOG_END;
+        SAY("Failure");
         ASSERT_TRUE(false);
     }
 
-    LOG_INFO() << "END" << LOG_END;
+    SAY("END");
 }
 
-std::vector<xml::UdpSocket> sockets_unicast = {
-    xml::UdpSocket("127.0.0.1",2600,"127.0.0.1",2500),
-    xml::UdpSocket("127.0.0.1",2600)
+std::vector<ed247::xml::UdpSocket> sockets_unicast = {
+    ed247::xml::UdpSocket("127.0.0.1",2600,"127.0.0.1",2500),
+    ed247::xml::UdpSocket("127.0.0.1",2600)
 };
 
-std::vector<xml::UdpSocket> sockets_multicast = {
-    xml::UdpSocket("224.1.1.1",6000,"",5000)
-};
+std::vector<ed247::xml::UdpSocket> sockets_multicast;
 
 INSTANTIATE_TEST_CASE_P(UnicastTests, SocketContext,
     ::testing::ValuesIn(sockets_unicast));
@@ -305,13 +256,13 @@ INSTANTIATE_TEST_CASE_P(MulticastTests,SocketContext,
 
 int main(int argc, char **argv)
 {
-    std::string multicast_interface_ip = "";
+    std::string multicast_interface_ip;
     if(argc >=2)
         multicast_interface_ip = argv[1];
 
-    std::cout << "Multicast interface: " << multicast_interface_ip << std::endl;
+    SAY("Multicast interface: " << multicast_interface_ip);
 
-    sockets_multicast.push_back(xml::UdpSocket("224.1.1.1",6000,"",5000,multicast_interface_ip));
+    sockets_multicast.push_back(ed247::xml::UdpSocket("224.1.1.1",6000,"",5000,multicast_interface_ip));
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

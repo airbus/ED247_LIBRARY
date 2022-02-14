@@ -21,31 +21,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-#ifdef __linux__
-    #include <arpa/inet.h>
-#elif _WIN32
-    #include <winsock2.h>
-#endif
-
-/***********
- * Defines *
- ***********/
-
-#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
-#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
-
-#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
-
-/********
- * Test *
- ********/
+#include "functional_test.h"
+#define TEST_ACTOR_ID TEST_ACTOR1_ID
 
 std::string config_path = "../config";
 
@@ -76,7 +53,6 @@ TEST_P(StreamContext, BackupRecv)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    std::ostringstream oss;
     std::string str;
     size_t sample_size;
     const void *sample;
@@ -88,28 +64,26 @@ TEST_P(StreamContext, BackupRecv)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
 
     // Checkpoint
-    LOG_SELF("Checkpoint");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint");
+    TEST_SYNC();
 
     for(unsigned i = 0 ; i < 10 ; i++){
     
         ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
 
-        oss.str("");
-        oss << std::setw(100) << std::setfill('0') << i;
-        str = oss.str();
+        str = strize() << std::setw(100) << std::setfill('0') << i;
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, &data_timestamp, &recv_timestamp, &info, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(info->component_identifier, 1);
         ASSERT_EQ(info->sequence_number, (size_t)i);
 
         // Checkpoint
-        LOG_SELF("Checkpoint n~" << i);
-        TEST_CONTEXT_SYNC();
+        SAY_SELF("Checkpoint n~" << i);
+        TEST_SYNC();
     }
 
     // Checkpoint
-    LOG_SELF("Checkpoint");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint");
+    TEST_SYNC();
 
 }
 
@@ -117,7 +91,6 @@ TEST_P(StreamContext, BackupSend)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    std::ostringstream oss;
     std::string str;
     size_t sample_size;
     void *sample;
@@ -129,14 +102,12 @@ TEST_P(StreamContext, BackupSend)
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
 
     // Checkpoint
-    LOG_SELF("Checkpoint");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint");
+    TEST_SYNC();
 
     for(unsigned i = 0 ; i < 10 ; i++){
 
-        oss.str("");
-        oss << std::setw(100) << std::setfill('0') << i;
-        str = oss.str();
+        str = strize() << std::setw(100) << std::setfill('0') << i;
         // Update frame
         data_timestamp.epoch_s = (uint32_t)i;
         data_timestamp.offset_ns = (uint32_t)i;
@@ -147,14 +118,14 @@ TEST_P(StreamContext, BackupSend)
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
         // Checkpoint
-        LOG_SELF("Checkpoint n~" << i);
-        TEST_CONTEXT_SYNC();
+        SAY_SELF("Checkpoint n~" << i);
+        TEST_SYNC();
         
     }
 
     // Checkpoint
-    LOG_SELF("Checkpoint");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint");
+    TEST_SYNC();
 
 }
 
@@ -174,9 +145,9 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
-    files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_rev0_compliance_main.xml"});
+    files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_rev0_compliance_main.xml"});
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

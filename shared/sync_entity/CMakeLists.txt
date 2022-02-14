@@ -23,8 +23,11 @@
 ###############################################################################
 
 add_library(sync_entity OBJECT sync_entity.cpp)
-target_include_directories(sync_entity PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-if(WIN32)
-    target_link_libraries(sync_entity wsock32 ws2_32)
-endif()
+target_include_directories(sync_entity
+  PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/ed247
+)
+

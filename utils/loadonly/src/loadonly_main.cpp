@@ -23,24 +23,24 @@
  *****************************************************************************/
 
 #include <stdio.h>
-#include <iostream>
 #include <string>
 
 #include <ed247.h>
+#include <ed247_logs.h>
 
 int check_status(ed247_context_t context, ed247_status_t status);
 
 int main(int argc, char *argv[])
 {
-    ed247_status_t              status;
-    ed247_log_level_t           log_level;
-    ed247_context_t             context;
+    ed247_status_t              status = ED247_STATUS_SUCCESS;
+    ed247_log_level_t           log_level = ED247_LOG_LEVEL_UNSET;
+    ed247_context_t             context = nullptr;
     
     std::string filepath = "";
 
     // Retrieve arguments
     if(argc != 2){
-        std::cerr << "loadonly <ecic_filepath>" << std::endl;
+        PRINT_ERROR("loadonly <ecic_filepath>");
         return EXIT_FAILURE;
     }
 
@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
     if(status != ED247_STATUS_SUCCESS) return EXIT_FAILURE;
 
     filepath = std::string(argv[1]);
-    if(log_level >= ED247_LOG_LEVEL_INFO) std::cout << "ECIC filepath: " << filepath << std::endl;
+    PRINT_INFO("ECIC filepath: " << filepath);
 
-    status = ed247_load(filepath.c_str(), NULL, &context);
+    status = ed247_load_file(filepath.c_str(), &context);
     if(check_status(context, status)) return EXIT_FAILURE;
 
     status = ed247_unload(context);
@@ -62,12 +62,10 @@ int main(int argc, char *argv[])
 int check_status(ed247_context_t context, ed247_status_t status)
 {
     if(status != ED247_STATUS_SUCCESS){
-        fprintf(stderr,"# ED247 ERROR (%s): %s\n",
-            ed247_status_string(status),
-            libed247_errors());
-        ed247_unload(context);
-        return EXIT_FAILURE;
+       PRINT_ERROR("ED247 status: " << ed247_status_string(status));
+      ed247_unload(context);
+      return EXIT_FAILURE;
     }else{
-        return EXIT_SUCCESS;
+      return EXIT_SUCCESS;
     }
 }

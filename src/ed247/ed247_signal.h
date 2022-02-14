@@ -134,7 +134,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
         std::unique_ptr<BaseSample> allocate_sample() const;
 
-        virtual size_t position() const;
+        virtual size_t position() const = 0;
 
     protected:
         std::shared_ptr<xml::Signal> _configuration;

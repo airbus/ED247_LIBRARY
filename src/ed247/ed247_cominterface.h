@@ -99,7 +99,6 @@ struct SocketInfos : public sockaddr_in
 
     operator std::string() const
     {
-        std::ostringstream oss;
         std::string ipaddr;
 #ifdef _MSC_VER
         char straddr[INET_ADDRSTRLEN];
@@ -113,8 +112,7 @@ struct SocketInfos : public sockaddr_in
 #else
         ipaddr = std::string(inet_ntoa(sin_addr));
 #endif
-        oss << ipaddr << ":" << ntohs(sin_port) << (!valid ? std::string("[NOK]") : std::string());
-        return oss.str();
+        return strize() << ipaddr << ":" << ntohs(sin_port) << (!valid ? std::string("[NOK]") : std::string());
     }
 
     bool operator == (const SocketInfos & other) const
@@ -304,7 +302,7 @@ class UdpSocket : public ComInterface
             _socket_infos(socket_infos) {}
         ~UdpSocket() override
         {
-            PRINT_DEBUG("# Delete Socket [" << _socket_infos << "]");
+            PRINT_DEBUG("Delete Socket [" << _socket_infos << "]");
             close();
         };
 
@@ -314,7 +312,7 @@ class UdpSocket : public ComInterface
         const SocketInfos & get_socket_infos() const { return _socket_infos; }
 
         virtual void send_frame(Channel & from, const void * frame, const size_t frame_size) final;
-        bool recv();
+        void recv();
         
         // Associate to a channel as an emitter
         void register_channel_emitter(Channel & channel, const xml::UdpSocket & configuration);

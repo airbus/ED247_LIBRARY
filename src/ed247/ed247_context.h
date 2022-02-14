@@ -60,8 +60,7 @@ class Context : public ed247_internal_context_t
 {
     public:
 
-        explicit Context(
-            const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
+        explicit Context();
         ~Context();
         Context(const Context &)                = delete;
         Context(Context &&)                     = delete;
@@ -92,7 +91,7 @@ class Context : public ed247_internal_context_t
                     continue;
                 auto channel = static_cast<Channel*>(frame->channel);
                 if(!channel->buffer().empty()){
-                    frame->data = channel->buffer().data();
+                    frame->data = channel->buffer().data_rw();
                     frame->size = channel->buffer().size();
                 }else{
                     frame->data = nullptr;
@@ -133,10 +132,8 @@ class Context : public ed247_internal_context_t
         class Builder
         {
             public:
-                static Context * create_filepath(std::string ecic_filepath,
-                    const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
-                static Context * create_content(std::string ecic_content,
-                    const libed247_configuration_t & libed247_configuration = LIBED247_CONFIGURATION_DEFAULT);
+                static Context * create_filepath(std::string ecic_filepath);
+                static Context * create_content(std::string ecic_content);
                 static void initialize(Context & context);
 
                 Builder(const Builder &) = delete;
@@ -151,7 +148,6 @@ class Context : public ed247_internal_context_t
 
     private:
 
-        const libed247_configuration_t          _configuration;
         std::shared_ptr<xml::Root>              _root;
         std::shared_ptr<ComInterface::Pool>     _pool_interfaces;
         std::shared_ptr<BaseSignal::Pool>       _pool_signals;

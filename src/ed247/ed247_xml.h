@@ -141,19 +141,11 @@ size_t nad_type_size(ed247_nad_type_t type);
 template<typename T>
 void set_value(T & variable, const xmlAttrPtr attribute);
 
-class Exception : std::exception
+class exception : public ed247::exception
 {
 public:
-    inline Exception(std::string message) :
-        _message(message)
-    {}
-    virtual ~Exception() {}
-
-    virtual const char *what() const noexcept;
-
-private:
-    std::string _message;
-    mutable std::string _what;
+  exception(std::string message) : ed247::exception(std::string("xml parse exception: ") + message) {};
+  virtual ~exception() throw () override {}
 };
 
 class Node

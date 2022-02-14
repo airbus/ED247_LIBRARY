@@ -4,7 +4,6 @@
 
 Tests results depend on system. They may be found in the folowing locations:
 
- - <a href="../tests_report.txt">doc/tests_report.txt</a>
  - <a href="../../Linux32/doc/tests_report.txt">Linux32/doc/tests_report.txt</a>
  - <a href="../../Linux64/doc/tests_report.txt">Linux64/doc/tests_report.txt</a>
  - <a href="../../Win32_mingw/doc/tests_report.txt">Win32_mingw/doc/tests_report.txt</a>

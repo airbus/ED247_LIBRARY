@@ -1,4 +1,4 @@
-/******************************************************************************
+ /******************************************************************************
  * The MIT Licence
  *
  * Copyright (c) 2021 Airbus Operations S.A.S
@@ -62,11 +62,16 @@ void memhooks_reset_count()
   _counts.malloc_count = _counts.free_count = 0;
 }
 
+
+#ifdef __linux__
+#include <stdlib.h>
+#include <execinfo.h>
+#endif
+
 //
 // Backtrace tools (linux specific)
 //
 #ifdef __linux__
-#include <execinfo.h>
 __attribute__((unused)) static void memhooks_backtrace(memhooks_type_t type)
 {
 #ifdef MEMHOOKS_BACKTRACE_ENDABLED
@@ -123,3 +128,25 @@ extern "C" {
 }
 #endif
 
+
+void malloc_count_start()
+{
+#ifdef __linux__
+  std::cerr << "[MALLOC COUNT SECTION START]" << std::endl;
+  memhooks_reset_count();
+  memhooks_enable(true);
+#endif
+}
+
+int malloc_count_stop()
+{
+#ifdef __linux__
+  memhooks_enable(false);
+  memhooks_count_t count;
+  memhooks_get_count(&count);
+  std::cerr << "[MALLOC COUNT SECTION STOP. Malloc:" << count.malloc_count << ". Free: " << count.free_count << "]" << std::endl;
+  return count.malloc_count;
+#else
+  return 0;
+#endif
+}

@@ -48,7 +48,7 @@ target_include_directories(ed247_objects
 )
 
 target_compile_definitions(ed247_objects
-    PUBLIC
+    PRIVATE
         "_PRODUCT_VERSION=\"${VERSION}\""
         "_PRODUCT_NAME=\"${CMAKE_PROJECT_NAME}\""
         $<$<PLATFORM_ID:Windows>:LIBED247_EXPORTS>
@@ -57,11 +57,7 @@ target_compile_definitions(ed247_objects
 # ED247 Library definition
 add_library(ed247 SHARED)
 add_library(Ed247::ed247 ALIAS ed247)
-
-target_link_libraries(ed247
-    PUBLIC
-        ed247_objects
-)
+target_link_libraries(ed247 PUBLIC ed247_objects)
 
 # Generate XSD header file containing the XSD as a string
 macro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)

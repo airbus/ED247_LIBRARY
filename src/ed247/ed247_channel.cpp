@@ -21,7 +21,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #include "ed247_channel.h"
 #include "ed247_stream.h"
 
@@ -64,18 +63,21 @@ void FrameHeader::encode(char * frame, size_t frame_capacity, size_t & frame_ind
     if(_configuration.enable == ED247_YESNO_YES){
         fill_transport_timestamp();
         memset(frame+frame_index, 0, sizeof(uint16_t)+sizeof(uint16_t)+sizeof(uint32_t)+sizeof(uint32_t));
-        if(frame_index + sizeof(uint16_t) > frame_capacity)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to write producer identifier in header (not enough space)");
+        if(frame_index + sizeof(uint16_t) > frame_capacity) {
+            THROW_ED247_ERROR("Channel '" << _channel_name << "': Failed to write producer identifier in header (not enough space). Size: " << frame_capacity);
+        }
         *(uint16_t*)(frame+frame_index) = htons(component_identifier);
         frame_index += sizeof(uint16_t);
-        if(frame_index + sizeof(uint16_t) > frame_capacity)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to write sequence number in header (not enough space)");
+        if(frame_index + sizeof(uint16_t) > frame_capacity) {
+            THROW_ED247_ERROR("Channel '" << _channel_name << "': ailed to write sequence number in header (not enough space). Size: " << frame_capacity);
+        }
         *(uint16_t*)(frame+frame_index) = htons(_send_header.sequence_number);
         _send_header.sequence_number++;
         frame_index += sizeof(uint16_t);
         if(_configuration.transport_timestamp == ED247_YESNO_YES){
-            if(frame_index + sizeof(ed247_timestamp_t) > frame_capacity)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to write Transport timestamp in header (not enough space)");
+            if(frame_index + sizeof(ed247_timestamp_t) > frame_capacity) {
+                THROW_ED247_ERROR("Channel '" << _channel_name << "': Failed to write Transport timestamp in header (not enough space). Size: " << frame_capacity);
+            }
             *(uint32_t*)(frame+frame_index) = htonl(_send_header.transport_timestamp.epoch_s);
             frame_index += sizeof(uint32_t);
             *(uint32_t*)(frame+frame_index) = htonl(_send_header.transport_timestamp.offset_ns);
@@ -87,7 +89,7 @@ void FrameHeader::encode(char * frame, size_t frame_capacity, size_t & frame_ind
     }
 }
 
-void FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_index)
+bool FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_index)
 {
     frame_index = 0;
     // Increment the regular number of the sequence number
@@ -95,17 +97,23 @@ void FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_i
     // In case of frames without the sequence number, it allows to count the number of frames that are discarded (missformated/corrupted)
     if(_configuration.enable == ED247_YESNO_YES){
         static header_element_t recv_header;
-        if(frame_index + sizeof(uint16_t) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to write producer identifier in header (not enough space)");
+        if(frame_index + sizeof(uint16_t) > frame_size) {
+          PRINT_ERROR("Channel '" << _channel_name << "': Invalid frame size: " << frame_size);
+          return false;
+        }
         recv_header.component_identifier = ntohs(*(uint16_t*)(frame+frame_index));
         frame_index += sizeof(uint16_t);
-        if(frame_index + sizeof(uint16_t) > frame_size)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to write sequence number in header (not enough space)");
+        if(frame_index + sizeof(uint16_t) > frame_size) {
+          PRINT_ERROR("Channel '" << _channel_name << "': Invalid frame size: " << frame_size);
+          return false;
+        }
         recv_header.sequence_number = ntohs(*(uint16_t*)(frame+frame_index));
         frame_index += sizeof(uint16_t);
         if(_configuration.transport_timestamp == ED247_YESNO_YES){
-            if(frame_index + sizeof(ed247_timestamp_t) > frame_size)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to write QoS timestamp in header (not enough space)");
+            if(frame_index + sizeof(ed247_timestamp_t) > frame_size) {
+              PRINT_ERROR("Channel '" << _channel_name << "': Invalid frame size: " << frame_size);
+              return false;
+            }
             recv_header.transport_timestamp.epoch_s = ntohl(*(uint32_t*)(frame+frame_index));
             frame_index += sizeof(uint32_t);
             recv_header.transport_timestamp.offset_ns = ntohl(*(uint32_t*)(frame+frame_index));
@@ -121,8 +129,10 @@ void FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_i
             return e.component_identifier == component_identifier;
         });
         if(_recv_headers_iter == _recv_headers.end()){
-            if(_recv_headers.size() == _recv_headers.capacity())
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "No more producer allowed for reception");
+            if(_recv_headers.size() >= _recv_headers.capacity()) {
+              // Library limitation: max number of producer reached
+              THROW_ED247_ERROR("Channel '" << _channel_name << "': No more producer allowed for reception. Max : " << _recv_headers.capacity());
+            }
             recv_header.missed_frames = 0;
             _recv_headers.push_back(recv_header);
             _recv_headers_iter = _recv_headers.end()-1;
@@ -136,6 +146,7 @@ void FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_i
             _recv_headers_iter->sequence_number = recv_header.sequence_number;
         }
     }
+    return true;
 }
 
 // Channel
@@ -164,12 +175,20 @@ void Channel::send()
     }
 }
 
+bool Channel::has_samples_to_send()
+{
+    for(auto & stream_iterator : _streams) {
+        if (stream_iterator.second.stream->send_stack().size() != 0) return true;
+    }
+    return false;
+}
+
 void Channel::encode(const ed247_uid_t & component_identifier)
 {
     size_t buffer_index = 0;
     size_t stream_data_size = 0;
     // Encode header
-    _header.encode((char*)_buffer.data(), _buffer.capacity(), buffer_index, component_identifier);
+    _header.encode(_buffer.data_rw(), _buffer.capacity(), buffer_index, component_identifier);
     size_t header_index = buffer_index;
     // Encode channel payload
     if(!_configuration->simple){
@@ -178,26 +197,28 @@ void Channel::encode(const ed247_uid_t & component_identifier)
             if(!(p.second.direction & ED247_DIRECTION_OUT))
                 continue;
             if(s->send_stack().size()){
-                if(buffer_index + sizeof(ed247_uid_t) + sizeof(uint16_t) > _buffer.capacity())
-                    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel buffer is too small !");
+                if(buffer_index + sizeof(ed247_uid_t) + sizeof(uint16_t) > _buffer.capacity()) {
+                    THROW_ED247_ERROR("Channel '" << get_name() << "': buffer is too small ! (" << _buffer.capacity() << " bytes)");
+                }
                 // Write Stream UID
                 ed247_uid_t sid = htons(s->get_configuration()->info.uid);
-                memcpy((char *)_buffer.data() + buffer_index, &sid, sizeof(ed247_uid_t));
+                memcpy(_buffer.data_rw() + buffer_index, &sid, sizeof(ed247_uid_t));
                 buffer_index += sizeof(ed247_uid_t);
                 // Write Stream sample data
-                stream_data_size = s->encode((char*)_buffer.data()+buffer_index+sizeof(uint16_t),_buffer.capacity());
+                stream_data_size = s->encode(_buffer.data_rw()+buffer_index+sizeof(uint16_t),_buffer.capacity());
                 // Write Stream sample size
-                if(stream_data_size != (uint16_t)stream_data_size)
-                    THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream samples are too high !");
+                if(stream_data_size != (uint16_t)stream_data_size) {
+                    THROW_ED247_ERROR("Channel '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << stream_data_size << ")");
+                }
                 uint16_t size = htons((uint16_t)stream_data_size);
-                memcpy((char *)_buffer.data() + buffer_index, &size, sizeof(uint16_t));
+                memcpy(_buffer.data_rw() + buffer_index, &size, sizeof(uint16_t));
                 buffer_index += sizeof(uint16_t) + stream_data_size;
             }
         }
     }else{
         auto & s = _streams.begin()->second.stream;
         // Write Stream sample data
-        stream_data_size = s->encode((char*)_buffer.data()+buffer_index,_buffer.capacity());
+        stream_data_size = s->encode(_buffer.data_rw()+buffer_index,_buffer.capacity());
         buffer_index += stream_data_size;
     }
     if(buffer_index == header_index){ // Check if something had been written in the buffer after the header
@@ -209,29 +230,40 @@ void Channel::encode(const ed247_uid_t & component_identifier)
 
 bool Channel::decode(const char * frame, size_t frame_size)
 {
-    bool stop = false;
     size_t frame_index = 0;
-    _header.decode(frame, frame_size, frame_index);
+    if (_header.decode(frame, frame_size, frame_index) == false) return false;
     if(!_configuration->simple){
         while(frame_index < frame_size){
-            if((frame_size - frame_index) < sizeof(ed247_uid_t))
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong stream id size)");
-            ed247_uid_t sid = ntohs(*(ed247_uid_t*)(frame+frame_index));
+            if((frame_size - frame_index) < sizeof(ed247_uid_t)) {
+              PRINT_ERROR("Channel '" << get_name() << "': Invalid frame size: " << frame_size);
+              return false;
+            }
+            ed247_uid_t stream_uid = ntohs(*(ed247_uid_t*)(frame+frame_index));
             frame_index += sizeof(ed247_uid_t);
-            if((frame_size - frame_index) < sizeof(uint16_t))
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (wrong stream sample size size)");
+            if (_streams.find(stream_uid) == _streams.end()) {
+              PRINT_ERROR("Channel '" << get_name() << "': Invalid stream UID: " << stream_uid);
+              return false;
+            }
+            if((frame_size - frame_index) < sizeof(uint16_t)) {
+              PRINT_ERROR("Channel '" << get_name() << "': Invalid frame size: " << frame_size);
+              return false;
+            }
             uint16_t stream_sample_size = ntohs(*(uint16_t*)(frame+frame_index));
             frame_index += sizeof(uint16_t);
-            if(_streams[sid].direction & ED247_DIRECTION_IN){
+            if(_streams[stream_uid].direction & ED247_DIRECTION_IN){
                 // If stream is not declared as input, do not decode stream data
-                if(!_streams[sid].stream->decode(frame+frame_index, stream_sample_size, &_header)) stop = true;
+              if (_streams[stream_uid].stream->decode(frame+frame_index, stream_sample_size, &_header) == false) {
+                return false;
+              }
             }
             frame_index += stream_sample_size;
         }
-    }else{
-        if(!_streams.begin()->second.stream->decode(frame+frame_index, frame_size-frame_index, &_header)) stop = true;
+    } else {
+      if (_streams.begin()->second.stream->decode(frame+frame_index, frame_size-frame_index, &_header) == false) {
+        return false;
+      }
     }
-    return !stop;
+    return true;
 }
 
 std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strregex)
@@ -240,8 +272,9 @@ std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strre
     std::vector<std::shared_ptr<BaseStream>> founds;
     map_streams_t::iterator iter = _streams.begin();
     for(iter = _streams.begin() ; iter != _streams.end() ; iter++){
-        if(!iter->second.stream)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel contains an invalid Stream at [" << iter->first << "]");
+        if(!iter->second.stream) {
+            THROW_ED247_ERROR("Channel '" << get_name() << "': contains an invalid Stream at [" << iter->first << "]");
+        }
         if(std::regex_match(iter->second.stream->get_name(), reg)){
             founds.push_back(iter->second.stream);
         }
@@ -253,8 +286,9 @@ std::shared_ptr<BaseStream> Channel::get_stream(std::string str_name)
 {
     map_streams_t::iterator iter = _streams.begin();
     for(iter = _streams.begin() ; iter != _streams.end() ; iter++){
-        if(!iter->second.stream)
-            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel contains an invalid Stream at [" << iter->first << "]");
+        if(!iter->second.stream) {
+            THROW_ED247_ERROR("Channel '" << get_name() << "': contains an invalid Stream at [" << iter->first << "]");
+        }
         if(iter->second.stream->get_name() == str_name) return iter->second.stream;
     }
     return nullptr;
@@ -295,9 +329,9 @@ std::shared_ptr<Channel> Channel::Pool::get(std::shared_ptr<xml::Channel> & conf
         _channels->push_back(sp_channel);
     }else{
         // sp_channel = *iter;
-        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Channel [" << name << "] already exists");
+        THROW_ED247_ERROR("Channel [" << name << "] already exists");
     }
-    
+
     return sp_channel;
 }
 
@@ -348,9 +382,13 @@ void Channel::Pool::send()
 
 void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 {
-    for(auto & c : *_channels){
-        c->encode(component_identifier);
-        c->send();
+    for(auto & c : *_channels) {
+        // if send queue is greather than the number of samples allowed in one packet
+        // we have to send several packets. So we loop until the queu is empty.
+        while (c->has_samples_to_send()) {
+            c->encode(component_identifier);
+            c->send();
+        }
     }
 }
 

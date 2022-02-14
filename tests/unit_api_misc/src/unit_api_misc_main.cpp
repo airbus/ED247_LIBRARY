@@ -22,61 +22,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
+#include "unitary_test.h"
 
-#include "ed247.h"
-#include "test_context.h"
-
-#include <stdio.h>
-#include <fstream>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include "gtest/gtest.h"
-
-#include <memory>
-
-
-/********
- * Test *
- ********/
 
 std::string config_path = "../config";
 
-/******************************************************************************
-Sequence checking the libed247_errors
-******************************************************************************/
 class UtApiMisc : public ::testing::Test {};
-
-TEST(UtApiMisc, LastError)
-{
-    ed247_context_t context;
-    const char* errors;
-
-    // Check there is no error returned
-    errors = libed247_errors();
-    ASSERT_STREQ(errors, "No error");
-
-    // Load config and test again
-    std::string filepath = config_path+"/ecic_unit_api_misc.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
-    errors = libed247_errors();
-    ASSERT_STREQ(errors, "No error");
-
-    // Check error
-    ASSERT_EQ(ed247_get_runtime_metrics(context, NULL), ED247_STATUS_FAILURE);
-    errors = libed247_errors();
-    std::cout << "====" << std::endl;
-    std::cout << errors << std::endl;
-    std::cout << "====" << std::endl;
-    ASSERT_STREQ(errors, "Invalid metrics pointer\n");
-
-    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
-}
 
 /******************************************************************************
 Sequence checking the information getter
@@ -102,7 +53,7 @@ TEST(UtApiMisc, InfoGetter)
     ASSERT_EQ(ed247_component_get_info(context, NULL), ED247_STATUS_FAILURE);
 
     std::string filepath = config_path+"/ecic_unit_api_misc_mini.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
     malloc_count_start();
     ASSERT_EQ(ed247_component_get_info(NULL, &infos), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_component_get_info(context, NULL), ED247_STATUS_FAILURE);
@@ -133,7 +84,7 @@ TEST(UtApiMisc, InfoGetter)
     };
     
     filepath = config_path+"/ecic_unit_api_misc.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_component_get_info(context, &infos), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_component_get_info(NULL, &infos), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_component_get_info(context, NULL), ED247_STATUS_FAILURE);
@@ -182,7 +133,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     ::testing::InitGoogleTest(&argc, argv);
     // ::testing::InitGoogleMock(&argc, argv);

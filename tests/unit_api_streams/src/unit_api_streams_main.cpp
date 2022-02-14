@@ -22,31 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "ed247.h"
-#include "test_context.h"
-
-#include <stdio.h>
-#include <fstream>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include "gtest/gtest.h"
-
-#include <memory>
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "unitary_test.h"
 
 std::string config_path = "../config";
 
@@ -69,7 +45,7 @@ TEST(UtApiStreams, LoadStreams)
     const ed247_stream_info_t* stream_info;
     
     std::string filepath = config_path+"/ecic_unit_api_streams_single_channel.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
     
     // Get the stream list using the getter, check the unvalid call configurations
     
@@ -321,7 +297,7 @@ TEST(UtApiStreams, CheckFindStreamMethod)
     const ed247_stream_info_t* stream_info;
     
     std::string filepath = config_path+"/ecic_unit_api_streams_multiple_channels.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
@@ -420,7 +396,7 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     const ed247_stream_info_t* stream_info;
 
     std::string filepath = config_path+"/ecic_unit_api_streams_multiple_channels.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // Get the first channel and retrieve streams
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel", &channel_list), ED247_STATUS_SUCCESS);
@@ -481,7 +457,7 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     const ed247_stream_info_t* stream_info;
 
     std::string filepath = config_path+"/ecic_unit_api_streams_multiple_channels.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // Check channel list size
     ASSERT_EQ(ed247_find_channels(context, ".*", &channel_list), ED247_STATUS_SUCCESS);
@@ -558,7 +534,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     ::testing::InitGoogleTest(&argc, argv);
     // ::testing::InitGoogleMock(&argc, argv);

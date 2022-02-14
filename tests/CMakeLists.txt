@@ -21,7 +21,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-add_subdirectory(test_utils)
+add_subdirectory(libtests)
 
 set(TEST_REPORT ${CMAKE_BINARY_DIR}/doc/tests_report.txt)
 
@@ -35,10 +35,11 @@ add_subdirectory(func_exchange_datatimestamp)
 add_subdirectory(func_frame)
 add_subdirectory(func_limit)
 add_subdirectory(func_logging)
+add_subdirectory(func_metrics)
+add_subdirectory(func_error_handling)
 
 add_subdirectory(unit_api_channels)
 add_subdirectory(unit_api_converters)
-add_subdirectory(unit_api_metrics)
 add_subdirectory(unit_api_misc)
 add_subdirectory(unit_api_signals)
 add_subdirectory(unit_api_streams)

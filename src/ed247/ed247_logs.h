@@ -21,172 +21,133 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #ifndef _ED247_LOGS_H_
 #define _ED247_LOGS_H_
 
 #include "ed247.h"
-
 #include <string.h>
-#include <ostream>
-#include <iostream>
-#include <iomanip>
-#include <exception>
-#include <fstream>
 #include <sstream>
+#include <iostream>
+#include <fstream>
+#include <exception>
 
-#define LOG_DEBUG()     ed247::Logs::log(ED247_LOG_LEVEL_DEBUG)
-#define LOG_INFO()      ed247::Logs::log(ED247_LOG_LEVEL_INFO)
-#define LOG_WARNING()   ed247::Logs::log(ED247_LOG_LEVEL_WARNING)
-#define LOG_ERROR()     ed247::Logs::log(ED247_LOG_LEVEL_ERROR)
-#define LOG_END         std::endl;
 
-#define IF_PRINT if(Configuration::getInstance().get().enable_logs_during_send_receive)
+// Prefix traces by file:line
+#define LOG_SHORTFILE       (strrchr("/" __FILE__, '/') + 1)
+#define LOG_STREAM_FILELINE LOG_SHORTFILE << ":" << __LINE__ << " "
 
-#define PRINT_DEBUG(x) LOG_DEBUG() << x << LOG_END
-#define PRINT_INFO(x) LOG_INFO() << x << LOG_END
-#define PRINT_WARNING(x) LOG_WARNING() << x << LOG_END
-#define PRINT_ERROR(x) LOG_ERROR() << x << LOG_END
+// Print a trace regardless log level
+#define SAY(m) do { SAY_STREAM(ED247_LOG_STREAM, m); } while (0)
 
-#define THROW_ED247_ERROR(ex,message)                               \
-    do{                                                             \
-        LOG_ERROR() << __FILE__ << ":" << __LINE__ << std::endl     \
-            << message << LOG_END;                                  \
-        std::ostringstream oss;                                     \
-        oss << message;                                             \
-        throw ed247::exception(ex,oss.str());                       \
-    }while(0)
+// Print a trace depending on log level
+#define PRINT_ERROR(m)   do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_ERROR))   ED247_LOG_STREAM << LOG_STREAM_FILELINE << "[ERROR] " << m << std::endl; } while (0)
+#define PRINT_WARNING(m) do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_WARNING)) ED247_LOG_STREAM << LOG_STREAM_FILELINE << "[WARN] "  << m << std::endl; } while (0)
+#define PRINT_INFO(m)    do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_INFO))    ED247_LOG_STREAM << LOG_STREAM_FILELINE << m << std::endl; } while (0)
+#define PRINT_DEBUG(m)   do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_DEBUG))   ED247_LOG_STREAM << LOG_STREAM_FILELINE << m << std::endl; } while (0)
+#define PRINT_CRAZY(m)   do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_CRAZY))   ED247_LOG_STREAM << LOG_STREAM_FILELINE << m << std::endl; } while (0)
 
-#define ASSERT_ED247(condition, message)                            \
-    if(!(condition)){                                               \
-        LOG_ERROR() << __FILE__ << ":" << __LINE__ << std::endl     \
-            << message << LOG_END;                                  \
-        assert(condition);                                          \
-    }
+#define ED247_LOG_STREAM         ed247::log::get().stream()
+#define ED247_LOG_ENABLED(level) ed247::log::get().enabled(level)
+#define SAY_STREAM(stream, m)    do { (stream) << LOG_STREAM_FILELINE << m << std::endl; } while (0)
 
-namespace ed247
-{
+// FRIEND_TEST macro will be defined by gtest only while building unitary tests
+#ifndef FRIEND_TEST
+#define FRIEND_TEST(...)
+#endif
 
-class Logs
-{
-    public:
+// Logger internals
+namespace ed247 {
+  struct LIBED247_EXPORT log
+  {
+    static constexpr const char* ENV_VAR_LEVEL    = "ED247_LOG_LEVEL";
+    static constexpr const char* ENV_VAR_FILEPATH = "ED247_LOG_FILEPATH";
 
-        const char * ENV_ED247_LOG_LEVEL = "ED247_LOG_LEVEL";
-        const char * ENV_ED247_LOG_FILEPATH = "ED247_LOG_FILEPATH";
+    // Get the logger. May create it (see reset()).
+    static log& get() { return *((_logger)? _logger : create_logger()); }
 
-        static Logs & getInstance()
-        {
-            static Logs instance;
-            return instance;
-        }
+    // Change logger parameters.
+    // Defaut values are ED247_LOG_LEVEL_DEFAULT and std::cerr.
+    // The env variables have always the priority (see ENV_VAR_*).
+    void reset(ed247_log_level_t level = ED247_LOG_LEVEL_DEFAULT, const char* filepath = nullptr);
 
-        static void configure(const libed247_configuration_t & libed247_configuration)
-        {
-            Logs & instance = getInstance();
-            if(libed247_configuration.log_level != ED247_LOG_LEVEL__INVALID) instance.setLogLevel(libed247_configuration.log_level);
-            if(libed247_configuration.log_filepath != NULL) instance.setLogFilepath(libed247_configuration.log_filepath);
-        }
+    // Return the stream to write to.
+    std::ostream& stream() { return (_fstream.is_open())? _fstream : std::cerr; }
 
-        static Logs & log(const ed247_log_level_t & log_current)
-        {
-            Logs & instance = getInstance();
-            instance.prepare(log_current);
-            return instance;
-        }
+    // Return the log level.
+    ed247_log_level_t level() { return get()._level; }
 
-        void setLogLevel(const int & log_level);
-        const ed247_log_level_t & getLogLevel() const;
+    // Return true if log is enabled at `level'
+    bool enabled(ed247_log_level_t level) { return _level >= level; }
 
-        void setLogFilepath(const char *filepath);
+    // Convert `level' to a string
+    static std::string level_name(ed247_log_level_t level);
 
-        void prepare(const ed247_log_level_t & log_current);
+  private:
+    static log* create_logger();
+    static void delete_logger();
 
-        static const std::string & strLogLevel(ed247_log_level_t);
+    log() : _level(ED247_LOG_LEVEL_UNSET) { reset(); }
+    ~log();
+    void set_level(ed247_log_level_t level);
 
-        template <typename T>
-        Logs & operator << (const T & message)
-        {
-            if(_log_current <= _log_level){
-                std::ostream & stream = (_log_current == ED247_LOG_LEVEL_ERROR) ? _stream_err : _stream_out;
-                stream << message;
-                if(_stream_file.is_open())
-                    _stream_file << message;
-            }
-            if(_log_current == ED247_LOG_LEVEL_ERROR){
-                _errors << message;
-            }
-            return *this;
-        }
-        Logs & operator << (std::ostream& (*pf) (std::ostream&))
-        {
-            if(_log_current <= _log_level){
-                std::ostream & stream = (_log_current == ED247_LOG_LEVEL_ERROR) ? _stream_err : _stream_out;
-                stream << pf;
-                if(_stream_file.is_open())
-                    _stream_file << pf;
-            }
-            if(_log_current == ED247_LOG_LEVEL_ERROR){
-                _errors << pf;
-            }
-            return *this;
-        }
+    static log*       _logger;
+    ed247_log_level_t _level;
+    std::ofstream     _fstream;
+    std::string       _filepath;
 
-        std::string & errors()
-        {
-             std::string newerr = _errors.str();
-            static std::string errors;
-            if(newerr.empty()){
-                errors = "No error";
-            }else{
-                errors = newerr;
-            }
-            return errors;
-        }
-
-    private:
-        Logs();
-        void setLogCurrent(const ed247_log_level_t & log_current);
-
-        ~Logs()= default;
-        Logs(const Logs&)= delete;
-        Logs& operator=(const Logs&)= delete;
-
-    private:
-        ed247_log_level_t   _log_level;
-        ed247_log_level_t   _log_current;
-        std::ostream        &_stream_out;
-        std::ostream        &_stream_err;
-        std::ofstream       _stream_file;
-        std::ostringstream  _errors;
-};
-
-class ContentLogger
-{
-    public:
-        ContentLogger() {}
-        virtual ~ContentLogger() {}
-        virtual void dump_content() = 0;
-    
-};
-
-class exception : public std::exception
-{
-    public:
-        inline exception(ed247_status_t status, std::string what = std::string()) :
-            _status(status),
-            _what(what)
-        {}
-        virtual ~exception() {}
-        
-        virtual const char *what() const noexcept;
-        ed247_status_t getStatus() const
-            { return _status; }
-
-    private:
-        ed247_status_t _status;
-        mutable std::string _what;
-};
-
+    FRIEND_TEST(LogConfigurationTest, LoggingByEnv);
+    FRIEND_TEST(LogConfigurationTest, LoggingByArgs);
+  };
 }
+
+// Generate a backtrace (if supported)
+extern LIBED247_EXPORT void ed247_log_backtrace();
+
+// ED247 exception
+namespace ed247 {
+  class exception : public std::exception
+  {
+  public:
+    exception(std::string message) : _message (message) {};
+    virtual ~exception() throw () override {}
+    inline const char* what() const noexcept override { return _message.c_str(); }
+  private:
+    std::string _message;
+  };
+}
+#define THROW_ED247_ERROR(message)                  \
+  do {                                              \
+    PRINT_ERROR(message);                           \
+    throw ed247::exception(strize() << message);    \
+  } while(0)
+
+
+// ED247 enums to stream
+inline std::ostream& operator<<(std::ostream& stream, const ed247_log_level_t& level)     { return (stream << ed247::log::level_name(level));     }
+inline std::ostream& operator<<(std::ostream& stream, const ed247_status_t& status)       { return (stream << ed247_status_string(status));       }
+inline std::ostream& operator<<(std::ostream& stream, const ed247_direction_t& direction) { return (stream << ed247_direction_string(direction)); }
+inline std::ostream& operator<<(std::ostream& stream, const ed247_stream_type_t& stype)   { return (stream << ed247_stream_type_string(stype));   }
+inline std::ostream& operator<<(std::ostream& stream, const ed247_signal_type_t& stype)   { return (stream << ed247_signal_type_string(stype));   }
+inline std::ostream& operator<<(std::ostream& stream, const ed247_nad_type_t& ntype)      { return (stream << ed247_nad_type_string(ntype));      }
+
+// Helper to create a string from stream: std::string foo = strize() << "hello " << 42;
+struct strize {
+  template<typename T> strize& operator<<(T value) { _content << value; return *this; }
+  operator std::string() const { return _content.str(); }
+private:
+  std::stringstream _content;
+};
+
+
+// Helper to convert a payload to hexa stream: stream << "data: " << hex_stream(data, 4) << std::endl;
+class hex_stream
+{
+public:
+  hex_stream(const void* payload, int len) : _payload((const uint8_t*)payload), _len(len) {}
+  LIBED247_EXPORT friend std::ostream& operator<<(std::ostream& stream, const hex_stream&);
+private:
+  const uint8_t* _payload;
+  int            _len;
+};
 
 #endif

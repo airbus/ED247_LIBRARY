@@ -27,7 +27,7 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
 add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE} PRIVATE test_api Ed247::ed247)
+target_link_libraries(${TEST_EXECUTABLE} libtests_functional)
 
 add_test(NAME ${TEST_EXECUTABLE}
     COMMAND "cmake"

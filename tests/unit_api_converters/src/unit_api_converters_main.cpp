@@ -22,27 +22,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
+#include "unitary_test.h"
 
-#include <ed247_logs.h>
-
-#include <ed247.h>
-
-#include <memory>
-
-#include "test_context.h"
-
-/***********
- * Defines *
- ***********/
 /******************************************************************************
 This test aims to explicitly test the conversion functions provided by the API
 ******************************************************************************/
  
-using namespace ed247;
-
 /******************************************************************************
 Sequence checking the status conversions
 There is no revert conversion from string to status because such parameters
@@ -62,7 +47,6 @@ std::vector<std::pair<ed247_status_t, const char*> > from_status_associations = 
     {ED247_STATUS_FAILURE, "FAILURE"},
     {ED247_STATUS_TIMEOUT, "TIMEOUT"},
     {ED247_STATUS_NODATA, "NODATA"},
-    {ED247_STATUS_STOP, "STOP"},
     {(const ed247_status_t)5, "Unknown"}
 };
 
@@ -126,8 +110,7 @@ std::vector<std::pair<ed247_direction_t, const char*> > from_direction_associati
     {ED247_DIRECTION__INVALID, "Unknown"},
     {ED247_DIRECTION_IN, "In"},
     {ED247_DIRECTION_OUT, "Out"},
-    {ED247_DIRECTION_INOUT, "InOut"},
-    {ED247_DIRECTION__COUNT, "Unknown"}
+    {ED247_DIRECTION_INOUT, "InOut"}
 };
 
 INSTANTIATE_TEST_CASE_P(FromDirectionConverters, FromDirectionType,

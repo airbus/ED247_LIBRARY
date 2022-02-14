@@ -39,127 +39,67 @@ namespace ed247
 class Channel;
 class BaseStream;
 class BaseSignal;
-// template<ed247_signal_type_t E>
-// class SignalBuilder;
 class SmartListStreams;
 
 class BaseSample
 {
-    public:
-        BaseSample():
-            _data(nullptr),
-            _size(0),
-            _capacity(0)
-        {}
+public:
+  BaseSample():
+    _data(nullptr),
+    _size(0),
+    _capacity(0)
+    {}
 
-        BaseSample(void * data, size_t size):
-            _data(data),
-            _size(size),
-            _capacity(size)
-        {}
+  BaseSample(const BaseSample & other) = delete;
+  BaseSample & operator = (const BaseSample & other) = delete;
 
-        BaseSample(const BaseSample & other) = delete;
+  // Accessor
+  const size_t& size() const     { return _size;      }
+  const size_t& capacity() const { return _capacity;  }
+  const char* data() const       { return _data;      }
+  bool empty() const             { return _size == 0; }
 
-        BaseSample(BaseSample && other)
-        {
-            pmove(other);
-        }
 
-        BaseSample & operator = (const BaseSample & other) = delete;
+  // Fill data & size. Return false if capacity() is too small.
+  bool copy(const char* data, const size_t& size) {
+    if (size > _capacity) {
+      PRINT_DEBUG("ERROR: Cannot copy payload: internal buffer is too small (" << size << " > " << _capacity << ")");
+      return false;
+    }
+    _size = size;
+    memcpy(_data, data, _size);
+    return true;
+  }
+  bool copy(const void* data, const size_t& size) { return copy((const char*)data, size); }
 
-        BaseSample & operator = (BaseSample && other)
-        {
-            pmove(other);
-            return *this;
-        }
+  void reset() { _size = 0; }
 
-        void set_data(void * data)
-        {
-            _data = data;
-        }
+  // Direct access. You have to check capacity() yourself.
+  char* data_rw()                     { return _data; }
+  void set_size(const size_t & size)  { _size = size; }
 
-        void * data()
-        {
-            return _data;
-        }
+  // Memort management
+  void allocate(size_t capacity) {
+    _capacity = capacity;
+    if(_data != nullptr || _size != 0) THROW_ED247_ERROR("Sample already allocated");
+    if(!_capacity) THROW_ED247_ERROR("Cannot allocate a sample with a capacity of 0");
+    _data = (char*)malloc(_capacity);
+    if(!_data) THROW_ED247_ERROR("Failed to allocate sample [" << _capacity <<"] !");
+    memset(_data,0,_capacity);
+    _size = 0;
+  }
+  bool allocated() const {
+    return _data != nullptr;
+  }
+  void deallocate() {
+    if(_data) free(_data);
+    _data = nullptr;
+  }
 
-        const void *data_const() const
-        {
-            return _data;
-        }
-
-        void set_size(const size_t & size)
-        {
-            if(size > _capacity)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream sample capacity [" << _capacity << "] is too small compared to data to copy [" << size << "]");
-            _size = size;
-        }
-
-        const size_t & size() const 
-        {
-            return _size;
-        }
-
-        const size_t & capacity() const
-        {
-            return _capacity;
-        }
-
-        void allocate(size_t capacity)
-        {
-            _capacity = capacity;
-            if(_data != nullptr || _size != 0)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Sample already allocated");
-            if(!_capacity)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot allocate a sample with a capacity of 0");
-            _data = malloc(_capacity);
-            if(!_data)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Failed to allocate sample [" << _capacity <<"] !");
-            memset(_data,0,_capacity);
-            _size = 0;
-        }
-
-        bool allocated() const
-        {
-            return _data != nullptr;
-        }
-
-        void deallocate()
-        {
-            if(_data)
-                free(_data);
-        }
-
-        void reset()
-        {
-            if(allocated()){
-                memset(_data, 0, _capacity);
-                _size = 0;
-            }
-        }
-
-        bool empty()
-        {
-            return _size == 0;
-        }
-
-        void copy(const void * data, const size_t & size)
-        {
-            set_size(size);
-            memcpy(_data, data, size);
-        }
-
-    protected:
-        void * _data;
-        size_t _size;
-        size_t _capacity;
-
-        void pmove(BaseSample & other)
-        {
-            _data = other._data;
-            _size = other._size;
-            _capacity = other._capacity;
-        }
+private:
+  char*  _data;
+  size_t _size;
+  size_t _capacity;
 };
 
 class FrameHeader;
@@ -173,36 +113,17 @@ class StreamSample : public BaseSample
             _info(LIBED247_SAMPLE_INFO_DEFAULT)
         {}
 
-        StreamSample(void * data,
-            size_t size,
-            ed247_timestamp_t data_timestamp = LIBED247_TIMESTAMP_DEFAULT,
-            ed247_timestamp_t recv_timestamp = LIBED247_TIMESTAMP_DEFAULT,
-            ed247_sample_info_t info = LIBED247_SAMPLE_INFO_DEFAULT):
-            BaseSample(data, size),
-            _data_timestamp(data_timestamp),
-            _recv_timestamp(recv_timestamp),
-            _info(info)
-        {}
-
         StreamSample(const StreamSample & other) = delete;
-
-        StreamSample(StreamSample && other)
-        {
-            pmove(other);
-            _data_timestamp = other._data_timestamp;
-            _recv_timestamp = other._recv_timestamp;
-            _info = other._info;
-        }
-
         StreamSample & operator = (const StreamSample & other) = delete;
 
-        StreamSample & operator = (StreamSample && other)
+        using BaseSample::copy;  // Do not hide base class copy
+        bool copy(const StreamSample & sample)
         {
-            pmove(other);
-            _data_timestamp = other._data_timestamp;
-            _recv_timestamp = other._recv_timestamp;
-            _info = other._info;
-            return *this;
+          if (BaseSample::copy(sample.data(), sample.size()) == false) return false;
+          set_data_timestamp(*sample.data_timestamp());
+          set_recv_timestamp(*sample.recv_timestamp());
+          set_info(*sample.info());
+          return true;
         }
 
         void set_data_timestamp(const ed247_timestamp_t & data_timestamp)
@@ -242,45 +163,6 @@ class StreamSample : public BaseSample
 
         void update_info(const FrameHeader & header);
 
-        void assign(void * data, const size_t & size)
-        {
-            set_size(size);
-            _data = data;
-        }
-
-        void assign(StreamSample & sample)
-        {
-            assign(sample.data(), sample.size());
-            set_data_timestamp(*sample.data_timestamp());
-            set_recv_timestamp(*sample.recv_timestamp());
-            set_info(*sample.info());
-        }
-
-        void assign(std::shared_ptr<StreamSample> sample)
-        {
-            if ((bool)sample)
-            {
-                assign(sample->data(), sample->size());
-                set_data_timestamp(*sample->data_timestamp());
-                set_recv_timestamp(*sample->recv_timestamp());
-                set_info(*sample->info());
-            }
-        }
-
-        void copy(const void * data, const size_t & size)
-        {
-            set_size(size);
-            memcpy(_data, data, size);
-        }
-
-        void copy(const StreamSample & sample)
-        {
-            copy(sample.data_const(), sample.size());
-            set_data_timestamp(*sample.data_timestamp());
-            set_recv_timestamp(*sample.recv_timestamp());
-            set_info(*sample.info());
-        }
-
     protected:
         ed247_timestamp_t   _data_timestamp;
         ed247_timestamp_t   _recv_timestamp;
@@ -299,25 +181,6 @@ class CircularStreamSampleBuffer {
         size_t size() const
         {
             return _index_size;
-        }
-
-        bool push_back(const StreamSample & sample) // True if full after push
-        {
-            if(sample.capacity() > _sample_max_size_bytes)
-                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Unable to push back sample of capacity [" << sample.capacity() << "] in a circular buffer of sample max size [" << _sample_max_size_bytes << "]");
-            if(size() < _sample_max_number){
-                _samples[_index_write]->copy(sample);
-                _index_write = (_index_write+1) % _samples.size();
-                update_size();
-                return size() == _sample_max_number; // Ok
-            }else{
-                PRINT_WARNING("Circular buffer is full ! Dropping latest data to push back newest");
-                _samples[_index_write]->copy(sample);
-                _index_write = (_index_write+1) % _samples.size();
-                _index_read = (_index_read+1) % _samples.size();
-                update_size();
-                return true; // Overflow
-            }
         }
 
         std::shared_ptr<StreamSample> & next_write()
@@ -423,7 +286,7 @@ struct StreamBuilder<T> : private StreamTypeChecker<T> {
     StreamBuilder() {}
     std::shared_ptr<BaseStream> create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
-    
+
 class FrameHeader;
 class BaseStream : public ed247_internal_stream_t, public std::enable_shared_from_this<BaseStream>
 {
@@ -461,11 +324,11 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             return _configuration ? std::string(_configuration->info.name) : std::string();
         }
 
-        void push_sample(const StreamSample & sample, bool * full = nullptr);
+        // Return false on failure
+        bool push_sample(const void * sample_data, size_t sample_size, const ed247_timestamp_t * data_timestamp = nullptr, bool * full = nullptr);
 
-        void push_sample(const void * sample_data, size_t sample_size, const ed247_timestamp_t * data_timestamp = nullptr, bool * full = nullptr);
-
-        std::shared_ptr<StreamSample> & pop_sample(bool *empty = nullptr);
+        // Return an invalid shared_ptr on error (empty is not an error)
+        std::shared_ptr<StreamSample> pop_sample(bool *empty = nullptr);
 
         CircularStreamSampleBuffer & recv_stack()
         {
@@ -477,41 +340,13 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             return _send_stack;
         }
 
-        virtual ed247_status_t check_sample_size(size_t sample_size) const
-        {
-            _UNUSED(sample_size);
-            ASSERT_ED247(false, "Cannot check sample in a BaseStream");
-            return ED247_STATUS_FAILURE;
-        }
+        virtual ed247_status_t check_sample_size(size_t sample_size) const = 0;
+        virtual std::unique_ptr<StreamSample> allocate_sample() const = 0;
 
-        virtual std::unique_ptr<StreamSample> allocate_sample() const
-        {
-            ASSERT_ED247(false, "Cannot allocate sample in a BaseStream");
-            return std::move(std::make_unique<StreamSample>());
-        }
+        virtual size_t encode(char * frame, size_t frame_size) = 0;
 
-        void encode()
-        {
-            _buffer.reset();
-            _buffer.set_size(encode((char*)_buffer.data(), _buffer.capacity()));
-        }
-
-        virtual size_t encode(char * frame, size_t frame_size)
-        {
-            _UNUSED(frame);
-            _UNUSED(frame_size);
-            ASSERT_ED247(false, "Cannot encode in a BaseStream");
-            return 0;
-        }
-
-        virtual bool decode(const char * frame, size_t frame_size, const FrameHeader * header = nullptr)
-        {
-            _UNUSED(frame);
-            _UNUSED(frame_size);
-            _UNUSED(header);
-            ASSERT_ED247(false, "Cannot decode in a BaseStream");
-            return false;
-        }
+        // return false if the frame has not been successfully decoded
+        virtual bool decode(const char * frame, size_t frame_size, const FrameHeader * header = nullptr) = 0;
 
         BaseSample & buffer()
         {
@@ -521,7 +356,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         std::vector<std::shared_ptr<BaseSignal>> find_signals(std::string str_regex);
 
         std::shared_ptr<BaseSignal> get_signal(std::string str_name);
-        
+
         std::shared_ptr<SmartListSignals> signals() { return _signals; };
 
         ed247_status_t register_callback(ed247_context_t context, ed247_stream_recv_callback_t callback)
@@ -575,40 +410,31 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
     protected:
 
-        virtual void allocate_stacks() // Create elements in circular buffers (send/recv) according to the bus type
-        {
-            ASSERT_ED247(false, "Cannot allocate in a BaseStream");
-        }
+        // Create elements in circular buffers (send/recv) according to the bus type
+        virtual void allocate_stacks() = 0;
 
-        virtual void allocate_buffer()
-        {
-            ASSERT_ED247(false, "Cannot allocate buffer in BaseStream");
-        }
+        virtual void allocate_buffer() = 0;
 
-        virtual void allocate_working_sample()
-        {
-            ASSERT_ED247(false, "Cannot allocate buffer in BaseStream");
-        }
+        virtual void allocate_working_sample() = 0;
 
         void register_channel(Channel & channel, ed247_direction_t direction);
 
         bool run_callbacks()
         {
-            ed247_status_t status;
-            bool stop = false;
-            for(auto & pcallback : _callbacks)
-            {
-                if(pcallback.second){
-                    status = (*pcallback.second)(pcallback.first, this);
-                    if(status == ED247_STATUS_STOP){
-                        stop = true;
-                    }else if(status != ED247_STATUS_SUCCESS){
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Callback returned an error.");
-                    }
-                }else
-                    PRINT_WARNING("Callback [" << pcallback.second << "] is not callable.");
+          for(auto & pcallback : _callbacks)
+          {
+            if(pcallback.second) {
+              ed247_status_t status = (*pcallback.second)(pcallback.first, this);
+              if (status != ED247_STATUS_SUCCESS) {
+                PRINT_DEBUG("User callback fail with return code: " << status);
+                return false;
+              }
+            } else {
+              PRINT_WARNING("Invalid user callback!");
+              return false;
             }
-            return !stop;
+          }
+          return true;
         }
 
         void encode_data_timestamp(const std::shared_ptr<StreamSample> & sample, char * frame, size_t frame_size, size_t & frame_index)
@@ -616,8 +442,9 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
                 if(frame_index == 0){
                     // Datatimestamp
-                    if((frame_index + sizeof(uint32_t) + sizeof(uint32_t)) > frame_size)
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
+                    if((frame_index + sizeof(uint32_t) + sizeof(uint32_t)) > frame_size) {
+                      THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+                    }
                     _data_timestamp = *sample->data_timestamp();
                     *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp()->epoch_s);
                     frame_index += sizeof(uint32_t);
@@ -625,23 +452,27 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     frame_index += sizeof(uint32_t);
                 }else if(_configuration->data_timestamp.enable_sample_offset == ED247_YESNO_YES){
                     // Precise Datatimestamp
-                    if((frame_index + sizeof(uint32_t)) > frame_size)
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Stream buffer is too small !");
-                    *(uint32_t*)(frame+frame_index) = 
-                        htonl((uint32_t)(((int32_t)sample->data_timestamp()->epoch_s - (int32_t)_data_timestamp.epoch_s)*1000000000 
+                    if((frame_index + sizeof(uint32_t)) > frame_size) {
+                      THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
+                    }
+                    *(uint32_t*)(frame+frame_index) =
+                        htonl((uint32_t)(((int32_t)sample->data_timestamp()->epoch_s - (int32_t)_data_timestamp.epoch_s)*1000000000
                         + ((int32_t)sample->data_timestamp()->offset_ns - (int32_t)_data_timestamp.offset_ns)));
                     frame_index += sizeof(int32_t);
                 }
             }
         }
 
-        void decode_data_timestamp(const char * frame, const size_t & frame_size, size_t & frame_index, ed247_timestamp_t & data_timestamp, ed247_timestamp_t & timestamp)
+        // return false if the frame has not been successfully decoded
+        bool decode_data_timestamp(const char * frame, const size_t & frame_size, size_t & frame_index, ed247_timestamp_t & data_timestamp, ed247_timestamp_t & timestamp)
         {
             if(_configuration->data_timestamp.enable == ED247_YESNO_YES){
                 if(frame_index == 0){
                     // Data Timestamp
-                    if((frame_size-frame_index) < sizeof(ed247_timestamp_t))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Received frame is corrupted (frame to small to contain data timestamp)");
+                    if((frame_size-frame_index) < sizeof(ed247_timestamp_t)) {
+                      PRINT_ERROR("Stream '" << get_name() << "': Invalid received frame size: " << frame_size);
+                      return false;
+                    }
                     timestamp.epoch_s = ntohl(*(uint32_t*)(frame+frame_index));
                     frame_index += sizeof(uint32_t);
                     timestamp.offset_ns = ntohl(*(uint32_t*)(frame+frame_index));
@@ -661,6 +492,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     _working_sample.set_data_timestamp(data_timestamp);
                 }
             }
+            return true;
         }
 
     public:
@@ -669,7 +501,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             public:
                 Pool();
                 Pool(std::shared_ptr<BaseSignal::Pool> & pool_signals);
-                
+
                 ~Pool(){};
 
                 std::shared_ptr<BaseStream> get(std::shared_ptr<xml::Stream> & configuration);
@@ -681,8 +513,6 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 std::shared_ptr<SmartListStreams> streams();
 
                 size_t size() const;
-
-                void encode();
 
             private:
                 std::shared_ptr<SmartListStreams> _streams;
@@ -697,7 +527,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     ED247_STREAM_TYPE_ANALOG,
                     ED247_STREAM_TYPE_NAD,
                     ED247_STREAM_TYPE_VNAD> _builder;
-                
+
         };
         class Builder
         {
@@ -707,11 +537,6 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         class Assistant : public ed247_internal_stream_assistant_t
         {
             public:
-
-                struct SmartSample {
-                    std::unique_ptr<BaseSample> sample;
-                    bool flag;
-                };
 
                 Assistant() {}
                 Assistant(std::shared_ptr<BaseStream> stream):
@@ -727,13 +552,11 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         if(_send_samples.size() <= signal->position())
                             _send_samples.resize(signal->position()+1);
                         _send_samples[signal->position()].first = signal;
-                        _send_samples[signal->position()].second = SmartSample{std::move(send_sample), false};
+                        _send_samples[signal->position()].second = std::move(send_sample);
                         if(_recv_samples.size() <= signal->position())
                             _recv_samples.resize(signal->position()+1);
                         _recv_samples[signal->position()].first = signal;
-                        _recv_samples[signal->position()].second = SmartSample{std::move(recv_sample), false};
-                        // _send_samples.push_back(std::make_pair(signal, SmartSample{std::move(send_sample), false}));
-                        // _recv_samples.push_back(std::make_pair(signal, SmartSample{std::move(recv_sample), false}));
+                        _recv_samples[signal->position()].second = std::move(recv_sample);
                     }
                     _buffer.allocate(capacity);
                 }
@@ -753,64 +576,68 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         type == ED247_STREAM_TYPE_VNAD) : false;
                 }
 
-                void write(std::shared_ptr<BaseSignal> signal, const void *data, size_t size)
+                bool write(std::shared_ptr<BaseSignal> signal, const void *data, size_t size)
                 {
-                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_OUT))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot write Signal [" << signal->get_name() << "] as Stream is not writable");
-                    if(signal->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                        size_t sample_max_size = signal->get_configuration()->info.info.vnad.max_length * (BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) + sizeof(uint16_t));
-                        if(size > sample_max_size)
-                            THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot write Signal [" << signal->get_name() << "] as Signal SampleMaxSizeBytes is [" << sample_max_size << "] and data to write is of size [" << size << "]");
+                  if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_OUT)) {
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] to an non-output stream");
+                    return false;
+                  }
+                  if(signal->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
+                    size_t sample_max_size = signal->get_configuration()->info.info.vnad.max_length * (BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) + sizeof(uint16_t));
+                    if(size > sample_max_size) {
+                      PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] "
+                                  "as Signal SampleMaxSizeBytes is [" << sample_max_size << "] and data to write is of size [" << size << "]");
+                      return false;
                     }
-                    // Remplace by ByteOffset or Order ?
-                    // auto iter = std::find_if(_send_samples.begin(),_send_samples.end(),
-                    //     [&signal](const std::pair<std::shared_ptr<BaseSignal>, SmartSample> & c){ return c.first == signal; });
-                    // if(iter == _send_samples.end())
-                    //     THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Invalid signal");
-                    // iter->second.sample->copy(data, size);
-                    // iter->second.flag = true;
-                    auto & sample = _send_samples[signal->position()].second;
-                    sample.sample->copy(data, size);
-                    sample.flag = true;
+                  }
+                  auto & sample = _send_samples[signal->position()].second;
+                  if (sample->copy(data, size) == false) {
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "]: invalid size: " << size);
+                    return false;
+                  }
+                  return true;
                 }
 
-                void read(std::shared_ptr<BaseSignal> signal, const void **data, size_t * size)
+                bool read(std::shared_ptr<BaseSignal> signal, const void **data, size_t * size)
                 {
-                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_IN))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot read Signal [" << signal->get_name() << "] as Stream is not readable");
-                    // Remplace by ByteOffset or Order ?
-                    // auto iter = std::find_if(_recv_samples.begin(),_recv_samples.end(),
-                    //     [&signal](const std::pair<std::shared_ptr<BaseSignal>, SmartSample> & c){ return c.first == signal; });
-                    // if(iter == _recv_samples.end())
-                    //     THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Invalid signal");
-                    // *data = iter->second.sample->data();
-                    // *size = iter->second.sample->size();
-                    auto & sample = _recv_samples[signal->position()].second.sample;
-                    *data = sample->data();
-                    *size = sample->size();
-                };
+                  if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_IN)) {
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot read Signal [" << signal->get_name() << "] from a non-input stream");
+                    return false;
+                  }
+                  auto & sample = _recv_samples[signal->position()].second;
+                  *data = sample->data();
+                  *size = sample->size();
+                  return true;
+                }
 
-                void push(const ed247_timestamp_t * data_timestamp = nullptr, bool * full = nullptr)
+                bool push(const ed247_timestamp_t * data_timestamp = nullptr, bool * full = nullptr)
                 {
-                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_OUT))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot push to Stream [" << _stream->get_name() << "] as Stream is not writable");
-                    encode();
-                    _stream->push_sample(_buffer.data(), _buffer.size(), data_timestamp, full);
-                };
+                  if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_OUT)) {
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot push to a non-output stream");
+                    return false;
+                  }
+                  encode();
+                  return _stream->push_sample(_buffer.data(), _buffer.size(), data_timestamp, full);
+                }
 
-                void pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr, const ed247_sample_info_t **info = nullptr, bool *empty = nullptr)
+                // return false if the signal has not been successfully decoded
+                bool pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr, const ed247_sample_info_t **info = nullptr, bool *empty = nullptr)
                 {
-                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_IN))
-                        THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Cannot pop from Stream [" << _stream->get_name() << "] as Stream is not readeable");
-                    const auto & sample = _stream->pop_sample(empty);
+                    if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_IN)) {
+                        PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot pop from a non-input stream");
+                        return false;
+                    }
+                    auto sample = _stream->pop_sample(empty);
+                    if (!sample) return false;
                     if(data_timestamp)*data_timestamp = sample->data_timestamp();
                     if(recv_timestamp)*recv_timestamp = sample->recv_timestamp();
                     if(info)*info = sample->info();
-                    decode(sample->data(), sample->size());
+                    return decode(sample->data(), sample->size());
                 };
 
                 const BaseSample & buffer() { return _buffer; }
 
+           private:
                 void encode()
                 {
                     size_t buffer_index = 0;
@@ -818,13 +645,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     for(auto & pair : _send_samples){
                         if(!pair.first)
                             continue;
-                        if(!pair.second.flag){
-                            // THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << pair.first->get_name() << "] has not been updated before pushing the sample");
-                            IF_PRINT PRINT_WARNING("Signal [" << pair.first->get_name() << "] has not been updated before pushing the sample");
-                        }
-                        pair.second.flag = false;
                         if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                            *(uint16_t*)((char*)_buffer.data()+buffer_index) = (uint16_t)htons((uint16_t)pair.second.sample->size());
+                            *(uint16_t*)(_buffer.data_rw()+buffer_index) = (uint16_t)htons((uint16_t)pair.second->size());
                             buffer_index += sizeof(uint16_t);
                             vnad_behaviour = true;
                         }else{
@@ -835,13 +657,13 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                             }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_NAD){
                                 buffer_index = (size_t)pair.first->get_configuration()->info.info.nad.byte_offset;
                             }else{
-                                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << pair.first->get_name() << "] has not a valid type");
+                                THROW_ED247_ERROR("Signal [" << pair.first->get_name() << "] has not a valid type");
                             }
                         }
-                        memcpy((char*)_buffer.data()+buffer_index, pair.second.sample->data(), pair.second.sample->size());
+                        memcpy(_buffer.data_rw()+buffer_index, pair.second->data(), pair.second->size());
                         if(vnad_behaviour)
-                            buffer_index += pair.second.sample->size();
-                        pair.second.sample->set_size(0);
+                            buffer_index += pair.second->size();
+                        pair.second->reset();
                     }
                     if(vnad_behaviour)
                         _buffer.set_size(buffer_index);
@@ -849,11 +671,11 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         _buffer.set_size(_stream->get_configuration()->info.sample_max_size_bytes);
                 }
 
-                void decode(const void * data, size_t size)
+                // return false if the data has not been successfully decoded
+                bool decode(const void * data, size_t size)
                 {
                     for(auto & pair : _recv_samples){
-                        pair.second.sample->set_size(0);
-                        pair.second.flag = false;
+                        pair.second->reset();
                     }
                     size_t buffer_index = 0;
                     bool vnad_behaviour = false;
@@ -862,9 +684,11 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                             continue;
                         size_t sample_size = 0;
                         if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                            if(buffer_index + sizeof(uint16_t) > size)
-                                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Invalid signal size, not enough space in buffer");
-                            sample_size = ntohs(*(uint16_t*)((char*)data+buffer_index));
+                            if(buffer_index + sizeof(uint16_t) > size) {
+                              PRINT_ERROR("Signal '" << pair.first->get_name() << "': invalid VNAD size : " << size);
+                              return false;
+                            }
+                            sample_size = ntohs(*(uint16_t*)((const char*)data+buffer_index));
                             buffer_index += sizeof(uint16_t);
                             vnad_behaviour = true;
                         }else{
@@ -876,22 +700,25 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                             }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_NAD){
                                 buffer_index = (size_t)pair.first->get_configuration()->info.info.nad.byte_offset;
                             }else{
-                                THROW_ED247_ERROR(ED247_STATUS_FAILURE, "Signal [" << pair.first->get_name() << "] has not a valid type");
+                              PRINT_ERROR("Signal '" << pair.first->get_name() << "': Invalid type: " << pair.first->get_configuration()->info.type);
+                              return false;
                             }
                         }
-                        pair.second.sample->copy((char*)data+buffer_index, sample_size);
+                        pair.second->copy((const char*)data+buffer_index, sample_size);
                         if(vnad_behaviour)
                             buffer_index += sample_size;
                     }
+                    return true;
                 }
 
-            protected:
                 std::shared_ptr<BaseStream> _stream;
-                std::vector<std::pair<std::shared_ptr<BaseSignal>, SmartSample>> _send_samples;
-                std::vector<std::pair<std::shared_ptr<BaseSignal>, SmartSample>> _recv_samples;
+                std::vector<std::pair<std::shared_ptr<BaseSignal>, std::unique_ptr<BaseSample>>> _send_samples;
+                std::vector<std::pair<std::shared_ptr<BaseSignal>, std::unique_ptr<BaseSample>>> _recv_samples;
                 BaseSample _buffer;
+
+                FRIEND_TEST(SignalContext, SinglePushPop);
         };
-        
+
     protected:
         std::shared_ptr<Assistant> _assistant;
 
@@ -908,7 +735,9 @@ class Stream : public BaseStream, private StreamTypeChecker<E>
 
         using BaseStream::BaseStream;
 
-        virtual size_t encode(char * frame, size_t frame_size) final;
+        virtual size_t encode(char * frame, size_t frame_size) override final;
+
+        // return false if the frame has not been successfully decoded
         virtual bool decode(const char * frame, size_t frame_size, const FrameHeader * header = nullptr) final;
 
         virtual ed247_status_t check_sample_size(size_t sample_size) const;

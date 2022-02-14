@@ -35,7 +35,12 @@ endif()
 set(PLATFORM_INSTALL_SUBDIR "${PLATFORM_INSTALL_SUBDIR}" CACHE STRING "For multi-platform delivery. Sub folder where to install platform dependant binaries." FORCE)
 
 # Options: test multicast ip.
-set(TEST_MULTICAST_INTERFACE_IP "" CACHE STRING "Ip address of the interface to use for multicast when performing the tests.")
+if (NOT TEST_MULTICAST_INTERFACE_IP)
+  if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(TEST_MULTICAST_INTERFACE_IP "127.0.0.1")
+  endif()
+endif()
+set(TEST_MULTICAST_INTERFACE_IP "${TEST_MULTICAST_INTERFACE_IP}" CACHE STRING "Ip address of the interface to use for multicast when performing the tests.")
 
 
 ## LIBXML2
@@ -53,6 +58,10 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   endif()
 endif()
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+  set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+endif()
 
 # Add source folder
 add_subdirectory(src)

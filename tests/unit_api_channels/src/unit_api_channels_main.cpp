@@ -22,31 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-/************
- * Includes *
- ************/
-
-#include "ed247.h"
-#include "sync_entity.h"
-
-#include <stdio.h>
-#include <fstream>
-
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
-
-#include "gtest/gtest.h"
-
-#include <memory>
-
-/***********
- * Defines *
- ***********/
-
-/********
- * Test *
- ********/
+#include "unitary_test.h"
 
 std::string config_path = "../config";
 
@@ -64,7 +40,7 @@ TEST(UtApiChannel, ChannelsManipulation)
     const ed247_channel_info_t* channel_info;
     
     std::string filepath = config_path+"/ecic_unit_api_channels.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
         
     // Get the channel list, check invalid calls
     ASSERT_EQ(ed247_find_channels (NULL, ".*", &channel_list), ED247_STATUS_FAILURE);
@@ -195,7 +171,7 @@ TEST(UtApiChannel,GetChannelList)
     const ed247_channel_info_t* channel_info;
 
     std::string filepath = config_path+"/ecic_unit_api_channels.xml";
-    ASSERT_EQ(ed247_load(filepath.c_str(), NULL, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // First tests validate the parsing of the ecic file
     ASSERT_EQ(ed247_component_get_channels(NULL, &channel_list), ED247_STATUS_FAILURE);
@@ -235,7 +211,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
     ::testing::InitGoogleTest(&argc, argv);
     // ::testing::InitGoogleMock(&argc, argv);

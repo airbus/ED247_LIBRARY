@@ -42,11 +42,7 @@
 #define SYNCER_ID_MASTER 1
 #define SYNCER_ID_SLAVE 2
 
-#define TIMEOUT_US 45000000
-
-#ifndef _UNUSED
-#define _UNUSED(x) (void)x
-#endif
+#define SYNC_TIMEOUT_US (10 * 1000 * 1000)
 
 struct sync_entity_internal_t {};
 
@@ -59,22 +55,8 @@ const uint8_t       MAX_CLIENT_NUMBER{10};
 const uint16_t      DEFAULT_PORT{3000};
 const std::string   DEFAULT_IP{"127.0.0.1"};
 
-std::string get_last_socket_error();
 uint64_t get_time_us();
 void sleep_us(uint32_t duration_us);
-std::string get_env_variable(const std::string & variable);
-
-/**
- * @brief The function counts the number of line where regex trace_to_find is found in the file pointed by filename.
- * @param[in] filename designates the file to parse.
- * @param[in] trace_to_find designates the regex to look for in each line of the file.
- * @return NULL if the file could not be openned, or a pointer that store the number of hit lines.
- * @note If an ill-formated regex is provided, the corresponding error will be thrown.
- * @note Regex not correctly implemented on gcc4.8.x and earlier (used for linux build)
- * @note Providing ".*" allows to count the number of lines in the provided file
-**/
-const uint32_t* count_matching_lines_in_file(const char* filename, const char* trace_to_find);
-
 
 struct SocketEntity
 {
@@ -87,10 +69,10 @@ struct Server : public SocketEntity
     Server(Entity * entity);
     ~Server();
 
-    bool wait(uint32_t eid, uint32_t timeout_us = TIMEOUT_US);
+    bool wait(uint32_t eid, uint32_t timeout_us = SYNC_TIMEOUT_US);
 
 private:
-    void accept(uint32_t eid, uint32_t timeout_us = TIMEOUT_US);
+    void accept(uint32_t eid, uint32_t timeout_us = SYNC_TIMEOUT_US);
 
     Entity *_entity;
     SOCKET _socket{INVALID_SOCKET};
@@ -103,12 +85,10 @@ struct Client  : public SocketEntity
     Client(Entity * entity);
     ~Client();
 
-    void send(uint32_t eid, uint32_t timeout_us = TIMEOUT_US);
+    void send(uint32_t eid, uint32_t timeout_us = SYNC_TIMEOUT_US);
 
 private:
-    void connect(uint32_t eid, uint32_t timeout_us = TIMEOUT_US);
-    void done(uint32_t eid, uint32_t timeout_us = TIMEOUT_US);
-    void kill();
+    void connect(uint32_t eid, uint32_t timeout_us = SYNC_TIMEOUT_US);
 
     Entity *_entity;
     SOCKET _servers[MAX_CLIENT_NUMBER]{INVALID_SOCKET};
@@ -130,12 +110,12 @@ struct Entity : public sync_entity_internal_t
 
     explicit Entity(uint32_t eid);
 
-    void send(uint32_t eid, uint32_t timeout_us = TIMEOUT_US)
+    void send(uint32_t eid, uint32_t timeout_us = SYNC_TIMEOUT_US)
     {
         client.send(eid, timeout_us);
     }
 
-    bool wait(uint32_t eid, uint32_t timeout_us = TIMEOUT_US)
+    bool wait(uint32_t eid, uint32_t timeout_us = SYNC_TIMEOUT_US)
     {
         return server.wait(eid, timeout_us);
     }

@@ -25,6 +25,11 @@
 #ifndef _ED247_INTERNALS_H_
 #define _ED247_INTERNALS_H_
 
+// FRIEND_TEST macro will be defined by gtest only while building unitary tests
+#ifndef FRIEND_TEST
+#define FRIEND_TEST(...)
+#endif
+
 /************
  * Includes *
  ************/
@@ -244,24 +249,6 @@ struct ed247_internal_time_sample_t : public ed247_timestamp_t {};
 
 namespace ed247
 {
-
-class Configuration
-{
-    public:
-        static Configuration & getInstance() {
-            static Configuration instance;
-            return instance;
-        }
-        const libed247_configuration_t & get() const {
-            return _configuration;
-        }
-        void set(const libed247_configuration_t & configuration) {
-            _configuration = configuration;
-        }
-
-    private:
-        libed247_configuration_t _configuration;
-};
 
 class SimulationTimeHandler
 {

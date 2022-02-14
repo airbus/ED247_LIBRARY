@@ -21,25 +21,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-/************
- * Includes *
- ************/
-
-#include "test_context.h"
-
-/***********
- * Defines *
- ***********/
-
-#define TEST_ENTITY_SRC_ID TEST_ENTITY_MAIN_ID
-#define TEST_ENTITY_DST_ID TEST_ENTITY_TESTER_ID
-
-#define TEST_CONTEXT_SYNC() TEST_CONTEXT_SYNC_MAIN()
-
-/********
- * Test *
- ********/
+#define TEST_ACTOR1_NAME "send"
+#define TEST_ACTOR2_NAME "recv"
+#define TEST_ACTOR_ID TEST_ACTOR1_ID
+#include "functional_test.h"
 
 std::string config_path = "../config";
 
@@ -72,7 +57,6 @@ TEST_P(StreamContext, SingleFrame)
     void *sample;
     size_t sample_size;
     std::string str_send;
-    std::ostringstream oss;
 
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -85,13 +69,11 @@ TEST_P(StreamContext, SingleFrame)
     // Checkpoint n~1
     // For this checkpoint the last byte is filled with 1
     // A single sample is sent on one of the streams of the channel
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Payload
-    oss.str("");
-    oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
 
     // Data Timestamp
@@ -106,8 +88,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
 
     // Checkpoint n~2
-    LOG_SELF("Checkpoint n~2");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~2");
+    TEST_SYNC();
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -123,7 +105,6 @@ TEST_P(StreamContext, Callbacks)
     void *sample;
     size_t sample_size;
     std::string str_send;
-    std::ostringstream oss;
 
     uint32_t user_data = 10;
     com_send_counter = 0;
@@ -146,8 +127,8 @@ TEST_P(StreamContext, Callbacks)
     ASSERT_EQ(ed247_register_com_send_callback(_context, callback), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~1
-    LOG_SELF("Checkpoint n~1");
-    TEST_CONTEXT_SYNC();
+    SAY_SELF("Checkpoint n~1");
+    TEST_SYNC();
 
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
@@ -158,9 +139,7 @@ TEST_P(StreamContext, Callbacks)
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
 
     // Payload
-    oss.str("");
-    oss << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_send = oss.str();
+    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
 
     malloc_count_start();
@@ -194,9 +173,9 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
-    std::cout << "Configuration path: " << config_path << std::endl;
+    SAY("Configuration path: " << config_path);
 
-    stream_files.push_back({TEST_ENTITY_SRC_ID, TEST_ENTITY_DST_ID, config_path+"/ecic_func_exchange_datatimestamp_a429_send.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_datatimestamp_a429_send.xml"});
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -33,8 +33,8 @@ add_custom_target(${TEST_EXECUTABLE}
 )
 add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE}_send PUBLIC test_api tests_unit_ed247_lib)
-target_link_libraries(${TEST_EXECUTABLE}_recv PUBLIC test_api tests_unit_ed247_lib)
+target_link_libraries(${TEST_EXECUTABLE}_send libtests_functional)
+target_link_libraries(${TEST_EXECUTABLE}_recv libtests_functional)
 
 file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
 foreach(CONFIG ${CONFIGS})
@@ -44,6 +44,7 @@ endforeach()
 
 add_test(NAME ${TEST_EXECUTABLE}
     COMMAND "cmake"
+            -DED247_LIB_PATH=$<TARGET_FILE_DIR:ed247>
             -DTEST=${TEST_EXECUTABLE}
             -DWORKING_DIRECTORY=$<TARGET_FILE_DIR:${TEST_EXECUTABLE}_send>
             -DSEND_EXE=$<TARGET_FILE:${TEST_EXECUTABLE}_send>

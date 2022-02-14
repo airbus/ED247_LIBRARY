@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_1" Comment="" StandardRevision="A" Identifier="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+  <Channels>
+	<Channel Name="HeaderTestChannel" Comment="">
+      <Header Enable="Yes" TransportTimestamp="Yes" />
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5000" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="HeaderTestStream" SampleMaxNumber="1" SampleMaxSizeBytes="500" Direction="In">
+          <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
+          <MessageSize Enable="No" />
+          <Errors Enable="No"/>
+		</A664_Stream>
+      </Stream>
+    </Channel>
+
+    <MultiChannel Name="MultichannelTestChannel">
+      <Header Enable="No" TransportTimestamp="No" />
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5001" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Streams>
+		<A664_Stream UID="5" Name="MultichannelTestStream" SampleMaxNumber="1" SampleMaxSizeBytes="500" Direction="In">
+          <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
+          <MessageSize Enable="No" />
+          <Errors Enable="No"/>
+		</A664_Stream>
+      </Streams>
+    </MultiChannel>
+
+	<Channel Name="DataTSTestChannel" Comment="">
+      <Header Enable="No" TransportTimestamp="No" />
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5002" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="DataTSTestStream" SampleMaxNumber="1" SampleMaxSizeBytes="500" Direction="In">
+          <DataTimestamp Enable="Yes" SampleDataTimestampOffset="No"/>
+          <MessageSize Enable="No" />
+          <Errors Enable="No"/>
+		</A664_Stream>
+      </Stream>
+    </Channel>
+
+	<Channel Name="A429TestChannel" Comment="">
+      <Header Enable="No" TransportTimestamp="No" />
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5003" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A429_Stream Name="A429TestStream" SampleMaxNumber="1" Direction="In">
+          <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
+          <Errors Enable="No"/>
+        </A429_Stream>
+      </Stream>
+    </Channel>
+
+	<Channel Name="AFDXTestChannel" Comment="">
+      <Header Enable="No" TransportTimestamp="No" />
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5004" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="AFDXTestStream" SampleMaxNumber="1" SampleMaxSizeBytes="20" Direction="In">
+          <MessageSize Enable="Yes" />
+          <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
+          <Errors Enable="No"/>
+        </A664_Stream>
+      </Stream>
+    </Channel>
+
+  </Channels>
+</ED247ComponentInstanceConfiguration>

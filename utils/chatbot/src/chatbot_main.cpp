@@ -21,12 +21,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-#include <stdio.h>
 #include <list>
-#include <iostream>
 
 #include <ed247.h>
+#include "ed247_logs.h"
 #include "sync_entity.h"
 #include "string.h"
 
@@ -65,14 +63,14 @@ int check_status(ed247_context_t context, ed247_status_t status);
 
 int main(int argc, char *argv[])
 {
-    ed247_status_t              status;
-    ed247_log_level_t           log_level;
-    ed247_context_t             context;
-    ed247_stream_list_t         streams;
-    ed247_stream_t              stream;
-    ed247_signal_list_t         signals;
-    ed247_signal_t              signal;
-    ed247_stream_assistant_t    assistant;
+    ed247_status_t              status = ED247_STATUS_SUCCESS;
+    ed247_log_level_t           log_level = ED247_LOG_LEVEL_UNSET;
+    ed247_context_t             context = nullptr;
+    ed247_stream_list_t         streams = nullptr;
+    ed247_stream_t              stream = nullptr;
+    ed247_signal_list_t         signals = nullptr;
+    ed247_signal_t              signal = nullptr;
+    ed247_stream_assistant_t    assistant = nullptr;
     std::list<Stream*>          list;
     
     std::string filepath = "";
@@ -81,7 +79,7 @@ int main(int argc, char *argv[])
 
     // Retrieve arguments
     if(argc != 4){
-        std::cerr << "chatbot <ecic_filepath> <timestep_ms> <loop_count>" << std::endl;
+        PRINT_ERROR("chatbot <ecic_filepath> <timestep_ms> <loop_count>");
         return EXIT_FAILURE;
     }
 
@@ -89,13 +87,13 @@ int main(int argc, char *argv[])
     if(status != ED247_STATUS_SUCCESS) return EXIT_FAILURE;
 
     filepath = std::string(argv[1]);
-    if(log_level >= ED247_LOG_LEVEL_INFO) std::cout << "ECIC filepath: " << filepath << std::endl;
+    PRINT_INFO("ECIC filepath: " << filepath);
     timestep_ms = atoi(argv[2]);
-    if(log_level >= ED247_LOG_LEVEL_INFO) std::cout << "Timestep: " << timestep_ms << " ms" << std::endl;
+    PRINT_INFO("Timestep: " << timestep_ms << " ms");
     loop_count = atol(argv[3]);
-    if(log_level >= ED247_LOG_LEVEL_INFO) std::cout << "Loop count: " << loop_count << std::endl;
+    PRINT_INFO("Loop count: " << loop_count);
 
-    status = ed247_load(filepath.c_str(), NULL, &context);
+    status = ed247_load_file(filepath.c_str(), &context);
     if(check_status(context, status)) return EXIT_FAILURE;
 
     // Retrieve streams
@@ -107,7 +105,7 @@ int main(int argc, char *argv[])
         st = new Stream();
         st->stream = stream;
         status = ed247_stream_get_info(stream, &st->info);
-        if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Initialize stream [" << std::string(st->info->name) << "]" << std::endl;
+        PRINT_INFO("Initialize stream [" << std::string(st->info->name) << "]");
         if(check_status(context,status)) return EXIT_FAILURE;
         status = ed247_stream_allocate_sample(st->stream, &st->sample, &st->sample_size);
         if(check_status(context,status)) return EXIT_FAILURE;
@@ -122,7 +120,7 @@ int main(int argc, char *argv[])
                 si->signal = signal;
                 status = ed247_signal_get_info(signal, &si->info);
                 if(check_status(context,status)) return EXIT_FAILURE;
-                if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Initialize stream [" << std::string(st->info->name) << "] / signal [" << std::string(si->info->name) << "]" << std::endl;
+                PRINT_INFO("Initialize stream [" << std::string(st->info->name) << "] / signal [" << std::string(si->info->name) << "]");
                 status = ed247_signal_allocate_sample(si->signal, &si->sample, &si->sample_size);
                 if(check_status(context,status)) return EXIT_FAILURE;
                 st->signals.push_back(si);
@@ -144,10 +142,10 @@ int main(int argc, char *argv[])
         for(it = list.begin() ; it != list.end() ; it++){
             st = *it;
             if(st->info->direction == ED247_DIRECTION_IN) continue;
-            if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Update stream [" << std::string(st->info->name) << "]" << std::endl;
+            PRINT_INFO("Update stream [" << std::string(st->info->name) << "]");
             for(uint32_t i = 0 ; i < st->info->sample_max_number ; i++){
                 uint32_t value = i + loop;
-                if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Update stream [" << std::string(st->info->name) << "] / sample [" << i << "]" << std::endl;
+                PRINT_INFO("Update stream [" << std::string(st->info->name) << "] / sample [" << i << "]");
                 if(st->signals.empty()){
                     if (st->sample_size == 4) {
                       *(uint32_t*)st->sample = value;
@@ -155,7 +153,7 @@ int main(int argc, char *argv[])
                       memset(st->sample, value, st->sample_size);
                     }
 
-                    if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Update stream [" << std::string(st->info->name) << "] / sample [" << i << "]: push [" << value << "]" << std::endl;
+                    PRINT_INFO("Update stream [" << std::string(st->info->name) << "] / sample [" << i << "]: push [" << value << "]");
                     status = ed247_stream_push_sample(st->stream, st->sample, st->sample_size, &timestamp, NULL);
                     if(check_status(context,status)) return EXIT_FAILURE;
                 }else{
@@ -166,7 +164,7 @@ int main(int argc, char *argv[])
                         } else {
                           memset(si->sample, value, si->sample_size);
                         }
-                        if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Update stream [" << std::string(st->info->name) << "] / sample [" << i << "] / signal [" << std::string(si->info->name) << "]: push [" << value << "]" << std::endl;
+                        PRINT_INFO("Update stream [" << std::string(st->info->name) << "] / sample [" << i << "] / signal [" << std::string(si->info->name) << "]: push [" << value << "]");
                         status = ed247_stream_assistant_write_signal(st->assistant, si->signal, si->sample, si->sample_size);
                         if(check_status(context,status)) return EXIT_FAILURE;
                     }
@@ -178,17 +176,23 @@ int main(int argc, char *argv[])
         status = ed247_send_pushed_samples(context);
         if(check_status(context,status)) return EXIT_FAILURE;
         stop = synchro::get_time_us();
-        if(log_level >= ED247_LOG_LEVEL_DEBUG) std::cout << "Elapsed [" << stop-start << "] us / Timestep [" << timestep_ms*1000 << "] us" << std::endl;
+        PRINT_INFO("Elapsed [" << stop-start << "] us / Timestep [" << timestep_ms*1000 << "] us");
         if((uint32_t)(stop-start) < timestep_ms*1000) synchro::sleep_us(timestep_ms*1000-(stop-start));
     }
 
     // Unload
-    status = ed247_signal_list_free(signals);
-    if(check_status(context, status)) return EXIT_FAILURE;
-    status = ed247_stream_list_free(streams);
-    if(check_status(context, status)) return EXIT_FAILURE;
-    status = ed247_unload(context);
-    if(check_status(context,status)) return EXIT_FAILURE;
+    if (signals) {
+      status = ed247_signal_list_free(signals);
+      if(check_status(context, status)) return EXIT_FAILURE;
+    }
+    if (streams) {
+      status = ed247_stream_list_free(streams);
+      if(check_status(context, status)) return EXIT_FAILURE;
+    }
+    if (context) {
+      status = ed247_unload(context);
+      if(check_status(context,status)) return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
@@ -196,12 +200,10 @@ int main(int argc, char *argv[])
 int check_status(ed247_context_t context, ed247_status_t status)
 {
     if(status != ED247_STATUS_SUCCESS){
-        fprintf(stderr,"# ED247 ERROR (%s): %s\n",
-            ed247_status_string(status),
-            libed247_errors());
-        ed247_unload(context);
-        return EXIT_FAILURE;
+       PRINT_ERROR("ED247 status: " << ed247_status_string(status));
+       ed247_unload(context);
+       return EXIT_FAILURE;
     }else{
-        return EXIT_SUCCESS;
+      return EXIT_SUCCESS;
     }
 }

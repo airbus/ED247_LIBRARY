@@ -903,7 +903,7 @@ DEALINGS IN THE SOFTWARE.
             <xs:element name="Header" type="header_type" minOccurs="0"/>
             <xs:element name="Streams">
                 <xs:complexType>
-                    <xs:sequence>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
                         <xs:element name="A429_Stream" type="a429_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="A825_Stream" type="a825_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="A664_Stream" type="a664_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
@@ -916,7 +916,7 @@ DEALINGS IN THE SOFTWARE.
                         <xs:element name="ANA_Stream" type="ana_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="NAD_Stream" type="nad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="VNAD_Stream" type="vnad_stream_multi_type" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
         </xs:all>
@@ -936,10 +936,10 @@ DEALINGS IN THE SOFTWARE.
             </xs:element>
             <xs:element name="Channels">
                 <xs:complexType>
-                    <xs:sequence>
+                    <xs:choice minOccurs="1" maxOccurs="unbounded">
                         <xs:element name="Channel" type="channel_type" minOccurs="0" maxOccurs="unbounded"/>
                         <xs:element name="MultiChannel" type="multi_channel_type" minOccurs="0" maxOccurs="unbounded"/>
-                    </xs:sequence>
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
         </xs:all>

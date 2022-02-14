@@ -31,8 +31,8 @@ add_custom_target(${TEST_EXECUTABLE}
 )
 add_dependencies(tests ${TEST_EXECUTABLE})
 
-target_link_libraries(${TEST_EXECUTABLE}_send PRIVATE test_api Ed247::ed247)
-target_link_libraries(${TEST_EXECUTABLE}_recv PRIVATE test_api Ed247::ed247)
+target_link_libraries(${TEST_EXECUTABLE}_send libtests_functional)
+target_link_libraries(${TEST_EXECUTABLE}_recv libtests_functional)
 
 file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
 foreach(CONFIG ${CONFIGS})
