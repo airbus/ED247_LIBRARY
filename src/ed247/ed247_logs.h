@@ -46,7 +46,13 @@
 #define PRINT_DEBUG(m)   do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_DEBUG))   ED247_LOG_STREAM << LOG_STREAM_FILELINE << m << std::endl; } while (0)
 #define PRINT_CRAZY(m)   do { if (ED247_LOG_ENABLED(ED247_LOG_LEVEL_CRAZY))   ED247_LOG_STREAM << LOG_STREAM_FILELINE << m << std::endl; } while (0)
 
-#define ED247_LOG_STREAM         ed247::log::get().stream()
+#ifdef SIMULINK_LOGGER_ENABLED
+# include "Logger.hpp"
+# define ED247_LOG_STREAM LOG(info, 0)
+#else
+# define ED247_LOG_STREAM ed247::log::get().stream()
+#endif
+
 #define ED247_LOG_ENABLED(level) ed247::log::get().enabled(level)
 #define SAY_STREAM(stream, m)    do { (stream) << LOG_STREAM_FILELINE << m << std::endl; } while (0)
 

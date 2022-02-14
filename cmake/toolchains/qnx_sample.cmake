@@ -27,3 +27,6 @@ set(CMAKE_SKIP_RPATH TRUE)
 # Doxygen
 #set(Doxygen_ROOT /)
 
+# Simulink logger
+#set(SimulinkLogger_INCLUDE_DIR "/")
+
