@@ -58,6 +58,16 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   endif()
 endif()
 
+# Simulink RT logger
+add_library(SimulinkLogger INTERFACE)
+find_path(SimulinkLogger_INCLUDE_DIR "Logger.hpp" HINTS ${SimulinkLogger_INCLUDE_DIR})
+find_package_handle_standard_args(SimulinkLogger DEFAULT_MSG SimulinkLogger_INCLUDE_DIR)
+if (SimulinkLogger_FOUND)
+  target_include_directories(SimulinkLogger INTERFACE ${SimulinkLogger_INCLUDE_DIR})
+  target_compile_definitions(SimulinkLogger INTERFACE "SIMULINK_LOGGER_ENABLED")
+endif()
+
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
   set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++")

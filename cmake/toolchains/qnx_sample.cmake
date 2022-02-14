@@ -25,3 +25,6 @@ set(CMAKE_PREFIX_PATH ${CMAKE_SYSROOT}/${ntoarch}; ${CMAKE_SYSROOT}/${ntoarch}/u
 # Doxygen
 #set(Doxygen_ROOT /)
 
+# Simulink logger
+#set(SimulinkLogger_INCLUDE_DIR "/")
+
