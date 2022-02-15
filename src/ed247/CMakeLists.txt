@@ -58,6 +58,7 @@ target_compile_definitions(ed247_objects
 add_library(ed247 SHARED)
 add_library(Ed247::ed247 ALIAS ed247)
 target_link_libraries(ed247 PUBLIC ed247_objects)
+set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
 
 # Generate XSD header file containing the XSD as a string
 macro(_generate_xsd_header _XSD_PATH _XSD_FILENAME _HEADER_FILEPATH _VAR_NAME)
@@ -82,8 +83,11 @@ set(INSTALL_LIBDIR lib)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(INSTALL_LIBDIR bin)
 endif()
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/ed247.h DESTINATION ${PLATFORM_INSTALL_SUBDIR}include)
-install(TARGETS ed247                           DESTINATION ${PLATFORM_INSTALL_SUBDIR}${INSTALL_LIBDIR})
-install(FILES ./xsd/ED247A_ECIC.xsd             DESTINATION doc/xsd)
-install(FILES ./xsd/ED247A_ECD.xsd              DESTINATION doc/xsd)
+
+install(TARGETS ed247
+                                     DESTINATION ${PLATFORM_INSTALL_SUBDIR}${INSTALL_LIBDIR}
+  PUBLIC_HEADER                      DESTINATION ${PLATFORM_INSTALL_SUBDIR}include
+)
+install(FILES ./xsd/ED247A_ECIC.xsd  DESTINATION doc/xsd)
+install(FILES ./xsd/ED247A_ECD.xsd   DESTINATION doc/xsd)
 
