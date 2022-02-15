@@ -26,7 +26,7 @@
 
 #include <regex>
 
-#ifdef __linux__
+#ifdef __unix__
 #include <time.h>
 #endif
 

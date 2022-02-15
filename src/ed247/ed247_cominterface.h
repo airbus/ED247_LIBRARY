@@ -105,7 +105,7 @@ struct SocketInfos : public sockaddr_in
         static struct in_addr sin_addr_temp = sin_addr;
         InetNtop(AF_INET, &sin_addr_temp, straddr, INET_ADDRSTRLEN);
         ipaddr = std::string(straddr);
-#elif __linux__
+#elif __unix__
         char straddr[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &sin_addr, straddr, INET_ADDRSTRLEN);
         ipaddr = std::string(straddr);

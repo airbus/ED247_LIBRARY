@@ -40,6 +40,8 @@ target_link_libraries(ed247_objects
      LibXml2::LibXml2
      $<$<PLATFORM_ID:Windows>:wsock32>
      $<$<PLATFORM_ID:Windows>:ws2_32>
+     $<$<PLATFORM_ID:QNX>:socket>
+     $<$<PLATFORM_ID:QNX>:regex>
 )
 
 target_include_directories(ed247_objects

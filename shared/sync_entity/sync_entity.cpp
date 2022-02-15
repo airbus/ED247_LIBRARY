@@ -32,7 +32,12 @@
 #ifdef __unix__
 #include <errno.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 #include <time.h>
+// If system do not support CLOCK_MONOTONIC_RAW, fallback to CLOCK_MONOTONIC
+# ifndef CLOCK_MONOTONIC_RAW
+#  define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
+# endif
 #endif
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -42,9 +47,6 @@
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <mswsock.h>
-#endif
-#ifdef _QNX_SOURCE
-#include <sys/socket.h>
 #endif
 
 #include <fstream>
@@ -102,13 +104,9 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 }
 #endif
 
-#ifndef CLOCK_MONOTONIC_RAW
-  #define CLOCK_MONOTONIC_RAW 4
-#endif
-
 uint64_t get_time_us()
 {
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
     return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;
@@ -149,7 +147,7 @@ void SocketEntity::close(SOCKET & socket)
 {
     if(socket != INVALID_SOCKET){
         shutdown(socket, 2);
-#ifdef __linux__
+#ifdef __unix__
         ::close(socket);
 #elif _WIN32
         closesocket(socket);

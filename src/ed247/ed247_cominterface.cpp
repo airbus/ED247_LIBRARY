@@ -32,7 +32,7 @@
 #include <memory>
 #include <string>
 
-#ifdef __linux__
+#ifdef __unix__
 #include <fcntl.h>
 #include <time.h>
 #include <signal.h>
@@ -296,7 +296,7 @@ void UdpSocket::close()
 
     if(_socket != INVALID_SOCKET){
         shutdown(_socket, 2);
-#ifdef __linux__
+#ifdef __unix__
         ::close(_socket);
 #elif _WIN32
         closesocket(_socket);
@@ -405,7 +405,7 @@ void UdpSocket::Factory::setup()
             char straddr[INET_ADDRSTRLEN];
             InetNtop(AF_INET, &_host_ip_addresses.back(), straddr, INET_ADDRSTRLEN);
             ipaddr = std::string(straddr);
-#elif __linux__
+#elif __unix__
             char straddr[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &_host_ip_addresses.back(), straddr, INET_ADDRSTRLEN);
             ipaddr = std::string(straddr);
