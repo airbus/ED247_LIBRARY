@@ -34,7 +34,7 @@ class TEST_CLASS_NAME(LogConfigurationTest, LoggingByArgs);
 
 std::string config_path = "../config";
 
-#ifdef __linux__
+#ifdef __unix__
 # define env_set(var, value) setenv(var, value, 1)
 # define env_rm(var) unsetenv(var)
 static struct stat unused_stat_buffer;

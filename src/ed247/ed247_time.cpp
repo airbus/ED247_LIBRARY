@@ -4,6 +4,10 @@
 #ifndef _MSC_VER
 # include <time.h>
 # include <sys/time.h>
+// If system do not support CLOCK_MONOTONIC_RAW, fallback to CLOCK_MONOTONIC
+# ifndef CLOCK_MONOTONIC_RAW
+#  define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
+# endif
 #endif
 #ifdef _WIN32
 # include <windows.h>
@@ -40,7 +44,7 @@ static int gettimeofday(struct timeval * tp, struct timezone * tzp)
 namespace ed247 {
   uint64_t get_monotonic_time_us()
   {
-#ifdef __linux__
+#ifdef __unix__
     struct timespec tp;
     clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
     return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;

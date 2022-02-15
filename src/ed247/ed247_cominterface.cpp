@@ -483,7 +483,7 @@ std::ostream & operator << (std::ostream & os, const ed247::udp::socket_address_
   static struct in_addr sin_addr_temp = socket_address.sin_addr;
   InetNtop(AF_INET, &sin_addr_temp, straddr, INET_ADDRSTRLEN);
   ipaddr = std::string(straddr);
-#elif __linux__
+#elif __unix__
   char straddr[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &socket_address.sin_addr, straddr, INET_ADDRSTRLEN);
   ipaddr = std::string(straddr);
