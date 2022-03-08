@@ -165,6 +165,7 @@ int main(int argc, char **argv)
 {
   std::string config_path = (argc >=1)? argv[1] : "../config";
 
+  tests_tools::display_ed247_lib_infos();
   SAY("Configuration path: " << config_path);
 
   stream_files.push_back({TEST_ACTOR_ID, config_path + "/ecic_func_error_handling_receiver.xml"});

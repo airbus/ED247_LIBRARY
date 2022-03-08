@@ -25,6 +25,8 @@ namespace tests_tools {
    **/
   const uint32_t* count_matching_lines_in_file(const char* filename, const char* trace_to_find);
 
+  // Display ED247 library information
+  void display_ed247_lib_infos();
 
   // GTEST predicate to compare two payload
   inline ::testing::AssertionResult AssertPayloadEq(const char* exprPayload1,

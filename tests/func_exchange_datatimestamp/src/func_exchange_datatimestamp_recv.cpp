@@ -148,6 +148,7 @@ int main(int argc, char **argv)
     else
         config_path = "../config";
 
+    tests_tools::display_ed247_lib_infos();
     SAY("Configuration path: " << config_path);
 
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_datatimestamp_a429_recv.xml"});

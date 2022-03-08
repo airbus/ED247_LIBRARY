@@ -25,3 +25,25 @@ const uint32_t* tests_tools::count_matching_lines_in_file(const char* filename, 
   }
   return &nb_match;
 }
+
+
+#ifdef __linux__
+#include <dlfcn.h>
+static std::string ed247_lib_path() {
+  Dl_info info;
+  if (dladdr((void*)&ed247_load_file, &info) != 0 && info.dli_fname) {
+    return info.dli_fname;
+  } else {
+    return "<Unknown library path>";
+  }
+}
+#else
+static std::string ed247_lib_path() {
+  return std::string();
+}
+#endif
+
+void tests_tools::display_ed247_lib_infos()
+{
+  SAY("ED247 Library " << ed247_get_implementation_version() << " - " << ed247_lib_path());
+}

@@ -19,6 +19,7 @@ target_link_libraries(libtests_unitary
   PUBLIC
     ed247_objects
     libtests_objects
+    $<$<PLATFORM_ID:Linux>:dl>
 )
 
 # Functionnal tests lib dynamically linked to ED247
@@ -29,4 +30,5 @@ target_link_libraries(libtests_functional
     Ed247::ed247
     libtests_objects
     sync_entity
+    $<$<PLATFORM_ID:Linux>:dl>
 )
