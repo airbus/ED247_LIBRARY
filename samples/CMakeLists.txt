@@ -21,13 +21,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../lib")
+function(add_subdirectory_with_rpath _folder_name)
+  add_subdirectory(${_folder_name})
+  set_target_properties(${_folder_name} PROPERTIES INSTALL_RPATH "$ORIGIN/../../../lib")
+endfunction()
 
-add_subdirectory(walk_configuration)
-add_subdirectory(exchange_stream_wait_frame)
-add_subdirectory(exchange_stream_event)
-add_subdirectory(exchange_stream_wait_during)
-add_subdirectory(exchange_signal_wait_frame)
+add_subdirectory_with_rpath(walk_configuration)
+add_subdirectory_with_rpath(exchange_stream_wait_frame)
+add_subdirectory_with_rpath(exchange_stream_event)
+add_subdirectory_with_rpath(exchange_stream_wait_during)
+add_subdirectory_with_rpath(exchange_signal_wait_frame)
 
 # Custum target to compile only the samples and there dependencies
 add_custom_target(samples

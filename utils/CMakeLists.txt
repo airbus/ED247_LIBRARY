@@ -21,14 +21,17 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+function(add_subdirectory_with_rpath _folder_name)
+  add_subdirectory(${_folder_name})
+  set_target_properties(${_folder_name} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib")
+endfunction()
 
-add_subdirectory(chatbot)
-add_subdirectory(loadonly)
-add_subdirectory(dumper)
+add_subdirectory_with_rpath(chatbot)
+add_subdirectory_with_rpath(loadonly)
+add_subdirectory_with_rpath(dumper)
 
 # Custum target to compile only the utils and there dependencies
-add_custom_target(utils 
+add_custom_target(utils
     DEPENDS
         chatbot
         loadonly
