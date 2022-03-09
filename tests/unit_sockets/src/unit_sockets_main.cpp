@@ -257,8 +257,8 @@ INSTANTIATE_TEST_CASE_P(MulticastTests,SocketContext,
 int main(int argc, char **argv)
 {
     std::string multicast_interface_ip;
-    if(argc >=2)
-        multicast_interface_ip = argv[1];
+    if(argc >= 3)
+      multicast_interface_ip = argv[2];
 
     SAY("Multicast interface: " << multicast_interface_ip);
 

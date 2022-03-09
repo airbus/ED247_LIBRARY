@@ -123,7 +123,7 @@ TEST(UtApiMisc, IdentificationGetters)
     ASSERT_STREQ(value, "ED247_LIBRARY");
     
     value = ed247_get_implementation_version();
-    ASSERT_STREQ(value, _PRODUCT_VERSION);
+    ASSERT_STREQ(value, TEST_PRODUCT_VERSION);
 }
 
 int main(int argc, char **argv)

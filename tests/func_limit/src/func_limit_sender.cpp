@@ -21,8 +21,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-#define TEST_ACTOR1_NAME "send"
-#define TEST_ACTOR2_NAME "recv"
 #define TEST_ACTOR_ID TEST_ACTOR1_ID
 #include "functional_test.h"
 

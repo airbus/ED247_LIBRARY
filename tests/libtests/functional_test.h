@@ -36,10 +36,10 @@ enum test_actor_id_t {
 // Actor names
 // Overwrite actor name before including this header
 #ifndef TEST_ACTOR1_NAME
-# define TEST_ACTOR1_NAME "main"
+# define TEST_ACTOR1_NAME "sender"
 #endif
 #ifndef TEST_ACTOR2_NAME
-# define TEST_ACTOR2_NAME "tester"
+# define TEST_ACTOR2_NAME "receiver"
 #endif
 
 #define TEST_ACTOR_NAME() ((GetParam().actor_id == TEST_ACTOR1_ID)? TEST_ACTOR1_NAME : TEST_ACTOR2_NAME)

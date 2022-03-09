@@ -1,0 +1,1251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The MIT Licence
+
+Copyright (c) 2021 Airbus Operations S.A.S
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+-->
+
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_1" Comment="" StandardRevision="A" Identifier="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+	<Channels>
+        <MultiChannel Name="C0">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4000" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C0_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C0_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C0_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C0_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C0_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C0_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C0_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C0_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C0_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C0_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C0_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C0_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C0_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C0_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C0_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C0_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C0_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C0_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C0_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C0_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C0_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C0_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C0_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C0_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C0_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C0_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C0_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C0_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C0_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C0_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C0_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C0_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C0_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C0_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C0_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C0_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C0_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C0_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C0_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C0_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C0_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C0_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C0_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C0_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C0_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C0_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C0_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C0_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C0_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C0_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C0_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C0_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C0_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C0_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C0_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C0_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C0_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C0_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C0_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C0_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C0_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C0_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C0_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C0_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C0_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C0_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C0_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C0_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C0_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C0_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C0_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C0_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C0_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C0_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C0_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C0_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C0_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C0_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C0_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C0_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C0_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C0_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C0_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C0_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C0_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C0_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C0_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C0_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C0_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C0_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C0_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C0_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C0_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C0_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C0_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C0_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C0_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C0_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C0_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C0_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C0_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C1">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4001" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C1_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C1_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C1_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C1_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C1_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C1_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C1_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C1_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C1_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C1_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C1_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C1_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C1_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C1_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C1_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C1_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C1_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C1_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C1_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C1_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C1_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C1_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C1_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C1_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C1_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C1_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C1_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C1_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C1_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C1_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C1_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C1_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C1_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C1_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C1_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C1_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C1_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C1_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C1_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C1_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C1_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C1_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C1_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C1_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C1_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C1_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C1_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C1_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C1_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C1_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C1_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C1_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C1_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C1_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C1_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C1_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C1_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C1_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C1_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C1_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C1_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C1_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C1_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C1_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C1_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C1_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C1_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C1_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C1_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C1_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C1_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C1_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C1_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C1_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C1_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C1_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C1_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C1_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C1_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C1_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C1_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C1_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C1_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C1_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C1_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C1_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C1_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C1_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C1_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C1_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C1_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C1_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C1_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C1_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C1_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C1_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C1_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C1_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C1_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C1_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C1_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C2">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4002" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C2_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C2_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C2_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C2_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C2_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C2_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C2_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C2_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C2_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C2_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C2_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C2_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C2_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C2_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C2_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C2_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C2_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C2_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C2_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C2_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C2_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C2_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C2_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C2_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C2_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C2_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C2_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C2_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C2_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C2_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C2_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C2_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C2_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C2_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C2_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C2_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C2_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C2_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C2_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C2_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C2_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C2_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C2_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C2_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C2_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C2_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C2_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C2_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C2_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C2_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C2_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C2_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C2_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C2_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C2_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C2_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C2_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C2_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C2_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C2_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C2_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C2_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C2_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C2_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C2_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C2_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C2_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C2_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C2_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C2_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C2_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C2_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C2_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C2_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C2_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C2_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C2_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C2_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C2_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C2_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C2_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C2_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C2_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C2_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C2_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C2_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C2_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C2_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C2_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C2_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C2_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C2_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C2_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C2_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C2_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C2_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C2_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C2_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C2_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C2_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C2_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C3">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4003" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C3_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C3_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C3_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C3_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C3_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C3_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C3_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C3_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C3_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C3_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C3_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C3_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C3_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C3_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C3_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C3_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C3_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C3_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C3_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C3_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C3_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C3_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C3_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C3_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C3_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C3_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C3_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C3_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C3_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C3_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C3_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C3_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C3_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C3_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C3_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C3_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C3_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C3_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C3_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C3_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C3_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C3_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C3_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C3_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C3_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C3_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C3_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C3_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C3_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C3_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C3_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C3_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C3_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C3_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C3_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C3_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C3_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C3_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C3_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C3_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C3_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C3_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C3_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C3_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C3_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C3_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C3_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C3_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C3_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C3_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C3_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C3_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C3_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C3_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C3_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C3_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C3_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C3_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C3_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C3_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C3_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C3_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C3_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C3_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C3_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C3_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C3_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C3_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C3_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C3_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C3_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C3_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C3_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C3_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C3_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C3_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C3_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C3_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C3_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C3_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C3_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C4">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4004" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C4_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C4_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C4_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C4_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C4_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C4_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C4_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C4_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C4_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C4_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C4_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C4_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C4_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C4_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C4_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C4_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C4_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C4_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C4_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C4_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C4_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C4_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C4_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C4_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C4_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C4_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C4_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C4_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C4_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C4_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C4_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C4_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C4_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C4_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C4_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C4_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C4_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C4_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C4_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C4_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C4_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C4_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C4_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C4_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C4_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C4_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C4_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C4_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C4_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C4_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C4_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C4_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C4_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C4_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C4_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C4_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C4_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C4_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C4_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C4_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C4_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C4_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C4_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C4_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C4_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C4_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C4_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C4_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C4_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C4_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C4_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C4_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C4_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C4_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C4_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C4_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C4_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C4_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C4_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C4_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C4_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C4_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C4_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C4_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C4_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C4_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C4_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C4_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C4_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C4_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C4_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C4_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C4_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C4_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C4_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C4_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C4_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C4_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C4_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C4_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C4_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C5">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4005" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C5_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C5_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C5_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C5_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C5_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C5_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C5_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C5_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C5_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C5_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C5_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C5_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C5_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C5_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C5_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C5_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C5_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C5_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C5_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C5_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C5_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C5_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C5_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C5_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C5_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C5_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C5_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C5_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C5_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C5_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C5_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C5_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C5_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C5_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C5_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C5_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C5_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C5_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C5_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C5_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C5_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C5_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C5_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C5_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C5_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C5_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C5_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C5_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C5_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C5_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C5_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C5_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C5_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C5_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C5_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C5_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C5_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C5_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C5_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C5_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C5_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C5_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C5_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C5_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C5_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C5_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C5_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C5_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C5_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C5_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C5_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C5_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C5_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C5_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C5_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C5_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C5_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C5_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C5_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C5_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C5_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C5_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C5_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C5_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C5_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C5_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C5_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C5_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C5_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C5_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C5_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C5_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C5_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C5_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C5_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C5_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C5_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C5_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C5_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C5_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C5_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C6">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4006" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C6_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C6_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C6_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C6_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C6_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C6_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C6_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C6_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C6_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C6_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C6_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C6_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C6_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C6_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C6_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C6_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C6_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C6_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C6_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C6_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C6_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C6_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C6_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C6_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C6_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C6_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C6_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C6_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C6_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C6_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C6_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C6_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C6_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C6_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C6_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C6_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C6_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C6_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C6_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C6_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C6_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C6_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C6_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C6_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C6_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C6_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C6_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C6_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C6_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C6_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C6_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C6_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C6_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C6_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C6_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C6_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C6_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C6_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C6_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C6_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C6_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C6_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C6_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C6_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C6_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C6_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C6_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C6_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C6_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C6_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C6_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C6_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C6_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C6_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C6_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C6_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C6_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C6_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C6_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C6_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C6_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C6_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C6_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C6_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C6_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C6_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C6_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C6_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C6_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C6_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C6_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C6_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C6_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C6_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C6_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C6_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C6_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C6_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C6_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C6_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C6_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C7">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4007" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C7_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C7_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C7_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C7_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C7_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C7_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C7_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C7_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C7_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C7_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C7_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C7_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C7_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C7_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C7_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C7_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C7_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C7_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C7_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C7_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C7_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C7_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C7_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C7_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C7_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C7_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C7_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C7_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C7_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C7_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C7_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C7_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C7_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C7_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C7_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C7_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C7_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C7_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C7_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C7_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C7_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C7_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C7_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C7_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C7_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C7_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C7_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C7_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C7_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C7_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C7_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C7_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C7_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C7_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C7_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C7_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C7_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C7_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C7_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C7_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C7_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C7_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C7_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C7_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C7_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C7_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C7_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C7_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C7_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C7_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C7_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C7_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C7_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C7_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C7_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C7_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C7_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C7_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C7_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C7_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C7_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C7_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C7_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C7_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C7_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C7_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C7_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C7_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C7_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C7_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C7_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C7_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C7_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C7_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C7_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C7_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C7_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C7_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C7_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C7_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C7_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C8">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4008" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C8_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C8_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C8_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C8_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C8_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C8_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C8_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C8_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C8_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C8_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C8_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C8_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C8_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C8_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C8_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C8_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C8_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C8_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C8_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C8_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C8_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C8_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C8_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C8_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C8_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C8_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C8_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C8_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C8_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C8_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C8_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C8_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C8_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C8_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C8_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C8_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C8_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C8_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C8_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C8_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C8_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C8_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C8_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C8_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C8_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C8_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C8_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C8_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C8_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C8_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C8_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C8_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C8_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C8_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C8_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C8_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C8_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C8_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C8_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C8_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C8_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C8_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C8_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C8_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C8_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C8_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C8_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C8_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C8_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C8_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C8_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C8_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C8_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C8_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C8_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C8_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C8_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C8_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C8_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C8_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C8_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C8_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C8_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C8_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C8_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C8_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C8_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C8_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C8_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C8_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C8_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C8_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C8_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C8_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C8_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C8_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C8_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C8_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C8_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C8_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C8_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C9">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4009" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C9_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C9_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C9_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C9_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C9_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C9_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C9_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C9_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C9_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C9_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C9_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C9_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C9_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C9_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C9_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C9_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C9_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C9_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C9_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C9_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C9_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C9_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C9_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C9_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C9_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C9_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C9_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C9_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C9_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C9_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C9_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C9_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C9_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C9_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C9_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C9_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C9_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C9_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C9_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C9_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C9_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C9_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C9_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C9_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C9_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C9_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C9_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C9_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C9_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C9_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C9_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C9_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C9_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C9_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C9_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C9_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C9_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C9_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C9_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C9_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C9_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C9_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C9_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C9_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C9_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C9_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C9_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C9_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C9_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C9_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C9_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C9_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C9_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C9_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C9_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C9_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C9_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C9_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C9_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C9_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C9_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C9_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C9_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C9_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C9_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C9_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C9_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C9_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C9_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C9_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C9_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C9_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C9_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C9_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C9_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C9_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C9_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C9_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C9_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C9_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C9_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>
+        <MultiChannel Name="C10">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="224.1.1.1" MulticastInterfaceIP="@TEST_MULTICAST_INTERFACE_IP@" DstPort="4010" Direction="Out"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <A429_Stream UID="0" Name="C10_S0" Direction="Out"/>
+                <A429_Stream UID="1" Name="C10_S1" Direction="Out"/>
+                <A429_Stream UID="2" Name="C10_S2" Direction="Out"/>
+                <A429_Stream UID="3" Name="C10_S3" Direction="Out"/>
+                <A429_Stream UID="4" Name="C10_S4" Direction="Out"/>
+                <A429_Stream UID="5" Name="C10_S5" Direction="Out"/>
+                <A429_Stream UID="6" Name="C10_S6" Direction="Out"/>
+                <A429_Stream UID="7" Name="C10_S7" Direction="Out"/>
+                <A429_Stream UID="8" Name="C10_S8" Direction="Out"/>
+                <A429_Stream UID="9" Name="C10_S9" Direction="Out"/>
+                <A429_Stream UID="10" Name="C10_S10" Direction="Out"/>
+                <A429_Stream UID="11" Name="C10_S11" Direction="Out"/>
+                <A429_Stream UID="12" Name="C10_S12" Direction="Out"/>
+                <A429_Stream UID="13" Name="C10_S13" Direction="Out"/>
+                <A429_Stream UID="14" Name="C10_S14" Direction="Out"/>
+                <A429_Stream UID="15" Name="C10_S15" Direction="Out"/>
+                <A429_Stream UID="16" Name="C10_S16" Direction="Out"/>
+                <A429_Stream UID="17" Name="C10_S17" Direction="Out"/>
+                <A429_Stream UID="18" Name="C10_S18" Direction="Out"/>
+                <A429_Stream UID="19" Name="C10_S19" Direction="Out"/>
+                <A429_Stream UID="20" Name="C10_S20" Direction="Out"/>
+                <A429_Stream UID="21" Name="C10_S21" Direction="Out"/>
+                <A429_Stream UID="22" Name="C10_S22" Direction="Out"/>
+                <A429_Stream UID="23" Name="C10_S23" Direction="Out"/>
+                <A429_Stream UID="24" Name="C10_S24" Direction="Out"/>
+                <A429_Stream UID="25" Name="C10_S25" Direction="Out"/>
+                <A429_Stream UID="26" Name="C10_S26" Direction="Out"/>
+                <A429_Stream UID="27" Name="C10_S27" Direction="Out"/>
+                <A429_Stream UID="28" Name="C10_S28" Direction="Out"/>
+                <A429_Stream UID="29" Name="C10_S29" Direction="Out"/>
+                <A429_Stream UID="30" Name="C10_S30" Direction="Out"/>
+                <A429_Stream UID="31" Name="C10_S31" Direction="Out"/>
+                <A429_Stream UID="32" Name="C10_S32" Direction="Out"/>
+                <A429_Stream UID="33" Name="C10_S33" Direction="Out"/>
+                <A429_Stream UID="34" Name="C10_S34" Direction="Out"/>
+                <A429_Stream UID="35" Name="C10_S35" Direction="Out"/>
+                <A429_Stream UID="36" Name="C10_S36" Direction="Out"/>
+                <A429_Stream UID="37" Name="C10_S37" Direction="Out"/>
+                <A429_Stream UID="38" Name="C10_S38" Direction="Out"/>
+                <A429_Stream UID="39" Name="C10_S39" Direction="Out"/>
+                <A429_Stream UID="40" Name="C10_S40" Direction="Out"/>
+                <A429_Stream UID="41" Name="C10_S41" Direction="Out"/>
+                <A429_Stream UID="42" Name="C10_S42" Direction="Out"/>
+                <A429_Stream UID="43" Name="C10_S43" Direction="Out"/>
+                <A429_Stream UID="44" Name="C10_S44" Direction="Out"/>
+                <A429_Stream UID="45" Name="C10_S45" Direction="Out"/>
+                <A429_Stream UID="46" Name="C10_S46" Direction="Out"/>
+                <A429_Stream UID="47" Name="C10_S47" Direction="Out"/>
+                <A429_Stream UID="48" Name="C10_S48" Direction="Out"/>
+                <A429_Stream UID="49" Name="C10_S49" Direction="Out"/>
+                <A429_Stream UID="50" Name="C10_S50" Direction="Out"/>
+                <A429_Stream UID="51" Name="C10_S51" Direction="Out"/>
+                <A429_Stream UID="52" Name="C10_S52" Direction="Out"/>
+                <A429_Stream UID="53" Name="C10_S53" Direction="Out"/>
+                <A429_Stream UID="54" Name="C10_S54" Direction="Out"/>
+                <A429_Stream UID="55" Name="C10_S55" Direction="Out"/>
+                <A429_Stream UID="56" Name="C10_S56" Direction="Out"/>
+                <A429_Stream UID="57" Name="C10_S57" Direction="Out"/>
+                <A429_Stream UID="58" Name="C10_S58" Direction="Out"/>
+                <A429_Stream UID="59" Name="C10_S59" Direction="Out"/>
+                <A429_Stream UID="60" Name="C10_S60" Direction="Out"/>
+                <A429_Stream UID="61" Name="C10_S61" Direction="Out"/>
+                <A429_Stream UID="62" Name="C10_S62" Direction="Out"/>
+                <A429_Stream UID="63" Name="C10_S63" Direction="Out"/>
+                <A429_Stream UID="64" Name="C10_S64" Direction="Out"/>
+                <A429_Stream UID="65" Name="C10_S65" Direction="Out"/>
+                <A429_Stream UID="66" Name="C10_S66" Direction="Out"/>
+                <A429_Stream UID="67" Name="C10_S67" Direction="Out"/>
+                <A429_Stream UID="68" Name="C10_S68" Direction="Out"/>
+                <A429_Stream UID="69" Name="C10_S69" Direction="Out"/>
+                <A429_Stream UID="70" Name="C10_S70" Direction="Out"/>
+                <A429_Stream UID="71" Name="C10_S71" Direction="Out"/>
+                <A429_Stream UID="72" Name="C10_S72" Direction="Out"/>
+                <A429_Stream UID="73" Name="C10_S73" Direction="Out"/>
+                <A429_Stream UID="74" Name="C10_S74" Direction="Out"/>
+                <A429_Stream UID="75" Name="C10_S75" Direction="Out"/>
+                <A429_Stream UID="76" Name="C10_S76" Direction="Out"/>
+                <A429_Stream UID="77" Name="C10_S77" Direction="Out"/>
+                <A429_Stream UID="78" Name="C10_S78" Direction="Out"/>
+                <A429_Stream UID="79" Name="C10_S79" Direction="Out"/>
+                <A429_Stream UID="80" Name="C10_S80" Direction="Out"/>
+                <A429_Stream UID="81" Name="C10_S81" Direction="Out"/>
+                <A429_Stream UID="82" Name="C10_S82" Direction="Out"/>
+                <A429_Stream UID="83" Name="C10_S83" Direction="Out"/>
+                <A429_Stream UID="84" Name="C10_S84" Direction="Out"/>
+                <A429_Stream UID="85" Name="C10_S85" Direction="Out"/>
+                <A429_Stream UID="86" Name="C10_S86" Direction="Out"/>
+                <A429_Stream UID="87" Name="C10_S87" Direction="Out"/>
+                <A429_Stream UID="88" Name="C10_S88" Direction="Out"/>
+                <A429_Stream UID="89" Name="C10_S89" Direction="Out"/>
+                <A429_Stream UID="90" Name="C10_S90" Direction="Out"/>
+                <A429_Stream UID="91" Name="C10_S91" Direction="Out"/>
+                <A429_Stream UID="92" Name="C10_S92" Direction="Out"/>
+                <A429_Stream UID="93" Name="C10_S93" Direction="Out"/>
+                <A429_Stream UID="94" Name="C10_S94" Direction="Out"/>
+                <A429_Stream UID="95" Name="C10_S95" Direction="Out"/>
+                <A429_Stream UID="96" Name="C10_S96" Direction="Out"/>
+                <A429_Stream UID="97" Name="C10_S97" Direction="Out"/>
+                <A429_Stream UID="98" Name="C10_S98" Direction="Out"/>
+                <A429_Stream UID="99" Name="C10_S99" Direction="Out"/>
+                <A429_Stream UID="100" Name="C10_S100" Direction="Out"/>
+            </Streams>
+        </MultiChannel>    
+	</Channels>
+</ED247ComponentInstanceConfiguration>
