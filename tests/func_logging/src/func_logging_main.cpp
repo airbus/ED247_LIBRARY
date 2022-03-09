@@ -137,7 +137,7 @@ Check on the out file that output is growing.
     env_set("ED247_LOG_LEVEL", level_str.c_str());
     ed247_set_log_level(ED247_LOG_LEVEL_INFO);
     ed247_get_log_level(&level);
-    EXPECT_EQ(level, ED247_LOG_LEVEL_MAX);
+    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MAX);
 
     ed247::log::delete_logger();
     unlink(log_filepath);
@@ -146,7 +146,7 @@ Check on the out file that output is growing.
     env_set("ED247_LOG_LEVEL", level_str.c_str());
     ed247_set_log_level(ED247_LOG_LEVEL_INFO);
     ed247_get_log_level(&level);
-    EXPECT_EQ(level, ED247_LOG_LEVEL_MIN);
+    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MIN);
 
     ed247::log::delete_logger();
     unlink(log_filepath);
@@ -203,11 +203,11 @@ Check on the out file that output is growing.
 
     ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MAX + 10));
     ed247_get_log_level(&level);
-    EXPECT_EQ(level, ED247_LOG_LEVEL_MAX);
+    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MAX);
 
     ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MIN - 1));
     ed247_get_log_level(&level);
-    EXPECT_EQ(level, ED247_LOG_LEVEL_MIN);
+    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MIN);
 
     ed247::log::delete_logger();
     unlink(log_filepath);
