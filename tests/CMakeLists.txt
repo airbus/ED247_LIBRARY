@@ -1,6 +1,7 @@
 add_subdirectory(libtests)
-add_custom_target(tests)
-
+add_custom_target(tests_functional)
+add_custom_target(tests_unitary)
+add_custom_target(tests DEPENDS tests_functional tests_unitary)
 
 #
 # Generate ECIC files for ${_test_name}
@@ -16,14 +17,15 @@ endfunction()
 #
 # Add an executable to a test
 # ${_test_name}
-# ${kind} : either functional or unitary
+# ${_kind} : either functional or unitary
 # ${_exe_suffix} : main, sender, receiver, ...
 #
-function (test_add_executable _test_name kind _exe_suffix)
+function (test_add_executable _test_name _kind _exe_suffix)
   set(exe_name ${_test_name}_${_exe_suffix})
   add_executable(${exe_name} ${_test_name}/src/${exe_name}.cpp)
+  set_target_properties(${exe_name} PROPERTIES SKIP_BUILD_RPATH TRUE)
   target_compile_definitions(${exe_name} PRIVATE "TEST_PRODUCT_VERSION=\"${VERSION}\"")
-  target_link_libraries(${exe_name} libtests_${kind})
+  target_link_libraries(${exe_name} libtests_${_kind})
   add_dependencies(${_test_name} ${exe_name})
 endfunction()
 
@@ -38,7 +40,7 @@ function (test_declare_ctest _test_name _nb_actors)
     NAME ${_test_name}
     COMMAND "cmake"
       -DTEST_NAME=${_test_name}
-      -DED247_LIB_PATH=$<TARGET_FILE_DIR:ed247>
+      -DED247_LIB_DIR=$<TARGET_FILE_DIR:ed247>
       -DWORKING_DIRECTORY=${CMAKE_CURRENT_BINARY_DIR}
       -DTEST_NB_ACTORS=${_nb_actors}
       -DTEST_MULTICAST_INTERFACE_IP=${TEST_MULTICAST_INTERFACE_IP}
@@ -51,15 +53,15 @@ endfunction()
 #
 # Add a test with a single actor
 # ${_test_name}
-# ${kind} : either functional or unitary
+# ${_kind} : either functional or unitary
 # Actor source file shall be ${_test_name}/src/${_test_name}_main.cpp
 #
-function(test_create_for_one_actor _test_name kind)
+function(test_create_for_one_actor _test_name _kind)
   add_custom_target(${_test_name})
-  add_dependencies(tests ${_test_name})
+  add_dependencies(tests_${_kind} ${_test_name})
   test_generate_config(${_test_name})
 
-  test_add_executable(${_test_name} ${kind} main)
+  test_add_executable(${_test_name} ${_kind} main)
 
   test_declare_ctest(${_test_name} 1)
 endfunction()
@@ -67,18 +69,18 @@ endfunction()
 #
 # Add a test with two actors
 # ${_test_name}
-# ${kind} : either functional or unitary
+# ${_kind} : either functional or unitary
 # Actor source files shall be :
 #  * ${_test_name}/src/${_test_name}_sender.cpp
 #  * ${_test_name}/src/${_test_name}_receiver.cpp
 #
-function(test_create_for_two_actors _test_name kind)
+function(test_create_for_two_actors _test_name _kind)
   add_custom_target(${_test_name})
-  add_dependencies(tests ${_test_name})
+  add_dependencies(tests_${_kind} ${_test_name})
   test_generate_config(${_test_name})
 
-  test_add_executable(${_test_name} ${kind} sender)
-  test_add_executable(${_test_name} ${kind} receiver)
+  test_add_executable(${_test_name} ${_kind} sender)
+  test_add_executable(${_test_name} ${_kind} receiver)
 
   test_declare_ctest(${_test_name} 2)
 endfunction()
@@ -120,3 +122,5 @@ install(FILES ${TEST_REPORT} DESTINATION ${PLATFORM_INSTALL_SUBDIR}doc)
 
 # run_tests target
 add_custom_target(run_tests ${CMAKE_CTEST_COMMAND} -O ${TEST_REPORT} --output-on-failure DEPENDS tests)
+add_custom_target(run_tests_functional ${CMAKE_CTEST_COMMAND} -R '^func_' --output-on-failure DEPENDS tests_functional)
+add_custom_target(run_tests_unitary ${CMAKE_CTEST_COMMAND} -R '^unit_' --output-on-failure DEPENDS tests_unitary)

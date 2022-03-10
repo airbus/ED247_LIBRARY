@@ -1,15 +1,21 @@
 # Input variables:
+#   ED247_LIB_DIR                 Default folder that contain ED247 library
 #   TEST_NAME
 #   WORKING_DIRECTORY             Where test executables are launched
 #   TEST_NB_ACTORS                1 or 2
 #   TEST_MULTICAST_INTERFACE_IP
-
 message("Running test: ${TEST_NAME}")
 
-# Set PATH to libED247 on windows (rpath is used on Linux)
-if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-  if (ED247_LIB_PATH)
-    set(ENV{PATH} "${ED247_LIB_PATH};$ENV{PATH}")
+# Allows to validate another library build (only for functional tests)
+if (DEFINED ENV{ED247_LIB_DIR})
+  set(ED247_LIB_DIR $ENV{ED247_LIB_DIR})
+  message("Using ED247 library in '${ED247_LIB_DIR}'")
+endif()
+if (ED247_LIB_DIR)
+  if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    set(ENV{PATH} "${ED247_LIB_DIR};$ENV{PATH}")
+  else()
+    set(ENV{LD_LIBRARY_PATH} "${ED247_LIB_DIR};$ENV{LD_LIBRARY_PATH}")
   endif()
 endif()
 
