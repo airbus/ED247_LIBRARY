@@ -2,6 +2,8 @@
 
 The ED247 LIBRARY is an example of implementation of the ED247A communication standard, standardized by the [EUROCAE WG-97][7].
 
+Doxygen documnetation is available here: https://airbus.github.io/ED247_LIBRARY/
+
 ## License
 
 Refer to [LICENCE](./LICENSE.md) file.
