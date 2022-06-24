@@ -230,40 +230,43 @@ void Channel::encode(const ed247_uid_t & component_identifier)
 
 bool Channel::decode(const char * frame, size_t frame_size)
 {
-    size_t frame_index = 0;
-    if (_header.decode(frame, frame_size, frame_index) == false) return false;
-    if(!_configuration->simple){
-        while(frame_index < frame_size){
-            if((frame_size - frame_index) < sizeof(ed247_uid_t)) {
-              PRINT_ERROR("Channel '" << get_name() << "': Invalid frame size: " << frame_size);
-              return false;
-            }
-            ed247_uid_t stream_uid = ntohs(*(ed247_uid_t*)(frame+frame_index));
-            frame_index += sizeof(ed247_uid_t);
-            if (_streams.find(stream_uid) == _streams.end()) {
-              PRINT_ERROR("Channel '" << get_name() << "': Invalid stream UID: " << stream_uid);
-              return false;
-            }
-            if((frame_size - frame_index) < sizeof(uint16_t)) {
-              PRINT_ERROR("Channel '" << get_name() << "': Invalid frame size: " << frame_size);
-              return false;
-            }
-            uint16_t stream_sample_size = ntohs(*(uint16_t*)(frame+frame_index));
-            frame_index += sizeof(uint16_t);
-            if(_streams[stream_uid].direction & ED247_DIRECTION_IN){
-                // If stream is not declared as input, do not decode stream data
-              if (_streams[stream_uid].stream->decode(frame+frame_index, stream_sample_size, &_header) == false) {
-                return false;
-              }
-            }
-            frame_index += stream_sample_size;
-        }
-    } else {
-      if (_streams.begin()->second.stream->decode(frame+frame_index, frame_size-frame_index, &_header) == false) {
+  size_t frame_index = 0;
+  if (_header.decode(frame, frame_size, frame_index) == false) return false;
+
+  if(_configuration->simple == false) {
+    while(frame_index < frame_size) {
+      // A multichannel stream starts by its UID and its size
+      if (frame_size - frame_index < sizeof(ed247_uid_t) + sizeof(uint16_t)) {
+        PRINT_ERROR("Channel '" << get_name() << ": frame of size " << frame_size << " too short to contain another stream at byte " << frame_index << ".");
         return false;
       }
+      ed247_uid_t stream_uid = ntohs(*(ed247_uid_t*)(frame + frame_index));
+      frame_index += sizeof(ed247_uid_t);
+      uint16_t stream_sample_size = ntohs(*(uint16_t*)(frame + frame_index));
+      frame_index += sizeof(uint16_t);
+
+      if (frame_size - frame_index < stream_sample_size) {
+        PRINT_ERROR("Channel '" << get_name() << ": frame of size " << frame_size << " too short at byte " << frame_index << ". A stream of size " << stream_sample_size << " is expected.");
+        return false;
+      }
+
+      map_streams_t::iterator istream = _streams.find(stream_uid);
+      if (istream != _streams.end()) {
+        istream->second.stream->decode(frame + frame_index, stream_sample_size, &_header); // Ignore the decode error to process the next stream
+      } else {
+        // We don't known this stream. This is not an error: it might be for another receiver. We process the next stream.
+      }
+
+      frame_index += stream_sample_size;
     }
-    return true;
+  }
+  else {
+    // Simple channel
+    if (_streams.begin()->second.stream->decode(frame + frame_index, frame_size - frame_index, &_header) == false) {
+      return false;
+    }
+  }
+  return true;
 }
 
 std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strregex)
