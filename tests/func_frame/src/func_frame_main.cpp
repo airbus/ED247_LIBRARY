@@ -66,7 +66,7 @@ TEST_P(FrameContext, Main)
     ASSERT_EQ(ed247_channel_list_free(channels_input), ED247_STATUS_SUCCESS);
 
     // Retrieve streams
-    ASSERT_EQ(ed247_find_channel_streams(channel_output, "Stream.*", &streams), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_channel_find_streams(channel_output, "Stream.*", &streams), ED247_STATUS_SUCCESS);
     while(ed247_stream_list_next(streams, &stream_output) == ED247_STATUS_SUCCESS && stream_output){
         ASSERT_EQ(ed247_stream_get_info(stream_output, &stream_output_info), ED247_STATUS_SUCCESS);
         // Allocate sample & push them
@@ -155,7 +155,7 @@ TEST_P(FrameContext, Main)
     ASSERT_EQ(malloc_count_stop(), 0);
 
     // Pop stream samples
-    ASSERT_EQ(ed247_find_channel_streams(channel_input, "Stream.*", &streams), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_channel_find_streams(channel_input, "Stream.*", &streams), ED247_STATUS_SUCCESS);
     while(ed247_stream_list_next(streams, &stream_input) == ED247_STATUS_SUCCESS && stream_input){
         ASSERT_EQ(ed247_stream_get_info(stream_input, &stream_input_info), ED247_STATUS_SUCCESS);
         int i = 0;

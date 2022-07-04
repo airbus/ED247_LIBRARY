@@ -50,9 +50,9 @@ TEST(UtApiStreams, LoadStreams)
     // Get the stream list using the getter, check the unvalid call configurations
     
     // First tests validate the parsing of the ecic file
-    ASSERT_EQ(ed247_component_get_streams(NULL, &stream_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_component_get_streams(context, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_component_get_streams(context, &stream_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_get_stream_list(NULL, &stream_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream_list(context, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_stream_list(context, &stream_list), ED247_STATUS_SUCCESS);
 
     // Check stream list size
     size_t size;
@@ -403,9 +403,9 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(channel_info->name, "MultipleStreamsChannel"));
-    ASSERT_EQ(ed247_channel_get_streams(NULL, &stream_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_channel_get_streams(channel, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_channel_get_streams(channel, &stream_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_channel_get_stream_list(NULL, &stream_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_get_stream_list(channel, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_get_stream_list(channel, &stream_list), ED247_STATUS_SUCCESS);
     
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
@@ -470,13 +470,13 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(channel_info->name, "MultipleStreamsChannel2"));
-    ASSERT_EQ(ed247_find_channel_streams(NULL, NULL, &stream_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_find_channel_streams(channel, NULL, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_find_channel_streams(channel, ".*[", &stream_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_find_streams(NULL, NULL, &stream_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_find_streams(channel, NULL, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_find_streams(channel, ".*[", &stream_list), ED247_STATUS_FAILURE);
     
     if(atoi("This case cannot be unrolled because gcc does not supports regex before version 4.9.X") != 0)
     {
-        ASSERT_EQ(ed247_find_channel_streams(channel, "Stream1[1357]", &stream_list), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_channel_find_streams(channel, "Stream1[1357]", &stream_list), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
         ASSERT_TRUE(ed247_stream_get_info(stream, &stream_info) == ED247_STATUS_SUCCESS);
         ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "Stream11") == 0);
@@ -502,7 +502,7 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     }
     else
     {
-        ASSERT_EQ(ed247_find_channel_streams(channel, "Stream11", &stream_list), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_channel_find_streams(channel, "Stream11", &stream_list), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
 		ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
 		ASSERT_NE(stream_info, (const ed247_stream_info_t*)NULL);
@@ -511,11 +511,11 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
         
 
         // Get a single stream, check invalid calls
-        ASSERT_EQ(ed247_get_channel_stream(NULL, "Stream11", &stream_test), ED247_STATUS_FAILURE);
-        ASSERT_EQ(ed247_get_channel_stream(channel, NULL, &stream_test), ED247_STATUS_FAILURE);
-        ASSERT_EQ(ed247_get_channel_stream(channel, "", &stream_test), ED247_STATUS_FAILURE);
-        ASSERT_EQ(ed247_get_channel_stream(channel, "Stream11", NULL), ED247_STATUS_FAILURE);
-        ASSERT_EQ(ed247_get_channel_stream(channel, "Stream11", &stream_test), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_channel_get_stream(NULL, "Stream11", &stream_test), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_channel_get_stream(channel, NULL, &stream_test), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_channel_get_stream(channel, "", &stream_test), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_channel_get_stream(channel, "Stream11", NULL), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_channel_get_stream(channel, "Stream11", &stream_test), ED247_STATUS_SUCCESS);
         ASSERT_EQ(stream, stream_test);
 
     }

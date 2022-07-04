@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
         status = ed247_stream_get_assistant(stream, &assistant);
         if(status == ED247_STATUS_SUCCESS){
             st->assistant = assistant;
-            status = ed247_find_stream_signals(stream, NULL, &signals);
+            status = ed247_stream_find_signals(stream, NULL, &signals);
             if(check_status(context,status)) return EXIT_FAILURE;
             while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
                 si = new Signal();

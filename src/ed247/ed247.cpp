@@ -275,7 +275,7 @@ ed247_status_t ed247_load(
 /* =========================================================================
  * ED247 Context - Get Configuration
  * ========================================================================= */
-ed247_status_t ed247_component_get_channels(
+ed247_status_t ed247_get_channel_list(
   ed247_context_t        context,
   ed247_channel_list_t * channels)
 {
@@ -356,7 +356,7 @@ ed247_status_t ed247_get_channel(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_component_get_streams(
+ed247_status_t ed247_get_stream_list(
   ed247_context_t       context,
   ed247_stream_list_t * streams)
 {
@@ -493,6 +493,19 @@ ed247_status_t ed247_get_signal(
   return ED247_STATUS_SUCCESS;
 }
 
+// Deprecated
+ed247_status_t ed247_component_get_channels(
+  ed247_context_t        context,
+  ed247_channel_list_t * channels)
+{
+  return ed247_get_channel_list(context, channels);
+}
+ed247_status_t ed247_component_get_streams(
+  ed247_context_t       context,
+  ed247_stream_list_t * streams)
+{
+  return ed247_get_stream_list(context, streams);
+}
 
 /* =========================================================================
  * ED247 Context - Receive and send
@@ -991,7 +1004,7 @@ ed247_status_t ed247_channel_get_info(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_channel_get_streams(
+ed247_status_t ed247_channel_get_stream_list(
   ed247_channel_t       channel,
   ed247_stream_list_t * streams)
 {
@@ -1014,7 +1027,7 @@ ed247_status_t ed247_channel_get_streams(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_find_channel_streams(
+ed247_status_t ed247_channel_find_streams(
   ed247_channel_t       channel,
   const char *          regex_name,
   ed247_stream_list_t * streams)
@@ -1037,7 +1050,7 @@ ed247_status_t ed247_find_channel_streams(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_get_channel_stream(
+ed247_status_t ed247_channel_get_stream(
   ed247_channel_t  channel,
   const char *     name,
   ed247_stream_t * stream)
@@ -1109,6 +1122,27 @@ ed247_status_t ed247_channel_get_user_data(
   return ED247_STATUS_SUCCESS;
 }
 
+// Deprecated
+ed247_status_t ed247_channel_get_streams(
+  ed247_channel_t       channel,
+  ed247_stream_list_t * streams)
+{
+  return ed247_channel_get_stream_list(channel, streams);
+}
+ed247_status_t ed247_find_channel_streams(
+  ed247_channel_t       channel,
+  const char *          regex_name,
+  ed247_stream_list_t * streams)
+{
+  return ed247_channel_find_streams(channel, regex_name, streams);
+}
+ed247_status_t ed247_get_channel_stream(
+  ed247_channel_t  channel,
+  const char *     name,
+  ed247_stream_t * stream)
+{
+  return ed247_channel_get_stream(channel, name, stream);
+}
 
 /* =========================================================================
  * Channel - List
@@ -1205,7 +1239,7 @@ ed247_status_t ed247_stream_get_info(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_stream_contains_signals(
+ed247_status_t ed247_stream_has_signals(
   ed247_stream_t stream,
   uint8_t *      yesno)
 {
@@ -1227,7 +1261,7 @@ ed247_status_t ed247_stream_contains_signals(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_stream_get_signals(
+ed247_status_t ed247_stream_get_signal_list(
   ed247_stream_t        stream,
   ed247_signal_list_t * signals)
 {
@@ -1250,7 +1284,7 @@ ed247_status_t ed247_stream_get_signals(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_find_stream_signals(
+ed247_status_t ed247_stream_find_signals(
   ed247_stream_t        stream,
   const char *          regex_name,
   ed247_signal_list_t * signals)
@@ -1274,7 +1308,7 @@ ed247_status_t ed247_find_stream_signals(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_get_stream_signal(
+ed247_status_t ed247_stream_get_signal(
   ed247_stream_t   stream,
   const char *     name,
   ed247_signal_t * signal)
@@ -1370,6 +1404,33 @@ ed247_status_t ed247_stream_get_user_data(
   return ED247_STATUS_SUCCESS;
 }
 
+// Deprecated
+ed247_status_t ed247_stream_contains_signals(
+  ed247_stream_t stream,
+  uint8_t *      yesno)
+{
+  return ed247_stream_has_signals(stream, yesno);
+}
+ed247_status_t ed247_stream_get_signals(
+  ed247_stream_t        stream,
+  ed247_signal_list_t * signals)
+{
+  return ed247_stream_get_signal_list(stream, signals);
+}
+ed247_status_t ed247_find_stream_signals(
+  ed247_stream_t        stream,
+  const char *          regex_name,
+  ed247_signal_list_t * signals)
+{
+  return ed247_stream_find_signals(stream, regex_name, signals);
+}
+ed247_status_t ed247_get_stream_signal(
+  ed247_stream_t   stream,
+  const char *     name,
+  ed247_signal_t * signal)
+{
+  return ed247_stream_get_signal(stream, name, signal);
+}
 
 /* =========================================================================
  * Stream - Read & Write

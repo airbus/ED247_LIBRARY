@@ -48,7 +48,7 @@ TEST_P(StreamContext, LimitOneByOne)
     SAY_SELF("Startup");
     TEST_SYNC();
     
-    ASSERT_EQ(ed247_component_get_streams(_context, &streams), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_get_stream_list(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     SAY_SELF("Stream number [" << size << "]");
     
@@ -87,7 +87,7 @@ TEST_P(StreamContext, LimitAllInOne)
     SAY_SELF("Startup");
     TEST_SYNC();
     
-    ASSERT_EQ(ed247_component_get_streams(_context, &streams), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_get_stream_list(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     SAY_SELF("Stream number [" << size << "]");
     

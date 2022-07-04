@@ -174,9 +174,9 @@ TEST(UtApiChannel,GetChannelList)
     ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // First tests validate the parsing of the ecic file
-    ASSERT_EQ(ed247_component_get_channels(NULL, &channel_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_component_get_channels(context, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_component_get_channels(context, &channel_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_get_channel_list(NULL, &channel_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_channel_list(context, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_get_channel_list(context, &channel_list), ED247_STATUS_SUCCESS);
 
     // Retrieve the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_list_next(NULL, &channel), ED247_STATUS_FAILURE);
@@ -190,7 +190,7 @@ TEST(UtApiChannel,GetChannelList)
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     
     
-    ASSERT_EQ(ed247_component_get_channels(context, &channel_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_get_channel_list(context, &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "DefaultValues") == 0);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);

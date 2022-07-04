@@ -215,9 +215,9 @@ TEST(UtApiSignals, CheckOtherMethods)
     // Get the signals from Stream1
     ASSERT_EQ(ed247_find_streams(context, "Stream1", &stream_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_signals(NULL, &signal_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_stream_get_signals(stream, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_stream_get_signals(stream, &signal_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_get_signal_list(NULL, &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_get_signal_list(stream, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_get_signal_list(stream, &signal_list), ED247_STATUS_SUCCESS);
     
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
@@ -233,20 +233,20 @@ TEST(UtApiSignals, CheckOtherMethods)
     // Check the presence of the signals from Stream2
     ASSERT_EQ(ed247_find_streams(context, "Stream2", &stream_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_find_stream_signals(NULL, NULL, &signal_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_find_stream_signals(stream, NULL, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_find_stream_signals(stream, ".*[)", &signal_list), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_find_stream_signals(stream, NULL, &signal_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_find_signals(NULL, NULL, &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_find_signals(stream, NULL, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_find_signals(stream, ".*[)", &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_find_signals(stream, NULL, &signal_list), ED247_STATUS_SUCCESS);
         
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(signal_info->name != NULL && strcmp(signal_info->name, "SignalAnaMin") == 0);
 
-    ASSERT_EQ(ed247_get_stream_signal(NULL, "SignalAnaMin", &signal_test), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_stream_signal(stream, NULL, &signal_test), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_stream_signal(stream, "", &signal_test), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_stream_signal(stream, "SignalAnaMin", NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_stream_signal(stream, "SignalAnaMin", &signal_test), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_get_signal(NULL, "SignalAnaMin", &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_get_signal(stream, NULL, &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_get_signal(stream, "", &signal_test), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_get_signal(stream, "SignalAnaMin", NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_get_signal(stream, "SignalAnaMin", &signal_test), ED247_STATUS_SUCCESS);
     ASSERT_EQ(signal, signal_test);
     
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);
@@ -284,51 +284,51 @@ TEST(UtApiSignals, DetectSignalsInStream)
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "StreamA429") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(NULL, &yes_no), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(NULL, &yes_no), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_has_signals(stream, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)0);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);    
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "StreamA825") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)0);  
     
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "StreamA664") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)0);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);    
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "StreamSERIAL") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)0);  
     
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "Stream1") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)1);
     
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "Stream2") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)1);
     
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "Stream3") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)1);
     
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(stream_info->name != NULL && strcmp(stream_info->name, "Stream4") == 0);
-    ASSERT_EQ(ed247_stream_contains_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
     ASSERT_EQ(yes_no, (uint8_t)1);
     
     

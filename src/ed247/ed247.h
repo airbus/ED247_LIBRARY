@@ -710,7 +710,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
-extern LIBED247_EXPORT ed247_status_t ed247_component_get_channels(
+extern LIBED247_EXPORT ed247_status_t ed247_get_channel_list(
     ed247_context_t        context,
     ed247_channel_list_t * channels);
 
@@ -756,7 +756,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_channel(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
-extern LIBED247_EXPORT ed247_status_t ed247_component_get_streams(
+extern LIBED247_EXPORT ed247_status_t ed247_get_stream_list(
     ed247_context_t       context,
     ed247_stream_list_t * streams);
 
@@ -1131,7 +1131,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_info(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
-extern LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(
+extern LIBED247_EXPORT ed247_status_t ed247_channel_get_stream_list(
     ed247_channel_t channel,
     ed247_stream_list_t *streams);
 
@@ -1147,7 +1147,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(
  * @retval ED247_STATUS_FAILURE The stream list is empty
  * @note The regular expressions are not implemented in gcc4.8.x (default linux), do not use complex requests.
  */
-extern LIBED247_EXPORT ed247_status_t ed247_find_channel_streams(
+extern LIBED247_EXPORT ed247_status_t ed247_channel_find_streams(
     ed247_channel_t       channel,
     const char *          regex_name,
     ed247_stream_list_t * streams);
@@ -1162,7 +1162,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_channel_streams(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE The stream list is empty
  */
-extern LIBED247_EXPORT ed247_status_t ed247_get_channel_stream(
+extern LIBED247_EXPORT ed247_status_t ed247_channel_get_stream(
     ed247_channel_t  channel,
     const char *     name,
     ed247_stream_t * stream);
@@ -1337,7 +1337,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_info(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
-extern LIBED247_EXPORT ed247_status_t ed247_stream_contains_signals(
+extern LIBED247_EXPORT ed247_status_t ed247_stream_has_signals(
     ed247_stream_t stream,
     uint8_t *      yesno);
 
@@ -1350,7 +1350,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_contains_signals(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE The stream list is empty
  */
-extern LIBED247_EXPORT ed247_status_t ed247_stream_get_signals(
+extern LIBED247_EXPORT ed247_status_t ed247_stream_get_signal_list(
     ed247_stream_t stream,
     ed247_signal_list_t *signals);
 
@@ -1366,11 +1366,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_signals(
  * @retval ED247_STATUS_FAILURE The stream list is empty
  * @note The regular expressions are not implemented in gcc4.8.x (default linux), do not use complex requests.
  */
-extern LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(
+extern LIBED247_EXPORT ed247_status_t ed247_stream_find_signals(
     ed247_stream_t        stream,
     const char *          regex_name,
     ed247_signal_list_t * signals);
-
 
 /**
  * @brief Get a signal of the stream
@@ -1382,7 +1381,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE The stream list is empty
  */
-extern LIBED247_EXPORT ed247_status_t ed247_get_stream_signal(
+extern LIBED247_EXPORT ed247_status_t ed247_stream_get_signal(
     ed247_stream_t   stream,
     const char *     name,
     ed247_signal_t * signal);
@@ -1939,6 +1938,60 @@ extern DEPRECATED LIBED247_EXPORT const char * libed247_errors();
  * @ingroup deprecated
  */
 extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_load(const char *ecic_file_path,void* unused,ed247_context_t *context);
+
+/**
+ * @brief Deprecated: use ed247_get_channel_list.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_component_get_channels(ed247_context_t context, ed247_channel_list_t * channels);
+
+/**
+ * @brief Deprecated: use ed247_get_stream_list.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_component_get_streams(ed247_context_t context, ed247_stream_list_t * streams);
+
+/**
+ * @brief Deprecated: use ed247_channel_get_stream_list
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_channel_get_streams(ed247_channel_t channel, ed247_stream_list_t *streams);
+
+/**
+ * @brief Deprecated: use ed247_channel_find_streams
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_find_channel_streams(ed247_channel_t channel, const char * regex_name, ed247_stream_list_t * streams);
+
+/**
+ * @brief Deprecated: use ed247_channel_get_stream.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_get_channel_stream(ed247_channel_t channel, const char * name, ed247_stream_t * stream);
+
+/**
+ * @brief Deprecated: use ed247_stream_has_signals.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_stream_contains_signals(ed247_stream_t stream, uint8_t * yesno);
+
+/**
+ * @brief Deprecated: use ed247_stream_get_signal_list.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_stream_get_signals(ed247_stream_t stream, ed247_signal_list_t *signals);
+
+/**
+ * @brief Deprecated: use ed247_stream_find_signals.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(ed247_stream_t stream, const char * regex_name, ed247_signal_list_t * signals);
+
+/**
+ * @brief Deprecated: use ed247_stream_get_signal.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_get_stream_signal(ed247_stream_t stream, const char * name, ed247_signal_t * signal);
 
 
 

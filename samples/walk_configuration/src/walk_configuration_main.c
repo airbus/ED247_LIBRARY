@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
         if(dump_channel(channel)) return EXIT_FAILURE;
 
         // Streams
-        status = ed247_find_channel_streams(channel,".*",&streams);
+        status = ed247_channel_find_streams(channel,".*",&streams);
         if(check_status(context,status)) return EXIT_FAILURE;
 
         while(ed247_stream_list_next(streams,&stream) == ED247_STATUS_SUCCESS && stream != NULL){
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
                 case ED247_STREAM_TYPE_VNAD:
 
                     // Signals
-                    status = ed247_find_stream_signals(stream,".*",&signals);
+                    status = ed247_stream_find_signals(stream,".*",&signals);
                     if(check_status(context,status)) return EXIT_FAILURE;
 
                     while(ed247_signal_list_next(signals,&signal) == ED247_STATUS_SUCCESS && signal != NULL){

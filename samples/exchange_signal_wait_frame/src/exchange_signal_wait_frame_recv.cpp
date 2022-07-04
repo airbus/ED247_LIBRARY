@@ -132,7 +132,7 @@ ed247_status_t stream_receive(ed247_context_t context, ed247_stream_t stream)
     status = ed247_stream_get_assistant(stream, &assistant);
     if(check_status(context,status)) return status;
 
-    status = ed247_find_stream_signals(stream,".*",&signals);
+    status = ed247_stream_find_signals(stream,".*",&signals);
     if(check_status(context,status)) return status;
 
     do{
@@ -166,7 +166,7 @@ ed247_status_t stream_receive_callback(ed247_context_t context, ed247_stream_t s
     status = ed247_stream_get_assistant(stream, &assistant);
     if(status == ED247_STATUS_FAILURE) return status;
 
-    status = ed247_find_stream_signals(stream,".*",&signals);
+    status = ed247_stream_find_signals(stream,".*",&signals);
     if(status == ED247_STATUS_FAILURE) return status;
 
     do{

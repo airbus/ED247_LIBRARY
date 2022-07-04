@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     if(check_status(context,status)) return EXIT_FAILURE;
 
     // Signal
-    status = ed247_find_stream_signals(stream,".*",&signals);
+    status = ed247_stream_find_signals(stream,".*",&signals);
     if(check_status(context,status)) return EXIT_FAILURE;
     status = ed247_signal_list_next(signals,&signal);
     if(check_status(context,status)) return EXIT_FAILURE;

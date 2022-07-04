@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
                     if(check_status(context, status)) return status;
                     ed247_signal_list_t signals;
                     ed247_signal_t signal;
-                    status = ed247_stream_get_signals(stream, &signals);
+                    status = ed247_stream_get_signal_list(stream, &signals);
                     if(check_status(context, status)) return status;
                     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
                         const ed247_signal_info_t   *signal_info;
