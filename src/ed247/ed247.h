@@ -565,17 +565,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_set_log_level(
 extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
     ed247_log_level_t * log_level);
 
-/**
- * @brief Free any allocated element with the library.
- * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * @ingroup shared
- * @param[in] data Pointer to element to be disposed
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_free(
-    void *data);
-
 /* =========================================================================
  * ED247 Context - Init & general information
  * ========================================================================= */
@@ -705,6 +694,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
 /**
  * @brief Retrieve all the channels of the component
  * @ingroup context_config
+ * Release memory with ::ed247_channel_list_free()
  * @param[in] context The context identifier
  * @param[out] channels List of the channels
  * @retval ED247_STATUS_SUCCESS
@@ -720,6 +710,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_channel_list(
  * <em>The regex uses the <b>ECMAScript</b> grammar.</em>
  * <em>The regex do not embed implicit /a .* special characters at the beginning and the end.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * Release memory with ::ed247_channel_list_free()
  * @ingroup context_config
  * @param[in] context The context identifier.
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -750,6 +741,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_channel(
 
 /**
  * @brief Retrieve all the streams of the component
+ * Release memory with ::ed247_stream_list_free().
  * @ingroup context_config
  * @param[in] context The context identifier
  * @param[out] streams List of the streams
@@ -764,6 +756,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_stream_list(
  * @brief Find all streams of the component whose name is matching the regular expression
  * <em>For example, to get a list of all the streams, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * Release memory with ::ed247_stream_list_free().
  * @ingroup context_config
  * @param[in] context The context identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -797,6 +790,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_stream(
  * @brief Find all signals of the component whose name is matching the regular expression
  * <em>For example, to get a list of all the signals, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * Release memory with ::ed247_signal_list_free().
  * @ingroup context_config
  * @param[in] context The context identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -832,6 +826,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_signal(
 /**
  * @brief Blocks until the first frame is received and processed, and at least a stream has available data.
  * If several frames has been received, they are all processed.
+ * Release memory with ::ed247_stream_list_free().
  * @ingroup context_io
  * @param[in] context Context identifier
  * @param[out] streams List of streams that received samples, can be NULL
@@ -847,6 +842,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_wait_frame(
 
 /**
  * @brief Blocks until duration is elapsed, processing all received data.
+ * Release memory with ::ed247_stream_list_free().
  * @ingroup context_io
  * @param[in] context Context identifier
  * @param[out] streams List of streams that received samples, can be NULL
@@ -876,6 +872,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_send_pushed_samples(
  * ========================================================================= */
 /**
  * @brief Create ED247 frames of each channel where one of its streams contains data to send.
+ * Release memory with ::ed247_frame_list_free().
  * @ingroup context_advanced
  * @param[in] context Context identifier
  * @param[out] frames List of produced frames
@@ -1120,11 +1117,12 @@ typedef struct ed247_channel_info_s {
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_channel_get_info(
-    ed247_channel_t channel,
-    const ed247_channel_info_t **info);
+    ed247_channel_t               channel,
+    const ed247_channel_info_t ** info);
 
 /**
  * @brief Retrieve all the streams of the channel
+ * Release memory with ::ed247_stream_list_free().
  * @ingroup channel
  * @param[in] channel The channel identifier
  * @param[out] streams List of the streams
@@ -1132,13 +1130,14 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_info(
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_channel_get_stream_list(
-    ed247_channel_t channel,
-    ed247_stream_list_t *streams);
+    ed247_channel_t       channel,
+    ed247_stream_list_t * streams);
 
 /**
  * @brief Find all streams of the channel whose name is matching the regular expression
  * <em>For example, to get a list of all the streams, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
+ * Release memory with ::ed247_stream_list_free().
  * @ingroup channel
  * @param[in] channel The channel identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -1224,7 +1223,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_list_next(
 
 /**
  * @brief Free channel list
- * <b>Do not use during runtime. The implementation may contain memory allocation/deallocation functions.</b>
  * @ingroup channel_list
  * @param[in] channels The channel list
  * @retval ED247_STATUS_SUCCESS
@@ -1344,6 +1342,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_has_signals(
 /**
  * @brief Return all signals of a stream
  * @ingroup stream
+ * Release memory with ::ed247_signal_list_free().
  * @param[in] stream The stream identifier
  * @param[in] regex_name The regular expression for name matching
  * @param[out] signals The list of the signals. If no value, set to null.
@@ -1351,14 +1350,15 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_has_signals(
  * @retval ED247_STATUS_FAILURE The stream list is empty
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_get_signal_list(
-    ed247_stream_t stream,
-    ed247_signal_list_t *signals);
+    ed247_stream_t        stream,
+    ed247_signal_list_t * signals);
 
 /**
  * @brief Find all signals of the stream whose name is matching the regular expression
  * <em>For example, to get a list of all the signals, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
  * @ingroup stream
+ * Release memory with ::ed247_signal_list_free().
  * @param[in] stream The stream identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
  * @param[out] signals The list of the signals. If no value, set to null.
@@ -1443,7 +1443,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_assistant(
 /**
  * @brief Allocate memory of a stream sample with the right memory size. The size of the sample is deducted from the SampleMaxSizeBytes ED247 parameter of the stream.
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * <b>When not needed anymore, the memory free shall be made by the user with ::ed247_free().</b>
+ * <b>When not needed anymore, the memory free shall be made by the user with ::ed247_stream_free_sample().</b>
  * @ingroup stream_io
  * @param[in] stream Stream identifier
  * @param[out] sample_data Pointer to the allocated memory
@@ -1455,6 +1455,16 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_allocate_sample(
     ed247_stream_t stream,
     void **        sample_data,
     size_t *       sample_size);
+
+/**
+ * @brief Free memory allocated by ::ed247_stream_allocate_sample().
+ * @param[in] data Pointer to element to be disposed
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE when sample_data is not allocated
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_stream_free_sample(
+    void* sample_data);
+
 
 /**
  * @brief Number of samples in the stream stack, incremented and decremented according to ::ed247_stream_push() & ::ed247_stream_pop() functions.
@@ -1710,7 +1720,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_get_stream(
  * @brief Allocate memory of a signal sample with the right memory size.
  * The size of the sample is deducted from the SampleMaxSizeBytes ED247 parameter of the signal.
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * <b>When not needed anymore, the memory free shall be made by the user with ::ed247_free().</b>
+ * <b>When not needed anymore, the memory free shall be made by the user with ::ed247_signal_free_sample().</b>
  * @ingroup signal
  * @param[in] signal Signal identifier
  * @param[out] sample_data Pointer to the allocated memory
@@ -1723,6 +1733,14 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_allocate_sample(
     void **        sample_data,
     size_t *       sample_size);
 
+/**
+ * @brief Free memory allocated by ::ed247_signal_allocate_sample().
+ * @param[in] data Pointer to element to be disposed
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE when sample_data is not allocated
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_signal_free_sample(
+    void * sample_data);
 
 
 /* =========================================================================
@@ -1992,6 +2010,12 @@ extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_find_stream_signals(ed247
  * @ingroup deprecated
  */
 extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_get_stream_signal(ed247_stream_t stream, const char * name, ed247_signal_t * signal);
+
+/**
+ * @brief Deprecated: use ed247_signal_free_sample or ed247_stream_free_sample.
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_free(void *data);
 
 
 

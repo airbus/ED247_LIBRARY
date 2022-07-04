@@ -79,9 +79,7 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_EQ(ed247_stream_set_user_data(stream, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_user_data(stream, &user_data), ED247_STATUS_SUCCESS);
     ASSERT_EQ(user_data, nullptr);
-    
-    ASSERT_EQ(ed247_free(nullptr), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_free(user_data_set), ED247_STATUS_SUCCESS);
+    free(user_data_set);
     
     // Get the stream info and check the values, perform unvalid calls to verify robustness
     ASSERT_EQ(ed247_stream_get_info(NULL, &stream_info), ED247_STATUS_FAILURE);

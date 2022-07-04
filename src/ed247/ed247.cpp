@@ -89,6 +89,12 @@ ed247_status_t ed247_get_log_level(
   return ED247_STATUS_SUCCESS;
 }
 
+// Deprecated
+const char * libed247_errors()
+{
+  return nullptr;
+}
+
 ed247_status_t ed247_free(
   void * data)
 {
@@ -102,12 +108,6 @@ ed247_status_t ed247_free(
   }
   LIBED247_CATCH("Free");
   return ED247_STATUS_SUCCESS;
-}
-
-// Deprecated
-const char * libed247_errors()
-{
-  return nullptr;
 }
 
 
@@ -1491,6 +1491,22 @@ ed247_status_t ed247_stream_allocate_sample(
   return ED247_STATUS_SUCCESS;
 }
 
+extern LIBED247_EXPORT ed247_status_t ed247_stream_free_sample(
+    void* sample_data)
+{
+  PRINT_DEBUG("function " << __func__ << "()");
+  if(!sample_data){
+    PRINT_ERROR(__func__ << ": Invalid sample_data");
+    return ED247_STATUS_FAILURE;
+  }
+  try{
+    free(sample_data);
+  }
+  LIBED247_CATCH("Free");
+  return ED247_STATUS_SUCCESS;
+}
+
+
 ed247_status_t ed247_stream_samples_number(
   ed247_stream_t    stream,
   ed247_direction_t direction,
@@ -1811,6 +1827,22 @@ ed247_status_t ed247_signal_allocate_sample(
   LIBED247_CATCH("Allocate stream sample");
   return ED247_STATUS_SUCCESS;
 }
+
+extern LIBED247_EXPORT ed247_status_t ed247_signal_free_sample(
+    void* sample_data)
+{
+  PRINT_DEBUG("function " << __func__ << "()");
+  if(!sample_data){
+    PRINT_ERROR(__func__ << ": Invalid sample_data");
+    return ED247_STATUS_FAILURE;
+  }
+  try{
+    free(sample_data);
+  }
+  LIBED247_CATCH("Free");
+  return ED247_STATUS_SUCCESS;
+}
+
 
 /* =========================================================================
  * Signal - List
