@@ -34,25 +34,29 @@ namespace ed247
 class BaseSample;
 class BaseSignal;
 class BaseStream;
+
+typedef std::shared_ptr<BaseSignal> signal_ptr_t;
+typedef std::vector<signal_ptr_t>   signal_list_t;
+
 template<ed247_stream_type_t E>
 class Stream;
 
 template<ed247_signal_type_t ... E>
 struct SignalBuilder {
     SignalBuilder() {}
-    std::shared_ptr<BaseSignal> create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+    signal_ptr_t create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
 };
 
 template<ed247_signal_type_t T, ed247_signal_type_t ... E>
 struct SignalBuilder<T, E...> : public SignalBuilder<E...>, private SignalTypeChecker<T> {
     SignalBuilder() : SignalBuilder<E...>() {}
-    std::shared_ptr<BaseSignal> create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+    signal_ptr_t create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
 };
 
 template<ed247_signal_type_t T>
 struct SignalBuilder<T> : private SignalTypeChecker<T> {
     SignalBuilder() {}
-    std::shared_ptr<BaseSignal> create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+    signal_ptr_t create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
 };
 
 class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_from_this<BaseSignal>
@@ -150,18 +154,18 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
                 Pool(){}
                 ~Pool(){};
 
-                std::shared_ptr<BaseSignal> get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+                signal_ptr_t get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
 
-                std::vector<std::shared_ptr<BaseSignal>> find(std::string str_regex);
+                signal_list_t find(std::string str_regex);
 
-                std::shared_ptr<BaseSignal> get(std::string str_name);
+                signal_ptr_t get(std::string str_name);
 
-                std::vector<std::shared_ptr<BaseSignal>> & signals() { return _signals; }
+                signal_list_t & signals() { return _signals; }
 
                 size_t size() const;
 
             private:
-                std::vector<std::shared_ptr<BaseSignal>> _signals;
+                signal_list_t _signals;
                 SignalBuilder<
                     ED247_SIGNAL_TYPE_DISCRETE,
                     ED247_SIGNAL_TYPE_ANALOG,
@@ -172,7 +176,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
         class Builder
         {
             public:
-                std::shared_ptr<BaseSignal> build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const;
+                signal_ptr_t build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const;
         };
 };
 
@@ -192,13 +196,6 @@ class Signal : public BaseSignal, private SignalTypeChecker<E>
             public:
                 std::shared_ptr<Signal<E>> create(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const;
         };
-};
-
-class SmartListSignals : public SmartList<std::shared_ptr<BaseSignal>>, public ed247_internal_signal_list_t
-{
-    public:
-        using SmartList<std::shared_ptr<BaseSignal>>::SmartList;
-        virtual ~SmartListSignals() {}
 };
 
 }

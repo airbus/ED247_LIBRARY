@@ -421,9 +421,7 @@ TEST_P(SignalContext, SingleFrame)
     // Send
     s = 0;
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
-    malloc_count_start();
     ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != nullptr){
         ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
         SAY_SELF("Writing [" << std::string(signal_info->name) << "] ...");

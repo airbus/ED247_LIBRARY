@@ -100,10 +100,10 @@ std::shared_ptr<StreamSample> BaseStream::pop_sample(bool *empty)
   return _recv_stack.pop_front(empty);
 }
 
-std::vector<std::shared_ptr<BaseSignal>> BaseStream::find_signals(std::string str_regex)
+signal_list_t BaseStream::find_signals(std::string str_regex)
 {
     std::regex reg(str_regex);
-    std::vector<std::shared_ptr<BaseSignal>> founds;
+    signal_list_t founds;
     for(auto signal : *_signals){
         if(std::regex_match(signal->get_name(), reg)){
             founds.push_back(signal);
@@ -112,7 +112,7 @@ std::vector<std::shared_ptr<BaseSignal>> BaseStream::find_signals(std::string st
     return founds;
 }
 
-std::shared_ptr<BaseSignal> BaseStream::get_signal(std::string str_name)
+signal_ptr_t BaseStream::get_signal(std::string str_name)
 {
     for(auto signal : *_signals){
         if(signal->get_name() == str_name) return signal;
@@ -1171,7 +1171,6 @@ Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
     for(auto signal_configuration : sconfiguration->signals){
         sp_stream->_signals->push_back(builder.build(pool_signals, signal_configuration, *sp_stream));
     }
-    sp_stream->_signals->reset();
     sp_stream->_assistant = std::make_shared<Assistant>(sp_stream);
     sp_stream->allocate_stacks();
     sp_stream->allocate_buffer();

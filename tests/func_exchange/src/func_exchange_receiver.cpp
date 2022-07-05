@@ -558,8 +558,8 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(NULL, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_FAILURE);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
         ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);

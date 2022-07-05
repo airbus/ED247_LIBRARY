@@ -33,14 +33,14 @@ namespace ed247
 // SignalBuilder<>
 
 template<ed247_signal_type_t ... E>
-std::shared_ptr<BaseSignal> SignalBuilder<E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t SignalBuilder<E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
     THROW_ED247_ERROR("Cannot create signal [" << std::string(configuration->info.name) << "]");
     return nullptr;
 }
 
 template<ed247_signal_type_t T, ed247_signal_type_t ... E>
-std::shared_ptr<BaseSignal> SignalBuilder<T, E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t SignalBuilder<T, E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
     if(type == T){
         static typename Signal<T>::Builder builder;
@@ -51,7 +51,7 @@ std::shared_ptr<BaseSignal> SignalBuilder<T, E...>::create(const ed247_signal_ty
 }
 
 template<ed247_signal_type_t T>
-std::shared_ptr<BaseSignal> SignalBuilder<T>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t SignalBuilder<T>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
     if(type == T){
         static typename Signal<T>::Builder builder;
@@ -72,14 +72,14 @@ std::unique_ptr<BaseSample> BaseSignal::allocate_sample() const
 
 // BaseSignal::Pool
 
-std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t BaseSignal::Pool::get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
-    std::shared_ptr<BaseSignal> sp_base_signal;
+    signal_ptr_t sp_base_signal;
     std::string name{configuration->info.name};
     auto sp_stream = stream.shared_from_this();
 
     auto iter = std::find_if(_signals.begin(), _signals.end(),
-        [&name, &sp_stream](const std::shared_ptr<BaseSignal> & s){ return s->get_name() == name && s->_stream.lock() == sp_stream; });
+        [&name, &sp_stream](const signal_ptr_t & s){ return s->get_name() == name && s->_stream.lock() == sp_stream; });
     if(iter != _signals.end())
         THROW_ED247_ERROR("Signal [" << (*iter)->get_name() << "] linked to stream [" << stream.get_name() << "] already exist !");
     auto sp_signal = _builder.create(configuration->info.type, configuration, stream);
@@ -89,10 +89,10 @@ std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::shared_ptr<xml::Signal> &
     return sp_base_signal;
 }
 
-std::vector<std::shared_ptr<BaseSignal>> BaseSignal::Pool::find(std::string str_regex)
+signal_list_t BaseSignal::Pool::find(std::string str_regex)
 {
     std::regex reg(str_regex);
-    std::vector<std::shared_ptr<BaseSignal>> founds;
+    signal_list_t founds;
     for(auto signal : _signals){
         if(std::regex_match(signal->get_name(), reg)){
             founds.push_back(signal);
@@ -101,7 +101,7 @@ std::vector<std::shared_ptr<BaseSignal>> BaseSignal::Pool::find(std::string str_
     return founds;
 }
 
-std::shared_ptr<BaseSignal> BaseSignal::Pool::get(std::string str_name)
+signal_ptr_t BaseSignal::Pool::get(std::string str_name)
 {
     for(auto signal : _signals){
         if(signal->get_name() == str_name) return signal;
@@ -116,7 +116,7 @@ size_t BaseSignal::Pool::size() const
 
 // BaseSignal::Builder
 
-std::shared_ptr<BaseSignal> BaseSignal::Builder::build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const
+signal_ptr_t BaseSignal::Builder::build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const
 {
     return pool->get(configuration, stream);
 }

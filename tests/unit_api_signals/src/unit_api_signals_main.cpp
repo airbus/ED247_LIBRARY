@@ -53,11 +53,14 @@ TEST(UtApiSignals, CheckSignalLoading)
     // Find stream
     ASSERT_EQ(ed247_find_streams(context, "Stream1", &stream_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(stream_list), ED247_STATUS_SUCCESS);
     
     // First tests validate the parsing of the ecic file
     ASSERT_EQ(ed247_find_signals(NULL, NULL, &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_signals(context, NULL, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_find_signals(context, ".*[", &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_signals(context, NULL, &signal_list), ED247_STATUS_SUCCESS);
 
     // Check size
@@ -193,10 +196,7 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(signal_info->name != NULL && strcmp(signal_info->name, "SignalDisMin") == 0);
     
-    // Remove this list
-    ASSERT_EQ(ed247_signal_list_free(NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
-    
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }
 
@@ -216,6 +216,7 @@ TEST(UtApiSignals, CheckOtherMethods)
     ASSERT_EQ(ed247_find_streams(context, "Stream1", &stream_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_signal_list(NULL, &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_signal_list(stream, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_stream_get_signal_list(stream, &signal_list), ED247_STATUS_SUCCESS);
     
@@ -234,8 +235,10 @@ TEST(UtApiSignals, CheckOtherMethods)
     ASSERT_EQ(ed247_find_streams(context, "Stream2", &stream_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_find_signals(NULL, NULL, &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_find_signals(stream, NULL, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_stream_find_signals(stream, ".*[)", &signal_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_find_signals(stream, NULL, &signal_list), ED247_STATUS_SUCCESS);
         
     ASSERT_EQ(ed247_signal_list_next(signal_list, &signal), ED247_STATUS_SUCCESS);

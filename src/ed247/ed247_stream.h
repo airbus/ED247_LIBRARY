@@ -296,10 +296,9 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         {}
         BaseStream(std::shared_ptr<xml::Stream> & configuration):
             _configuration(configuration),
-            _signals(std::make_shared<SmartListSignals>()),
+            _signals(std::make_shared<signal_list_t>()),
             _user_data(NULL)
         {
-            _signals->set_managed(true);
         }
 
         virtual ~BaseStream(){}
@@ -353,11 +352,11 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             return _buffer;
         }
 
-        std::vector<std::shared_ptr<BaseSignal>> find_signals(std::string str_regex);
+        signal_list_t find_signals(std::string str_regex);
 
-        std::shared_ptr<BaseSignal> get_signal(std::string str_name);
+        signal_ptr_t get_signal(std::string str_name);
 
-        std::shared_ptr<SmartListSignals> signals() { return _signals; };
+        std::shared_ptr<signal_list_t> signals() { return _signals; };
 
         ed247_status_t register_callback(ed247_context_t context, ed247_stream_recv_callback_t callback)
         {
@@ -400,7 +399,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         std::shared_ptr<StreamSample> _send_working_sample; // New element, not pointer on a member of send_stack
         BaseSample _buffer;
         StreamSample _working_sample;
-        std::shared_ptr<SmartListSignals> _signals;
+        std::shared_ptr<signal_list_t> _signals;
         std::vector<std::pair<ed247_context_t,ed247_stream_recv_callback_t>> _callbacks;
 
     private:
@@ -576,7 +575,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         type == ED247_STREAM_TYPE_VNAD) : false;
                 }
 
-                bool write(std::shared_ptr<BaseSignal> signal, const void *data, size_t size)
+                bool write(signal_ptr_t signal, const void *data, size_t size)
                 {
                   if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_OUT)) {
                     PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] to an non-output stream");
@@ -598,7 +597,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                   return true;
                 }
 
-                bool read(std::shared_ptr<BaseSignal> signal, const void **data, size_t * size)
+                bool read(signal_ptr_t signal, const void **data, size_t * size)
                 {
                   if(!(_stream->get_configuration()->info.direction & ED247_DIRECTION_IN)) {
                     PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot read Signal [" << signal->get_name() << "] from a non-input stream");
@@ -712,8 +711,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 }
 
                 std::shared_ptr<BaseStream> _stream;
-                std::vector<std::pair<std::shared_ptr<BaseSignal>, std::unique_ptr<BaseSample>>> _send_samples;
-                std::vector<std::pair<std::shared_ptr<BaseSignal>, std::unique_ptr<BaseSample>>> _recv_samples;
+                std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _send_samples;
+                std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _recv_samples;
                 BaseSample _buffer;
 
                 FRIEND_TEST(SignalContext, SinglePushPop);

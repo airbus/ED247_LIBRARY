@@ -66,6 +66,16 @@ struct ed247_internal_channel_list_t :
   }
 };
 
+struct ed247_internal_signal_list_t :
+  public ed247::client_iterator<ed247::signal_ptr_t>
+{
+  using ed247::client_iterator<value_t>::client_iterator;
+  static ed247_internal_signal_list_t* copy(const container_t& container) {
+    return new ed247_internal_signal_list_t(new container_t(container), true);
+  }
+};
+
+
 
 /* =========================================================================
  * Shared
@@ -459,19 +469,20 @@ ed247_status_t ed247_find_signals(
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
   if(!signals) {
     PRINT_ERROR(__func__ << ": Invalid signals pointer ");
     return ED247_STATUS_FAILURE;
   }
+
+  *signals = nullptr;
+
+  if(!context) {
+    PRINT_ERROR(__func__ << ": Invalid context");
+    return ED247_STATUS_FAILURE;
+  }
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    ed247::SmartListSignals * smart_signals = new ed247::SmartListSignals(ed247_context->getPoolSignals()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    smart_signals->reset();
-    *signals = static_cast<ed247_signal_list_t>(smart_signals);
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    *signals = ed247_internal_signal_list_t::copy(ed247_context->getPoolSignals()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
   }
   LIBED247_CATCH("Find signals");
   return ED247_STATUS_SUCCESS;
@@ -1278,19 +1289,21 @@ ed247_status_t ed247_stream_get_signal_list(
   ed247_signal_list_t * signals)
 {
   PRINT_DEBUG("function " << __func__ << "()");
-  if(!stream){
-    PRINT_ERROR(__func__ << ": Invalid stream");
-    return ED247_STATUS_FAILURE;
-  }
   if(!signals){
     PRINT_ERROR(__func__ << ": Empty signals pointer");
     return ED247_STATUS_FAILURE;
   }
+
   *signals = nullptr;
+
+  if(!stream){
+    PRINT_ERROR(__func__ << ": Invalid stream");
+    return ED247_STATUS_FAILURE;
+  }
+
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    auto ed247_signals = std::static_pointer_cast<ed247_internal_signal_list_t>(ed247_stream->signals());
-    *signals = ed247_signals.get();
+    ed247::BaseStream* ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    *signals = new ed247_internal_signal_list_t(*(ed247_stream->signals().get()));
   }
   LIBED247_CATCH("Stream get signals");
   return ED247_STATUS_SUCCESS;
@@ -1303,18 +1316,20 @@ ed247_status_t ed247_stream_find_signals(
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
-  if(!stream) {
-    PRINT_ERROR(__func__ << ": Invalid stream");
-    return ED247_STATUS_FAILURE;
-  }
   if(!signals){
     PRINT_ERROR(__func__ << ": Invalid signals pointer");
     return ED247_STATUS_FAILURE;
   }
+
+  *signals = nullptr;
+
+  if(!stream) {
+    PRINT_ERROR(__func__ << ": Invalid stream");
+    return ED247_STATUS_FAILURE;
+  }
   try{
-    auto ed247_stream = (ed247::BaseStream*)(stream);
-    ed247::SmartListSignals * smart_signals = new ed247::SmartListSignals(std::move(ed247_stream->find_signals(regex_name != nullptr ? std::string(regex_name) : std::string(".*"))));
-    *signals = static_cast<ed247_signal_list_t>(smart_signals);
+    ed247::BaseStream* ed247_stream = (ed247::BaseStream*)(stream);
+    *signals = ed247_internal_signal_list_t::copy(ed247_stream->find_signals(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
   }
   LIBED247_CATCH("Find stream signals");
   return ED247_STATUS_SUCCESS;
@@ -1874,8 +1889,7 @@ ed247_status_t ed247_signal_list_size(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_signals = static_cast<ed247::SmartListSignals*>(signals);
-    *size = ed247_signals->size();
+    *size = static_cast<ed247_internal_signal_list_t*>(signals)->container_size();
   }
   LIBED247_CATCH("Signal list size");
   return ED247_STATUS_SUCCESS;
@@ -1897,9 +1911,9 @@ ed247_status_t ed247_signal_list_next(
   }
   *signal = nullptr;
   try{
-    auto ed247_signals = (ed247::SmartListSignals*)(signals);
-    auto && next = ed247_signals->next_ok();
-    *signal = next ? next->get() : nullptr;
+    ed247_internal_signal_list_t& iterator = *(dynamic_cast<ed247_internal_signal_list_t*>(signals));
+    iterator.advance();
+    *signal = iterator.valid() ? iterator.get_value().get() : nullptr;
   }
   LIBED247_CATCH("Signal list next");
   return ED247_STATUS_SUCCESS;
@@ -1911,14 +1925,11 @@ ed247_status_t ed247_signal_list_free(
   PRINT_DEBUG("function " << __func__ << "()");
 
   if(!signals) {
-    PRINT_ERROR(__func__ << ": Invalid signals");
-    return ED247_STATUS_FAILURE;
+    // Nothing to do
+    return ED247_STATUS_SUCCESS;
   }
   try{
-    auto ed247_signals = static_cast<ed247::SmartListSignals*>(signals);
-    if(!ed247_signals->managed()) {
-      delete ed247_signals;
-    }
+    delete static_cast<ed247_internal_signal_list_t*>(signals);
   }
   LIBED247_CATCH("Signal list free");
   return ED247_STATUS_SUCCESS;
