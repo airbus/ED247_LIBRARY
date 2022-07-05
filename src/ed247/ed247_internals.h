@@ -237,8 +237,6 @@ struct ed247_internal_signal_t {};
 
 struct ed247_internal_frame_list_t {};
 
-struct ed247_internal_channel_list_t {};
-
 struct ed247_internal_stream_list_t {};
 
 struct ed247_internal_signal_list_t {};

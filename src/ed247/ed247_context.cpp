@@ -134,7 +134,6 @@ void Context::Builder::initialize(Context & context)
         context._active_streams->begin());
     context._active_streams->reset();
     context._pool_streams->streams()->reset();
-    context._pool_channels.channels()->reset();
 }
 
 }

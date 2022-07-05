@@ -306,11 +306,10 @@ uint32_t Channel::missed_frames()
 
 Channel::Pool::Pool(std::shared_ptr<ComInterface::Pool> & pool_interfaces,
                     std::shared_ptr<BaseStream::Pool> & pool_streams):
-                    _channels(std::make_shared<SmartListChannels>()),
+                    _channels(std::make_shared<channel_list_t>()),
                     _pool_interfaces(pool_interfaces),
                     _pool_streams(pool_streams)
 {
-    _channels->set_managed(true);
 }
 
 Channel::Pool::~Pool()
@@ -319,14 +318,14 @@ Channel::Pool::~Pool()
     _pool_interfaces.reset();
 }
 
-std::shared_ptr<Channel> Channel::Pool::get(std::shared_ptr<xml::Channel> & configuration)
+channel_ptr_t Channel::Pool::get(std::shared_ptr<xml::Channel> & configuration)
 {
     static Channel::Builder builder;
-    std::shared_ptr<Channel> sp_channel;
+    channel_ptr_t sp_channel;
     std::string name{configuration->info.name};
 
     auto iter = std::find_if(_channels->begin(),_channels->end(),
-        [&name](const std::shared_ptr<Channel> & c){ return c->get_name() == name; });
+        [&name](const channel_ptr_t & c){ return c->get_name() == name; });
     if(iter == _channels->end()){
         sp_channel = builder.create(configuration, _pool_interfaces, _pool_streams);
         _channels->push_back(sp_channel);
@@ -338,10 +337,10 @@ std::shared_ptr<Channel> Channel::Pool::get(std::shared_ptr<xml::Channel> & conf
     return sp_channel;
 }
 
-std::vector<std::shared_ptr<Channel>> Channel::Pool::find(std::string strregex)
+std::vector<channel_ptr_t> Channel::Pool::find(std::string strregex)
 {
     std::regex reg(strregex);
-    std::vector<std::shared_ptr<Channel>> founds;
+    std::vector<channel_ptr_t> founds;
     for(auto channel : *_channels){
         if(std::regex_match(channel->get_name(), reg)){
             founds.push_back(channel);
@@ -350,7 +349,7 @@ std::vector<std::shared_ptr<Channel>> Channel::Pool::find(std::string strregex)
     return founds;
 }
 
-std::shared_ptr<Channel> Channel::Pool::get(std::string str_name)
+channel_ptr_t Channel::Pool::get(std::string str_name)
 {
     for(auto channel : *_channels){
         if(channel->get_name() == str_name) return channel;
@@ -359,7 +358,7 @@ std::shared_ptr<Channel> Channel::Pool::get(std::string str_name)
 
 }
 
-std::shared_ptr<SmartListChannels> Channel::Pool::channels()
+std::shared_ptr<channel_list_t> Channel::Pool::channels()
 {
     return _channels;
 }
@@ -396,7 +395,7 @@ void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 }
 
 // Channel::Builder
-std::shared_ptr<Channel> Channel::Builder::create(std::shared_ptr<xml::Channel> & configuration,
+channel_ptr_t Channel::Builder::create(std::shared_ptr<xml::Channel> & configuration,
     std::shared_ptr<ComInterface::Pool> & pool_interfaces,
     std::shared_ptr<BaseStream::Pool> & pool_streams) const
 {

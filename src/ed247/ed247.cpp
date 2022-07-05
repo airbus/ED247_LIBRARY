@@ -23,6 +23,7 @@
  *****************************************************************************/
 #include "ed247.h"
 #include "ed247_internals.h"
+#include "ed247_client_iterator.h"
 #include "ed247_logs.h"
 #include "ed247_context.h"
 #include <memory>
@@ -52,6 +53,18 @@ const char* _ed247_name = "unnamed";
     return ED247_STATUS_FAILURE;                                        \
   }
 
+
+/* =========================================================================
+ * internal types definition
+ * ========================================================================= */
+struct ed247_internal_channel_list_t :
+  public ed247::client_iterator<ed247::channel_ptr_t>
+{
+  using ed247::client_iterator<value_t>::client_iterator;
+  static ed247_internal_channel_list_t* copy(const container_t& container) {
+    return new ed247_internal_channel_list_t(new container_t(container), true);
+  }
+};
 
 
 /* =========================================================================
@@ -281,20 +294,21 @@ ed247_status_t ed247_get_channel_list(
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
   if(!channels) {
     PRINT_ERROR(__func__ << ": Empty info pointer");
     return ED247_STATUS_FAILURE;
   }
+
   *channels = nullptr;
+
+  if(!context) {
+    PRINT_ERROR(__func__ << ": Invalid context");
+    return ED247_STATUS_FAILURE;
+  }
+
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    auto schannels = std::static_pointer_cast<ed247_internal_channel_list_t>(ed247_context->getPoolChannels()->channels());
-    *channels = schannels.get();
-	
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    *channels = new ed247_internal_channel_list_t(*(ed247_context->getPoolChannels()->channels().get()));
   }
   LIBED247_CATCH("Get channels info");
   return ED247_STATUS_SUCCESS;	
@@ -307,19 +321,21 @@ ed247_status_t ed247_find_channels(
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
   if(!channels) {
     PRINT_ERROR(__func__ << ": Invalid channels pointer");
     return ED247_STATUS_FAILURE;
   }
+
+  *channels = nullptr;
+
+  if(!context) {
+    PRINT_ERROR(__func__ << ": Invalid context");
+    return ED247_STATUS_FAILURE;
+  }
+
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    ed247::SmartListChannels * smart_channels = new ed247::SmartListChannels(ed247_context->getPoolChannels()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    smart_channels->set_managed(false);
-    *channels = static_cast<ed247_channel_list_t>(smart_channels);
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    *channels = ed247_internal_channel_list_t::copy(ed247_context->getPoolChannels()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
   }
   LIBED247_CATCH("Find channels");
   return ED247_STATUS_SUCCESS;
@@ -1162,8 +1178,7 @@ ed247_status_t ed247_channel_list_size(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_channels = static_cast<ed247::SmartListChannels*>(channels);
-    *size = ed247_channels->size();
+    *size = static_cast<ed247_internal_channel_list_t*>(channels)->container_size();
   }
   LIBED247_CATCH("Channel list size");
   return ED247_STATUS_SUCCESS;
@@ -1185,9 +1200,9 @@ ed247_status_t ed247_channel_list_next(
   }
   *channel = nullptr;
   try{
-    auto ed247_channels = static_cast<ed247::SmartListChannels*>(channels);
-    auto && next = ed247_channels->next_ok();
-    *channel = next ? next->get() : nullptr;
+    ed247_internal_channel_list_t& iterator = *(dynamic_cast<ed247_internal_channel_list_t*>(channels));
+    iterator.advance();
+    *channel = iterator.valid() ? iterator.get_value().get() : nullptr;
   }
   LIBED247_CATCH("Channel list next");
   return ED247_STATUS_SUCCESS;
@@ -1199,14 +1214,11 @@ ed247_status_t ed247_channel_list_free(
   PRINT_DEBUG("function " << __func__ << "()");
 
   if(!channels) {
-    PRINT_ERROR(__func__ << ": invalid channels list.");
-    return ED247_STATUS_FAILURE;
+    // Nothing to do
+    return ED247_STATUS_SUCCESS;
   }
   try{
-    auto ed247_channels = static_cast<ed247::SmartListChannels*>(channels);
-    if(!ed247_channels->managed()) {
-      delete ed247_channels;
-    }
+    delete static_cast<ed247_internal_channel_list_t*>(channels);
   }
   LIBED247_CATCH("Channel list free");
   return ED247_STATUS_SUCCESS;

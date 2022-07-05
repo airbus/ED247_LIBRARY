@@ -21,7 +21,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #include "unitary_test.h"
 
 std::string config_path = "../config";
@@ -29,7 +28,7 @@ std::string config_path = "../config";
 /******************************************************************************
 This test checks the api functions that manipulate channels
 ******************************************************************************/
- class UtApiChannel : public ::testing::Test{};
+class UtApiChannel : public ::testing::Test{};
 
 TEST(UtApiChannel, ChannelsManipulation)
 {
@@ -38,14 +37,16 @@ TEST(UtApiChannel, ChannelsManipulation)
     ed247_channel_t channel;
     ed247_channel_t channel_test;
     const ed247_channel_info_t* channel_info;
-    
+
     std::string filepath = config_path+"/ecic_unit_api_channels.xml";
     ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
-        
+
     // Get the channel list, check invalid calls
     ASSERT_EQ(ed247_find_channels (NULL, ".*", &channel_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_channels (context, ".*", NULL), ED247_STATUS_FAILURE);
 	ASSERT_EQ(ed247_find_channels (context, ".*[", &channel_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_channels (context, NULL, &channel_list), ED247_STATUS_SUCCESS);
 
     // Get channel list size, chek invalid calls
@@ -54,12 +55,12 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_channel_list_size(channel_list, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_size(channel_list, &size), ED247_STATUS_SUCCESS);
     ASSERT_EQ(size, (size_t)4);
-    
+
     // Retrieve the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_list_next(NULL, &channel), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_next(channel_list, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    
+
     // Retrieve The channel information of the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_get_info(NULL, &channel_info), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_info(channel, NULL), ED247_STATUS_FAILURE);
@@ -81,7 +82,7 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_channel_get_user_data(channel, &user_data), ED247_STATUS_SUCCESS);
     ASSERT_EQ(user_data, nullptr);
     free(user_data_set);
-    
+
     // Check the content of retrieved information, this channel shall use plenty of default values
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "DefaultValues") == 0);
     ASSERT_TRUE(channel_info->comment != NULL && strcmp(channel_info->comment, "") == 0);
@@ -94,41 +95,40 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_get_channel(context, "DefaultValues", NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_get_channel(context, "DefaultValues", &channel_test), ED247_STATUS_SUCCESS);
     ASSERT_EQ(channel, channel_test);
-    
+
     // Get the next channel, get information and and confirm the name and values of the header
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(channel_info->name, "DummyChannel1"));
-    
+
     // Get the next channel, get information and and confirm the name and values of the header
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(channel_info->name, "DummyChannel2"));
-    
+
     // Get the next channel, get information and check the provided content
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "FilledChannel") == 0);
     ASSERT_TRUE(channel_info->comment != NULL && strcmp(channel_info->comment, "This is a test") == 0);
     ASSERT_EQ(channel_info->frame_format.standard_revision, ED247_STANDARD_ED247A);
-    
+
     // Try to get the next channel while there is no other
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(channel, (ed247_channel_t)NULL);
-    
+
     // Check the list restarts from start
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_FALSE(strcmp(channel_info->name, "DefaultValues"));
-    
-    // Free the list, check invalid calls
-    ASSERT_EQ(ed247_channel_list_free(NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
-    
+
+
     // Check the find routine with other kinds of requests
     ASSERT_EQ(ed247_find_channels (context, "", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
+
     // Make a more selective selection
     ASSERT_EQ(ed247_find_channels (context, ".*Dummy.*", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
@@ -142,7 +142,8 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "DummyChannel1") == 0);
-    
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
+
     // Select a single channel
     ASSERT_EQ(ed247_find_channels (context, "FilledChannel", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
@@ -153,14 +154,16 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "FilledChannel") == 0);
-    
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
+
     // Make a too selective request
     ASSERT_EQ(ed247_find_channels (context, "ChannelThatDoesNotExist", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(channel, (ed247_channel_t)NULL);
-    
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
-    
+
 }
 
 TEST(UtApiChannel,GetChannelList)
@@ -175,22 +178,24 @@ TEST(UtApiChannel,GetChannelList)
 
     // First tests validate the parsing of the ecic file
     ASSERT_EQ(ed247_get_channel_list(NULL, &channel_list), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_get_channel_list(context, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_get_channel_list(context, &channel_list), ED247_STATUS_SUCCESS);
 
     // Retrieve the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_list_next(NULL, &channel), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_next(channel_list, NULL), ED247_STATUS_FAILURE);
-
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    
+
     // Retrieve The channel information of the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_get_info(NULL, &channel_info), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_info(channel, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
-    
-    
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
+
+
     ASSERT_EQ(ed247_get_channel_list(context, &channel_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "DefaultValues") == 0);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
@@ -202,6 +207,7 @@ TEST(UtApiChannel,GetChannelList)
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(channel_info->name != NULL && strcmp(channel_info->name, "FilledChannel") == 0);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -214,6 +220,5 @@ int main(int argc, char **argv)
     SAY("Configuration path: " << config_path);
 
     ::testing::InitGoogleTest(&argc, argv);
-    // ::testing::InitGoogleMock(&argc, argv);
     return RUN_ALL_TESTS();
 }

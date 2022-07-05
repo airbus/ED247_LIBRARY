@@ -34,8 +34,9 @@
 
 namespace ed247
 {
-
-class SmartListChannels;
+  class Channel;
+  typedef std::shared_ptr<Channel>   channel_ptr_t;
+  typedef std::vector<channel_ptr_t> channel_list_t;
 
 class FrameHeader
 {
@@ -239,13 +240,13 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                     std::shared_ptr<BaseStream::Pool> & pool_streams);
                 ~Pool();
 
-                std::shared_ptr<Channel> get(std::shared_ptr<xml::Channel> & configuration);
+                channel_ptr_t get(std::shared_ptr<xml::Channel> & configuration);
 
-                std::vector<std::shared_ptr<Channel>> find(std::string str_regex);
+                std::vector<channel_ptr_t> find(std::string str_regex);
                 
-                std::shared_ptr<Channel> get(std::string str_name);
+                channel_ptr_t get(std::string str_name);
 
-                std::shared_ptr<SmartListChannels> channels();
+                std::shared_ptr<channel_list_t> channels();
 
                 void send();
                 void encode(const ed247_uid_t & component_identifier);
@@ -254,24 +255,17 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 size_t size() const;
 
             private:
-                std::shared_ptr<SmartListChannels>      _channels;
-                std::shared_ptr<ComInterface::Pool>     _pool_interfaces;
-                std::shared_ptr<BaseStream::Pool>       _pool_streams;
+                std::shared_ptr<channel_list_t>      _channels;
+                std::shared_ptr<ComInterface::Pool>  _pool_interfaces;
+                std::shared_ptr<BaseStream::Pool>    _pool_streams;
         };
 
         class Builder{
-            std::shared_ptr<Channel> create(std::shared_ptr<xml::Channel> & configuration,
+            channel_ptr_t create(std::shared_ptr<xml::Channel> & configuration,
                 std::shared_ptr<ComInterface::Pool> & pool_interfaces,
                 std::shared_ptr<BaseStream::Pool> & pool_streams) const;
             friend class Pool;
         };
-};
-
-class SmartListChannels : public SmartList<std::shared_ptr<Channel>>, public ed247_internal_channel_list_t
-{
-    public:
-        using SmartList<std::shared_ptr<Channel>>::SmartList;
-        virtual ~SmartListChannels() {}
 };
 
 }
