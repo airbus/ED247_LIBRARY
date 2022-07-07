@@ -86,7 +86,6 @@ function(test_create_for_two_actors _test_name _kind)
 endfunction()
 
 # Functional tests
-test_create_for_one_actor(func_frame                   functional)
 test_create_for_one_actor(func_load_all                functional)
 test_create_for_one_actor(func_logging                 functional)
 

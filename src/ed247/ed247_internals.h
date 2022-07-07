@@ -235,8 +235,6 @@ struct ed247_internal_stream_t {};
 
 struct ed247_internal_signal_t {};
 
-struct ed247_internal_frame_list_t {};
-
 struct ed247_internal_stream_assistant_t {};
 
 struct ed247_internal_time_sample_t : public ed247_timestamp_t {};
@@ -280,64 +278,6 @@ class SimulationTimeHandler
             _handler(nullptr),
             _user_data(nullptr)
         {}
-};
-
-template<typename T>
-class SmartList : public std::vector<T>
-{
-    public:
-        SmartList():
-            _managed(false)
-        {
-            reset();
-        }
-        SmartList(std::vector<T> && other): std::vector<T>(other),
-            _managed(false)
-        {
-            reset();
-        }
-        virtual ~SmartList() {};
-
-        T * next()
-        {
-            next_iter();
-            return current_value();
-        }
-
-        virtual T * next_ok()
-        {
-            return next();
-        }
-
-        void reset()
-        {
-            _iter = std::vector<T>::end();
-        }
-
-        void set_managed(bool managed) { _managed = managed; }
-        bool managed() const { return _managed; }
-
-        typename std::vector<T>::iterator _iter;
-    protected:
-        bool _managed;
-
-        void next_iter()
-        {
-            if(_iter == std::vector<T>::end()){
-                _iter = std::vector<T>::begin();
-            }else{
-                ++_iter;
-            }
-        }
-
-        T * current_value()
-        {
-            if(_iter == std::vector<T>::end()){
-                return nullptr;
-            }else{
-                return &(*_iter);
-            }
-        }
 };
 
 }

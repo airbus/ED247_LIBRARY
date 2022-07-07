@@ -141,11 +141,6 @@ extern "C" {
  */
 
 /**
- * @defgroup frame_list Frame list
- * mange lists returned by ed247_frame_encode()
- */
-
-/**
  * @defgroup strings String conversion
  * Helper to convert type to/from strings.
  */
@@ -362,12 +357,6 @@ typedef struct ed247_internal_signal_t *ed247_signal_t;
  * @ingroup signal
  */
 typedef struct ed247_internal_signal_list_t *ed247_signal_list_t;
-
-/**
- * @brief Frame list identifier
- * @ingroup context_advanced
- */
-typedef struct ed247_internal_frame_list_t *ed247_frame_list_t;
 
 /**
  * @brief An assistant to help building stream samples
@@ -876,36 +865,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_wait_during(
  */
 extern LIBED247_EXPORT ed247_status_t ed247_send_pushed_samples(
     ed247_context_t context);
-
-
-/* =========================================================================
- * ED247 Context - Encode/Decode
- * ========================================================================= */
-/**
- * @brief Create ED247 frames of each channel where one of its streams contains data to send.
- * Release memory with ::ed247_frame_list_free().
- * @ingroup context_advanced
- * @param[in] context Context identifier
- * @param[out] frames List of produced frames
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_frame_encode(
-    ed247_context_t context,
-    ed247_frame_list_t *frames);
-
-/**
- * @brief Decode and push stream samples from the ED47 frames
- * @ingroup context_advanced
- * @param[in] channel Channel identifier
- * @param[in] frame ED247 frame
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_frame_decode(
-    ed247_channel_t channel,
-    const void * data,
-    size_t size);
 
 
 /* =========================================================================
@@ -1903,59 +1862,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_pop_sample(
     const ed247_timestamp_t **   recv_timestamp,
     const ed247_sample_info_t ** info,
     bool *                       empty);
-
-
-/* =========================================================================
- * Frame - list
- * ========================================================================= */
-/**
- * @brief Channel & frame data
- * @ingroup frame_list
- */
-typedef struct {
-    ed247_channel_t channel;
-    void *          data;
-    size_t          size;
-} ed247_frame_t;
-
-/**
- * @brief Iterate over a frame identifier list
- * @ingroup frame_list
- * @param[in,out] frames The signal list
- * @param[out] frame A pointer to the current item in the list.
- * A /a null value is set when the end of the list is reached.
- * The next call will return the pointer to the first item of the list.
- * @retval ED247_STATUS_SUCCESS Operation completed successfully (although end of list may be reached)
- * @retval ED247_STATUS_FAILURE Invalid parameter provided or internal error
- */
-extern LIBED247_EXPORT ed247_status_t ed247_frame_list_next(
-    ed247_frame_list_t     frames,
-    const ed247_frame_t ** frame);
-
-/**
- * @brief Free frame list
- * <b>Do not use during runtime. The implementation may contain memory allocation/deallocation functions.</b>
- * @ingroup frame_list
- * @param[in] frames The frame list
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_frame_list_free(
-    ed247_frame_list_t frames);
-
-/**
- * @brief Get the size of the list
- * @ingroup frame_list
- * @param[in] frames The frame list
- * @param[out] size The size of the list
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_frame_list_size(
-    ed247_frame_list_t frames,
-    size_t *           size);
-
-
 
 /* =========================================================================
  * Deprecated stuff

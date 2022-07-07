@@ -659,56 +659,6 @@ ed247_status_t ed247_send_pushed_samples(
 
 
 /* =========================================================================
- * ED247 Context - Encode/Decode
- * ========================================================================= */
-ed247_status_t ed247_frame_encode(
-  ed247_context_t      context,
-  ed247_frame_list_t * frames)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-  if(!context){
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
-  if(frames == nullptr){
-    PRINT_ERROR(__func__ << ": Empty frames pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  *frames = nullptr;
-  try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    ed247_context->encode_frames();
-    *frames = ed247_context->active_frames().get();
-  }
-  LIBED247_CATCH("Frame encode");
-  return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t ed247_frame_decode(
-  ed247_channel_t channel,
-  const void *    data,
-  size_t          size)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-  if(!channel){
-    PRINT_ERROR(__func__ << ": Invalid channel");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!data){
-    PRINT_ERROR(__func__ << ": Empty data pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  try{
-    auto ed247_channel = static_cast<ed247::Channel*>(channel);
-    if (ed247_channel->decode((const char*)data, size) == false) {
-      return ED247_STATUS_FAILURE;
-    }
-  }
-  LIBED247_CATCH("Frame decode");
-  return ED247_STATUS_SUCCESS;
-}
-
-/* =========================================================================
  * ED247 Context - Callbacks
  * ========================================================================= */
 ed247_status_t ed247_stream_register_recv_callback(
@@ -2121,72 +2071,5 @@ ed247_status_t ed247_stream_assistant_pop_sample(
     }
   }
   LIBED247_CATCH("Pop stream sample with assistant");
-  return ED247_STATUS_SUCCESS;
-}
-
-
-/* =========================================================================
- * Frame - list
- * ========================================================================= */
-ed247_status_t ed247_frame_list_size(
-  ed247_frame_list_t frames,
-  size_t *           size)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-
-  if(!frames) {
-    PRINT_ERROR(__func__ << ": Invalid frames");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!size) {
-    PRINT_ERROR(__func__ << ": Invalid size pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  try{
-    auto ed247_frames = static_cast<ed247::SmartListFrames*>(frames);
-    *size = ed247_frames->size();
-  }
-  LIBED247_CATCH("Frame list size");
-  return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t ed247_frame_list_next(
-  ed247_frame_list_t     frames,
-  const ed247_frame_t ** frame)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-
-  if(!frames) {
-    PRINT_ERROR(__func__ << ": Invalid frames");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!frame) {
-    PRINT_ERROR(__func__ << ": Empty frame pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  *frame = nullptr;
-  try {
-    ed247::SmartListFrames* ed247_frames = (ed247::SmartListFrames*)(frames);
-    auto && next = ed247_frames->next_ok();
-    *frame = next ? next->get() : nullptr;
-  }
-  LIBED247_CATCH("Frame list next");
-  return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t ed247_frame_list_free(
-  ed247_frame_list_t frames)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-  if(!frames) {
-    PRINT_ERROR(__func__ << ": Invalid frames");
-    return ED247_STATUS_FAILURE;
-  }
-  try{
-    auto ed247_frames = static_cast<ed247::SmartListFrames*>(frames);
-    if(!ed247_frames->managed())
-      delete ed247_frames;
-  }
-  LIBED247_CATCH("Frame list free");
   return ED247_STATUS_SUCCESS;
 }

@@ -46,11 +46,9 @@ Context::Context():
     _pool_interfaces(std::make_shared<UdpSocket::Pool>()),
     _pool_signals(std::make_shared<BaseSignal::Pool>()),
     _pool_streams(std::make_shared<BaseStream::Pool>(_pool_signals)),
-    _pool_channels(_pool_interfaces, _pool_streams),
-    _active_frames(std::make_shared<SmartListActiveFrames>())
+    _pool_channels(_pool_interfaces, _pool_streams)
 {
     PRINT_DEBUG("[Context] Ctor");
-    _active_frames->set_managed(true);
     SimulationTimeHandler::get().set_handler(libed247_set_simulation_time_ns, NULL);
 }
 
@@ -81,7 +79,7 @@ Context * Context::Builder::create_filepath(std::string ecic_filepath)
     Context * context = new Context();
 
     PRINT_DEBUG("ECIC filepath [" << ecic_filepath << "]");
-    
+
     // Load
     try{
         context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_filepath(ecic_filepath));
@@ -100,7 +98,7 @@ Context * Context::Builder::create_content(std::string ecic_content)
     Context * context = new Context();
 
     PRINT_DEBUG("ECIC content [" << ecic_content << "]");
-    
+
     // Load
     try{
         context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_content(ecic_content));
@@ -115,15 +113,10 @@ Context * Context::Builder::create_content(std::string ecic_content)
 
 void Context::Builder::initialize(Context & context)
 {
-    // Create channels
-    context._active_frames->clear();
-    for(auto & sp_channel_configuration : context._root->channels){
-        auto sp_channel = context._pool_channels.get(sp_channel_configuration); // Add component identifier
-        auto frame_element = std::make_shared<ed247_frame_t>();
-        frame_element->channel = sp_channel.get();
-        context._active_frames->push_back(frame_element);
-    }
-    context._active_frames->reset();
+  for(auto & sp_channel_configuration : context._root->channels){
+    // The get() method create and append the channel. Refactoring needed...
+    context._pool_channels.get(sp_channel_configuration);
+  }
 }
 
 }

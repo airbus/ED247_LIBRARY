@@ -34,28 +34,6 @@
 namespace ed247
 {
 
-class SmartListFrames : public SmartList<std::shared_ptr<ed247_frame_t>>, public ed247_internal_frame_list_t
-{
-    public:
-        using SmartList<std::shared_ptr<ed247_frame_t>>::SmartList;
-        virtual ~SmartListFrames() {}
-};
-
-class SmartListActiveFrames : public SmartListFrames
-{
-    public:
-        using SmartListFrames::SmartListFrames;
-        virtual ~SmartListActiveFrames() {}
-
-        virtual std::shared_ptr<ed247_frame_t> * next_ok() override
-        {
-                next_iter();
-                _iter = std::find_if(_iter, std::vector<std::shared_ptr<ed247_frame_t>>::end(),
-                    [](const std::shared_ptr<ed247_frame_t> & f){ return f->data != nullptr; });
-                return current_value();
-        }
-};
-
 class Context : public ed247_internal_context_t
 {
     public:
@@ -81,30 +59,11 @@ class Context : public ed247_internal_context_t
 
         Channel::Pool * getPoolChannels() { return &_pool_channels; }
 
-        void encode_frames()
-        {
-            encode(_root->info.identifier);
-            _active_frames->reset();
-            // Update frames
-            for(auto & frame : *_active_frames){
-                if(!frame->channel)
-                    continue;
-                auto channel = static_cast<Channel*>(frame->channel);
-                if(!channel->buffer().empty()){
-                    frame->data = channel->buffer().data_rw();
-                    frame->size = channel->buffer().size();
-                }else{
-                    frame->data = nullptr;
-                    frame->size = 0;
-                }
-            }
-        }
-
         void send_pushed_samples()
         {
             _pool_channels.encode_and_send(_root->info.identifier);
         }
-        
+
         ed247_status_t wait_frame(int32_t timeout_us)
         {
             return _pool_interfaces->wait_frame(timeout_us);
@@ -113,8 +72,6 @@ class Context : public ed247_internal_context_t
         {
             return _pool_interfaces->wait_during(duration_us);
         }
-
-        std::shared_ptr<SmartListActiveFrames>    active_frames()  { return _active_frames;  }
 
         const libed247_runtime_metrics_t* get_runtime_metrics();
 
@@ -150,7 +107,6 @@ class Context : public ed247_internal_context_t
         std::shared_ptr<BaseSignal::Pool>       _pool_signals;
         std::shared_ptr<BaseStream::Pool>       _pool_streams;
         Channel::Pool                           _pool_channels;
-        std::shared_ptr<SmartListActiveFrames>  _active_frames;
         libed247_runtime_metrics_t              _runtime_metrics;
         void                                    *_user_data;
 
