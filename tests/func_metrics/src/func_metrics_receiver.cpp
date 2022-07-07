@@ -118,7 +118,7 @@ TEST_P(Context, Metrics)
     
         ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, data_signal, (const void**)(&data_buffer), &data_size), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(malloc_count_stop(), 1);
+        ASSERT_EQ(malloc_count_stop(), 0);
     
         ASSERT_EQ(data_size, (size_t)2);
         ASSERT_NE(data_buffer, (const uint16_t*)NULL);
@@ -230,7 +230,7 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(sample_info->transport_timestamp.epoch_s,(uint16_t)10);
             ASSERT_EQ(sample_info->transport_timestamp.offset_ns,(uint16_t)12);
             ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, data_signal, (const void**)(&data_buffer), &data_size), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(malloc_count_stop(), 1);
+            ASSERT_EQ(malloc_count_stop(), 0);
         
             ASSERT_EQ(data_size, (size_t)2);
             ASSERT_NE(data_buffer, (const uint16_t*)NULL);

@@ -694,7 +694,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
 /**
  * @brief Retrieve all the channels of the component
  * @ingroup context_config
- * Release memory with ::ed247_channel_list_free()
+ * Release memory with ::ed247_channel_list_free(channels)
+ * To limit memory allocation, channels will be invalidate by next calls.
  * @param[in] context The context identifier
  * @param[out] channels List of the channels
  * @retval ED247_STATUS_SUCCESS
@@ -710,7 +711,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_channel_list(
  * <em>The regex uses the <b>ECMAScript</b> grammar.</em>
  * <em>The regex do not embed implicit /a .* special characters at the beginning and the end.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * Release memory with ::ed247_channel_list_free()
+ * Release memory with ::ed247_channel_list_free(channels)
+ * To limit memory allocation, channels will be invalidate by next calls.
  * @ingroup context_config
  * @param[in] context The context identifier.
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -741,7 +743,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_channel(
 
 /**
  * @brief Retrieve all the streams of the component
- * Release memory with ::ed247_stream_list_free().
+ * Release memory with ::ed247_stream_list_free(streams)
+ * To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup context_config
  * @param[in] context The context identifier
  * @param[out] streams List of the streams
@@ -756,7 +759,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_stream_list(
  * @brief Find all streams of the component whose name is matching the regular expression
  * <em>For example, to get a list of all the streams, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * Release memory with ::ed247_stream_list_free().
+ * Release memory with ::ed247_stream_list_free(streams)
+ * To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup context_config
  * @param[in] context The context identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -790,7 +794,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_stream(
  * @brief Find all signals of the component whose name is matching the regular expression
  * <em>For example, to get a list of all the signals, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * Release memory with ::ed247_signal_list_free().
+ * Release memory with ::ed247_signal_list_free(signals)
+ * To limit memory allocation, signals will be invalidate by next calls.
  * @ingroup context_config
  * @param[in] context The context identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -826,7 +831,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_signal(
 /**
  * @brief Blocks until the first frame is received and processed, and at least a stream has available data.
  * If several frames has been received, they are all processed.
- * Release memory with ::ed247_stream_list_free().
+ * output streams:
+ * - [new in 1.1.4] Can be set to NULL if you need't the list. (this will prevent list computation)
+ * - Release memory with ::ed247_stream_list_free(streams)
+ * - To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup context_io
  * @param[in] context Context identifier
  * @param[out] streams List of streams that received samples, can be NULL
@@ -842,7 +850,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_wait_frame(
 
 /**
  * @brief Blocks until duration is elapsed, processing all received data.
- * Release memory with ::ed247_stream_list_free().
+ * output streams:
+ * - [new in 1.1.4] Can be set to NULL if you need't the list. (this will prevent list computation)
+ * - Release memory with ::ed247_stream_list_free(streams)
+ * - To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup context_io
  * @param[in] context Context identifier
  * @param[out] streams List of streams that received samples, can be NULL
@@ -1122,7 +1133,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_info(
 
 /**
  * @brief Retrieve all the streams of the channel
- * Release memory with ::ed247_stream_list_free().
+ * Release memory with ::ed247_stream_list_free(streams)
+ * To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup channel
  * @param[in] channel The channel identifier
  * @param[out] streams List of the streams
@@ -1137,7 +1149,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_stream_list(
  * @brief Find all streams of the channel whose name is matching the regular expression
  * <em>For example, to get a list of all the streams, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
- * Release memory with ::ed247_stream_list_free().
+ * Release memory with ::ed247_stream_list_free(streams)
+ * To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup channel
  * @param[in] channel The channel identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
@@ -1342,7 +1355,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_has_signals(
 /**
  * @brief Return all signals of a stream
  * @ingroup stream
- * Release memory with ::ed247_signal_list_free().
+ * Release memory with ::ed247_signal_list_free(signals)
+ * To limit memory allocation, signals will be invalidate by next calls.
  * @param[in] stream The stream identifier
  * @param[in] regex_name The regular expression for name matching
  * @param[out] signals The list of the signals. If no value, set to null.
@@ -1358,7 +1372,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_signal_list(
  * <em>For example, to get a list of all the signals, use the /a * value.</em>
  * <b>Do not use during runtime. The implementation may contain memory allocation functions.</b>
  * @ingroup stream
- * Release memory with ::ed247_signal_list_free().
+ * Release memory with ::ed247_signal_list_free(signals)
+ * To limit memory allocation, signals will be invalidate by next calls.
  * @param[in] stream The stream identifier
  * @param[in] regex_name The regular expression for name matching. If null, assume '.*'.
  * @param[out] signals The list of the signals. If no value, set to null.

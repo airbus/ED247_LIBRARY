@@ -14,8 +14,29 @@ namespace ed247 {
     typedef typename std::vector<T>         container_t;
     typedef typename container_t::iterator  iterator_t;
 
-    // Ctor (hold reference to container)
-    client_iterator(container_t& container) : _container(&container), _iterator(container.end()), _owner(false) {}
+    // Invalid iterator Ctor
+    client_iterator() : _container(nullptr), _owner(false) { }
+
+    // Initialize iterator by wrapping provided container
+    void wrap(container_t& container) {
+      free();
+      _container = &container;
+      _iterator = _container->end();
+      _owner = false;
+    }
+
+    // Initialize iterator by copying provided container
+    void copy(const container_t& container) {
+      free();
+      _container = new container_t(container);
+      _iterator = _container->end();
+      _owner = true;
+
+    }
+
+    bool is_initialized() {
+      return _container != nullptr;
+    }
 
     virtual client_iterator& advance() {
       if (_iterator == _container->end()) {
@@ -39,7 +60,7 @@ namespace ed247 {
     }
 
     bool valid() {
-      return _iterator != _container->end();
+      return _container && _iterator != _container->end();
     }
 
     operator bool() {
@@ -55,14 +76,16 @@ namespace ed247 {
     }
 
     // Delete container if we are the owner
+    void free() {
+      if (_container && _owner) delete _container;
+      _container = nullptr;
+    }
+
     ~client_iterator() {
-      if (_owner) delete _container;
+      free();
     }
 
   protected:
-    // Derived classes shall implement a copy() method that create a client_iterator which hold container
-    client_iterator(container_t* container, bool owner = false) : _container(container), _iterator(container->end()), _owner(owner) {}
-
     container_t* _container;
     iterator_t   _iterator;
     bool         _owner;
