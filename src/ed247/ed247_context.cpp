@@ -47,12 +47,10 @@ Context::Context():
     _pool_signals(std::make_shared<BaseSignal::Pool>()),
     _pool_streams(std::make_shared<BaseStream::Pool>(_pool_signals)),
     _pool_channels(_pool_interfaces, _pool_streams),
-    _active_frames(std::make_shared<SmartListActiveFrames>()),
-    _active_streams(std::make_shared<SmartListActiveStreams>())
+    _active_frames(std::make_shared<SmartListActiveFrames>())
 {
     PRINT_DEBUG("[Context] Ctor");
     _active_frames->set_managed(true);
-    _active_streams->set_managed(true);
     SimulationTimeHandler::get().set_handler(libed247_set_simulation_time_ns, NULL);
 }
 
@@ -126,14 +124,6 @@ void Context::Builder::initialize(Context & context)
         context._active_frames->push_back(frame_element);
     }
     context._active_frames->reset();
-    context._pool_streams->streams()->reset();
-
-    context._active_streams->resize(context._pool_streams->size(), nullptr);
-    copy(context._pool_streams->streams()->begin(),
-        context._pool_streams->streams()->end(),
-        context._active_streams->begin());
-    context._active_streams->reset();
-    context._pool_streams->streams()->reset();
 }
 
 }

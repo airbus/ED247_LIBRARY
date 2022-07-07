@@ -63,7 +63,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, &timestamp, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
     
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     
     // Extract and check content of payload
     str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
@@ -122,7 +122,7 @@ TEST_P(StreamContext, Callbacks)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
     
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
 
     ASSERT_TRUE(com_recv_counter > 0);
 

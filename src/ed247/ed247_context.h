@@ -107,17 +107,14 @@ class Context : public ed247_internal_context_t
         
         ed247_status_t wait_frame(int32_t timeout_us)
         {
-            _active_streams->reset();
             return _pool_interfaces->wait_frame(timeout_us);
         }
         ed247_status_t wait_during(int32_t duration_us)
         {
-            _active_streams->reset();
             return _pool_interfaces->wait_during(duration_us);
         }
 
         std::shared_ptr<SmartListActiveFrames>    active_frames()  { return _active_frames;  }
-        std::shared_ptr<SmartListActiveStreams>   active_streams() { return _active_streams; }
 
         const libed247_runtime_metrics_t* get_runtime_metrics();
 
@@ -154,7 +151,6 @@ class Context : public ed247_internal_context_t
         std::shared_ptr<BaseStream::Pool>       _pool_streams;
         Channel::Pool                           _pool_channels;
         std::shared_ptr<SmartListActiveFrames>  _active_frames;
-        std::shared_ptr<SmartListActiveStreams> _active_streams;
         libed247_runtime_metrics_t              _runtime_metrics;
         void                                    *_user_data;
 

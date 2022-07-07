@@ -237,8 +237,6 @@ struct ed247_internal_signal_t {};
 
 struct ed247_internal_frame_list_t {};
 
-struct ed247_internal_stream_list_t {};
-
 struct ed247_internal_stream_assistant_t {};
 
 struct ed247_internal_time_sample_t : public ed247_timestamp_t {};

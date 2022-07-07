@@ -64,6 +64,7 @@ struct ed247_internal_channel_list_t :
   static ed247_internal_channel_list_t* copy(const container_t& container) {
     return new ed247_internal_channel_list_t(new container_t(container), true);
   }
+  virtual ~ed247_internal_channel_list_t() {}
 };
 
 struct ed247_internal_signal_list_t :
@@ -73,6 +74,32 @@ struct ed247_internal_signal_list_t :
   static ed247_internal_signal_list_t* copy(const container_t& container) {
     return new ed247_internal_signal_list_t(new container_t(container), true);
   }
+  virtual ~ed247_internal_signal_list_t() {}
+};
+
+struct ed247_internal_stream_list_t :
+  public ed247::client_iterator<ed247::stream_ptr_t>
+{
+  using ed247::client_iterator<value_t>::client_iterator;
+  static ed247_internal_stream_list_t* copy(const container_t& container) {
+    return new ed247_internal_stream_list_t(new container_t(container), true);
+  }
+  virtual ~ed247_internal_stream_list_t() {}
+};
+
+// Iterator that filter streams with data
+// Note: this shall be removed from the interface (wait_frame & wait_during)
+struct ed247_stream_iterator_with_data_t : public ed247_internal_stream_list_t
+{
+  using ed247_internal_stream_list_t::ed247_internal_stream_list_t;
+  virtual client_iterator& advance() override {
+    ed247_internal_stream_list_t::advance();
+    _iterator = std::find_if(_iterator,
+                             _container->end(),
+                             [](const ed247::stream_ptr_t& sp){ return sp->recv_stack().size() > 0; });
+    return *this;
+  }
+  virtual ~ed247_stream_iterator_with_data_t() {}
 };
 
 
@@ -388,18 +415,21 @@ ed247_status_t ed247_get_stream_list(
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
   if(!streams) {
     PRINT_ERROR(__func__ << ": Empty info pointer");
     return ED247_STATUS_FAILURE;
   }
+
   *streams = nullptr;
+
+  if(!context) {
+    PRINT_ERROR(__func__ << ": Invalid context");
+    return ED247_STATUS_FAILURE;
+  }
+
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    *streams = std::static_pointer_cast<ed247_internal_stream_list_t>(ed247_context->getPoolStreams()->streams()).get();
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    *streams = new ed247_internal_stream_list_t(*(ed247_context->getPoolStreams()->streams().get()));
   }
   LIBED247_CATCH("Get streams info");
   return ED247_STATUS_SUCCESS;
@@ -412,18 +442,20 @@ ed247_status_t ed247_find_streams(
   ed247_stream_list_t * streams)
 {
   PRINT_DEBUG("function " << __func__ << "()");
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
   if(!streams) {
     PRINT_ERROR(__func__ << ": Invalid streams pointer");
     return ED247_STATUS_FAILURE;
   }
+
+  *streams = nullptr;
+
+  if(!context) {
+    PRINT_ERROR(__func__ << ": Invalid context");
+    return ED247_STATUS_FAILURE;
+  }
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    ed247::SmartListStreams * smart_streams = new ed247::SmartListStreams(ed247_context->getPoolStreams()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    *streams = static_cast<ed247_stream_list_t>(smart_streams);
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    *streams = ed247_internal_stream_list_t::copy(ed247_context->getPoolStreams()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
   }
   LIBED247_CATCH("Find streams");
   return ED247_STATUS_SUCCESS;
@@ -553,10 +585,10 @@ ed247_status_t ed247_wait_frame(
   }
   *streams = nullptr;
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    auto ed247_status = ed247_context->wait_frame(timeout_us);
-    if(ed247_status == ED247_STATUS_SUCCESS){
-      *streams = ed247_context->active_streams().get();
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    ed247_status_t ed247_status = ed247_context->wait_frame(timeout_us);
+    if(ed247_status == ED247_STATUS_SUCCESS) {
+      *streams = new ed247_stream_iterator_with_data_t(*(ed247_context->getPoolStreams()->streams().get()));
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
     }
@@ -582,10 +614,10 @@ ed247_status_t ed247_wait_during(
   }
   *streams = nullptr;
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    auto ed247_status = ed247_context->wait_during(duration_us);
-    if(ed247_status == ED247_STATUS_SUCCESS){
-      *streams = ed247_context->active_streams().get();
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    ed247_status_t ed247_status = ed247_context->wait_during(duration_us);
+    if(ed247_status == ED247_STATUS_SUCCESS) {
+      *streams = new ed247_stream_iterator_with_data_t(*(ed247_context->getPoolStreams()->streams().get()));
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
     }
@@ -745,13 +777,11 @@ ed247_status_t ed247_streams_register_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
-    ed247_streams->reset(); // Reset internal iterator
-    std::shared_ptr<ed247::BaseStream> * next;
-    while((next = ed247_streams->next_ok()) != nullptr){
-      if((*next)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
+    ed247_internal_stream_list_t& iterator = *(dynamic_cast<ed247_internal_stream_list_t*>(streams));
+    for (auto istream = iterator.container().begin(); istream != iterator.container().end(); istream++) {
+      if((*istream)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
-        PRINT_WARNING("Cannot register callback in stream [" << (*next)->get_name() << "]");
+        PRINT_WARNING("Cannot register callback in stream [" << (*istream)->get_name() << "]");
       }
     }
   }
@@ -779,13 +809,11 @@ ed247_status_t ed247_streams_unregister_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
-    ed247_streams->reset(); // Reset internal iterator
-    std::shared_ptr<ed247::BaseStream> * next;
-    while((next = ed247_streams->next_ok()) != nullptr){
-      if((*next)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
+    ed247_internal_stream_list_t& iterator = *(dynamic_cast<ed247_internal_stream_list_t*>(streams));
+    for (auto istream = iterator.container().begin(); istream != iterator.container().end(); istream++) {
+      if((*istream)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
-        PRINT_WARNING("Cannot unregister callback in stream [" << (*next)->get_name() << "]");
+        PRINT_WARNING("Cannot unregister callback in stream [" << (*istream)->get_name() << "]");
       }
     }
   }
@@ -808,14 +836,12 @@ ed247_status_t ed247_register_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    auto ed247_streams = ed247_context->getPoolStreams()->streams();
-    ed247_streams->reset(); // Reset internal iterator
-    std::shared_ptr<ed247::BaseStream> * next;
-    while((next = ed247_streams->next_ok()) != nullptr){
-      if((*next)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    std::shared_ptr<ed247::stream_list_t> ed247_streams = ed247_context->getPoolStreams()->streams();
+    for (auto istream = ed247_streams->begin(); istream != ed247_streams->end(); istream++) {
+      if((*istream)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
-        PRINT_WARNING("Cannot register callback in stream [" << (*next)->get_name() << "]");
+        PRINT_WARNING("Cannot register callback in stream [" << (*istream)->get_name() << "]");
       }
     }
   }
@@ -838,14 +864,12 @@ ed247_status_t ed247_unregister_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    auto ed247_streams = ed247_context->getPoolStreams()->streams();
-    ed247_streams->reset(); // Reset internal iterator
-    std::shared_ptr<ed247::BaseStream> * next;
-    while((next = ed247_streams->next_ok()) != nullptr){
-      if((*next)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    std::shared_ptr<ed247::stream_list_t> ed247_streams = ed247_context->getPoolStreams()->streams();
+    for (auto istream = ed247_streams->begin(); istream != ed247_streams->end(); istream++) {
+      if((*istream)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
-        PRINT_WARNING("Cannot unregister callback in stream [" << (*next)->get_name() << "]");
+        PRINT_WARNING("Cannot unregister callback in stream [" << (*istream)->get_name() << "]");
       }
     }
   }
@@ -1037,18 +1061,21 @@ ed247_status_t ed247_channel_get_stream_list(
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
-  if(!channel) {
-    PRINT_ERROR(__func__ << ": Invalid channel");
-    return ED247_STATUS_FAILURE;
-  }
   if(!streams) {
     PRINT_ERROR(__func__ << ": Empty info pointer");
     return ED247_STATUS_FAILURE;
   }
+
   *streams = nullptr;
+
+  if(!channel) {
+    PRINT_ERROR(__func__ << ": Invalid channel");
+    return ED247_STATUS_FAILURE;
+  }
+
   try{
-    auto ed247_channel = static_cast<ed247::Channel*>(channel);
-    *streams = std::static_pointer_cast<ed247_internal_stream_list_t>(ed247_channel->sstreams()).get();
+    ed247::Channel* ed247_channel = static_cast<ed247::Channel*>(channel);
+    *streams = new ed247_internal_stream_list_t(*(ed247_channel->sstreams().get()));
   }
   LIBED247_CATCH("Get streams info");
   return ED247_STATUS_SUCCESS;
@@ -1060,18 +1087,20 @@ ed247_status_t ed247_channel_find_streams(
   ed247_stream_list_t * streams)
 {
   PRINT_DEBUG("function " << __func__ << "()");
-  if(!channel) {
-    PRINT_ERROR(__func__ << ": Invalid channel");
-    return ED247_STATUS_FAILURE;
-  }
   if(!streams) {
     PRINT_ERROR(__func__ << ": Invalid streams pointer");
     return ED247_STATUS_FAILURE;
   }
+
+  *streams = nullptr;
+
+  if(!channel) {
+    PRINT_ERROR(__func__ << ": Invalid channel");
+    return ED247_STATUS_FAILURE;
+  }
   try{
-    auto ed247_channel = (ed247::Channel*)(channel);
-    ed247::SmartListStreams * smart_streams = new ed247::SmartListStreams(std::move(ed247_channel->find_streams(regex_name != nullptr ? std::string(regex_name) : std::string(".*"))));
-    *streams = static_cast<ed247_stream_list_t>(smart_streams);
+    ed247::Channel* ed247_channel = (ed247::Channel*)(channel);
+    *streams = ed247_internal_stream_list_t::copy(ed247_channel->find_streams(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
   }
   LIBED247_CATCH("Find channel streams");
   return ED247_STATUS_SUCCESS;
@@ -1519,7 +1548,7 @@ ed247_status_t ed247_stream_allocate_sample(
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_stream_free_sample(
-    void* sample_data)
+  void* sample_data)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!sample_data){
@@ -1681,8 +1710,7 @@ ed247_status_t ed247_stream_list_size(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
-    *size = ed247_streams->size();
+    *size = static_cast<ed247_internal_stream_list_t*>(streams)->container_size();
   }
   LIBED247_CATCH("Stream list size");
   return ED247_STATUS_SUCCESS;
@@ -1704,9 +1732,9 @@ ed247_status_t ed247_stream_list_next(
   }
   *stream = nullptr;
   try{
-    auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
-    auto && next = ed247_streams->next_ok();
-    *stream = next ? next->get() : nullptr;
+    ed247_internal_stream_list_t& iterator = *(dynamic_cast<ed247_internal_stream_list_t*>(streams));
+    iterator.advance();
+    *stream = iterator.valid() ? iterator.get_value().get() : nullptr;
   }
   LIBED247_CATCH("Stream list next");
   return ED247_STATUS_SUCCESS;
@@ -1722,9 +1750,7 @@ ed247_status_t ed247_stream_list_free(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_streams = static_cast<ed247::SmartListStreams*>(streams);
-    if(!ed247_streams->managed())
-      delete ed247_streams;
+    delete static_cast<ed247_internal_stream_list_t*>(streams);
   }
   LIBED247_CATCH("Stream list free");
   return ED247_STATUS_SUCCESS;
@@ -1856,7 +1882,7 @@ ed247_status_t ed247_signal_allocate_sample(
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_signal_free_sample(
-    void* sample_data)
+  void* sample_data)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!sample_data){

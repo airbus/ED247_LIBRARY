@@ -269,10 +269,10 @@ bool Channel::decode(const char * frame, size_t frame_size)
   return true;
 }
 
-std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strregex)
+stream_list_t Channel::find_streams(std::string strregex)
 {
     std::regex reg(strregex);
-    std::vector<std::shared_ptr<BaseStream>> founds;
+    stream_list_t founds;
     map_streams_t::iterator iter = _streams.begin();
     for(iter = _streams.begin() ; iter != _streams.end() ; iter++){
         if(!iter->second.stream) {
@@ -285,7 +285,7 @@ std::vector<std::shared_ptr<BaseStream>> Channel::find_streams(std::string strre
     return founds;
 }
 
-std::shared_ptr<BaseStream> Channel::get_stream(std::string str_name)
+stream_ptr_t Channel::get_stream(std::string str_name)
 {
     map_streams_t::iterator iter = _streams.begin();
     for(iter = _streams.begin() ; iter != _streams.end() ; iter++){

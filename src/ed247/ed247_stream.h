@@ -39,7 +39,9 @@ namespace ed247
 class Channel;
 class BaseStream;
 class BaseSignal;
-class SmartListStreams;
+
+typedef std::shared_ptr<BaseStream> stream_ptr_t;
+typedef std::vector<stream_ptr_t>   stream_list_t;
 
 class BaseSample
 {
@@ -272,19 +274,19 @@ class CircularStreamSampleBuffer {
 template<ed247_stream_type_t ... E>
 struct StreamBuilder {
     StreamBuilder() {}
-    std::shared_ptr<BaseStream> create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
 
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
 struct StreamBuilder<T, E...> : public StreamBuilder<E...>, private StreamTypeChecker<T> {
     StreamBuilder() : StreamBuilder<E...>() {}
-    std::shared_ptr<BaseStream> create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
 
 template<ed247_stream_type_t T>
 struct StreamBuilder<T> : private StreamTypeChecker<T> {
     StreamBuilder() {}
-    std::shared_ptr<BaseStream> create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
 
 class FrameHeader;
@@ -503,18 +505,18 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
                 ~Pool(){};
 
-                std::shared_ptr<BaseStream> get(std::shared_ptr<xml::Stream> & configuration);
+                stream_ptr_t get(std::shared_ptr<xml::Stream> & configuration);
 
-                std::vector<std::shared_ptr<BaseStream>> find(std::string str_regex);
+                stream_list_t find(std::string str_regex);
 
-                std::shared_ptr<BaseStream> get(std::string str_name);
+                stream_ptr_t get(std::string str_name);
 
-                std::shared_ptr<SmartListStreams> streams();
+                std::shared_ptr<stream_list_t> streams();
 
                 size_t size() const;
 
             private:
-                std::shared_ptr<SmartListStreams> _streams;
+                std::shared_ptr<stream_list_t>    _streams;
                 std::shared_ptr<BaseSignal::Pool> _pool_signals;
                 StreamBuilder<
                     ED247_STREAM_TYPE_A429,
@@ -538,7 +540,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             public:
 
                 Assistant() {}
-                Assistant(std::shared_ptr<BaseStream> stream):
+                Assistant(stream_ptr_t stream):
                     _stream(stream)
                 {
                     size_t capacity = 0;
@@ -560,7 +562,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     _buffer.allocate(capacity);
                 }
 
-                std::shared_ptr<BaseStream> get_stream()
+                stream_ptr_t get_stream()
                 {
                     return _stream;
                 }
@@ -710,7 +712,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     return true;
                 }
 
-                std::shared_ptr<BaseStream> _stream;
+                stream_ptr_t _stream;
                 std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _send_samples;
                 std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _recv_samples;
                 BaseSample _buffer;
@@ -773,28 +775,6 @@ class Stream : public BaseStream, private StreamTypeChecker<E>
                 create(std::shared_ptr<xml::Stream> & configuration,
                     std::shared_ptr<BaseSignal::Pool> & pool_signals) const;
         };
-};
-
-class SmartListStreams : public SmartList<std::shared_ptr<BaseStream>>, public ed247_internal_stream_list_t
-{
-    public:
-        using SmartList<std::shared_ptr<BaseStream>>::SmartList;
-        virtual ~SmartListStreams() {}
-};
-
-class SmartListActiveStreams : public SmartListStreams
-{
-    public:
-        using SmartListStreams::SmartListStreams;
-        virtual ~SmartListActiveStreams() {}
-
-        virtual std::shared_ptr<BaseStream> * next_ok() override
-        {
-            next_iter();
-            _iter = std::find_if(_iter, std::vector<std::shared_ptr<BaseStream>>::end(),
-                [](const std::shared_ptr<BaseStream> & sp){ return sp->recv_stack().size() > 0; });
-            return current_value();
-        }
 };
 
 };

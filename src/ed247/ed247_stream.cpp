@@ -51,7 +51,7 @@ void StreamSample::update_info(const FrameHeader & header)
 
 // StreamBuilder<>
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
-std::shared_ptr<BaseStream> StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
+stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
 {
     if(type == T){
         static typename Stream<T>::Builder builder;
@@ -62,7 +62,7 @@ std::shared_ptr<BaseStream> StreamBuilder<T, E...>::create(const ed247_stream_ty
 }
 
 template<ed247_stream_type_t T>
-std::shared_ptr<BaseStream> StreamBuilder<T>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
+stream_ptr_t StreamBuilder<T>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
 {
     if(type == T){
         static typename Stream<T>::Builder builder;
@@ -130,25 +130,23 @@ void BaseStream::register_channel(Channel & channel, ed247_direction_t direction
 // BaseStream::Pool
 
 BaseStream::Pool::Pool():
-    _streams(std::make_shared<SmartListStreams>())
+    _streams(std::make_shared<stream_list_t>())
 {
-    _streams->set_managed(true);
 }
 
 BaseStream::Pool::Pool(std::shared_ptr<BaseSignal::Pool> & pool_signals):
-    _streams(std::make_shared<SmartListStreams>()),
+    _streams(std::make_shared<stream_list_t>()),
     _pool_signals(pool_signals)
 {
-    _streams->set_managed(true);
 }
 
-std::shared_ptr<BaseStream> BaseStream::Pool::get(std::shared_ptr<xml::Stream> & configuration)
+stream_ptr_t BaseStream::Pool::get(std::shared_ptr<xml::Stream> & configuration)
 {
-    std::shared_ptr<BaseStream> sp_base_stream;
+    stream_ptr_t sp_base_stream;
     std::string name{configuration->info.name};
 
     auto iter = std::find_if(_streams->begin(), _streams->end(),
-        [&name](const std::shared_ptr<BaseStream> & s){ return s->get_name() == name; });
+        [&name](const stream_ptr_t & s){ return s->get_name() == name; });
     if(iter == _streams->end()){
         auto sp_stream = _builder.create(configuration->info.type,configuration, _pool_signals);
         sp_base_stream = std::static_pointer_cast<BaseStream>(sp_stream);
@@ -160,10 +158,10 @@ std::shared_ptr<BaseStream> BaseStream::Pool::get(std::shared_ptr<xml::Stream> &
     return sp_base_stream;
 }
 
-std::vector<std::shared_ptr<BaseStream>> BaseStream::Pool::find(std::string strregex)
+stream_list_t BaseStream::Pool::find(std::string strregex)
 {
     std::regex reg(strregex);
-    std::vector<std::shared_ptr<BaseStream>> founds;
+    stream_list_t founds;
     for(auto stream : *_streams){
         if(std::regex_match(stream->get_name(), reg)){
             founds.push_back(stream);
@@ -172,7 +170,7 @@ std::vector<std::shared_ptr<BaseStream>> BaseStream::Pool::find(std::string strr
     return founds;
 }
 
-std::shared_ptr<BaseStream> BaseStream::Pool::get(std::string str_name)
+stream_ptr_t BaseStream::Pool::get(std::string str_name)
 {
     for(auto stream : *_streams){
         if(stream->get_name() == str_name) return stream;
@@ -180,7 +178,7 @@ std::shared_ptr<BaseStream> BaseStream::Pool::get(std::string str_name)
     return nullptr;
 }
 
-std::shared_ptr<SmartListStreams> BaseStream::Pool::streams()
+std::shared_ptr<stream_list_t> BaseStream::Pool::streams()
 {
     return _streams;
 }

@@ -109,18 +109,17 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 {
     public:
         typedef struct {
-            std::shared_ptr<BaseStream> stream;
+            stream_ptr_t stream;
             ed247_direction_t direction;
         } stream_dir_t;
         using map_streams_t = std::map<ed247_uid_t,stream_dir_t>;
 
         Channel(std::shared_ptr<xml::Channel> & configuration):
             _configuration(configuration),
-            _sstreams(std::make_shared<SmartListStreams>()),
+            _sstreams(std::make_shared<stream_list_t>()),
             _header(configuration->header, get_name()),
             _user_data(NULL)
         {
-            _sstreams->set_managed(true);
         }
         virtual ~Channel();
 
@@ -190,11 +189,11 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         map_streams_t & streams() { return _streams; }
 
-        std::vector<std::shared_ptr<BaseStream>> find_streams(std::string strregex);
+        stream_list_t find_streams(std::string strregex);
 
-        std::shared_ptr<BaseStream> get_stream(std::string str_name);
+        stream_ptr_t get_stream(std::string str_name);
 
-        std::shared_ptr<SmartListStreams> sstreams() { return _sstreams; }
+        std::shared_ptr<stream_list_t> sstreams() { return _sstreams; }
 
         uint32_t missed_frames();
 
@@ -203,7 +202,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         std::vector<std::weak_ptr<ComInterface>> _emitters;
         std::vector<std::weak_ptr<ComInterface>> _receivers;
         map_streams_t _streams;
-        std::shared_ptr<SmartListStreams> _sstreams;
+        std::shared_ptr<stream_list_t> _sstreams;
         FrameHeader _header;
         bool _updated{false};
         BaseSample _buffer;
@@ -226,7 +225,6 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 _sstreams->push_back(p.second.stream);
             }
             std::unique(_sstreams->begin(), _sstreams->end());
-            _sstreams->reset();
         }
 
     private:

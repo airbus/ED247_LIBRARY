@@ -17,7 +17,7 @@ namespace ed247 {
     // Ctor (hold reference to container)
     client_iterator(container_t& container) : _container(&container), _iterator(container.end()), _owner(false) {}
 
-    client_iterator& advance() {
+    virtual client_iterator& advance() {
       if (_iterator == _container->end()) {
         _iterator = _container->begin();
       } else {
@@ -50,6 +50,10 @@ namespace ed247 {
       return _container->size();
     }
 
+    container_t& container() {
+      return *_container;
+    }
+
     // Delete container if we are the owner
     ~client_iterator() {
       if (_owner) delete _container;
@@ -59,7 +63,6 @@ namespace ed247 {
     // Derived classes shall implement a copy() method that create a client_iterator which hold container
     client_iterator(container_t* container, bool owner = false) : _container(container), _iterator(container->end()), _owner(owner) {}
 
-  private:
     container_t* _container;
     iterator_t   _iterator;
     bool         _owner;

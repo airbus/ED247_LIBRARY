@@ -90,7 +90,7 @@ TEST_P(StreamContext, SingleFrame)
     // Try to set an unvalid the reveice timestamp handler
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(NULL, NULL), ED247_STATUS_FAILURE);
 
-    // malloc_count_start();
+    malloc_count_start();
     // Set a first receive handler to timestamp the received frames
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
 
@@ -100,7 +100,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     
-    // ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
 
     // Limit cases
     ASSERT_EQ(ed247_wait_frame(NULL, &streams, 10000000), ED247_STATUS_FAILURE);
@@ -127,7 +127,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, &user_data), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
         // Extract and check content of payload for each frame
         str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
@@ -152,7 +152,7 @@ TEST_P(StreamContext, SingleFrame)
     // Receive other frames with the second handler
     malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         malloc_count_start();
         ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
@@ -182,7 +182,7 @@ TEST_P(StreamContext, SingleFrame)
     // Receive other frames with the second handler
     malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         malloc_count_start();
         ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
@@ -263,7 +263,7 @@ TEST_P(StreamContext, SingleFrame)
     // Perform reception
     malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     // Check that the callback was called
     ASSERT_TRUE(recv_counter > 0);
     ASSERT_EQ(checkpoints, (uint32_t)1); // Only once
@@ -306,7 +306,7 @@ TEST_P(StreamContext, SingleFrame)
     // Perform reception
     malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     // Check that the callback was called
     ASSERT_EQ(recv_counter, 0);
     ASSERT_EQ(checkpoints, (uint32_t)1); // Only once
@@ -341,7 +341,7 @@ TEST_P(StreamContext, SingleFrame)
     // Perform reception
     malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     // Check that the callback was called
     ASSERT_EQ(checkpoints, (uint32_t)2);
     ASSERT_STREQ(stream_name, "Stream1"); // The stream shall be Stream1
@@ -384,7 +384,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     
     // Extract and check the content of the received frame
     str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
@@ -406,7 +406,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
         // Extract and check the frame contents
         str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
@@ -431,7 +431,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     // Wait for more frames to be received
     malloc_count_start();
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         malloc_count_start();
         ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
@@ -486,7 +486,7 @@ TEST_P(StreamContext, MultipleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     
     // Extract and check the content of this frame
     str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 0;
@@ -558,7 +558,7 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(malloc_count_stop(), 0);
+    ASSERT_EQ(malloc_count_stop(), 1);
     ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(NULL, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_FAILURE);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
