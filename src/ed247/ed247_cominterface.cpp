@@ -124,7 +124,6 @@ void UdpSocket::send_frame(Channel & channel, const void * frame, const size_t f
     auto & destinations = *(_destinations[&channel]);
     for(auto & destination : destinations){
         PRINT_CRAZY("Socket [" << _socket_infos << "] send to [" << destination << "] a frame of " << frame_size << " bytes: [" << hex_stream(frame, frame_size) << "]");
-        run_send_callbacks();
         int32_t sent_size = sendto(_socket, static_cast<const char *>(frame), (int)frame_size, 0, (struct sockaddr *)&destination, sizeof(struct sockaddr_in));
         if(sent_size < 0 || (uint32_t)sent_size != frame_size) {
           PRINT_ERROR("Failed to send frame from socket socket [" << _socket_infos << "] to [" << destination << "] (" << UdpSocket::get_last_error() << ")");
@@ -145,7 +144,6 @@ void UdpSocket::recv()
             continue;
             
         first_loop = false;
-        run_recv_callbacks();
 
         _recv.size = sockerr;
         PRINT_CRAZY("Received frame of " << _recv.size << " bytes: [" << hex_stream(_recv.frame, _recv.size) << "]");

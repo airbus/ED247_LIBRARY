@@ -165,84 +165,8 @@ class ComInterface : public std::enable_shared_from_this<ComInterface>
         
         virtual void send_frame(Channel & from, const void * frame, const size_t frame_size) = 0;
 
-        ed247_status_t register_send_callback(ed247_com_callback_t callback, ed247_context_t context)
-        {
-            auto it = std::find_if(_send_callbacks.begin(), _send_callbacks.end(),
-                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
-                    return element.first == context && element.second == callback;
-                });
-            if(it != _send_callbacks.end()){
-                return ED247_STATUS_FAILURE;
-            }
-            _send_callbacks.push_back(std::make_pair(context,callback));
-            return ED247_STATUS_SUCCESS;
-        }
-
-        ed247_status_t unregister_send_callback(ed247_com_callback_t callback, ed247_context_t context)
-        {
-            auto it = std::find_if(_send_callbacks.begin(), _send_callbacks.end(),
-                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
-                    return element.first == context && element.second == callback;
-                });
-            if(it == _send_callbacks.end()){
-                return ED247_STATUS_FAILURE;
-            }
-            _send_callbacks.erase(it);
-            return ED247_STATUS_SUCCESS;
-        }
-
-        ed247_status_t register_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
-        {
-            auto it = std::find_if(_recv_callbacks.begin(), _recv_callbacks.end(),
-                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
-                    return element.first == context && element.second == callback;
-                });
-            if(it != _recv_callbacks.end()){
-                return ED247_STATUS_FAILURE;
-            }
-            _recv_callbacks.push_back(std::make_pair(context, callback));
-            return ED247_STATUS_SUCCESS;
-        }
-
-        ed247_status_t unregister_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
-        {
-            auto it = std::find_if(_recv_callbacks.begin(), _recv_callbacks.end(),
-                [&context, &callback](const std::pair<ed247_context_t,ed247_com_callback_t> & element){
-                    return element.first == context && element.second == callback;
-                });
-            if(it == _recv_callbacks.end()){
-                return ED247_STATUS_FAILURE;
-            }
-            _recv_callbacks.erase(it);
-            return ED247_STATUS_SUCCESS;
-        }
-
     protected:
         std::vector<std::weak_ptr<Channel>> _channels;
-        std::vector<std::pair<ed247_context_t,ed247_com_callback_t>> _send_callbacks;
-        std::vector<std::pair<ed247_context_t,ed247_com_callback_t>> _recv_callbacks;
-
-        void run_send_callbacks()
-        {
-            for(auto & pair : _send_callbacks)
-            {
-                if(pair.second){
-                    (*pair.second)(pair.first);
-                }else
-                    PRINT_WARNING("Callback [" << pair.second << "] is not callable.");
-            }
-        }
-
-        void run_recv_callbacks()
-        {
-            for(auto & pair : _recv_callbacks)
-            {
-                if(pair.second){
-                    (*pair.second)(pair.first);
-                }else
-                    PRINT_WARNING("Callback [" << pair.second << "] is not callable.");
-            }
-        }
 
     public:
         struct Pool : public std::enable_shared_from_this<Pool>
@@ -351,54 +275,6 @@ class UdpSocket : public ComInterface
 
                 virtual ed247_status_t wait_frame(int32_t timeout_us) final;
                 virtual ed247_status_t wait_during(int32_t duration_us) final;
-
-                ed247_status_t register_send_callback(ed247_com_callback_t callback, ed247_context_t context)
-                {
-                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
-                    ed247_status_t status = ED247_STATUS_SUCCESS;
-                    for(auto & i : _outputs){
-                        tmp_status = i->register_send_callback(callback, context);
-                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    }
-                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    return status;
-                }
-
-                ed247_status_t unregister_send_callback(ed247_com_callback_t callback, ed247_context_t context)
-                {
-                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
-                    ed247_status_t status = ED247_STATUS_SUCCESS;
-                    for(auto & i : _outputs){
-                        tmp_status = i->unregister_send_callback(callback, context);
-                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    }
-                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    return status;
-                }
-
-                ed247_status_t register_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
-                {
-                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
-                    ed247_status_t status = ED247_STATUS_SUCCESS;
-                    for(auto & i : _inputs){
-                        tmp_status = i->register_recv_callback(callback, context);
-                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    }
-                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    return status;
-                }
-
-                ed247_status_t unregister_recv_callback(ed247_com_callback_t callback, ed247_context_t context)
-                {
-                    ed247_status_t tmp_status = ED247_STATUS_FAILURE;
-                    ed247_status_t status = ED247_STATUS_SUCCESS;
-                    for(auto & i : _inputs){
-                        tmp_status = i->unregister_recv_callback(callback, context);
-                        status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    }
-                    status = tmp_status == ED247_STATUS_FAILURE ? tmp_status : status;
-                    return status;
-                }
 
             private:
                 std::vector<std::shared_ptr<UdpSocket>> _outputs;

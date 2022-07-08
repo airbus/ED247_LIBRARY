@@ -878,8 +878,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_send_pushed_samples(
  */
 typedef ed247_status_t (*ed247_stream_recv_callback_t)(ed247_context_t context, ed247_stream_t stream);
 
-typedef ed247_status_t (*ed247_com_callback_t)(ed247_context_t context);
-
 /**
  * @brief Register a callback (in a stream) which is called once a frame is received and decoded.
  * @ingroup context_callback
@@ -955,54 +953,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_register_recv_callback(
 extern LIBED247_EXPORT ed247_status_t ed247_unregister_recv_callback(
     ed247_context_t              context,
     ed247_stream_recv_callback_t callback);
-
-/**
- * @brief Register a callback which is called each time a frame is received.
- * @ingroup context_callback
- * @param[in] streams Stream identifiers
- * @param[in] callback The callback function
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_register_com_recv_callback(
-    ed247_context_t      context,
-    ed247_com_callback_t callback);
-
-/**
- * @brief Unregister a callback which is called each time a frame is received.
- * @ingroup context_callback
- * @param[in] streams Stream identifiers
- * @param[in] callback The callback function
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_recv_callback(
-    ed247_context_t      context,
-    ed247_com_callback_t callback);
-
-/**
- * @brief Register a callback which is called each time a frame is sent.
- * @ingroup context_callback
- * @param[in] streams Stream identifiers
- * @param[in] callback The callback function
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_register_com_send_callback(
-    ed247_context_t      context,
-    ed247_com_callback_t callback);
-
-/**
- * @brief Unregister a callback which is called each time a frame is sent.
- * @ingroup context_callback
- * @param[in] streams Stream identifiers
- * @param[in] callback The callback function
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_unregister_com_send_callback(
-    ed247_context_t      context,
-    ed247_com_callback_t callback);
 
 
 /* =========================================================================

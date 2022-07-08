@@ -93,67 +93,6 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 }
 
-uint32_t com_send_counter;
-
-TEST_P(StreamContext, Callbacks)
-{
-    ed247_stream_list_t streams;
-    ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
-    void *sample;
-    size_t sample_size;
-    std::string str_send;
-
-    uint32_t user_data = 10;
-    com_send_counter = 0;
-    ASSERT_EQ(ed247_component_set_user_data(_context, &user_data), ED247_STATUS_SUCCESS);
-    auto callback = [](ed247_context_t context) -> ed247_status_t {
-        void *user_data;
-        ed247_component_get_user_data(context, &user_data);
-        if(user_data){
-            com_send_counter += *(uint32_t*)user_data;
-        }
-        return ED247_STATUS_SUCCESS;
-    };
-    ASSERT_EQ(ed247_unregister_com_send_callback(_context, callback), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_register_com_send_callback(NULL, callback), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_register_com_send_callback(_context, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_register_com_send_callback(_context, callback), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_unregister_com_send_callback(NULL, callback), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_unregister_com_send_callback(_context, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_unregister_com_send_callback(_context, callback), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_register_com_send_callback(_context, callback), ED247_STATUS_SUCCESS);
-
-    // Checkpoint n~1
-    SAY_SELF("Checkpoint n~1");
-    TEST_SYNC();
-
-    // Stream
-    ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-
-    // Sample
-    ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
-
-    // Payload
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
-
-    malloc_count_start();
-
-    ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-
-    ASSERT_EQ(malloc_count_stop(), 0);
-
-    ASSERT_TRUE(com_send_counter > 0);
-
-    // Unload
-    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
-
-    free(sample);
-}
 
 std::vector<TestParams> stream_files;
 
