@@ -85,8 +85,6 @@ class FrameHeader
             return !operator==(other);
         }
 
-        void fill_transport_timestamp();
-
         uint32_t missed_frames()
         {
             uint32_t missed_frames = 0;
@@ -95,7 +93,7 @@ class FrameHeader
             }
             return missed_frames;
         }
-        
+
         header_element_t _send_header;
         std::vector<header_element_t> _recv_headers;
         std::vector<header_element_t>::iterator _recv_headers_iter;
@@ -241,7 +239,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 channel_ptr_t get(std::shared_ptr<xml::Channel> & configuration);
 
                 std::vector<channel_ptr_t> find(std::string str_regex);
-                
+
                 channel_ptr_t get(std::string str_name);
 
                 std::shared_ptr<channel_list_t> channels();

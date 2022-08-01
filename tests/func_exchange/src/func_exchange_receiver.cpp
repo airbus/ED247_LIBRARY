@@ -45,17 +45,12 @@ class SignalContext : public TestContext {};
 ed247_timestamp_t timestamp1 = {123, 456};
 ed247_timestamp_t timestamp2 = {456, 789};
 
-ed247_status_t get_time_test1(ed247_time_sample_t time_sample, void *user_data)
-{
-    return libed247_update_time(time_sample, timestamp1.epoch_s, timestamp1.offset_ns);
+void get_time_test1(ed247_timestamp_t* timestamp) {
+  *timestamp = timestamp1;
 }
-ed247_status_t get_time_test2(ed247_time_sample_t time_sample, void *user_data)
-{
-    if(user_data){
-        return libed247_update_time(time_sample, timestamp2.epoch_s+*(uint32_t*)user_data, timestamp2.offset_ns);
-    }else{
-        return libed247_update_time(time_sample, timestamp2.epoch_s, timestamp2.offset_ns);
-    }
+
+void get_time_test2(ed247_timestamp_t* timestamp) {
+  *timestamp = timestamp2;
 }
 
 uint32_t checkpoints;
@@ -75,43 +70,40 @@ TEST_P(StreamContext, SingleFrame)
     size_t sample_size;
     bool empty;
     std::string str_send, str_recv;
-    const ed247_timestamp_t* frame_timestamp;
+    const ed247_timestamp_t* receive_timestamp;
     ed247_stream_t stream0, stream1;
     ed247_stream_recv_callback_t callback;
 
     // Self-Test consistency check
     ASSERT_NE(timestamp1.epoch_s, timestamp2.epoch_s);
     ASSERT_NE(timestamp1.offset_ns, timestamp2.offset_ns);
-    
+
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
     TEST_SYNC();
 
-    // Try to set an unvalid the reveice timestamp handler
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(NULL, NULL), ED247_STATUS_FAILURE);
-
     malloc_count_start();
     // Set a first receive handler to timestamp the received frames
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test1);
 
     // Recv a single frame
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-    
+    ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(malloc_count_stop(), 0);
 
     // Limit cases
     ASSERT_EQ(ed247_wait_frame(NULL, &streams, 10000000), ED247_STATUS_FAILURE);
-    
+
     // Extract and check content of payload
     str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
-    ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-    ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+    ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+    ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
 
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");
@@ -122,8 +114,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     // Change the reception routine just after reception.
     // The timestamps of the already received frames shall not be changed
-    uint32_t user_data = 10;
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, &user_data), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test2);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
@@ -131,7 +122,7 @@ TEST_P(StreamContext, SingleFrame)
         // Extract and check content of payload for each frame
         str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
@@ -140,8 +131,8 @@ TEST_P(StreamContext, SingleFrame)
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
-        ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-        ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+        ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+        ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
     }
 
     // Checkpoint n~3
@@ -160,7 +151,7 @@ TEST_P(StreamContext, SingleFrame)
             // Extract and check content of payload for each frame
             str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
-            ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
@@ -169,8 +160,8 @@ TEST_P(StreamContext, SingleFrame)
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
-            ASSERT_EQ(timestamp2.epoch_s+user_data, frame_timestamp->epoch_s);
-            ASSERT_EQ(timestamp2.offset_ns, frame_timestamp->offset_ns);
+            ASSERT_EQ(timestamp2.epoch_s, receive_timestamp->epoch_s);
+            ASSERT_EQ(timestamp2.offset_ns, receive_timestamp->offset_ns);
         }
     }
 
@@ -190,7 +181,7 @@ TEST_P(StreamContext, SingleFrame)
             // Extract and check content of payload for each frame
             str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
-            ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
@@ -200,8 +191,8 @@ TEST_P(StreamContext, SingleFrame)
             SAY_SELF("Received [" << str_recv << "]");
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
-            ASSERT_EQ(timestamp2.epoch_s+user_data, frame_timestamp->epoch_s);
-            ASSERT_EQ(timestamp2.offset_ns, frame_timestamp->offset_ns);
+            ASSERT_EQ(timestamp2.epoch_s, receive_timestamp->epoch_s);
+            ASSERT_EQ(timestamp2.offset_ns, receive_timestamp->offset_ns);
         }
     }
 
@@ -368,7 +359,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     size_t sample_size;
     bool empty;
     std::string str_send, str_recv;
-    const ed247_timestamp_t* frame_timestamp;
+    const ed247_timestamp_t* receive_timestamp;
 
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
@@ -376,22 +367,22 @@ TEST_P(SimpleStreamContext, SingleFrame)
 
     // Set a dummy receive timestamp handler before reception
     malloc_count_start();
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test1);
 
     // Recv a first frame
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
-    
+
     // Extract and check the content of the received frame
     str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
     str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
-    ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-    ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+    ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+    ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
 
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");
@@ -402,7 +393,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     // Change the reception routine after reception.
     // It shall not modify the recv timestamps of already received frames
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, NULL), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test2);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
@@ -410,7 +401,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
         // Extract and check the frame contents
         str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
@@ -419,8 +410,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
-        ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-        ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+        ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+        ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
     }
 
     // Checkpoint n~3
@@ -439,7 +430,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
             // Extract and check the frame contents
             str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
-            ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
@@ -448,8 +439,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
             str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
-            ASSERT_EQ(timestamp2.epoch_s, frame_timestamp->epoch_s);
-            ASSERT_EQ(timestamp2.offset_ns, frame_timestamp->offset_ns);
+            ASSERT_EQ(timestamp2.epoch_s, receive_timestamp->epoch_s);
+            ASSERT_EQ(timestamp2.offset_ns, receive_timestamp->offset_ns);
         }
     }
 
@@ -470,7 +461,7 @@ TEST_P(StreamContext, MultipleFrame)
     size_t sample_size;
     bool empty;
     std::string str_send, str_recv;
-    const ed247_timestamp_t* frame_timestamp;
+    const ed247_timestamp_t* receive_timestamp;
 
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
@@ -478,22 +469,22 @@ TEST_P(StreamContext, MultipleFrame)
 
     // Set a dummy receive timestamp handler before reception
     malloc_count_start();
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test1);
 
     // Recv frames
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
-    
+
     // Extract and check the content of this frame
     str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 0;
     str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
-    ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-    ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+    ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+    ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
 
     SAY_SELF("Checkpoint n~1.1");
     TEST_SYNC();
@@ -504,21 +495,21 @@ TEST_P(StreamContext, MultipleFrame)
     malloc_count_start();
     // Change the reception routine after reception.
     // It shall not modify the receive timestamps of the already received frames
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test2, NULL), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test2);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
     for(unsigned i = 1 ; i < stream_info->sample_max_number ; i++){
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         // Extract and check the content of the payload
         str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
         str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
-        ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-        ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+        ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+        ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
     }
 
     // Checkpoint n~2
@@ -540,7 +531,7 @@ TEST_P(SignalContext, SingleFrame)
     const ed247_signal_info_t *signal_info;
     bool empty;
     std::string str_send, str_recv;
-    const ed247_timestamp_t* frame_timestamp;
+    const ed247_timestamp_t* receive_timestamp;
 
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
@@ -548,17 +539,17 @@ TEST_P(SignalContext, SingleFrame)
 
     // Set a dummy receive timestamp handler before reception
     malloc_count_start();
-    ASSERT_EQ(libed247_register_set_simulation_time_ns_handler(get_time_test1, NULL), ED247_STATUS_SUCCESS);
+    ed247_set_receive_timestamp_callback(&get_time_test1);
 
     // Recv a frame containing signals
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
     ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_assistant_pop_sample(NULL, NULL, &frame_timestamp, NULL, &empty), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_assistant_pop_sample(NULL, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_FAILURE);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
         ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
         const void * sample_data;
@@ -575,8 +566,8 @@ TEST_P(SignalContext, SingleFrame)
         str_recv = std::string((char*)sample_data, sample_size);
         ASSERT_EQ(str_send, str_recv);
         // Check the received timestamp is the expected one
-        ASSERT_EQ(timestamp1.epoch_s, frame_timestamp->epoch_s);
-        ASSERT_EQ(timestamp1.offset_ns, frame_timestamp->offset_ns);
+        ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
+        ASSERT_EQ(timestamp1.offset_ns, receive_timestamp->offset_ns);
     }
 
     // Checkpoint n~2
@@ -623,10 +614,10 @@ int main(int argc, char **argv)
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a825_mc_tester.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_uc_tester.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_mc_tester.xml"});
-    
+
     simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_tester_simple.xml"});
     simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_tester_simple.xml"});
-    
+
     signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_dis_mc_tester.xml"});
     signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_ana_mc_tester.xml"});
     signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_nad_mc_tester.xml"});

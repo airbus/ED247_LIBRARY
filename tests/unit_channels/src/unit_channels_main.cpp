@@ -130,9 +130,9 @@ TEST_P(ChannelContext, MultiPushPop)
                 frame_index += sizeof(uint32_t);
                 timestamp.offset_ns = ntohl(*(uint32_t*)((char*)channel0->buffer().data()+frame_index));
                 frame_index += sizeof(uint32_t);
-                static struct timeval tp;
-                gettimeofday(&tp, NULL);
-                int32_t delta = ((int32_t)tp.tv_sec - (int32_t)timestamp.epoch_s);
+                static ed247_timestamp_t now;
+                ed247_get_time(&now);
+                int32_t delta = ((int32_t)now.epoch_s - (int32_t)timestamp.epoch_s);
                 delta = delta >= 0 ? delta : -delta;
                 ASSERT_TRUE(delta < 30); // Check that frame header timestamp is in a good interval of time
             }else{
@@ -167,7 +167,7 @@ TEST_P(ChannelContext, MultiPushPop)
 
         // Check frame header
         if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
-            ASSERT_EQ(channel0->get_header()._send_header.component_identifier, channel1->get_header()._recv_headers_iter->component_identifier); 
+            ASSERT_EQ(channel0->get_header()._send_header.component_identifier, channel1->get_header()._recv_headers_iter->component_identifier);
             ASSERT_EQ(channel0->get_header()._send_header.sequence_number-1, channel1->get_header()._recv_headers_iter->sequence_number);
         }
         if(channel0->get_configuration()->header.transport_timestamp == ED247_YESNO_YES){

@@ -26,6 +26,7 @@
 #include "ed247_cominterface.h"
 #include "ed247_channel.h"
 #include "ed247_internals.h"
+#include "ed247_time.h"
 
 #include <utility>
 #include <memory>
@@ -59,19 +60,6 @@ namespace
     nanosleep(&ts, NULL);
 #endif
   }
-}
-
-uint64_t get_time_us()
-{
-#ifdef __linux__
-    struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
-    return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;
-#else
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (uint64_t)tv.tv_sec * 1000000LL + (uint64_t)tv.tv_usec;
-#endif
 }
 
 std::ostream & operator << (std::ostream & os, const ed247::SocketInfos & e)
@@ -142,7 +130,7 @@ void UdpSocket::recv()
         sockerr = ::recvfrom(_socket, _recv.frame, MAX_FRAME_SIZE, 0, (struct sockaddr *)&client_infos, &client_infos_size);
         if(sockerr <= 0)
             continue;
-            
+
         first_loop = false;
 
         _recv.size = sockerr;
@@ -205,7 +193,7 @@ void UdpSocket::initialize()
         THROW_ED247_ERROR("Failed to setup socket to non-blocking [" << _socket_infos << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
     }
 #endif
-    
+
     sockerr = bind(_socket, (struct sockaddr *)&_socket_infos, sizeof(struct sockaddr_in));
     if(sockerr){
         close();
@@ -343,7 +331,7 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
 
     if(!is_multicast){
         // UNICAST
-        if(is_host_ip_address(socket_infos_dst.sin_addr) && (configuration.direction & ED247_DIRECTION_IN)){ 
+        if(is_host_ip_address(socket_infos_dst.sin_addr) && (configuration.direction & ED247_DIRECTION_IN)){
             // receiver (dst)
             socket_pair.second = find_or_create(socket_infos_dst);
         }
@@ -371,8 +359,8 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
     }
 
     PRINT_INFO("Socket[" << configuration.toString() << "] " <<
-    "[" << (is_multicast ? std::string("MULTICAST") : std::string("UNICAST")) << "] " << 
-    "Emitter[" << (socket_pair.emitter() ? std::string(socket_pair.emitter()->_socket_infos) : std::string("NONE")) << "] " << 
+    "[" << (is_multicast ? std::string("MULTICAST") : std::string("UNICAST")) << "] " <<
+    "Emitter[" << (socket_pair.emitter() ? std::string(socket_pair.emitter()->_socket_infos) : std::string("NONE")) << "] " <<
     "Receiver[" << (socket_pair.receiver() ? std::string(socket_pair.receiver()->_socket_infos) : std::string("NONE")) << "]");
 
     return socket_pair;
@@ -490,7 +478,7 @@ UdpSocket::Pair UdpSocket::Pool::get(const xml::UdpSocket & configuration)
 {
     auto socket_pair = UdpSocket::Factory::getInstance().create(configuration);
 
-    if(socket_pair.emitter() && 
+    if(socket_pair.emitter() &&
         std::find(_outputs.begin(),_outputs.end(),socket_pair.emitter()) == _outputs.end())
         _outputs.push_back(socket_pair.emitter());
 
@@ -521,7 +509,7 @@ ed247_status_t UdpSocket::Pool::wait_frame(int32_t timeout_us)
     struct ::timeval timeout;
     int sockerr = 1;
     fd_set select_fd;
-    
+
     if(timeout_us >= 0){
         timeout.tv_sec = (uint32_t)timeout_us / 1000000;
         timeout.tv_usec = (uint32_t)timeout_us % 1000000;
@@ -560,10 +548,10 @@ ed247_status_t UdpSocket::Pool::wait_during(int32_t duration_us)
 {
     PRINT_CRAZY("Socket pool waiting during [" << duration_us << "] us");
 
-    ed247_status_t  status = ED247_STATUS_NODATA;
-    ed247_status_t  tmp_status = status;
-    int64_t         begin_us = (int64_t)get_time_us();
-    int64_t         remaining_us = duration_us;
+    ed247_status_t status = ED247_STATUS_NODATA;
+    ed247_status_t tmp_status = status;
+    int64_t        begin_us = get_monotonic_time_us();
+    int64_t        remaining_us = duration_us;
 
     do {
         tmp_status = wait_frame(remaining_us);
@@ -572,10 +560,10 @@ ed247_status_t UdpSocket::Pool::wait_during(int32_t duration_us)
         }else if(tmp_status == ED247_STATUS_FAILURE){
             status = ED247_STATUS_FAILURE;
         }
-        remaining_us = duration_us - ((int64_t)get_time_us() - begin_us);
+        remaining_us = duration_us - (get_monotonic_time_us() - begin_us);
     }while(remaining_us > 0 && status != ED247_STATUS_FAILURE);
 
     return status;
 }
-    
+
 }

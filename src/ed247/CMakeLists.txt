@@ -23,6 +23,7 @@
 ###############################################################################
 # Special object target that will also be used by unitary tests
 add_library(ed247_objects OBJECT
+    ed247_time.cpp
     ed247_conversion.cpp
     ed247_channel.cpp
     ed247_cominterface.cpp

@@ -956,62 +956,63 @@ extern LIBED247_EXPORT ed247_status_t ed247_unregister_recv_callback(
 
 
 /* =========================================================================
- * Simulation time
+ * Time handing
  * ========================================================================= */
 /**
- * @brief Time basis to update in simulation time handler
+ * @brief Prototype of a function to get time
  * @ingroup time
  */
-typedef struct ed247_internal_time_sample_t *ed247_time_sample_t;
+typedef void (*ed247_get_time_t)(ed247_timestamp_t* timestamp);
 
 /**
- * @brief Pointer to the function called when timestamping at reception (simulation time)
+ * @brief Return the current time
+ * This implementation use an internal and system-specific implementation.
+ * This is the default function used to fill transport timestamp and receive timestamp.
+ * You may have to override their value with the methods:
+ * - ed247_register_transport_timestamp_callback()
+ * - ed247_register_receive_timestamp_callback()
  * @ingroup time
+ * @param[out] timestamp Filled with current time
  */
-typedef ed247_status_t (*libed247_set_simulation_time_ns_t)(ed247_time_sample_t time_sample, void *user_data);
+extern LIBED247_EXPORT void ed247_get_time(ed247_timestamp_t* timestamp);
 
 /**
- * @brief Register a callback used to timestamp sample at recpection (recv_timestamp)
- * <b>The registered function is called each time the simulation time is needed, in each stream receiving data.
- * It is strongly encouraged to perform a manual increase of simulation time and not clock queries each time the
- * function is called as this might lead to a high execution time.</b>
+ * @brief Set the function to use to timestamp the transport (aka emit date)
+ * The default function is ed247_get_time().
+ * The TTS is only wrote in the stream if enabled by ECIC file.
+ * The receiver can read the value in the field ed247_sample_info_t->transport_timestamp
+ * returned by ed247_*_pop_sample() functions.
  * @ingroup time
- * @param[in] handler Handler to the function
- * @param[in] user_data Pointer to custom data
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
+ * @param[in] callback Function that will provide current time
  */
-extern LIBED247_EXPORT ed247_status_t libed247_register_set_simulation_time_ns_handler(
-    libed247_set_simulation_time_ns_t handler,
-    void *user_data);
+extern LIBED247_EXPORT void ed247_set_transport_timestamp_callback(ed247_get_time_t callback);
 
 /**
- * @brief Default function to retrieve current time
- * If not overrided by the user, this function is the default one registered by libed247_register_set_simulation_time_ns_handler().
+ * @brief Set the function to use to timestamp the incomming streams (aka receive date)
+ * The default function is ed247_get_time().
+ * The library will date incomming stream during the call of ed247_wait_*() methods.
+ * It will provide the value in the recv_timestamp field of ed247_*_pop_sample() functions.
+ * This may be usefull if you call ed247_wait_*() periodycally but not ed247_*_pop_sample().
  * @ingroup time
- * @param[out] time_sample Time sample to set
- * @param[out] user_data Pointer to custom data
- * @return ED247_STATUS_SUCCESS
- * @return ED247_STATUS_FAILURE
+ * @param[in] callback Function that will provide current time
  */
-extern LIBED247_EXPORT ed247_status_t libed247_set_simulation_time_ns(
-    ed247_time_sample_t time_sample,
-    void *user_data);
+extern LIBED247_EXPORT void ed247_set_receive_timestamp_callback(ed247_get_time_t callback);
 
 /**
- * @brief Update time in Simulation time calllback
- * <b>This function must be called to update component simulation time in the libed247_set_simulation_time_ns_t handler.</b>
+ * @brief Return the time to timestamp the transport
+ * Call either ed247_get_time() or the function set by ed247_set_transport_timestamp_callback()
  * @ingroup time
- * @param[in] time_sample Time sample
- * @param[in] epoch_s Number of seconds since epoch
- * @param[in] offset_ns Offset with reference to epoch_s, in nanoseconds
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
+ * @param[out] timestamp Filled with the appropriate time
  */
-extern LIBED247_EXPORT ed247_status_t libed247_update_time(
-    ed247_time_sample_t time_sample,
-    uint32_t epoch_s,
-    uint32_t offset_ns);
+extern LIBED247_EXPORT void ed247_get_transport_timestamp(ed247_timestamp_t* timestamp);
+
+/**
+ * @brief Return the time to timestamp the incomming streams
+ * Call either ed247_get_time() or the function set by ed247_set_receive_timestamp_callback()
+ * @ingroup time
+ * @param[out] timestamp Filled with the appropriate time
+ */
+extern LIBED247_EXPORT void ed247_get_receive_timestamp(ed247_timestamp_t* timestamp);
 
 
 /* =========================================================================

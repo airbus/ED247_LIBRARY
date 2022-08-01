@@ -148,9 +148,9 @@ class StreamSample : public BaseSample
             return &_recv_timestamp;
         }
 
-        void update_timestamp()
+        void update_recv_timestamp()
         {
-            SimulationTimeHandler::get().update_timestamp(_recv_timestamp);
+          ed247_get_receive_timestamp(&_recv_timestamp);
         }
 
         void set_info(const ed247_sample_info_t & info)

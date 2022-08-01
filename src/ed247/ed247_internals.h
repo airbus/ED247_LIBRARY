@@ -96,7 +96,6 @@
 
 #ifndef _MSC_VER
     #include <unistd.h>
-    #include <sys/time.h>
 #endif
 
 #ifndef NDEBUG
@@ -175,30 +174,6 @@ struct weak_equal_to : public std::unary_function<std::weak_ptr<T>, bool>
     }
 };
 
-#ifdef _MSC_VER
-static int gettimeofday(struct timeval * tp, struct timezone * tzp)
-{
-    // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
-    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
-    // until 00:00:00 January 1, 1970 
-    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
-
-    SYSTEMTIME  system_time;
-    FILETIME    file_time;
-    uint64_t    time;
-
-    GetSystemTime( &system_time );
-    SystemTimeToFileTime( &system_time, &file_time );
-    time =  ((uint64_t)file_time.dwLowDateTime )      ;
-    time += ((uint64_t)file_time.dwHighDateTime) << 32;
-
-    tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
-    tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
-    return 0;
-}
-#endif
-
-uint64_t get_time_us();
 
 template<ed247_stream_type_t E>
 struct StreamTypeChecker
@@ -215,7 +190,7 @@ struct SignalTypeChecker
 template<ed247_stream_type_t E>
 struct StreamSignalTypeChecker
 {
-    static const bool value = 
+    static const bool value =
         E == ED247_STREAM_TYPE_ANALOG ||
         E == ED247_STREAM_TYPE_DISCRETE ||
         E == ED247_STREAM_TYPE_NAD ||
@@ -236,50 +211,5 @@ struct ed247_internal_stream_t {};
 struct ed247_internal_signal_t {};
 
 struct ed247_internal_stream_assistant_t {};
-
-struct ed247_internal_time_sample_t : public ed247_timestamp_t {};
-
-namespace ed247
-{
-
-class SimulationTimeHandler
-{
-    public:
-        static SimulationTimeHandler & get()
-        {
-            static SimulationTimeHandler s;
-            return s;
-        }
-
-        void set_handler(libed247_set_simulation_time_ns_t handler, void *user_data)
-        {
-            _handler = handler;
-            _user_data = user_data;
-        }
-
-        bool update_timestamp(ed247_timestamp_t & timestamp)
-        {
-            if(is_valid())
-                return (*_handler)((ed247_internal_time_sample_t*)(&timestamp), _user_data) != ED247_STATUS_SUCCESS;
-            else
-                return true;
-        }
-
-        bool is_valid() const
-        {
-            return _handler != nullptr;
-        }
-
-    protected:
-        libed247_set_simulation_time_ns_t _handler;
-        void *_user_data;
-
-        SimulationTimeHandler():
-            _handler(nullptr),
-            _user_data(nullptr)
-        {}
-};
-
-}
 
 #endif

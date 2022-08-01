@@ -284,7 +284,7 @@ bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, size_t frame_siz
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -392,7 +392,7 @@ bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_siz
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -489,7 +489,7 @@ bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, size_t frame_siz
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -585,7 +585,7 @@ bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_s
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -681,7 +681,7 @@ bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, size_t frame_si
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -753,7 +753,7 @@ bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, size_t frame
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -838,7 +838,7 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_s
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -984,7 +984,7 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);
@@ -1107,7 +1107,7 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
             sample->set_data_timestamp(data_timestamp);
         }
         // Update simulation time
-        sample->update_timestamp();
+        sample->update_recv_timestamp();
         // Attach header
         if(header)
             sample->update_info(*header);

@@ -842,64 +842,6 @@ ed247_status_t ed247_unregister_recv_callback(
 }
 
 /* =========================================================================
- * Simulation time
- * ========================================================================= */
-ed247_status_t libed247_register_set_simulation_time_ns_handler(
-  libed247_set_simulation_time_ns_t handler,
-  void *                            user_data)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-
-  if(!handler) {
-    PRINT_ERROR(__func__ << ": Invalid handler");
-    return ED247_STATUS_FAILURE;
-  }
-  try {
-    ed247::SimulationTimeHandler::get().set_handler(handler, user_data);
-  }
-  LIBED247_CATCH("Register simulation time handler");
-  return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t libed247_set_simulation_time_ns(
-  ed247_time_sample_t time_sample,
-  void *              user_data)
-{
-  _UNUSED(user_data);
-  if(!time_sample) {
-    PRINT_ERROR(__func__ << ": invalid time_sample pointer");
-    return ED247_STATUS_FAILURE;
-  }
-#ifdef __linux__
-  struct timespec tp;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
-  time_sample->epoch_s = (uint32_t)tp.tv_sec;
-  time_sample->offset_ns = (uint32_t)((uint64_t)tp.tv_nsec);
-#else
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  time_sample->epoch_s = (uint32_t)tv.tv_sec;
-  time_sample->offset_ns = (uint32_t)tv.tv_usec*1000LL;
-#endif
-  return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t libed247_update_time(
-  ed247_time_sample_t time_sample,
-  uint32_t            epoch_s,
-  uint32_t            offset_ns)
-{
-  if(!time_sample) {
-    PRINT_ERROR(__func__ << ": invalid time_sample pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  time_sample->epoch_s = epoch_s;
-  time_sample->offset_ns = offset_ns;
-  return ED247_STATUS_SUCCESS;
-}
-
-
-/* =========================================================================
  * Channel
  * ========================================================================= */
 ed247_status_t ed247_channel_get_info(

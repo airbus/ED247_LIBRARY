@@ -40,28 +40,13 @@ size_t FrameHeader::length()
     return _configuration.enable == ED247_YESNO_YES ? (sizeof(uint16_t)*2+sizeof(uint32_t)*2) : 0;
 }
 
-void FrameHeader::fill_transport_timestamp()
-{
-    if(_configuration.transport_timestamp == ED247_YESNO_NO)
-        return;
-
-#ifdef __linux__
-    struct timespec tp;
-    clock_gettime(CLOCK_REALTIME, &tp);
-    _send_header.transport_timestamp.epoch_s = tp.tv_sec;
-    _send_header.transport_timestamp.offset_ns = tp.tv_nsec;
-#else
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    _send_header.transport_timestamp.epoch_s = tv.tv_sec;
-    _send_header.transport_timestamp.offset_ns = tv.tv_usec * 1000LL;
-#endif
-}
-
 void FrameHeader::encode(char * frame, size_t frame_capacity, size_t & frame_index, ed247_uid_t component_identifier)
 {
     if(_configuration.enable == ED247_YESNO_YES){
-        fill_transport_timestamp();
+        if(_configuration.transport_timestamp == ED247_YESNO_YES) {
+          ed247_get_transport_timestamp(&_send_header.transport_timestamp);
+        }
+
         memset(frame+frame_index, 0, sizeof(uint16_t)+sizeof(uint16_t)+sizeof(uint32_t)+sizeof(uint32_t));
         if(frame_index + sizeof(uint16_t) > frame_capacity) {
             THROW_ED247_ERROR("Channel '" << _channel_name << "': Failed to write producer identifier in header (not enough space). Size: " << frame_capacity);
@@ -144,6 +129,7 @@ bool FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_i
                 0xFFFF :
                 (_recv_headers_iter->missed_frames + missed);
             _recv_headers_iter->sequence_number = recv_header.sequence_number;
+            _recv_headers_iter->transport_timestamp = recv_header.transport_timestamp;
         }
     }
     return true;

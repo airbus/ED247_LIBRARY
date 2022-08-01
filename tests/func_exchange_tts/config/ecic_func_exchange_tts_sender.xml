@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_1" Comment="" StandardRevision="A" Identifier="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+  <Channels>
+
+	<Channel Name="ChannelNoHeader" Comment="">
+      <FrameFormat StandardRevision="A"/>
+      <Header Enable="No" TransportTimestamp="No" />
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5000" Direction="Out"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="StreamNoHeader" SampleMaxNumber="1" SampleMaxSizeBytes="500" Direction="Out">
+          <MessageSize Enable="Yes" />
+		</A664_Stream>
+      </Stream>
+    </Channel>
+
+	<Channel Name="ChannelNoTTS" Comment="">
+      <FrameFormat StandardRevision="A"/>
+      <Header Enable="Yes" TransportTimestamp="No" />
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5001" Direction="Out"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="StreamNoTTS" SampleMaxNumber="1" SampleMaxSizeBytes="500" Direction="Out">
+          <MessageSize Enable="Yes" />
+		</A664_Stream>
+      </Stream>
+    </Channel>
+
+	<Channel Name="ChannelWithTTS" Comment="">
+      <FrameFormat StandardRevision="A"/>
+      <Header Enable="Yes" TransportTimestamp="Yes" />
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5002" Direction="Out"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="StreamWithTTS" SampleMaxNumber="1" SampleMaxSizeBytes="500" Direction="Out">
+          <MessageSize Enable="Yes" />
+		</A664_Stream>
+      </Stream>
+    </Channel>
+
+  </Channels>
+</ED247ComponentInstanceConfiguration>

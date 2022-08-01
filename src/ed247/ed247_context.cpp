@@ -49,7 +49,6 @@ Context::Context():
     _pool_channels(_pool_interfaces, _pool_streams)
 {
     PRINT_DEBUG("[Context] Ctor");
-    SimulationTimeHandler::get().set_handler(libed247_set_simulation_time_ns, NULL);
 }
 
 Context::~Context()
