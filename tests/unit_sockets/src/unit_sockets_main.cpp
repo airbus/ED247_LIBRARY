@@ -49,9 +49,9 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         // Stream (Emitter)
         auto sp_stream_emitter_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_emitter_conf->reset();
-        sp_stream_emitter_conf->info.name = "StreamOut";
-        sp_stream_emitter_conf->info.direction = ED247_DIRECTION_OUT;
-        sp_stream_emitter_conf->info.uid = 0;
+        sp_stream_emitter_conf->_name = "StreamOut";
+        sp_stream_emitter_conf->_direction = ED247_DIRECTION_OUT;
+        sp_stream_emitter_conf->_uid = 0;
 
         // Channel (Emitter)
         auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
@@ -63,9 +63,9 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         // Stream (Receiver)
         auto sp_stream_receiver_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_receiver_conf->reset();
-        sp_stream_receiver_conf->info.name = "StreamIn";
-        sp_stream_receiver_conf->info.direction = ED247_DIRECTION_IN;
-        sp_stream_receiver_conf->info.uid = 0;
+        sp_stream_receiver_conf->_name = "StreamIn";
+        sp_stream_receiver_conf->_direction = ED247_DIRECTION_IN;
+        sp_stream_receiver_conf->_uid = 0;
 
         // Channel (Receiver)
         auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
@@ -78,7 +78,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         std::string send_msg{"Hell"};
         size_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;
         char *msg = (char *)malloc(msg_size);
-        *(ed247_uid_t*)(msg) = htons(sp_stream_emitter_conf->info.uid);
+        *(ed247_uid_t*)(msg) = htons(sp_stream_emitter_conf->_uid);
         *(uint16_t*)(msg+sizeof(ed247_uid_t)) = htons(4);
         memcpy(msg+sizeof(ed247_uid_t)+sizeof(uint16_t),send_msg.c_str(),send_msg.length());
 
@@ -159,9 +159,9 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         // Stream (Emitter)
         auto sp_stream_emitter_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_emitter_conf->reset();
-        sp_stream_emitter_conf->info.name = "StreamOut";
-        sp_stream_emitter_conf->info.direction = ED247_DIRECTION_OUT;
-        sp_stream_emitter_conf->info.uid = 0;
+        sp_stream_emitter_conf->_name = "StreamOut";
+        sp_stream_emitter_conf->_direction = ED247_DIRECTION_OUT;
+        sp_stream_emitter_conf->_uid = 0;
 
         // Channel (Emitter)
         auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
@@ -173,9 +173,9 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         // Stream (Receiver)
         auto sp_stream_receiver_conf = std::make_shared<ed247::xml::A429Stream>();
         sp_stream_receiver_conf->reset();
-        sp_stream_receiver_conf->info.name = "StreamIn";
-        sp_stream_receiver_conf->info.direction = ED247_DIRECTION_IN;
-        sp_stream_receiver_conf->info.uid = 0;
+        sp_stream_receiver_conf->_name = "StreamIn";
+        sp_stream_receiver_conf->_direction = ED247_DIRECTION_IN;
+        sp_stream_receiver_conf->_uid = 0;
 
         // Channel (Receiver)
         auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
@@ -188,12 +188,12 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         size_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;
         std::string send_msg_a{"HelA"};
         char *msg_a = (char *)malloc(msg_size);
-        *(ed247_uid_t*)(msg_a) = htons(sp_stream_emitter_conf->info.uid);
+        *(ed247_uid_t*)(msg_a) = htons(sp_stream_emitter_conf->_uid);
         *(uint16_t*)(msg_a+sizeof(ed247_uid_t)) = htons(4);
         memcpy(msg_a+sizeof(ed247_uid_t)+sizeof(uint16_t),send_msg_a.c_str(),send_msg_a.length());
         std::string send_msg_b{"HelB"};
         char *msg_b = (char *)malloc(msg_size);
-        *(ed247_uid_t*)(msg_b) = htons(sp_stream_emitter_conf->info.uid);
+        *(ed247_uid_t*)(msg_b) = htons(sp_stream_emitter_conf->_uid);
         *(uint16_t*)(msg_b+sizeof(ed247_uid_t)) = htons(4);
         memcpy(msg_b+sizeof(ed247_uid_t)+sizeof(uint16_t),send_msg_b.c_str(),send_msg_b.length());
 

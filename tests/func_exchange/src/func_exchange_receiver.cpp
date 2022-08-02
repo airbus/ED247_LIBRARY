@@ -65,7 +65,8 @@ TEST_P(StreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
+    size_t sample_max_number;
     const void *sample;
     size_t sample_size;
     bool empty;
@@ -89,7 +90,8 @@ TEST_P(StreamContext, SingleFrame)
     // Recv a single frame
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(malloc_count_stop(), 0);
@@ -98,8 +100,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_wait_frame(NULL, &streams, 10000000), ED247_STATUS_FAILURE);
 
     // Extract and check content of payload
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << 1;
+    str_recv = std::string((char*)sample, sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
     ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
@@ -116,19 +118,20 @@ TEST_P(StreamContext, SingleFrame)
     // The timestamps of the already received frames shall not be changed
     ed247_set_receive_timestamp_callback(&get_time_test2);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
     ASSERT_EQ(malloc_count_stop(), 0);
-    for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
+    for(unsigned i = 0 ; i < sample_max_number ; i++){
         // Extract and check content of payload for each frame
-        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
+        str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         SAY_SELF("Receive stack size [" << stack_size << "]");
-        ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
-        str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+        ASSERT_TRUE(i == (sample_max_number-1) ? empty : !empty);
+        str_recv = std::string((char*)sample, sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
         ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
@@ -145,19 +148,20 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+        sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+        sample_max_number = ed247_stream_get_sample_max_number(stream);
         ASSERT_EQ(malloc_count_stop(), 0);
-        for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
+        for(unsigned i = 0 ; i < sample_max_number ; i++){
             // Extract and check content of payload for each frame
-            str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
+            str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
             SAY_SELF("Receive stack size [" << stack_size << "]");
-            ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
-            str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+            ASSERT_TRUE(i == (sample_max_number-1) ? empty : !empty);
+            str_recv = std::string((char*)sample, sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
             ASSERT_EQ(timestamp2.epoch_s, receive_timestamp->epoch_s);
@@ -175,19 +179,20 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+        sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+        sample_max_number = ed247_stream_get_sample_max_number(stream);
         ASSERT_EQ(malloc_count_stop(), 0);
-        for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
+        for(unsigned i = 0 ; i < sample_max_number ; i++){
             // Extract and check content of payload for each frame
-            str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
+            str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
             SAY_SELF("Receive stack size [" << stack_size << "]");
-            ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
-            str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+            ASSERT_TRUE(i == (sample_max_number-1) ? empty : !empty);
+            str_recv = std::string((char*)sample, sample_max_size_bytes);
             SAY_SELF("Received [" << str_recv << "]");
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
@@ -226,10 +231,8 @@ TEST_P(StreamContext, SingleFrame)
         if(user_data && *(uint64_t*)user_data == 123456789){
             recv_counter++;
         }
-        const ed247_stream_info_t *info;
-        ed247_stream_get_info(stream, &info);
-        stream_name = info->name;
-        SAY_SELF("Callback on stream [" << stream_name << "]");
+        stream_name = ed247_stream_get_name(stream);
+        SAY_SELF("Callback on stream [" << ed247_stream_get_name(stream) << "]");
         checkpoints++;
         return ED247_STATUS_SUCCESS;
     };
@@ -354,7 +357,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
+    size_t sample_max_number;
     const void *sample;
     size_t sample_size;
     bool empty;
@@ -372,13 +376,14 @@ TEST_P(SimpleStreamContext, SingleFrame)
     // Recv a first frame
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
 
     // Extract and check the content of the received frame
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << 1;
+    str_recv = std::string((char*)sample, sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
     ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
@@ -395,19 +400,20 @@ TEST_P(SimpleStreamContext, SingleFrame)
     // It shall not modify the recv timestamps of already received frames
     ed247_set_receive_timestamp_callback(&get_time_test2);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
     ASSERT_EQ(malloc_count_stop(), 0);
-    for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
+    for(unsigned i = 0 ; i < sample_max_number ; i++){
         // Extract and check the frame contents
-        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
+        str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         size_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         SAY_SELF("Receive stack size [" << stack_size << "]");
-        ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
-        str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+        ASSERT_TRUE(i == (sample_max_number-1) ? empty : !empty);
+        str_recv = std::string((char*)sample, sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
         ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
@@ -424,19 +430,20 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(malloc_count_stop(), 0);
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+        sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+        sample_max_number = ed247_stream_get_sample_max_number(stream);
         ASSERT_EQ(malloc_count_stop(), 0);
-        for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
+        for(unsigned i = 0 ; i < sample_max_number ; i++){
             // Extract and check the frame contents
-            str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
+            str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
             size_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
             SAY_SELF("Receive stack size [" << stack_size << "]");
-            ASSERT_TRUE(i == (stream_info->sample_max_number-1) ? empty : !empty);
-            str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+            ASSERT_TRUE(i == (sample_max_number-1) ? empty : !empty);
+            str_recv = std::string((char*)sample, sample_max_size_bytes);
             ASSERT_EQ(str_send, str_recv);
             // Verify the new timestamp is now used
             ASSERT_EQ(timestamp2.epoch_s, receive_timestamp->epoch_s);
@@ -456,7 +463,8 @@ TEST_P(StreamContext, MultipleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
+    size_t sample_max_number;
     const void *sample;
     size_t sample_size;
     bool empty;
@@ -474,13 +482,14 @@ TEST_P(StreamContext, MultipleFrame)
     // Recv frames
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
 
     // Extract and check the content of this frame
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 0;
-    str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << 0;
+    str_recv = std::string((char*)sample, sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
     ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
@@ -497,15 +506,16 @@ TEST_P(StreamContext, MultipleFrame)
     // It shall not modify the receive timestamps of the already received frames
     ed247_set_receive_timestamp_callback(&get_time_test2);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
     ASSERT_EQ(malloc_count_stop(), 0);
-    for(unsigned i = 1 ; i < stream_info->sample_max_number ; i++){
+    for(unsigned i = 1 ; i < sample_max_number ; i++){
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         // Extract and check the content of the payload
-        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+        str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
+        str_recv = std::string((char*)sample, sample_max_size_bytes);
         ASSERT_EQ(str_send, str_recv);
         // Check the received data still use the old timestamp
         ASSERT_EQ(timestamp1.epoch_s, receive_timestamp->epoch_s);
@@ -524,7 +534,6 @@ TEST_P(SignalContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
     ed247_stream_assistant_t assistant;
     ed247_signal_list_t signals;
     ed247_signal_t signal;
@@ -544,7 +553,6 @@ TEST_P(SignalContext, SingleFrame)
     // Recv a frame containing signals
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);

@@ -53,7 +53,9 @@ struct Stream {
 
     ed247_stream_t stream;
     ed247_stream_assistant_t assistant;
-    const ed247_stream_info_t *info;
+    std::string name;
+    ed247_direction_t direction;
+    size_t sample_max_number;
     void *sample = nullptr;
     size_t sample_size = 0;
     std::list<Signal*> signals;
@@ -104,9 +106,10 @@ int main(int argc, char *argv[])
     while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
         st = new Stream();
         st->stream = stream;
-        status = ed247_stream_get_info(stream, &st->info);
-        PRINT_INFO("Initialize stream [" << std::string(st->info->name) << "]");
-        if(check_status(context,status)) return EXIT_FAILURE;
+        st->name = ed247_stream_get_name(stream);
+        st->direction = ed247_stream_get_direction(stream);
+        st->sample_max_number = ed247_stream_get_sample_max_number(stream);
+        PRINT_INFO("Initialize stream [" << st->name << "]");
         status = ed247_stream_allocate_sample(st->stream, &st->sample, &st->sample_size);
         if(check_status(context,status)) return EXIT_FAILURE;
         status = ed247_stream_get_assistant(stream, &assistant);
@@ -120,7 +123,7 @@ int main(int argc, char *argv[])
                 si->signal = signal;
                 status = ed247_signal_get_info(signal, &si->info);
                 if(check_status(context,status)) return EXIT_FAILURE;
-                PRINT_INFO("Initialize stream [" << std::string(st->info->name) << "] / signal [" << std::string(si->info->name) << "]");
+                PRINT_INFO("Initialize stream [" << st->name << "] / signal [" << std::string(si->info->name) << "]");
                 status = ed247_signal_allocate_sample(si->signal, &si->sample, &si->sample_size);
                 if(check_status(context,status)) return EXIT_FAILURE;
                 st->signals.push_back(si);
@@ -141,11 +144,11 @@ int main(int argc, char *argv[])
         timestamp.offset_ns = (timestamp.offset_ns+1) >= 1000*1000 ? timestamp.offset_ns + 1 : 0;
         for(it = list.begin() ; it != list.end() ; it++){
             st = *it;
-            if(st->info->direction == ED247_DIRECTION_IN) continue;
-            PRINT_INFO("Update stream [" << std::string(st->info->name) << "]");
-            for(uint32_t i = 0 ; i < st->info->sample_max_number ; i++){
+            if(st->direction == ED247_DIRECTION_IN) continue;
+            PRINT_INFO("Update stream [" << st->name << "]");
+            for(uint32_t i = 0 ; i < st->sample_max_number ; i++){
                 uint32_t value = i + loop;
-                PRINT_INFO("Update stream [" << std::string(st->info->name) << "] / sample [" << i << "]");
+                PRINT_INFO("Update stream [" << st->name << "] / sample [" << i << "]");
                 if(st->signals.empty()){
                     if (st->sample_size == 4) {
                       *(uint32_t*)st->sample = value;
@@ -153,7 +156,7 @@ int main(int argc, char *argv[])
                       memset(st->sample, value, st->sample_size);
                     }
 
-                    PRINT_INFO("Update stream [" << std::string(st->info->name) << "] / sample [" << i << "]: push [" << value << "]");
+                    PRINT_INFO("Update stream [" << st->name << "] / sample [" << i << "]: push [" << value << "]");
                     status = ed247_stream_push_sample(st->stream, st->sample, st->sample_size, &timestamp, NULL);
                     if(check_status(context,status)) return EXIT_FAILURE;
                 }else{
@@ -164,7 +167,7 @@ int main(int argc, char *argv[])
                         } else {
                           memset(si->sample, value, si->sample_size);
                         }
-                        PRINT_INFO("Update stream [" << std::string(st->info->name) << "] / sample [" << i << "] / signal [" << std::string(si->info->name) << "]: push [" << value << "]");
+                        PRINT_INFO("Update stream [" << st->name << "] / sample [" << i << "] / signal [" << std::string(si->info->name) << "]: push [" << value << "]");
                         status = ed247_stream_assistant_write_signal(st->assistant, si->signal, si->sample, si->sample_size);
                         if(check_status(context,status)) return EXIT_FAILURE;
                     }

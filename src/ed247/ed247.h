@@ -1124,74 +1124,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_list_free(
  * Stream
  * ========================================================================= */
 /**
- * @brief Stream DISCRETE dedicated information structure
- * @ingroup stream
- */
-typedef struct {
-    uint32_t sampling_period_us;
-} ed247_stream_info_dis_t;
-#define LIBED247_STREAM_INFO_DIS_DEFAULT ed247_stream_info_dis_t{0}
-
-/**
- * @brief Stream ANALOG dedicated information structure
- * @ingroup stream
- */
-
-typedef struct {
-    uint32_t sampling_period_us;
-} ed247_stream_info_ana_t;
-#define LIBED247_STREAM_INFO_ANA_DEFAULT ed247_stream_info_ana_t{0}
-
-/**
- * @brief Stream NAD dedicated information structure
- * @ingroup stream
- */
-
-typedef struct {
-    uint32_t sampling_period_us;
-} ed247_stream_info_nad_t;
-#define LIBED247_STREAM_INFO_NAD_DEFAULT ed247_stream_info_nad_t{0}
-
-/**
- * @brief Stream VNAD dedicated information structure
- * @ingroup stream
- */
-
-typedef struct {
-    uint32_t sampling_period_us;
-} ed247_stream_info_vnad_t;
-#define LIBED247_STREAM_INFO_VNAD_DEFAULT ed247_stream_info_vnad_t{0}
-
-/**
- * @brief Stream dedicated information structures
- * @ingroup stream
- */
-
-typedef union {
-    ed247_stream_info_dis_t  dis;
-    ed247_stream_info_ana_t  ana;
-    ed247_stream_info_nad_t  nad;
-    ed247_stream_info_vnad_t vnad;
-} ed247_stream_info_type_t;
-
-/**
- * @brief Stream information structure
- * @ingroup stream
- */
-typedef struct {
-    const char *        name;
-    ed247_direction_t   direction;
-    ed247_stream_type_t type;
-    const char *        comment;
-    const char *        icd;
-    ed247_uid_t         uid;
-    size_t              sample_max_number;
-    size_t              sample_max_size_bytes;
-    ed247_stream_info_type_t info;
-} ed247_stream_info_t;
-#define LIBED247_STREAM_INFO_DEFAULT {NULL, ED247_DIRECTION__INVALID, ED247_STREAM_TYPE__INVALID, "", "", 0, 1, 1, {}}
-
-/**
  * @brief Sample information
  * @ingroup stream
  */
@@ -1203,16 +1135,20 @@ typedef struct ed247_sample_info_s {
 #define LIBED247_SAMPLE_INFO_DEFAULT ed247_sample_info_t{0, 0, LIBED247_TIMESTAMP_DEFAULT}
 
 /**
- * @brief Retrieve attributes of the stream
  * @ingroup stream
- * @param[in] stream The stream identifier
- * @param[out] info Stream information
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
+ * @{
  */
-extern LIBED247_EXPORT ed247_status_t ed247_stream_get_info(
-    ed247_stream_t               stream,
-    const ed247_stream_info_t ** info);
+extern LIBED247_EXPORT const char* ed247_stream_get_name(ed247_stream_t stream);
+extern LIBED247_EXPORT ed247_direction_t ed247_stream_get_direction(ed247_stream_t stream);
+extern LIBED247_EXPORT ed247_stream_type_t ed247_stream_get_type(ed247_stream_t stream);
+extern LIBED247_EXPORT const char* ed247_stream_get_comment(ed247_stream_t stream);
+extern LIBED247_EXPORT const char* ed247_stream_get_icd(ed247_stream_t stream);
+extern LIBED247_EXPORT ed247_uid_t ed247_stream_get_uid(ed247_stream_t stream);
+extern LIBED247_EXPORT size_t ed247_stream_get_sample_max_number(ed247_stream_t stream);
+extern LIBED247_EXPORT size_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream);
+extern LIBED247_EXPORT size_t ed247_stream_get_sampling_period_us(ed247_stream_t stream);
+/** @} */
+
 
 /**
  * @brief Check if the stream is a signal based one (DISCRETE, ANALOG, NAD or VNAD)

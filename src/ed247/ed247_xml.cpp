@@ -303,13 +303,28 @@ void ComInterface::create_children(const xmlNodePtr xml_node)
     }
 }
 
+
+// Stream base
+void Stream::reset(ed247_stream_type_t type)
+{
+    _name = std::string();
+    _direction = ED247_DIRECTION__INVALID;
+    _type = type;
+    _comment = std::string();
+    _icd = std::string();
+    _uid = 0;
+    _sample_max_number = 1;
+    _sample_max_size_bytes = 1;
+    _sampling_period_us = 0;
+}
+
+
 // A429Stream
 
 void A429Stream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_A429;
-    info.sample_max_size_bytes = 4;
+    Stream::reset(ED247_STREAM_TYPE_A429);
+    _sample_max_size_bytes = 4;
 }
 
 void A429Stream::fill_attributes(const xmlNodePtr xml_node)
@@ -317,17 +332,17 @@ void A429Stream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::A429_Stream << "]");
         }
@@ -341,7 +356,7 @@ void A429Stream::create_children(const xmlNodePtr xml_node)
             continue;
         auto node_name = xmlChar2string(xml_node_iter->name);
         if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else{
@@ -354,9 +369,8 @@ void A429Stream::create_children(const xmlNodePtr xml_node)
 
 void A664Stream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_A664;
-    info.sample_max_size_bytes = 1471;
+    Stream::reset(ED247_STREAM_TYPE_A664);
+    _sample_max_size_bytes = 1471;
     enable_message_size = ED247_YESNO_YES;
 }
 
@@ -365,19 +379,19 @@ void A664Stream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
-            set_value(info.sample_max_size_bytes,xml_attr);
+            set_value(_sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::A664_Stream << "]");
         }
@@ -391,7 +405,7 @@ void A664Stream::create_children(const xmlNodePtr xml_node)
             continue;
         auto node_name = xmlChar2string(xml_node_iter->name);
         if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else if(node_name.compare(node::MessageSize) == 0){
@@ -408,8 +422,8 @@ void A664Stream::create_children(const xmlNodePtr xml_node)
         }
     }
     // Check message enable size & sample_max_number
-    if(enable_message_size == ED247_YESNO_NO && info.sample_max_number > 1) {
-      THROW_PARSER_ERROR(xml_node, "A664 Stream cannot have a SampleMaxNumber of [" << info.sample_max_number << "] and not enabling Message Size encoding in frame");
+    if(enable_message_size == ED247_YESNO_NO && _sample_max_number > 1) {
+      THROW_PARSER_ERROR(xml_node, "A664 Stream cannot have a SampleMaxNumber of [" << _sample_max_number << "] and not enabling Message Size encoding in frame");
     }
 }
 
@@ -417,10 +431,9 @@ void A664Stream::create_children(const xmlNodePtr xml_node)
 
 void A825Stream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_A825;
-    info.direction = ED247_DIRECTION_INOUT;
-    info.sample_max_size_bytes = 69;
+    Stream::reset(ED247_STREAM_TYPE_A825);
+    _direction = ED247_DIRECTION_INOUT;
+    _sample_max_size_bytes = 69;
 }
 
 void A825Stream::fill_attributes(const xmlNodePtr xml_node)
@@ -428,17 +441,17 @@ void A825Stream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::A825_Stream << "]");
         }
@@ -452,7 +465,7 @@ void A825Stream::create_children(const xmlNodePtr xml_node)
             continue;
         auto node_name = xmlChar2string(xml_node_iter->name);
         if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else{
@@ -465,9 +478,8 @@ void A825Stream::create_children(const xmlNodePtr xml_node)
 
 void SERIALStream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_SERIAL;
-    info.direction = ED247_DIRECTION_INOUT;
+    Stream::reset(ED247_STREAM_TYPE_SERIAL);
+    _direction = ED247_DIRECTION_INOUT;
 }
 
 void SERIALStream::fill_attributes(const xmlNodePtr xml_node)
@@ -475,19 +487,19 @@ void SERIALStream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
-            set_value(info.sample_max_size_bytes,xml_attr);
+            set_value(_sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::SERIAL_Stream << "]");
         }
@@ -501,7 +513,7 @@ void SERIALStream::create_children(const xmlNodePtr xml_node)
             continue;
         auto node_name = xmlChar2string(xml_node_iter->name);
         if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else if(node_name.compare(node::Errors) == 0){
             errors.load(xml_node_iter);
         }else{
@@ -703,10 +715,9 @@ void VNADSignal::create_children(const xmlNodePtr xml_node)
 
 void DISStream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_DISCRETE;
-    info.sample_max_size_bytes = 0;
-    info.info.dis = LIBED247_STREAM_INFO_DIS_DEFAULT;
+    Stream::reset(ED247_STREAM_TYPE_DISCRETE);
+    _sample_max_size_bytes = 0;
+    _sampling_period_us = 0;
     signals.clear();
 }
 
@@ -715,19 +726,19 @@ void DISStream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
-            set_value(info.sample_max_size_bytes,xml_attr);
+            set_value(_sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]");
         }
@@ -748,7 +759,7 @@ void DISStream::create_children(const xmlNodePtr xml_node)
                 for(auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
                     auto attr_name = xmlChar2string(xml_attr->name);
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
-                        set_value(info.info.dis.sampling_period_us,xml_attr);
+                        set_value(_sampling_period_us, xml_attr);
                     }else{
                         THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]");
                     }
@@ -756,15 +767,15 @@ void DISStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<DISSignal> signal = std::make_unique<DISSignal>();
                     signal->load(xml_node_child_iter);
-                    if(signal->info.info.dis.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
-                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.dis.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]");
+                    if(signal->info.info.dis.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > _sample_max_size_bytes)
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.dis.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
         }else if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else{
             THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::DIS_Stream << "]");
         }
@@ -784,10 +795,9 @@ void DISStream::create_children(const xmlNodePtr xml_node)
 
 void ANAStream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_ANALOG;
-    info.sample_max_size_bytes = 0;
-    info.info.ana = LIBED247_STREAM_INFO_ANA_DEFAULT;
+    Stream::reset(ED247_STREAM_TYPE_ANALOG);
+    _sample_max_size_bytes = 0;
+    _sampling_period_us = 0;
     signals.clear();
 }
 
@@ -796,19 +806,19 @@ void ANAStream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
-            set_value(info.sample_max_size_bytes,xml_attr);
+            set_value(_sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::ANA_Stream << "]");
         }
@@ -829,7 +839,7 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
                 for(auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
                     auto attr_name = xmlChar2string(xml_attr->name);
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
-                        set_value(info.info.ana.sampling_period_us,xml_attr);
+                        set_value(_sampling_period_us, xml_attr);
                     }else{
                         THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::ANA_Stream << "]");
                     }
@@ -837,15 +847,15 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<ANASignal> signal = std::make_unique<ANASignal>();
                     signal->load(xml_node_child_iter);
-                    if(signal->info.info.ana.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
-                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.ana.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]");
+                    if(signal->info.info.ana.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > _sample_max_size_bytes)
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.ana.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
         }else if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else{
             THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::ANA_Stream << "]");
         }
@@ -865,10 +875,9 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
 
 void NADStream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_NAD;
-    info.sample_max_size_bytes = 0;
-    info.info.nad = LIBED247_STREAM_INFO_NAD_DEFAULT;
+    Stream::reset(ED247_STREAM_TYPE_NAD);
+    _sample_max_size_bytes = 0;
+    _sampling_period_us = 0;
     signals.clear();
 }
 
@@ -877,19 +886,19 @@ void NADStream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
-            set_value(info.sample_max_size_bytes,xml_attr);
+            set_value(_sample_max_size_bytes,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::NAD_Stream << "]");
         }
@@ -910,7 +919,7 @@ void NADStream::create_children(const xmlNodePtr xml_node)
                 for(auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
                     auto attr_name = xmlChar2string(xml_attr->name);
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
-                        set_value(info.info.nad.sampling_period_us,xml_attr);
+                        set_value(_sampling_period_us, xml_attr);
                     }else{
                         THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::NAD_Stream << "]");
                     }
@@ -918,15 +927,15 @@ void NADStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<NADSignal> signal = std::make_unique<NADSignal>();
                     signal->load(xml_node_child_iter);
-                    if(signal->info.info.nad.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > info.sample_max_size_bytes)
-                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << info.name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.nad.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << info.sample_max_size_bytes << "]");
+                    if(signal->info.info.nad.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > _sample_max_size_bytes)
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.nad.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
         }else if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else{
             THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::NAD_Stream << "]");
         }
@@ -946,10 +955,9 @@ void NADStream::create_children(const xmlNodePtr xml_node)
 
 void VNADStream::reset()
 {
-    info = LIBED247_STREAM_INFO_DEFAULT;
-    info.type = ED247_STREAM_TYPE_VNAD;
-    info.sample_max_size_bytes = 0;
-    info.info.vnad = LIBED247_STREAM_INFO_VNAD_DEFAULT;
+    Stream::reset(ED247_STREAM_TYPE_VNAD);
+    _sample_max_size_bytes = 0;
+    _sampling_period_us = 0;
     signals.clear();
 }
 
@@ -958,17 +966,17 @@ void VNADStream::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Direction) == 0){
-            set_value(info.direction,xml_attr);
+            set_value(_direction,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
-            set_value(info.sample_max_number,xml_attr);
+            set_value(_sample_max_number,xml_attr);
         }else if(attr_name.compare(attr::UID) == 0){
-            set_value(info.uid,xml_attr);
+            set_value(_uid,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::VNAD_Stream << "]");
         }
@@ -989,7 +997,7 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
                 for(auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
                     auto attr_name = xmlChar2string(xml_attr->name);
                     if(attr_name.compare(attr::SamplingPeriodUs) == 0){
-                        set_value(info.info.vnad.sampling_period_us,xml_attr);
+                        set_value(_sampling_period_us, xml_attr);
                     }else{
                         THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::VNAD_Stream << "]");
                     }
@@ -997,15 +1005,15 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<VNADSignal> signal = std::make_unique<VNADSignal>();
                     signal->load(xml_node_child_iter);
-                    info.sample_max_size_bytes += (BaseSignal::sample_max_size_bytes(signal->info) + sizeof(uint16_t)) * signal->info.info.vnad.max_length;
+                    _sample_max_size_bytes += (BaseSignal::sample_max_size_bytes(signal->info) + sizeof(uint16_t)) * signal->info.info.vnad.max_length;
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
                 }
             }
-            PRINT_DEBUG("VNAD Stream [" << info.name << "] SampleMaxSizeBytes[" << info.sample_max_size_bytes << "] SampleMaxNumber[" << info.sample_max_number << "]");
+            PRINT_DEBUG("VNAD Stream [" << _name << "] SampleMaxSizeBytes[" << _sample_max_size_bytes << "] SampleMaxNumber[" << _sample_max_number << "]");
         }else if(node_name.compare(node::DataTimestamp) == 0){
-            data_timestamp.load(xml_node_iter);
+            _data_timestamp.load(xml_node_iter);
         }else{
             THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::VNAD_Stream << "]");
         }

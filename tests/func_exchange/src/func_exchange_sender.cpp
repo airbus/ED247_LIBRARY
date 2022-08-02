@@ -57,7 +57,8 @@ TEST_P(StreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream[2];
-    const ed247_stream_info_t *stream_info[2];
+    size_t sample_max_size_bytes[2];
+    size_t sample_max_number[2];
     void *sample[2];
     size_t sample_size[2];
     void *samples[2];
@@ -67,10 +68,12 @@ TEST_P(StreamContext, SingleFrame)
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &(stream[0])), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream[0], &(stream_info[0])), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes[0] = ed247_stream_get_sample_max_size_bytes(stream[0]);
+    sample_max_number[0] = ed247_stream_get_sample_max_number(stream[0]);
     ASSERT_EQ(ed247_find_streams(_context, "Stream1", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &(stream[1])), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream[1], &(stream_info[1])), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes[1] = ed247_stream_get_sample_max_size_bytes(stream[1]);
+    sample_max_number[1] = ed247_stream_get_sample_max_number(stream[1]);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream[0], &(sample[0]), &sample_size[0]), ED247_STATUS_SUCCESS);
@@ -90,11 +93,9 @@ TEST_P(StreamContext, SingleFrame)
     TEST_SYNC();
 
     // Send
-    str_send = strize() << std::setw(stream_info[0]->sample_max_size_bytes) << std::setfill('0') << 1;
-    memcpy(sample[0], str_send.c_str(), stream_info[0]->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes[0]) << std::setfill('0') << 1;
+    memcpy(sample[0], str_send.c_str(), sample_max_size_bytes[0]);
     malloc_count_start();
-    const ed247_stream_info_t *stream_info_tmp;
-    ASSERT_EQ(ed247_stream_get_info(stream[0], &stream_info_tmp), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_push_sample(stream[0], sample[0], sample_size[0], NULL, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_send_pushed_samples(NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
@@ -112,9 +113,9 @@ TEST_P(StreamContext, SingleFrame)
     TEST_SYNC();
 
     // Send
-    for(unsigned i = 0 ; i < stream_info[0]->sample_max_number ; i++){
-        str_send = strize() << std::setw(stream_info[0]->sample_max_size_bytes) << std::setfill('0') << i;
-        memcpy(sample[0], str_send.c_str(), stream_info[0]->sample_max_size_bytes);
+    for(unsigned i = 0 ; i < sample_max_number[0] ; i++){
+        str_send = strize() << std::setw(sample_max_size_bytes[0]) << std::setfill('0') << i;
+        memcpy(sample[0], str_send.c_str(), sample_max_size_bytes[0]);
         malloc_count_start();
         ASSERT_EQ(ed247_stream_push_sample(stream[0], sample[0], sample_size[0], NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
@@ -128,9 +129,9 @@ TEST_P(StreamContext, SingleFrame)
     TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
-        for(unsigned i = 0 ; i < stream_info[j]->sample_max_number ; i++){
-            str_send = strize() << std::setw(stream_info[j]->sample_max_size_bytes) << std::setfill('0') << i;
-            memcpy(sample[j], str_send.c_str(), stream_info[j]->sample_max_size_bytes);
+        for(unsigned i = 0 ; i < sample_max_number[j] ; i++){
+            str_send = strize() << std::setw(sample_max_size_bytes[j]) << std::setfill('0') << i;
+            memcpy(sample[j], str_send.c_str(), sample_max_size_bytes[j]);
             malloc_count_start();
             ASSERT_EQ(ed247_stream_push_sample(stream[j], sample[j], sample_size[j], NULL, NULL), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
@@ -143,24 +144,24 @@ TEST_P(StreamContext, SingleFrame)
     TEST_SYNC();
 
     for(unsigned j = 0 ; j < 2 ; j++){
-        SAY_SELF("Samples data array size [" << stream_info[j]->sample_max_number*stream_info[j]->sample_max_size_bytes << "]");
-        samples[j] = malloc(stream_info[j]->sample_max_number*stream_info[j]->sample_max_size_bytes);
-        SAY_SELF("Samples data sizes [" << stream_info[j]->sample_max_number*sizeof(size_t) << "]");
-        samples_size[j] = malloc(stream_info[j]->sample_max_number*sizeof(size_t));
-        for(unsigned i = 0 ; i < stream_info[j]->sample_max_number ; i++){
-            str_send = strize() << std::setw(stream_info[j]->sample_max_size_bytes) << std::setfill('0') << i;
+        SAY_SELF("Samples data array size [" << sample_max_number[j]*sample_max_size_bytes[j] << "]");
+        samples[j] = malloc(sample_max_number[j]*sample_max_size_bytes[j]);
+        SAY_SELF("Samples data sizes [" << sample_max_number[j]*sizeof(size_t) << "]");
+        samples_size[j] = malloc(sample_max_number[j]*sizeof(size_t));
+        for(unsigned i = 0 ; i < sample_max_number[j] ; i++){
+            str_send = strize() << std::setw(sample_max_size_bytes[j]) << std::setfill('0') << i;
             SAY_SELF("+ Append [" << str_send << "]");
-            memcpy((char*)samples[j]+i*stream_info[j]->sample_max_size_bytes, str_send.c_str(), stream_info[j]->sample_max_size_bytes);
-            ((size_t*)samples_size[j])[i] = stream_info[j]->sample_max_size_bytes;
+            memcpy((char*)samples[j]+i*sample_max_size_bytes[j], str_send.c_str(), sample_max_size_bytes[j]);
+            ((size_t*)samples_size[j])[i] = sample_max_size_bytes[j];
         }
         SAY_SELF("Push samples");
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], sample_max_number[j], NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         // Check limit cases
-        ASSERT_EQ(ed247_stream_push_samples(NULL, samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_FAILURE);
-        ASSERT_EQ(ed247_stream_push_samples(stream[j], NULL, (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_FAILURE);
-        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], NULL, stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_stream_push_samples(NULL, samples[j], (size_t*)samples_size[j], sample_max_number[j], NULL, NULL), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_stream_push_samples(stream[j], NULL, (size_t*)samples_size[j], sample_max_number[j], NULL, NULL), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], NULL, sample_max_number[j], NULL, NULL), ED247_STATUS_FAILURE);
     }
     SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
@@ -178,7 +179,7 @@ TEST_P(StreamContext, SingleFrame)
     for(unsigned j = 0 ; j < 2 ; j++){
         SAY_SELF("Push samples " << j);
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], sample_max_number[j], NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     }
     SAY_SELF("Send pushed samples");
@@ -199,7 +200,7 @@ TEST_P(StreamContext, SingleFrame)
     for(unsigned j = 0 ; j < 2 ; j++){
         SAY_SELF("Push samples " << j);
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], sample_max_number[j], NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     }
     SAY_SELF("Send pushed samples");
@@ -218,7 +219,7 @@ TEST_P(StreamContext, SingleFrame)
     for(unsigned j = 0 ; j < 2 ; j++){
         SAY_SELF("Push samples " << j);
         malloc_count_start();
-        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], stream_info[j]->sample_max_number, NULL, NULL), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(ed247_stream_push_samples(stream[j], samples[j], (size_t*)samples_size[j], sample_max_number[j], NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     }
     SAY_SELF("Send pushed samples");
@@ -254,7 +255,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
+    size_t sample_max_number;
     void *sample;
     size_t sample_size;
     std::string str_send;
@@ -262,7 +264,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
@@ -273,8 +276,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
     TEST_SYNC();
 
     // Send
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << 1;
+    memcpy(sample, str_send.c_str(), sample_max_size_bytes);
     malloc_count_start();
     ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
@@ -288,9 +291,9 @@ TEST_P(SimpleStreamContext, SingleFrame)
     TEST_SYNC();
 
     // Send
-    for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
-        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
+    for(unsigned i = 0 ; i < sample_max_number ; i++){
+        str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
+        memcpy(sample, str_send.c_str(), sample_max_size_bytes);
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
     }
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
@@ -300,9 +303,9 @@ TEST_P(SimpleStreamContext, SingleFrame)
     SAY_SELF("Checkpoint n~3");
     TEST_SYNC();
 
-    for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
-        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
+    for(unsigned i = 0 ; i < sample_max_number ; i++){
+        str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
+        memcpy(sample, str_send.c_str(), sample_max_size_bytes);
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
     }
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
@@ -330,7 +333,8 @@ TEST_P(StreamContext, MultipleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
+    size_t sample_max_number;
     void *sample;
     size_t sample_size;
     std::string str_send;
@@ -338,7 +342,8 @@ TEST_P(StreamContext, MultipleFrame)
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
+    sample_max_number = ed247_stream_get_sample_max_number(stream);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
@@ -349,9 +354,9 @@ TEST_P(StreamContext, MultipleFrame)
     TEST_SYNC();
 
     // Send
-    for(unsigned i = 0 ; i < stream_info->sample_max_number ; i++){
-        str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << i;
-        memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
+    for(unsigned i = 0 ; i < sample_max_number ; i++){
+        str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
+        memcpy(sample, str_send.c_str(), sample_max_size_bytes);
         SAY_SELF("push/send sample " << i);
         ASSERT_EQ(ed247_stream_push_sample(stream, sample, sample_size, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
@@ -383,7 +388,6 @@ TEST_P(SignalContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
     ed247_stream_assistant_t assistant;
     ed247_signal_list_t signals;
     ed247_signal_t signal;
@@ -395,7 +399,6 @@ TEST_P(SignalContext, SingleFrame)
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
 
     // Allocate samples
     size_t s = 0;

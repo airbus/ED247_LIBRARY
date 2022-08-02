@@ -187,7 +187,7 @@ void Channel::encode(const ed247_uid_t & component_identifier)
                     THROW_ED247_ERROR("Channel '" << get_name() << "': buffer is too small ! (" << _buffer.capacity() << " bytes)");
                 }
                 // Write Stream UID
-                ed247_uid_t sid = htons(s->get_configuration()->info.uid);
+                ed247_uid_t sid = htons(s->get_configuration()->_uid);
                 memcpy(_buffer.data_rw() + buffer_index, &sid, sizeof(ed247_uid_t));
                 buffer_index += sizeof(ed247_uid_t);
                 // Write Stream sample data

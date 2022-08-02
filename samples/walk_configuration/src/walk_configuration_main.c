@@ -46,7 +46,6 @@ int main(int argc, char* argv[])
     ed247_channel_t         channel;
     ed247_stream_list_t     streams;
     ed247_stream_t          stream;
-    const ed247_stream_info_t *stream_info;
     ed247_signal_list_t     signals;
     ed247_signal_t          signal;
 
@@ -85,9 +84,7 @@ int main(int argc, char* argv[])
             // Stream
             if(dump_stream(stream)) return EXIT_FAILURE;
 
-            ed247_stream_get_info(stream,&stream_info);
-
-            switch(stream_info->type){
+            switch(ed247_stream_get_type(stream)){
                 case ED247_STREAM_TYPE_DISCRETE:
                 case ED247_STREAM_TYPE_ANALOG:
                 case ED247_STREAM_TYPE_NAD:
@@ -171,21 +168,15 @@ FrameFormat/StandardRevision: %s\n",
 
 ed247_status_t dump_stream(ed247_stream_t stream)
 {
-    ed247_status_t              status;
-    const ed247_stream_info_t   *info;
-
-    status = ed247_stream_get_info(stream,&info);
-    if(status) return status;
-
     fprintf(stdout,"### ED247 Stream\n\
 Name: %s\n\
 UID: %"PRIu16"\n\
 ICD: %s\n\
 Comment: %s\n",
-        info->name,
-        info->uid,
-        info->icd,
-        info->comment);
+            ed247_stream_get_name(stream),
+            ed247_stream_get_uid(stream),
+            ed247_stream_get_icd(stream),
+            ed247_stream_get_comment(stream));
 
     return ED247_STATUS_SUCCESS;
 }

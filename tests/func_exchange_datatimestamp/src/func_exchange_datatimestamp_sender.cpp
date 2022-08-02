@@ -51,7 +51,7 @@ TEST_P(StreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
     void *sample;
     size_t sample_size;
     std::string str_send;
@@ -59,7 +59,7 @@ TEST_P(StreamContext, SingleFrame)
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
@@ -71,8 +71,8 @@ TEST_P(StreamContext, SingleFrame)
     TEST_SYNC();
 
     // Payload
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    memcpy(sample, str_send.c_str(), stream_info->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << 1;
+    memcpy(sample, str_send.c_str(), sample_max_size_bytes);
 
     // Data Timestamp
     ed247_timestamp_t timestamp;

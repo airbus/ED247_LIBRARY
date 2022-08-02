@@ -164,10 +164,10 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         void add_stream(BaseStream & stream, ed247_direction_t direction)
         {
             PRINT_DEBUG("Channel [" << get_name() << "] append stream [" << stream.get_name() << "]");
-            if(_streams.find(stream.get_configuration()->info.uid) != _streams.end())
+            if(_streams.find(stream.get_configuration()->_uid) != _streams.end())
                 THROW_ED247_ERROR("Stream [" << stream.get_name() << "] uses an UID already registered in Channel [" << get_name() << "]");
             stream_dir_t stream_dir= {stream.shared_from_this(), direction};
-            _streams.insert(std::make_pair(stream.get_configuration()->info.uid, stream_dir));
+            _streams.insert(std::make_pair(stream.get_configuration()->_uid, stream_dir));
             PRINT_DEBUG("Size [" << _streams.size() << "]");
         }
 

@@ -239,8 +239,18 @@ class ComInterface : public Node
 
 struct Stream
 {
-    ed247_stream_info_t info;
-    DataTimestamp data_timestamp;
+    std::string         _name;
+    ed247_direction_t   _direction;
+    ed247_stream_type_t _type;
+    std::string         _comment;
+    std::string         _icd;
+    ed247_uid_t         _uid;
+    size_t              _sample_max_number;
+    size_t              _sample_max_size_bytes;
+    uint32_t            _sampling_period_us;
+    DataTimestamp       _data_timestamp;
+
+    void reset(ed247_stream_type_t type);
 };
 
 class A429Stream : public Node, public Stream

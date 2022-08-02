@@ -44,7 +44,7 @@ TEST_P(StreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t *stream_info;
+    size_t sample_max_size_bytes;
     const void *sample;
     size_t sample_size;
     std::string str_send, str_recv;
@@ -60,14 +60,14 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
+    sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
     ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, &timestamp, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
     
     ASSERT_EQ(malloc_count_stop(), 0);
     
     // Extract and check content of payload
-    str_send = strize() << std::setw(stream_info->sample_max_size_bytes) << std::setfill('0') << 1;
-    str_recv = std::string((char*)sample, stream_info->sample_max_size_bytes);
+    str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << 1;
+    str_recv = std::string((char*)sample, sample_max_size_bytes);
     ASSERT_EQ(str_send, str_recv);
     // Check the received timestamp is the expected one
     ASSERT_EQ(1234567, timestamp->epoch_s);

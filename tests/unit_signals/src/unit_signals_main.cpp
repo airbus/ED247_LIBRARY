@@ -74,7 +74,7 @@ namespace ed247 {
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
       sample->copy(msg.c_str(), sample->capacity());
       assistant->write(signal, sample->data(), sample->size());
-      if(stream->get_configuration()->info.type == ED247_STREAM_TYPE_VNAD){
+      if(stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
         *(uint16_t*)(stream_sample->data_rw()+(uint8_t)stream_sample->size()) = (uint16_t)htons((uint16_t)sample->size());
         stream_sample->set_size(stream_sample->size()+sizeof(uint16_t));
       }
@@ -82,8 +82,8 @@ namespace ed247 {
       stream_sample->set_size(stream_sample->size()+sample->size());
       samples.push_back(std::move(sample));
     }
-    if(stream->get_configuration()->info.type == ED247_STREAM_TYPE_VNAD){
-      ASSERT_EQ(stream_sample->size(), stream_sample->capacity()/stream->get_configuration()->info.sample_max_number);
+    if(stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
+      ASSERT_EQ(stream_sample->size(), stream_sample->capacity()/stream->get_configuration()->_sample_max_number);
       assistant->encode();
       ASSERT_EQ(stream_sample->size(), assistant->buffer().size());
       ASSERT_EQ(memcmp(stream_sample->data(), assistant->buffer().data(), assistant->buffer().size()), 0);

@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
     ed247_context_t             context = nullptr;
     ed247_stream_list_t         streams = nullptr;
     ed247_stream_t              stream = nullptr;
-    const ed247_stream_info_t   *stream_info = nullptr;
     const void                  *sample = nullptr;
     size_t                      sample_size = 0;
     const ed247_timestamp_t     *data_timestamp = nullptr;
@@ -110,23 +109,24 @@ int main(int argc, char *argv[])
         if(status == ED247_STATUS_SUCCESS){
             // Process streams
             while(ed247_stream_list_next(streams, &stream) == ED247_STATUS_SUCCESS && stream != NULL){
-                status = ed247_stream_get_info(stream, &stream_info);
+                std::string stream_name = ed247_stream_get_name(stream);
+                ed247_stream_type_t stream_type = ed247_stream_get_type(stream);
                 if(check_status(context, status)) return status;
-                if(stream_info->type == ED247_STREAM_TYPE_A664 ||
-                    stream_info->type == ED247_STREAM_TYPE_A429 ||
-                    stream_info->type == ED247_STREAM_TYPE_A825 ||
-                    stream_info->type == ED247_STREAM_TYPE_M1553 ||
-                    stream_info->type == ED247_STREAM_TYPE_SERIAL ||
-                    stream_info->type == ED247_STREAM_TYPE_AUDIO ||
-                    stream_info->type == ED247_STREAM_TYPE_VIDEO ||
-                    stream_info->type == ED247_STREAM_TYPE_ETHERNET){
+                if(stream_type == ED247_STREAM_TYPE_A664 ||
+                    stream_type == ED247_STREAM_TYPE_A429 ||
+                    stream_type == ED247_STREAM_TYPE_A825 ||
+                    stream_type == ED247_STREAM_TYPE_M1553 ||
+                    stream_type == ED247_STREAM_TYPE_SERIAL ||
+                    stream_type == ED247_STREAM_TYPE_AUDIO ||
+                    stream_type == ED247_STREAM_TYPE_VIDEO ||
+                    stream_type == ED247_STREAM_TYPE_ETHERNET){
                     status = ed247_stream_pop_sample(stream, &sample, &sample_size, &data_timestamp, &recv_timestamp, &info, NULL);
                     if(check_status(context, status)) return status;
                     output() << info->component_identifier << ";"
                         << info->sequence_number << ";"
                         << info->transport_timestamp.epoch_s << ";"
                         << info->transport_timestamp.offset_ns << ";"
-                        << std::string(stream_info->name) << ";"
+                        << stream_name << ";"
                         << data_timestamp->epoch_s << ";"
                         << data_timestamp->offset_ns << ";"
                         << recv_timestamp->epoch_s << ";"
@@ -137,10 +137,10 @@ int main(int argc, char *argv[])
                     }
                     output() << std::dec << ";";
                     output() << "" << ";" << "" << std::endl; // Signal & SignalData columns
-                }else if(stream_info->type == ED247_STREAM_TYPE_ANALOG ||
-                    stream_info->type == ED247_STREAM_TYPE_DISCRETE ||
-                    stream_info->type == ED247_STREAM_TYPE_NAD ||
-                    stream_info->type == ED247_STREAM_TYPE_VNAD){
+                }else if(stream_type == ED247_STREAM_TYPE_ANALOG ||
+                    stream_type == ED247_STREAM_TYPE_DISCRETE ||
+                    stream_type == ED247_STREAM_TYPE_NAD ||
+                    stream_type == ED247_STREAM_TYPE_VNAD){
                     ed247_stream_assistant_t assistant;
                     status = ed247_stream_get_assistant(stream, &assistant);
                     if(check_status(context, status)) return status;
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
                             << info->sequence_number << ";"
                             << info->transport_timestamp.epoch_s << ";"
                             << info->transport_timestamp.offset_ns << ";"
-                            << std::string(stream_info->name) << ";"
+                            << stream_name << ";"
                             << data_timestamp->epoch_s << ";"
                             << data_timestamp->offset_ns << ";"
                             << recv_timestamp->epoch_s << ";"

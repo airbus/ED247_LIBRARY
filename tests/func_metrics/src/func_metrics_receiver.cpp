@@ -44,7 +44,6 @@ TEST_P(Context, Metrics)
     ed247_stream_t stream = NULL;
     ed247_stream_t tmp_stream = NULL;
     ed247_stream_t second_stream = NULL;
-    const ed247_stream_info_t* stream_info = NULL;
     ed247_stream_assistant_t assistant = NULL;
     ed247_signal_list_t signal_list = NULL;
     ed247_signal_t data_signal = NULL;
@@ -70,8 +69,6 @@ TEST_P(Context, Metrics)
     
     ASSERT_EQ(ed247_find_streams(_context, "MyStream", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_NE(stream_info, (ed247_stream_info_t*)NULL);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_NE(assistant, (ed247_stream_assistant_t)NULL);
     ASSERT_EQ(ed247_find_signals(_context, "Data" , &signal_list), ED247_STATUS_SUCCESS);
@@ -171,7 +168,6 @@ TEST_P(Context, MetricsCross)
     ed247_stream_t stream = NULL;
     ed247_stream_t tmp_stream = NULL;
     ed247_stream_t second_stream = NULL;
-    const ed247_stream_info_t* stream_info = NULL;
     ed247_stream_assistant_t assistant = NULL;
     ed247_signal_list_t signal_list = NULL;
     ed247_signal_t data_signal = NULL;
@@ -191,8 +187,6 @@ TEST_P(Context, MetricsCross)
     
     ASSERT_EQ(ed247_find_streams(_context, "MyStream", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-    ASSERT_NE(stream_info, (ed247_stream_info_t*)NULL);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_NE(assistant, (ed247_stream_assistant_t)NULL);
     ASSERT_EQ(ed247_find_signals(_context, "Data" , &signal_list), ED247_STATUS_SUCCESS);

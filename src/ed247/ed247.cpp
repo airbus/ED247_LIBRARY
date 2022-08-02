@@ -1108,27 +1108,58 @@ ed247_status_t ed247_channel_list_free(
 /* =========================================================================
  * Stream
  * ========================================================================= */
-ed247_status_t ed247_stream_get_info(
-  ed247_stream_t               stream,
-  const ed247_stream_info_t ** info)
+const char* ed247_stream_get_name(ed247_stream_t stream)
 {
-  PRINT_DEBUG("function " << __func__ << "()");
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_name.c_str();
+}
 
-  if(!stream) {
-    PRINT_ERROR(__func__ << ": Invalid stream");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!info) {
-    PRINT_ERROR(__func__ << ": Empty info pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  *info = nullptr;
-  try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    *info = &ed247_stream->get_configuration()->info;
-  }
-  LIBED247_CATCH("Get stream info");
-  return ED247_STATUS_SUCCESS;
+ed247_direction_t ed247_stream_get_direction(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_direction;
+}
+
+ed247_stream_type_t ed247_stream_get_type(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_type;
+}
+
+const char* ed247_stream_get_comment(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_comment.c_str();
+}
+
+const char* ed247_stream_get_icd(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_icd.c_str();
+}
+
+ed247_uid_t ed247_stream_get_uid(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_uid;
+}
+
+size_t ed247_stream_get_sample_max_number(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_sample_max_number;
+}
+
+size_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_sample_max_size_bytes;
+}
+
+size_t ed247_stream_get_sampling_period_us(ed247_stream_t stream)
+{
+  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  return ed247_stream->get_configuration()->_sampling_period_us;
 }
 
 ed247_status_t ed247_stream_has_signals(

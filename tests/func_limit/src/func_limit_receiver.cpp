@@ -41,7 +41,6 @@ TEST_P(StreamContext, LimitOneByOne)
     ed247_stream_list_t streams;
     ed247_stream_list_t temp_list;
     ed247_stream_t stream, tmp_stream;
-    const ed247_stream_info_t* stream_info;
     size_t size;
     
     // Synchro at startup
@@ -65,8 +64,7 @@ TEST_P(StreamContext, LimitOneByOne)
         ASSERT_EQ(ed247_wait_frame(_context, &temp_list, 20*1000*1000), ED247_STATUS_SUCCESS);
 
         ASSERT_EQ(ed247_stream_list_next(temp_list, &tmp_stream), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_get_info(tmp_stream, &stream_info), ED247_STATUS_SUCCESS);
-        // SAY_SELF("Process Stream [" << stream_info->name << "]");
+        uint32_t expected_content = (uint32_t)ed247_stream_get_uid(tmp_stream);
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
         ASSERT_EQ(stream, tmp_stream);
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
@@ -74,7 +72,7 @@ TEST_P(StreamContext, LimitOneByOne)
         ASSERT_EQ(ed247_stream_pop_sample(stream, &content, &content_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(content_size, (size_t)4);
         ASSERT_NE(content, (const void*) NULL);
-        ASSERT_EQ(*((uint32_t*)content), stream_info->uid);
+        ASSERT_EQ(*((uint32_t*)content), expected_content);
 
         TEST_SYNC();
     }
@@ -94,7 +92,6 @@ TEST_P(StreamContext, LimitAllInOne)
     ed247_stream_list_t streams;
     ed247_stream_list_t temp_list;
     ed247_stream_t stream, tmp_stream;
-    const ed247_stream_info_t* stream_info;
     size_t size;
     
     // Synchro at startup
@@ -113,8 +110,7 @@ TEST_P(StreamContext, LimitAllInOne)
         const void* content = NULL;
         size_t content_size = 0;
         ASSERT_EQ(ed247_stream_list_next(temp_list, &tmp_stream), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_get_info(tmp_stream, &stream_info), ED247_STATUS_SUCCESS);
-        // SAY_SELF("Process Stream [" << stream_info->name << "]");
+        uint32_t expected_content = (uint32_t)ed247_stream_get_uid(tmp_stream);
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
         ASSERT_EQ(stream, tmp_stream);
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
@@ -122,7 +118,7 @@ TEST_P(StreamContext, LimitAllInOne)
         ASSERT_EQ(ed247_stream_pop_sample(stream, &content, &content_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(content_size, (size_t)4);
         ASSERT_NE(content, (const void*) NULL);
-        ASSERT_EQ(*((uint32_t*)content), stream_info->uid);
+        ASSERT_EQ(*((uint32_t*)content), expected_content);
     }
 
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);

@@ -41,7 +41,6 @@ TEST_P(StreamContext, LimitOneByOne)
     //ed247_set_log_level(ED247_LOG_LEVEL_ERROR);
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t* stream_info;
     size_t size;
     
     // Synchro at startup
@@ -56,9 +55,7 @@ TEST_P(StreamContext, LimitOneByOne)
     for (uint32_t i = 0; i < size; i++)
     {
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-        // SAY_SELF("Process Stream [" << stream_info->name << "]");
-        uint32_t content = (uint32_t)stream_info->uid;
+        uint32_t content = (uint32_t)ed247_stream_get_uid(stream);
         ASSERT_EQ(ed247_stream_push_sample(stream, &content, sizeof(content), NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
         
@@ -80,7 +77,6 @@ TEST_P(StreamContext, LimitAllInOne)
     //ed247_set_log_level(ED247_LOG_LEVEL_ERROR);
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    const ed247_stream_info_t* stream_info;
     size_t size;
     
     // Synchro at startup
@@ -95,9 +91,7 @@ TEST_P(StreamContext, LimitAllInOne)
     for (uint32_t i = 0; i < size; i++)
     {
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(ed247_stream_get_info(stream, &stream_info), ED247_STATUS_SUCCESS);
-        // SAY_SELF("Process Stream [" << stream_info->name << "]");
-        uint32_t content = (uint32_t)stream_info->uid;
+        uint32_t content = (uint32_t)ed247_stream_get_uid(stream);
         ASSERT_EQ(ed247_stream_push_sample(stream, &content, sizeof(content), NULL, NULL), ED247_STATUS_SUCCESS);
     }
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);

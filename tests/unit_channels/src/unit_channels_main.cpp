@@ -99,13 +99,13 @@ TEST_P(ChannelContext, MultiPushPop)
         for(auto stream : channel0->streams()){
             auto sample = stream.second.stream->allocate_sample();
             bool full;
-            for(size_t i = 0 ; i < stream.second.stream->get_configuration()->info.sample_max_number ; i++){
-                std::string sample_str = strize() << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
-                sample->copy(sample_str.c_str(),stream.second.stream->get_configuration()->info.sample_max_size_bytes);
+            for(size_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
+                std::string sample_str = strize() << std::setw(stream.second.stream->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
+                sample->copy(sample_str.c_str(),stream.second.stream->get_configuration()->_sample_max_size_bytes);
                 malloc_count_start();
                 ASSERT_EQ(stream.second.stream->push_sample(sample->data(), sample->size(), NULL, &full), true);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                if(i < (stream.second.stream->get_configuration()->info.sample_max_number-1))
+                if(i < (stream.second.stream->get_configuration()->_sample_max_number-1))
                     ASSERT_FALSE(full);
                 else
                     ASSERT_TRUE(full);
@@ -146,16 +146,16 @@ TEST_P(ChannelContext, MultiPushPop)
             ASSERT_EQ(sid, stream.first);
             auto sample_size = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
             frame_index += sizeof(uint16_t);
-            if(stream.second.stream->get_configuration()->info.type == ED247_STREAM_TYPE_VNAD){
-                ASSERT_EQ(sample_size, (stream.second.stream->get_configuration()->info.sample_max_size_bytes+sizeof(uint16_t))*stream.second.stream->get_configuration()->info.sample_max_number);
-            }else if(stream.second.stream->get_configuration()->info.type == ED247_STREAM_TYPE_A664){
-                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
-            }else if(stream.second.stream->get_configuration()->info.type == ED247_STREAM_TYPE_A825){
-                ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
-            }else if(stream.second.stream->get_configuration()->info.type == ED247_STREAM_TYPE_SERIAL){
-                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
+            if(stream.second.stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
+                ASSERT_EQ(sample_size, (stream.second.stream->get_configuration()->_sample_max_size_bytes+sizeof(uint16_t))*stream.second.stream->get_configuration()->_sample_max_number);
+            }else if(stream.second.stream->get_configuration()->_type == ED247_STREAM_TYPE_A664){
+                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_configuration()->_sample_max_size_bytes)*stream.second.stream->get_configuration()->_sample_max_number);
+            }else if(stream.second.stream->get_configuration()->_type == ED247_STREAM_TYPE_A825){
+                ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second.stream->get_configuration()->_sample_max_size_bytes)*stream.second.stream->get_configuration()->_sample_max_number);
+            }else if(stream.second.stream->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL){
+                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_configuration()->_sample_max_size_bytes)*stream.second.stream->get_configuration()->_sample_max_number);
             }else{
-                ASSERT_EQ(sample_size, (stream.second.stream->get_configuration()->info.sample_max_size_bytes)*stream.second.stream->get_configuration()->info.sample_max_number);
+                ASSERT_EQ(sample_size, (stream.second.stream->get_configuration()->_sample_max_size_bytes)*stream.second.stream->get_configuration()->_sample_max_number);
             }
             frame_index += sample_size;
         }
@@ -178,13 +178,13 @@ TEST_P(ChannelContext, MultiPushPop)
         // Pop sample & check samples
         bool empty;
         for(auto stream : channel1->streams()){
-            for(size_t i = 0 ; i < stream.second.stream->get_configuration()->info.sample_max_number ; i++){
+            for(size_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
                 malloc_count_start();
                 auto sample = stream.second.stream->pop_sample(&empty);
                 ASSERT_TRUE((bool)sample);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                std::string str_sample = strize() << std::setw(stream.second.stream->get_configuration()->info.sample_max_size_bytes) << std::setfill('0') << i;
-                auto str_sample_recv = std::string((char*)sample->data(), stream.second.stream->get_configuration()->info.sample_max_size_bytes);
+                std::string str_sample = strize() << std::setw(stream.second.stream->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
+                auto str_sample_recv = std::string((char*)sample->data(), stream.second.stream->get_configuration()->_sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
                 if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
@@ -195,7 +195,7 @@ TEST_P(ChannelContext, MultiPushPop)
                     ASSERT_EQ(sample->info()->transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
                     ASSERT_EQ(sample->info()->transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
                 }
-                if(i < (stream.second.stream->get_configuration()->info.sample_max_number-1))
+                if(i < (stream.second.stream->get_configuration()->_sample_max_number-1))
                     ASSERT_FALSE(empty);
                 else
                     ASSERT_TRUE(empty);
