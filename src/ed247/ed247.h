@@ -71,7 +71,12 @@ extern "C" {
  */
 
 /**
- * @defgroup context_general Init and general informations
+ * @defgroup context_init Initialization
+ * @ingroup context
+ */
+
+/**
+ * @defgroup context_info General informations
  * @ingroup context
  */
 
@@ -211,7 +216,7 @@ typedef uint16_t ed247_uid_t;
 
 /**
  * @brief Component types
- * @ingroup context_general
+ * @ingroup context_info
  */
 typedef enum {
     ED247_COMPONENT_TYPE__INVALID,
@@ -318,7 +323,7 @@ typedef struct {
 
 /**
  * @brief Context identifier
- * @ingroup context_general
+ * @ingroup context_init
  */
 typedef struct ed247_internal_context_t *ed247_context_t;
 
@@ -555,36 +560,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
     ed247_log_level_t * log_level);
 
 /* =========================================================================
- * ED247 Context - Init & general information
+ * ED247 Context - Init
  * ========================================================================= */
 /**
- * @brief File producer (aka Resolver) information structure
- * @ingroup context_general
- */
-typedef struct ed247_file_producer_s {
-    const char * identifier;
-    const char * comment;
-} ed247_file_producer_t;
-#define LIBED247_FILE_PRODUCER_DEFAULT ed247_file_producer_t{"", ""}
-
-/**
- * @brief Component information structure
- * @ingroup context_general
- */
-typedef struct ed247_component_info_s {
-    const char *           component_version;
-    ed247_component_type_t component_type;
-    const char *           name;
-    const char *           comment;
-    ed247_standard_t       standard_revision;
-    ed247_uid_t            identifier;
-    ed247_file_producer_t  file_producer;
-} ed247_component_info_t;
-#define LIBED247_COMPONENT_INFO_DEFAULT ed247_component_info_t{"", ED247_COMPONENT_TYPE_VIRTUAL, NULL, "", ED247_STANDARD__INVALID, 0, LIBED247_FILE_PRODUCER_DEFAULT}
-
-/**
  * @brief Loading function: the entry point of the library
- * @ingroup context_general
+ * @ingroup context_init
  * @param[in] ecic_file_path The path to the ECIC configuration file
  * @param[in] configuration The configuration of the LIBED247
  * @param[out] context The loaded context identifier
@@ -597,7 +577,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_file(
 
 /**
  * @brief Loading function: the entry point of the library
- * @ingroup context_general
+ * @ingroup context_init
  * @param[in] ecic_file_content The content of the ECIC configuration file
  * @param[in] configuration The configuration of the LIBED247
  * @param[out] context The loaded context identifier
@@ -610,25 +590,13 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_content(
 
 /**
  * @brief Unload ressources linked to the given context
- * @ingroup context_general
+ * @ingroup context_init
  * @param[in] context Context identifier
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_unload(
     ed247_context_t ed247_context);
-
-/**
- * @brief Retrieve attributes of the component
- * @ingroup context_general
- * @param[in] context The context identifier
- * @param[out] info Component information
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_component_get_info(
-    ed247_context_t                 context,
-    const ed247_component_info_t ** info);
 
 /**
  * @brief Library runtime metrics
@@ -642,7 +610,7 @@ typedef struct {
 
 /**
  * @brief Retrieve runtime metrics
- * @ingroup context_general
+ * @ingroup context_init
  * @param[in] context The context for which the runtime metrics are required
  * @param[out] metrics Pointer to the runtime metrics structure
  * @retval ED247_STATUS_SUCCESS
@@ -655,7 +623,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_runtime_metrics(
 /**
  * @brief Assign user data to the context
  * <b>When unloading the component, there is no memory free on this item. Free it yourself.</b>
- * @ingroup context_general
+ * @ingroup context_init
  * @param[in] context The context identifier
  * @param[in] user_data A pointer to user data
  * @retval ED247_STATUS_SUCCESS
@@ -667,7 +635,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_set_user_data(
 
 /**
  * @brief Retrieve user data pointer form the context
- * @ingroup context_general
+ * @ingroup context_init
  * @param[in] context The context identifier
  * @param[out] user_data A pointer to host pointer to user data
  * @retval ED247_STATUS_SUCCESS
@@ -676,6 +644,24 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_set_user_data(
 extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
     ed247_context_t context,
     void **user_data);
+
+/* =========================================================================
+ * ED247 Context - Global information
+ * ========================================================================= */
+/**
+ * @ingroup context_info
+ * @{
+ */
+extern LIBED247_EXPORT const char* ed247_component_get_version(ed247_context_t context);
+extern LIBED247_EXPORT ed247_component_type_t ed247_component_get_type(ed247_context_t context);
+extern LIBED247_EXPORT const char* ed247_component_get_name(ed247_context_t context);
+extern LIBED247_EXPORT const char* ed247_component_get_comment(ed247_context_t context);
+extern LIBED247_EXPORT ed247_uid_t ed247_component_get_identifier(ed247_context_t context);
+extern LIBED247_EXPORT ed247_standard_t ed247_component_get_standard_revision(ed247_context_t context);
+
+extern LIBED247_EXPORT const char* ed247_file_producer_get_identifier(ed247_context_t context);
+extern LIBED247_EXPORT const char* ed247_file_producer_get_comment(ed247_context_t context);
+/** @} */
 
 /* =========================================================================
  * ED247 Context - Get Configuration

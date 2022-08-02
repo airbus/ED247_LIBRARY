@@ -140,25 +140,19 @@ int check_status(ed247_context_t context, ed247_status_t status)
 
 ed247_status_t dump_component(ed247_context_t context)
 {
-    ed247_status_t                  status;
-    const ed247_component_info_t    *info;
-    
-    status = ed247_component_get_info(context,&info);
-    if(status) return status;
-
     fprintf(stdout,"# ED247 Component\n\
 Name: %s\n\
 Type: %s\n\
 Idenfitier: %"PRIu16"\n\
 Standard: %s\n\
 Revision: %s\n",
-        info->name,
-        ed247_component_type_string(info->component_type),
-        info->identifier,
-        ed247_standard_string(info->standard_revision),
-        info->comment);
+            ed247_component_get_name(context),
+            ed247_component_type_string(ed247_component_get_type(context)),
+            ed247_component_get_identifier(context),
+            ed247_standard_string(ed247_component_get_standard_revision(context)),
+            ed247_component_get_comment(context));
 
-    return status;
+    return ED247_STATUS_SUCCESS;
 }
 
 ed247_status_t dump_channel(ed247_channel_t channel)

@@ -157,7 +157,7 @@ ed247_status_t ed247_free(
 
 
 /* =========================================================================
- * ED247 Context - Init & general information
+ * ED247 Context - Init
  * ========================================================================= */
 ed247_status_t ed247_load_file(
   const char *      ecic_file_path,
@@ -221,29 +221,6 @@ ed247_status_t ed247_unload(
     ed247_context=nullptr;
   }
   LIBED247_CATCH("Unload");
-  return ED247_STATUS_SUCCESS;
-}
-
-ed247_status_t ed247_component_get_info(
-  ed247_context_t context,
-  const ed247_component_info_t **info)
-{
-  PRINT_DEBUG("function " << __func__ << "()");
-
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!info) {
-    PRINT_ERROR(__func__ << ": Empty info pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  *info = nullptr;
-  try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    *info = &ed247_context->getRoot()->info;
-  }
-  LIBED247_CATCH("Get component info");
   return ED247_STATUS_SUCCESS;
 }
 
@@ -316,6 +293,56 @@ ed247_status_t ed247_load(
   return ed247_load_file(ecic_file_path, context);
 }
 
+/* =========================================================================
+ * ED247 Context - General information
+ * ========================================================================= */
+const char* ed247_file_producer_get_identifier(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_file_producer_identifier.c_str();
+}
+
+const char* ed247_file_producer_get_comment(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_file_producer_comment.c_str();
+}
+
+const char* ed247_component_get_version(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_version.c_str();
+}
+
+ed247_component_type_t ed247_component_get_type(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_component_type;
+}
+
+const char* ed247_component_get_name(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_name.c_str();
+}
+
+const char* ed247_component_get_comment(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_comment.c_str();
+}
+
+ed247_uid_t ed247_component_get_identifier(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_identifier;
+}
+
+ed247_standard_t ed247_component_get_standard_revision(ed247_context_t context)
+{
+  auto ed247_context = static_cast<ed247::Context*>(context);
+  return ed247_context->getComponent()->_standard_revision;
+}
 
 /* =========================================================================
  * ED247 Context - Get Configuration

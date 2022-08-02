@@ -49,7 +49,7 @@ class Context : public ed247_internal_context_t
 
         void initialize();
 
-        std::shared_ptr<xml::Root> getRoot() { return _root; }
+        std::shared_ptr<xml::Component> getComponent() { return _component; }
 
         std::shared_ptr<BaseSignal::Pool> getPoolSignals() { return _pool_signals; }
 
@@ -61,7 +61,7 @@ class Context : public ed247_internal_context_t
 
         void send_pushed_samples()
         {
-            _pool_channels.encode_and_send(_root->info.identifier);
+            _pool_channels.encode_and_send(_component->_identifier);
         }
 
         ed247_status_t wait_frame(int32_t timeout_us)
@@ -102,7 +102,7 @@ class Context : public ed247_internal_context_t
 
     private:
 
-        std::shared_ptr<xml::Root>              _root;
+        std::shared_ptr<xml::Component>         _component;
         std::shared_ptr<ComInterface::Pool>     _pool_interfaces;
         std::shared_ptr<BaseSignal::Pool>       _pool_signals;
         std::shared_ptr<BaseStream::Pool>       _pool_streams;

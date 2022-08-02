@@ -34,12 +34,12 @@ class LoadingContext : public ::testing::TestWithParam<std::string>
 
 TEST_P(LoadingContext, Loading)
 {
-    std::shared_ptr<ed247::xml::Root> root;
+    std::shared_ptr<ed247::xml::Component> component;
     try{
         RecordProperty("description", strize() << "Load content of [" << GetParam() << "]");
 
         std::string filepath = GetParam();
-        root = std::dynamic_pointer_cast<ed247::xml::Root>(ed247::xml::load_filepath(filepath));
+        component = std::dynamic_pointer_cast<ed247::xml::Component>(ed247::xml::load_filepath(filepath));
     }
     catch(std::exception & e){
         SAY("Error: " << e.what());

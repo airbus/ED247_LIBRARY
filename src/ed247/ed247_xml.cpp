@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 4 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -117,7 +118,8 @@ namespace xml
 
 std::string xmlChar2string(const xmlChar *str)
 {
-    return std::string(reinterpret_cast<const char *>(str));
+    if (!str) return std::string();
+    return std::string((const char *)str);
 }
 
 size_t nad_type_size(ed247_nad_type_t type){
@@ -149,6 +151,13 @@ void set_value(const char * & variable, const xmlAttrPtr attribute)
     xmlChar * value = xmlGetProp(attribute->parent,attribute->name);
     variable = reinterpret_cast<const char *>(value);
 }
+
+template<>
+void set_value(std::string& variable, const xmlAttrPtr attribute)
+{
+    variable = xmlChar2string(xmlGetProp(attribute->parent,attribute->name));
+}
+
 
 // Node
 
@@ -1185,41 +1194,49 @@ void Channel::create_children(const xmlNodePtr xml_node)
     }
 }
 
-// Root
+// Component
 
-void Root::reset()
+void Component::reset()
 {
-    info = LIBED247_COMPONENT_INFO_DEFAULT;
-    channels.clear();
+  _identifier = 0;
+  _name = std::string();
+  _version = std::string();
+  _component_type = ED247_COMPONENT_TYPE_VIRTUAL;
+  _standard_revision = ED247_STANDARD__INVALID;
+  _comment = std::string();
+  _file_producer_identifier = std::string();
+  _file_producer_comment = std::string();
+
+  channels.clear();
 }
 
-void Root::fill_attributes(const xmlNodePtr xml_node)
+void Component::fill_attributes(const xmlNodePtr xml_node)
 {
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare("noNamespaceSchemaLocation") == 0 || attr_name.compare("xsi") == 0)
             continue;
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name, xml_attr);
         }else if(attr_name.compare(attr::ComponentVersion) == 0){
-            set_value(info.component_version,xml_attr);
+            set_value(_version, xml_attr);
         }else if(attr_name.compare(attr::ComponentType) == 0){
-            set_value(info.component_type,xml_attr);
+            set_value(_component_type, xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment, xml_attr);
         }else if(attr_name.compare(attr::StandardRevision) == 0){
-            set_value(info.standard_revision,xml_attr);
+            set_value(_standard_revision, xml_attr);
         }else if(attr_name.compare(attr::Identifier) == 0){
-            set_value(info.identifier,xml_attr);
+            set_value(_identifier, xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::ED247ComponentInstanceConfiguration <<"]");
         }
     }
-    if(info.standard_revision != ED247_STANDARD_ED247A)
+    if(_standard_revision != ED247_STANDARD_ED247A)
         THROW_PARSER_ERROR(xml_node, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
 }
 
-void Root::create_children(const xmlNodePtr xml_node)
+void Component::create_children(const xmlNodePtr xml_node)
 {
     for(auto xml_node_iter = xml_node->children ; xml_node_iter != nullptr ; xml_node_iter = xml_node_iter->next){
         if(xml_node_iter->type != XML_ELEMENT_NODE)
@@ -1252,9 +1269,9 @@ void Root::create_children(const xmlNodePtr xml_node)
             for(auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
                 auto attr_name = xmlChar2string(xml_attr->name);
                 if(attr_name.compare(attr::Identifier) == 0){
-                    set_value(info.file_producer.identifier,xml_attr);
+                    set_value(_file_producer_identifier, xml_attr);
                 }else if(attr_name.compare(attr::Comment) == 0){
-                    set_value(info.file_producer.comment,xml_attr);
+                    set_value(_file_producer_comment, xml_attr);
                 }else{
                     THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::FileProducer <<"]");
                 }
@@ -1293,7 +1310,7 @@ std::shared_ptr<Node> load_xml(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_x
     // Load Nodes
     xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
 
-    auto root = std::make_shared<Root>();
+    auto root = std::make_shared<Component>();
 
     root->load(xmlRootNode);
 

@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 4 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -153,7 +154,7 @@ class Node
     public:
         void load(const xmlNodePtr xml_node);
         virtual void reset() {};
-    
+
     protected:
         virtual void fill_attributes(const xmlNodePtr xml_node) {_UNUSED(xml_node);};
         virtual void create_children(const xmlNodePtr xml_node) {_UNUSED(xml_node);};
@@ -164,10 +165,10 @@ class DataTimestamp : public Node
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
-    
+
     public:
         ed247_yesno_t enable;
         ed247_yesno_t enable_sample_offset;
@@ -178,10 +179,10 @@ class Errors : public Node
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
-    
+
     public:
         ed247_yesno_t enable;
 };
@@ -209,7 +210,7 @@ class UdpSocket : public Node
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 
@@ -228,10 +229,10 @@ class ComInterface : public Node
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
-    
+
     public:
         std::vector<std::shared_ptr<UdpSocket>> udp_sockets;
 };
@@ -298,7 +299,7 @@ class DISSignal : public Node, public Signal
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-    
+
     public:
         virtual void reset() final;
 };
@@ -308,7 +309,7 @@ class ANASignal : public Node, public Signal
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-    
+
     public:
         virtual void reset() final;
 };
@@ -343,7 +344,7 @@ class DISStream : public Node, public StreamSignals
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 };
@@ -353,7 +354,7 @@ class ANAStream : public Node, public StreamSignals
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 };
@@ -363,7 +364,7 @@ class NADStream : public Node, public StreamSignals
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 };
@@ -373,7 +374,7 @@ class VNADStream : public Node, public StreamSignals
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 };
@@ -383,7 +384,7 @@ class Header: public Node
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 
@@ -408,7 +409,7 @@ class Channel: public Node, public std::enable_shared_from_this<Channel>
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 
@@ -420,19 +421,26 @@ class Channel: public Node, public std::enable_shared_from_this<Channel>
         bool simple;
 };
 
-class Root: public Node
-{    
+class Component: public Node
+{
     private:
         virtual void fill_attributes(const xmlNodePtr xml_node) final;
         virtual void create_children(const xmlNodePtr xml_node) final;
-        
+
     public:
         virtual void reset() final;
 
-    public:
-        ed247_component_info_t info;
+        ed247_uid_t            _identifier;
+        std::string            _name;
+        std::string            _version;
+        ed247_component_type_t _component_type;
+        ed247_standard_t       _standard_revision;
+        std::string            _comment;
+
+        std::string _file_producer_identifier;
+        std::string _file_producer_comment;
+
         std::vector<std::shared_ptr<Channel>> channels;
-        
 };
 
 std::shared_ptr<Node> load_filepath(const std::string & filepath);

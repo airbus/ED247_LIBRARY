@@ -42,7 +42,7 @@ namespace ed247
 {
 
 Context::Context():
-    _root(),
+    _component(),
     _pool_interfaces(std::make_shared<UdpSocket::Pool>()),
     _pool_signals(std::make_shared<BaseSignal::Pool>()),
     _pool_streams(std::make_shared<BaseStream::Pool>(_pool_signals)),
@@ -81,7 +81,7 @@ Context * Context::Builder::create_filepath(std::string ecic_filepath)
 
     // Load
     try{
-        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_filepath(ecic_filepath));
+        context->_component = std::dynamic_pointer_cast<xml::Component>(xml::load_filepath(ecic_filepath));
     }catch(...){
         delete context;
         context = nullptr;
@@ -100,7 +100,7 @@ Context * Context::Builder::create_content(std::string ecic_content)
 
     // Load
     try{
-        context->_root = std::dynamic_pointer_cast<xml::Root>(xml::load_content(ecic_content));
+        context->_component = std::dynamic_pointer_cast<xml::Component>(xml::load_content(ecic_content));
     }catch(...){
         delete context;
         context = nullptr;
@@ -112,7 +112,7 @@ Context * Context::Builder::create_content(std::string ecic_content)
 
 void Context::Builder::initialize(Context & context)
 {
-  for(auto & sp_channel_configuration : context._root->channels){
+  for(auto & sp_channel_configuration : context._component->channels){
     // The get() method create and append the channel. Refactoring needed...
     context._pool_channels.get(sp_channel_configuration);
   }
