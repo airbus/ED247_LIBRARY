@@ -35,7 +35,7 @@ namespace ed247
 template<ed247_signal_type_t ... E>
 signal_ptr_t SignalBuilder<E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
-    THROW_ED247_ERROR("Cannot create signal [" << std::string(configuration->info.name) << "]");
+    THROW_ED247_ERROR("Cannot create signal [" << std::string(configuration->_name) << "]");
     return nullptr;
 }
 
@@ -57,7 +57,7 @@ signal_ptr_t SignalBuilder<T>::create(const ed247_signal_type_t & type, std::sha
         static typename Signal<T>::Builder builder;
         return builder.create(configuration, stream);
     }else{
-        THROW_ED247_ERROR("Failed to create singal '" << configuration->info.name << "': type mismatch");
+        THROW_ED247_ERROR("Failed to create singal '" << configuration->_name << "': type mismatch");
     }
 }
 
@@ -66,7 +66,7 @@ signal_ptr_t SignalBuilder<T>::create(const ed247_signal_type_t & type, std::sha
 std::unique_ptr<BaseSample> BaseSignal::allocate_sample() const
 {
     auto sample = std::make_unique<BaseSample>();
-    sample->allocate(BaseSignal::sample_max_size_bytes(_configuration->info));
+    sample->allocate(get_sample_max_size_bytes());
     return sample;
 }
 
@@ -75,14 +75,14 @@ std::unique_ptr<BaseSample> BaseSignal::allocate_sample() const
 signal_ptr_t BaseSignal::Pool::get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
 {
     signal_ptr_t sp_base_signal;
-    std::string name{configuration->info.name};
+    std::string name{configuration->_name};
     auto sp_stream = stream.shared_from_this();
 
     auto iter = std::find_if(_signals.begin(), _signals.end(),
         [&name, &sp_stream](const signal_ptr_t & s){ return s->get_name() == name && s->_stream.lock() == sp_stream; });
     if(iter != _signals.end())
         THROW_ED247_ERROR("Signal [" << (*iter)->get_name() << "] linked to stream [" << stream.get_name() << "] already exist !");
-    auto sp_signal = _builder.create(configuration->info.type, configuration, stream);
+    auto sp_signal = _builder.create(configuration->_type, configuration, stream);
     sp_base_signal = std::static_pointer_cast<BaseSignal>(sp_signal);
     _signals.push_back(sp_base_signal);
 
@@ -119,32 +119,6 @@ size_t BaseSignal::Pool::size() const
 signal_ptr_t BaseSignal::Builder::build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const
 {
     return pool->get(configuration, stream);
-}
-
-// Signal<>
-
-template<>
-size_t Signal<ED247_SIGNAL_TYPE_DISCRETE>::position() const
-{
-    return _configuration->position;
-}
-
-template<>
-size_t Signal<ED247_SIGNAL_TYPE_ANALOG>::position() const
-{
-    return _configuration->position;
-}
-
-template<>
-size_t Signal<ED247_SIGNAL_TYPE_NAD>::position() const
-{
-    return _configuration->position;
-}
-
-template<>
-size_t Signal<ED247_SIGNAL_TYPE_VNAD>::position() const
-{
-    return _configuration->position;
 }
 
 // Signal<>::Builder

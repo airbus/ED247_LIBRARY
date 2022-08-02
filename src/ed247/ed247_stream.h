@@ -548,7 +548,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         auto send_sample = signal->allocate_sample();
                         auto recv_sample = signal->allocate_sample();
                         capacity += send_sample->capacity();
-                        if(signal->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD)
+                        if(signal->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD)
                             capacity += sizeof(uint16_t);
                         if(_send_samples.size() <= signal->position())
                             _send_samples.resize(signal->position()+1);
@@ -583,8 +583,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] to an non-output stream");
                     return false;
                   }
-                  if(signal->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
-                    size_t sample_max_size = signal->get_configuration()->info.info.vnad.max_length * (BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) + sizeof(uint16_t));
+                  if(signal->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
+                    size_t sample_max_size = signal->get_configuration()->_vnad_max_length * (signal->get_sample_max_size_bytes() + sizeof(uint16_t));
                     if(size > sample_max_size) {
                       PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] "
                                   "as Signal SampleMaxSizeBytes is [" << sample_max_size << "] and data to write is of size [" << size << "]");
@@ -647,17 +647,17 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     for(auto & pair : _send_samples){
                         if(!pair.first)
                             continue;
-                        if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
+                        if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
                             *(uint16_t*)(_buffer.data_rw()+buffer_index) = (uint16_t)htons((uint16_t)pair.second->size());
                             buffer_index += sizeof(uint16_t);
                             vnad_behaviour = true;
                         }else{
-                            if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_ANALOG){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.ana.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_DISCRETE){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.dis.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_NAD){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.nad.byte_offset;
+                            if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_ANALOG){
+                                buffer_index = (size_t)pair.first->get_configuration()->_byte_offset;
+                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_DISCRETE){
+                                buffer_index = (size_t)pair.first->get_configuration()->_byte_offset;
+                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_NAD){
+                                buffer_index = (size_t)pair.first->get_configuration()->_byte_offset;
                             }else{
                                 THROW_ED247_ERROR("Signal [" << pair.first->get_name() << "] has not a valid type");
                             }
@@ -685,7 +685,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         if(!pair.first)
                             continue;
                         size_t sample_size = 0;
-                        if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_VNAD){
+                        if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
                             if(buffer_index + sizeof(uint16_t) > size) {
                               PRINT_ERROR("Signal '" << pair.first->get_name() << "': invalid VNAD size : " << size);
                               return false;
@@ -694,15 +694,15 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                             buffer_index += sizeof(uint16_t);
                             vnad_behaviour = true;
                         }else{
-                            sample_size = BaseSignal::sample_max_size_bytes(pair.first->get_configuration()->info);
-                            if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_ANALOG){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.ana.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_DISCRETE){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.dis.byte_offset;
-                            }else if(pair.first->get_configuration()->info.type == ED247_SIGNAL_TYPE_NAD){
-                                buffer_index = (size_t)pair.first->get_configuration()->info.info.nad.byte_offset;
+                            sample_size = pair.first->get_sample_max_size_bytes();
+                            if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_ANALOG){
+                                buffer_index = (size_t)pair.first->get_configuration()->_byte_offset;
+                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_DISCRETE){
+                                buffer_index = (size_t)pair.first->get_configuration()->_byte_offset;
+                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_NAD){
+                                buffer_index = (size_t)pair.first->get_configuration()->_byte_offset;
                             }else{
-                              PRINT_ERROR("Signal '" << pair.first->get_name() << "': Invalid type: " << pair.first->get_configuration()->info.type);
+                              PRINT_ERROR("Signal '" << pair.first->get_name() << "': Invalid type: " << pair.first->get_configuration()->_type);
                               return false;
                             }
                         }

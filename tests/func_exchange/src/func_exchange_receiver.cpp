@@ -537,7 +537,8 @@ TEST_P(SignalContext, SingleFrame)
     ed247_stream_assistant_t assistant;
     ed247_signal_list_t signals;
     ed247_signal_t signal;
-    const ed247_signal_info_t *signal_info;
+    std::string signal_name;
+    ed247_signal_type_t signal_type;
     bool empty;
     std::string str_send, str_recv;
     const ed247_timestamp_t* receive_timestamp;
@@ -559,17 +560,18 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_assistant_pop_sample(NULL, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_FAILURE);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
-        ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
+        signal_name = ed247_signal_get_name(signal);
+        signal_type = ed247_signal_get_type(signal);
         const void * sample_data;
         size_t sample_size;
         malloc_count_start();
         // Extract and check the content of each signal of the frame
         ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, signal, &sample_data, &sample_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
-        if(signal_info->type == ED247_SIGNAL_TYPE_DISCRETE || signal_info->type == ED247_SIGNAL_TYPE_NAD){
-            str_send = strize() << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
+        if(signal_type == ED247_SIGNAL_TYPE_DISCRETE || signal_type == ED247_SIGNAL_TYPE_NAD){
+            str_send = strize() << std::setw(sample_size) << std::setfill('0') << std::string(signal_name).substr(6,1);
         }else{
-            str_send = strize() << std::setw(sample_size) << std::setfill('0') << std::string(signal_info->name).substr(6,2);
+            str_send = strize() << std::setw(sample_size) << std::setfill('0') << std::string(signal_name).substr(6,2);
         }
         str_recv = std::string((char*)sample_data, sample_size);
         ASSERT_EQ(str_send, str_recv);

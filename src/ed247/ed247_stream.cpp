@@ -797,7 +797,7 @@ size_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, size_t frame_size)
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset));
+            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset));
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -829,7 +829,7 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_s
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->info.info.ana.byte_offset));
+            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset));
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -939,9 +939,9 @@ size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->info.info.nad.byte_offset);
-            size_t sample_element_length = BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) / xml::nad_type_size(signal->get_configuration()->info.info.nad.nad_type);
-            swap_nad(sample_data, signal->get_configuration()->info.info.nad.nad_type, sample_element_length);
+            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->_byte_offset);
+            size_t sample_element_length = signal->get_sample_max_size_bytes() / xml::nad_type_size(signal->get_configuration()->_nad_type);
+            swap_nad(sample_data, signal->get_configuration()->_nad_type, sample_element_length);
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -973,9 +973,9 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->info.info.nad.byte_offset);
-            size_t sample_element_length = BaseSignal::sample_max_size_bytes(signal->get_configuration()->info) / xml::nad_type_size(signal->get_configuration()->info.info.nad.nad_type);
-            swap_nad(sample_data, signal->get_configuration()->info.info.nad.nad_type, sample_element_length);
+            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->_byte_offset);
+            size_t sample_element_length = signal->get_sample_max_size_bytes() / xml::nad_type_size(signal->get_configuration()->_nad_type);
+            swap_nad(sample_data, signal->get_configuration()->_nad_type, sample_element_length);
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -1034,8 +1034,8 @@ size_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, size_t frame_size)
         while(cursor < sample->size()){
             sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
             cursor += sizeof(uint16_t);
-            cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type);
-            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
+            cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->_nad_type);
+            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->_nad_type, sample_size_bytes/cursor_step);
             cursor += sample_size_bytes;
             isignal++;
         }
@@ -1095,8 +1095,8 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
         while(cursor < sample->size()){
             sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
             cursor += sizeof(uint16_t);
-            cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type);
-            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->info.info.vnad.nad_type, sample_size_bytes/cursor_step);
+            cursor_step = xml::nad_type_size((*_signals)[isignal]->get_configuration()->_nad_type);
+            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->_nad_type, sample_size_bytes/cursor_step);
             cursor += sample_size_bytes;
             isignal++;
         }

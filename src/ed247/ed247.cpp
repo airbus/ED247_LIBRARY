@@ -1642,28 +1642,78 @@ size_t ed247_nad_type_size(
   return ed247::BaseSignal::nad_type_size(nad_type);
 }
 
-ed247_status_t ed247_signal_get_info(
-  ed247_signal_t               signal,
-  const ed247_signal_info_t ** info)
+const char* ed247_signal_get_name(ed247_signal_t signal)
 {
-  PRINT_DEBUG("function " << __func__ << "()");
-
-  if(!signal) {
-    PRINT_ERROR(__func__ << ": Invalid signal");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!info) {
-    PRINT_ERROR(__func__ << ": Empty info pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  *info = nullptr;
-  try{
-    auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-    *info = &ed247_signal->get_configuration()->info;
-  }
-  LIBED247_CATCH("Get signal info");
-  return ED247_STATUS_SUCCESS;
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_name.c_str();
 }
+
+const char* ed247_signal_get_comment(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_comment.c_str();
+}
+
+const char* ed247_signal_get_icd(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_icd.c_str();
+}
+
+ed247_signal_type_t ed247_signal_get_type(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_type;
+}
+
+uint32_t ed247_signal_get_byte_offset(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_byte_offset;
+}
+
+const char* ed247_signal_analogue_get_electrical_unit(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_analogue_electrical_unit.c_str();
+}
+
+ed247_nad_type_t ed247_signal_nad_get_type(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_nad_type;
+}
+
+const char* ed247_signal_nad_get_unit(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_nad_unit.c_str();
+}
+
+uint32_t ed247_signal_nad_get_dimensions_count(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_nad_dimensions.size();
+}
+
+uint32_t ed247_signal_nad_get_dimension(ed247_signal_t signal, uint32_t dimention_id)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_nad_dimensions[dimention_id];
+}
+
+uint32_t ed247_signal_vnad_get_position(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_vnad_position;
+}
+
+uint32_t ed247_signal_vnad_get_max_length(ed247_signal_t signal)
+{
+  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+  return ed247_signal->get_configuration()->_vnad_max_length;
+}
+
 
 ed247_status_t ed247_signal_set_user_data(
   ed247_signal_t signal,

@@ -1416,92 +1416,33 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_list_free(
  * Signal
  * ========================================================================= */
 /**
- * @brief DISCRETE signal dedicated information subpart
- * @ingroup signal
- */
-typedef struct {
-    uint32_t byte_offset;
-} ed247_signal_info_dis_t;
-#define LIBED247_SIGNAL_INFO_DIS_DEFAULT ed247_signal_info_dis_t{0}
-
-/**
- * @brief ANALOG signal dedicated information subpart
- * @ingroup signal
- */
-typedef struct {
-    uint32_t     byte_offset;
-    const char * electrical_unit;
-} ed247_signal_info_ana_t;
-#define LIBED247_SIGNAL_INFO_ANA_DEFAULT ed247_signal_info_ana_t{0, ""}
-
-/**
- * @brief NAD signal dedicated information subpart
- * @ingroup signal
- */
-typedef struct {
-    uint32_t         byte_offset;
-    ed247_nad_type_t nad_type;
-    const char *     unit;
-    uint32_t *       dimensions;
-    uint32_t         dimensions_count;
-} ed247_signal_info_nad_t;
-#define LIBED247_SIGNAL_INFO_NAD_DEFAULT ed247_signal_info_nad_t{0, ED247_NAD_TYPE__INVALID, "", NULL, 0}
-
-/**
- * @brief VNAD signal dedicated information subpart
- * @ingroup signal
- */
-typedef struct {
-    ed247_nad_type_t nad_type;
-    uint32_t         position;
-    const char *     unit;
-    uint32_t         max_length;
-} ed247_signal_info_vnad_t;
-#define LIBED247_SIGNAL_INFO_VNAD_DEFAULT ed247_signal_info_vnad_t{ED247_NAD_TYPE__INVALID, 0, "", 1}
-
-/**
- * @brief Signal type dedicatd information subpart
- * @ingroup signal
- */
-typedef union {
-    ed247_signal_info_dis_t  dis;
-    ed247_signal_info_ana_t  ana;
-    ed247_signal_info_nad_t  nad;
-    ed247_signal_info_vnad_t vnad;
-} ed247_signal_info_type_t;
-
-/**
- * @brief Signal information structure
- * @ingroup signal
- */
-typedef struct ed247_signal_info_s {
-    const char *        name;
-    ed247_signal_type_t type;
-    const char *        comment;
-    const char *        icd;
-    ed247_signal_info_type_t info;
-} ed247_signal_info_t;
-
-/**
  * @brief Size of a single element of ::ed247_nad_type_t
  * @ingroup signal
  * @param[in] nad_type The NAD type
  * @return The size of the NAD type element (sizeof equivalent)
  */
-extern LIBED247_EXPORT size_t ed247_nad_type_size(
-    ed247_nad_type_t nad_type);
+extern LIBED247_EXPORT size_t ed247_nad_type_size(ed247_nad_type_t nad_type);
 
 /**
- * @brief Retrieve attributes of the signal
  * @ingroup signal
- * @param[in] signal The signal identifier
- * @param[out] info Signal information
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
+ * @{
  */
-extern LIBED247_EXPORT ed247_status_t ed247_signal_get_info(
-    ed247_signal_t               signal,
-    const ed247_signal_info_t ** info);
+extern LIBED247_EXPORT const char* ed247_signal_get_name(ed247_signal_t signal);
+extern LIBED247_EXPORT const char* ed247_signal_get_comment(ed247_signal_t signal);
+extern LIBED247_EXPORT const char* ed247_signal_get_icd(ed247_signal_t signal);
+extern LIBED247_EXPORT ed247_signal_type_t ed247_signal_get_type(ed247_signal_t signal);
+/** @brief Meaningless for VNAD */
+extern LIBED247_EXPORT uint32_t ed247_signal_get_byte_offset(ed247_signal_t signal);
+extern LIBED247_EXPORT const char* ed247_signal_analogue_get_electrical_unit(ed247_signal_t analogue_signal);
+/** @brief For NAD and VNAD */
+extern LIBED247_EXPORT ed247_nad_type_t ed247_signal_nad_get_type(ed247_signal_t nad_signal);
+/** @brief For NAD and VNAD */
+extern LIBED247_EXPORT const char* ed247_signal_nad_get_unit(ed247_signal_t nad_signal);
+extern LIBED247_EXPORT uint32_t ed247_signal_nad_get_dimensions_count(ed247_signal_t nad_signal);
+extern LIBED247_EXPORT uint32_t ed247_signal_nad_get_dimension(ed247_signal_t nad_signal, uint32_t dimention_id);
+extern LIBED247_EXPORT uint32_t ed247_signal_vnad_get_position(ed247_signal_t vnad_signal);
+extern LIBED247_EXPORT uint32_t ed247_signal_vnad_get_max_length(ed247_signal_t vnad_signal);
+/** @} */
 
 /**
  * @brief Assign user data to the signal
@@ -1632,10 +1573,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_get_stream(
  * In case of DISCRETE Signal, the signal_sample_size equals to 1 byte
  * In case of ANALOG Signal, the signal_sample_size equals to 4 bytes (float). There is no need to swap the sample.
  * In case of NAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type),
- * multiplied by all the dimensions (which is invariant). As a reminder, nad_type and dimensions can be retrieved with ::ed247_signal_get_info().
+ * multiplied by all the dimensions (which is invariant).
  * There is no need to swap the samples.
  * In case of VNAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type),
- * multiplied by the effective size of the sample (which is variable). As a reminder, nad_type can be retrieved with ::ed247_signal_get_info().
+ * multiplied by the effective size of the sample (which is variable).
  * There is no need to swap the samples.
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
@@ -1657,10 +1598,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_write_signal(
  * In case of DISCRETE Signal, the signal_sample_size equals to 1 byte
  * In case of ANALOG Signal, the signal_sample_size equals to 4 bytes (float). There is no need to swap the sample.
  * In case of NAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type),
- * multiplied by all the dimensions (which is invariant). As a reminder, nad_type and dimensions can be retrieved with ::ed247_signal_get_info().
+ * multiplied by all the dimensions (which is invariant).
  * There is no need to swap the samples.
  * In case of VNAD Signal, the signal_sample_size equals to the size of an atomic element, given by ed247_nad_type_size(nad_type),
- * multiplied by the effective size of the sample (which is variable). As a reminder, nad_type can be retrieved with ::ed247_signal_get_info().
+ * multiplied by the effective size of the sample (which is variable).
  * There is no need to swap the samples.
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier

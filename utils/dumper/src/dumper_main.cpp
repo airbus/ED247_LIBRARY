@@ -151,9 +151,7 @@ int main(int argc, char *argv[])
                     status = ed247_stream_get_signal_list(stream, &signals);
                     if(check_status(context, status)) return status;
                     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
-                        const ed247_signal_info_t   *signal_info;
-                        status = ed247_signal_get_info(signal, &signal_info);
-                        if(check_status(context, status)) return status;
+                        std::string signal_name = ed247_signal_get_name(signal);
                         const void * signal_sample;
                         size_t signal_sample_size;
                         status = ed247_stream_assistant_read_signal(assistant, signal, &signal_sample, &signal_sample_size);
@@ -168,7 +166,7 @@ int main(int argc, char *argv[])
                             << recv_timestamp->epoch_s << ";"
                             << recv_timestamp->offset_ns << ";"
                             << "" << ";"
-                            << std::string(signal_info->name) << ";"; // Stream data
+                            << signal_name << ";"; // Stream data
                         for(size_t i = 0 ; i < signal_sample_size ; i++){
                             if(i > 0) output() << " ";
                             output() << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)((unsigned char*)signal_sample)[i];

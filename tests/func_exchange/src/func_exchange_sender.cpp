@@ -171,7 +171,7 @@ TEST_P(StreamContext, SingleFrame)
     TEST_SYNC();
 
     // Receiver is setting the callbacks
-    
+
     // Checkpoint n~5.2
     SAY_SELF("Checkpoint n~5.2");
     TEST_SYNC();
@@ -186,13 +186,13 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
     // Receiver is setting the callbacks
-    
+
     // Checkpoint n~6.1
     SAY_SELF("Checkpoint n~6.1");
     TEST_SYNC();
 
     // Receiver is setting callbacks
-    
+
     // Checkpoint n~6.2
     SAY_SELF("Checkpoint n~6.2");
     TEST_SYNC();
@@ -205,13 +205,13 @@ TEST_P(StreamContext, SingleFrame)
     }
     SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-    
+
     // Checkpoint n~7.1
     SAY_SELF("Checkpoint n~7.1");
     TEST_SYNC();
 
     // Receiver is setting callbacks
-    
+
     // Checkpoint n~7.2
     SAY_SELF("Checkpoint n~7.2");
     TEST_SYNC();
@@ -224,7 +224,7 @@ TEST_P(StreamContext, SingleFrame)
     }
     SAY_SELF("Send pushed samples");
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-    
+
     // Checkpoint n~8
     SAY_SELF("Checkpoint n~8");
     TEST_SYNC();
@@ -391,7 +391,8 @@ TEST_P(SignalContext, SingleFrame)
     ed247_stream_assistant_t assistant;
     ed247_signal_list_t signals;
     ed247_signal_t signal;
-    const ed247_signal_info_t *signal_info;
+    std::string signal_name;
+    ed247_signal_type_t signal_type;
     void *samples[2];
     size_t sizes[2];
     std::string str_send;
@@ -406,8 +407,9 @@ TEST_P(SignalContext, SingleFrame)
     size_t tmp_sample_size;
     ASSERT_EQ(ed247_stream_find_signals(stream, ".*", &signals), ED247_STATUS_SUCCESS);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != nullptr){
-        ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
-        SAY_SELF("Create sample for signal [" << std::string(signal_info->name) << "] ...");
+        signal_name = ed247_signal_get_name(signal);
+        signal_type = ed247_signal_get_type(signal);
+        SAY_SELF("Create sample for signal [" << std::string(signal_name) << "] ...");
         ASSERT_EQ(ed247_signal_allocate_sample(signal, &samples[s], &sizes[s]), ED247_STATUS_SUCCESS);
         // Check limit cases
         ASSERT_EQ(ed247_signal_allocate_sample(NULL, &tmp_sample, &tmp_sample_size), ED247_STATUS_FAILURE);
@@ -426,12 +428,13 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_signal_list(stream, &signals), ED247_STATUS_SUCCESS);
     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != nullptr){
-        ASSERT_EQ(ed247_signal_get_info(signal, &signal_info), ED247_STATUS_SUCCESS);
-        SAY_SELF("Writing [" << std::string(signal_info->name) << "] ...");
-        if(signal_info->type == ED247_SIGNAL_TYPE_DISCRETE || signal_info->type == ED247_SIGNAL_TYPE_NAD){
-          str_send = strize() << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_info->name).substr(6,1);
+        signal_name = ed247_signal_get_name(signal);
+        signal_type = ed247_signal_get_type(signal);
+        SAY_SELF("Writing [" << std::string(signal_name) << "] ...");
+        if(signal_type == ED247_SIGNAL_TYPE_DISCRETE || signal_type == ED247_SIGNAL_TYPE_NAD){
+          str_send = strize() << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_name).substr(6,1);
         }else{
-          str_send = strize() << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_info->name).substr(6,2);
+          str_send = strize() << std::setw(sizes[s]) << std::setfill('0') << std::string(signal_name).substr(6,2);
         }
         memcpy(samples[s], str_send.c_str(), sizes[s]);
         malloc_count_start();
@@ -488,10 +491,10 @@ int main(int argc, char **argv)
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a825_mc_main.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_uc_main.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_serial_mc_main.xml"});
-    
+
     simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_main_simple.xml"});
     simple_stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_main_simple.xml"});
-    
+
     signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_dis_mc_main.xml"});
     signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_ana_mc_main.xml"});
     signal_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_nad_mc_main.xml"});

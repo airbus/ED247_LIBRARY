@@ -98,27 +98,9 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
             }
         }
 
-        static size_t sample_max_size_bytes(const ed247_signal_info_t & info)
+        uint32_t get_sample_max_size_bytes() const
         {
-            switch(info.type){
-                case ED247_SIGNAL_TYPE_DISCRETE:
-                    return 1;
-                case ED247_SIGNAL_TYPE_ANALOG:
-                    return 4;
-                case ED247_SIGNAL_TYPE_NAD:
-                {
-                    size_t size = 1;
-                    for(unsigned i = 0 ; i < info.info.nad.dimensions_count ; i++){
-                        size *= info.info.nad.dimensions[i];
-                    }
-                    size = size*xml::nad_type_size(info.info.nad.nad_type);
-                    return size;
-                }
-                case ED247_SIGNAL_TYPE_VNAD:
-                    return xml::nad_type_size(info.info.vnad.nad_type) * info.info.vnad.max_length;
-                default:
-                    return 0;
-            }
+          return _configuration->get_sample_max_size_bytes();
         }
 
         const xml::Signal * get_configuration() const
@@ -128,7 +110,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
         std::string get_name() const
         {
-            return _configuration ? std::string(_configuration->info.name) : std::string();
+            return _configuration ? std::string(_configuration->_name) : std::string();
         }
 
         std::shared_ptr<BaseStream> get_stream()
@@ -138,7 +120,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
         std::unique_ptr<BaseSample> allocate_sample() const;
 
-        virtual size_t position() const = 0;
+        size_t position() const { return _configuration->_position; }
 
     protected:
         std::shared_ptr<xml::Signal> _configuration;
@@ -187,8 +169,6 @@ class Signal : public BaseSignal, private SignalTypeChecker<E>
         const ed247_signal_type_t type {E};
 
         using BaseSignal::BaseSignal;
-
-        virtual size_t position() const final;
 
     public:
         class Builder

@@ -28,7 +28,7 @@
 #include <libxml/xmlschemas.h>
 
 #include "ed247_xsd.h"
-#include "ed247_signal.h"
+//#include "ed247_signal.h"
 
 #include <sstream>
 #include <istream>
@@ -522,15 +522,52 @@ void SERIALStream::create_children(const xmlNodePtr xml_node)
     }
 }
 
+void Signal::Reset(ed247_signal_type_t type)
+{
+    _name = "";
+    _type = type;
+    _comment = "";
+    _icd = "";
+
+    _byte_offset = 0;
+    _analogue_electrical_unit = "";
+    _nad_type = ED247_NAD_TYPE__INVALID;
+    _nad_unit = "";
+    _nad_dimensions.clear();
+    _nad_dimensions.push_back(1);
+    _vnad_position = 0;
+    _vnad_max_length = 0;
+}
+
+uint32_t Signal::get_sample_max_size_bytes() const
+{
+    switch(_type) {
+    case ED247_SIGNAL_TYPE_DISCRETE:
+        return 1;
+    case ED247_SIGNAL_TYPE_ANALOG:
+        return 4;
+    case ED247_SIGNAL_TYPE_NAD:
+    {
+        uint32_t size = 1;
+        for (auto dim : _nad_dimensions) {
+            size *= dim;
+        }
+        size = size * xml::nad_type_size(_nad_type);
+        return size;
+    }
+    case ED247_SIGNAL_TYPE_VNAD:
+        return xml::nad_type_size(_nad_type) * _vnad_max_length;
+    default:
+        return 0;
+    }
+}
+
+
 // DISSignal
 
 void DISSignal::reset()
 {
-    info.name = nullptr;
-    info.type = ED247_SIGNAL_TYPE_DISCRETE;
-    info.comment = "";
-    info.icd = "";
-    info.info.dis = LIBED247_SIGNAL_INFO_DIS_DEFAULT;
+    Signal::Reset(ED247_SIGNAL_TYPE_DISCRETE);
 }
 
 void DISSignal::fill_attributes(const xmlNodePtr xml_node)
@@ -538,13 +575,13 @@ void DISSignal::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::ByteOffset) == 0){
-            set_value(info.info.dis.byte_offset,xml_attr);
+            set_value(_byte_offset,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
@@ -560,11 +597,7 @@ void DISSignal::create_children(const xmlNodePtr xml_node)
 
 void ANASignal::reset()
 {
-    info.name = nullptr;
-    info.type = ED247_SIGNAL_TYPE_ANALOG;
-    info.comment = "";
-    info.icd = "";
-    info.info.ana = LIBED247_SIGNAL_INFO_ANA_DEFAULT;
+    Signal::Reset(ED247_SIGNAL_TYPE_ANALOG);
 }
 
 void ANASignal::fill_attributes(const xmlNodePtr xml_node)
@@ -572,15 +605,15 @@ void ANASignal::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::ElectricalUnit) == 0){
-            set_value(info.info.ana.electrical_unit,xml_attr);
+            set_value(_analogue_electrical_unit,xml_attr);
         }else if(attr_name.compare(attr::ByteOffset) == 0){
-            set_value(info.info.ana.byte_offset,xml_attr);
+            set_value(_byte_offset,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
@@ -596,26 +629,11 @@ void ANASignal::create_children(const xmlNodePtr xml_node)
 
 NADSignal::~NADSignal()
 {
-    if (info.info.nad.dimensions != NULL)
-    {
-        free(info.info.nad.dimensions);
-        info.info.nad.dimensions = NULL;
-    }
 }
 
 void NADSignal::reset()
 {
-    info.name = nullptr;
-    info.type = ED247_SIGNAL_TYPE_NAD;
-    info.comment = "";
-    info.icd = "";
-    info.info.nad = LIBED247_SIGNAL_INFO_NAD_DEFAULT;
-    info.info.nad.dimensions_count = 1;
-    info.info.nad.dimensions = (uint32_t*)calloc(info.info.nad.dimensions_count, sizeof(uint32_t));
-    for (uint32_t i = 0; i < info.info.nad.dimensions_count; i++)
-    {
-        info.info.nad.dimensions[i] = 1;
-    }
+    Signal::Reset(ED247_SIGNAL_TYPE_NAD);
 }
 
 void NADSignal::fill_attributes(const xmlNodePtr xml_node)
@@ -623,43 +641,36 @@ void NADSignal::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::Dimensions) == 0){
             std::string testee(xmlChar2string(xmlGetProp(xml_node,xml_attr->name)));
             size_t pos = 0;
             uint32_t dimension;
-            std::vector<uint32_t> dimensions;
             std::istringstream iss;
+            _nad_dimensions.clear();
             // This bloc capture each dimension followed by a separator
             while((pos = testee.find_first_of("xX")) != std::string::npos){
                 iss.str(testee.substr(0, pos));
                 iss >> dimension;
                 iss.clear(); // Reset the flags or iss will not be usable anymore
-                dimensions.push_back(dimension);
+                _nad_dimensions.push_back(dimension);
                 testee.erase(0,pos+1);
             }
             // Capture the last dimension separatedly because it is not followed by a separator
             iss.str(testee.substr(0, pos));
             iss >> dimension;
-            dimensions.push_back(dimension);
+            _nad_dimensions.push_back(dimension);
 
-            info.info.nad.dimensions_count = (uint32_t)dimensions.size();
-            info.info.nad.dimensions = (uint32_t*)realloc(info.info.nad.dimensions,
-                    sizeof(uint32_t)*info.info.nad.dimensions_count);
-            pos = 0;
-            for(auto dim : dimensions){
-                info.info.nad.dimensions[pos++] = dim;
-            }
         }else if(attr_name.compare(attr::Type) == 0){
-            set_value(info.info.nad.nad_type,xml_attr);
+            set_value(_nad_type,xml_attr);
         }else if(attr_name.compare(attr::Unit) == 0){
-            set_value(info.info.nad.unit,xml_attr);
+            set_value(_nad_unit,xml_attr);
         }else if(attr_name.compare(attr::ByteOffset) == 0){
-            set_value(info.info.nad.byte_offset,xml_attr);
+            set_value(_byte_offset,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
@@ -675,11 +686,7 @@ void NADSignal::create_children(const xmlNodePtr xml_node)
 
 void VNADSignal::reset()
 {
-    info.name = nullptr;
-    info.type = ED247_SIGNAL_TYPE_VNAD;
-    info.comment = "";
-    info.icd = "";
-    info.info.vnad = LIBED247_SIGNAL_INFO_VNAD_DEFAULT;
+    Signal::Reset(ED247_SIGNAL_TYPE_VNAD);
 }
 
 void VNADSignal::fill_attributes(const xmlNodePtr xml_node)
@@ -687,19 +694,19 @@ void VNADSignal::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name,xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment,xml_attr);
         }else if(attr_name.compare(attr::ICD) == 0){
-            set_value(info.icd,xml_attr);
+            set_value(_icd,xml_attr);
         }else if(attr_name.compare(attr::Type) == 0){
-            set_value(info.info.vnad.nad_type,xml_attr);
+            set_value(_nad_type,xml_attr);
         }else if(attr_name.compare(attr::Unit) == 0){
-            set_value(info.info.vnad.unit,xml_attr);
+            set_value(_nad_unit,xml_attr);
         }else if(attr_name.compare(attr::MaxLength) == 0){
-            set_value(info.info.vnad.max_length,xml_attr);
+            set_value(_vnad_max_length,xml_attr);
         }else if(attr_name.compare(attr::Position) == 0){
-            set_value(info.info.vnad.position,xml_attr);
+            set_value(_vnad_position,xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::Signal << "]");
         }
@@ -767,8 +774,8 @@ void DISStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<DISSignal> signal = std::make_unique<DISSignal>();
                     signal->load(xml_node_child_iter);
-                    if(signal->info.info.dis.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > _sample_max_size_bytes)
-                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.dis.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
+                    if(signal->_byte_offset + signal->get_sample_max_size_bytes() > _sample_max_size_bytes)
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->_name << "]: ByteOffset [" << signal->_byte_offset << "] + [" << signal->get_sample_max_size_bytes() << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -782,12 +789,12 @@ void DISStream::create_children(const xmlNodePtr xml_node)
     }
     // Sort according to ByteOffset
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-        return (a == nullptr || b == nullptr) ? false : (a->info.info.dis.byte_offset < b->info.info.dis.byte_offset);
+        return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
     });
     // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        s->position = p++;
+        s->_position = p++;
     }
 }
 
@@ -847,8 +854,8 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<ANASignal> signal = std::make_unique<ANASignal>();
                     signal->load(xml_node_child_iter);
-                    if(signal->info.info.ana.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > _sample_max_size_bytes)
-                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.ana.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
+                    if(signal->_byte_offset + signal->get_sample_max_size_bytes() > _sample_max_size_bytes)
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->_name << "]: ByteOffset [" << signal->_byte_offset << "] + [" << signal->get_sample_max_size_bytes() << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -862,12 +869,12 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
     }
     // Sort according to ByteOffset
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-        return (a == nullptr || b == nullptr) ? false : (a->info.info.ana.byte_offset < b->info.info.ana.byte_offset);
+        return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
     });
     // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        s->position = p++;
+        s->_position = p++;
     }
 }
 
@@ -927,8 +934,8 @@ void NADStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<NADSignal> signal = std::make_unique<NADSignal>();
                     signal->load(xml_node_child_iter);
-                    if(signal->info.info.nad.byte_offset + BaseSignal::sample_max_size_bytes(signal->info) > _sample_max_size_bytes)
-                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->info.name << "]: ByteOffset [" << signal->info.info.nad.byte_offset << "] + [" << BaseSignal::sample_max_size_bytes(signal->info) << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
+                    if(signal->_byte_offset + signal->get_sample_max_size_bytes() > _sample_max_size_bytes)
+                        THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->_name << "]: ByteOffset [" << signal->_byte_offset << "] + [" << signal->get_sample_max_size_bytes() << "] > Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -942,12 +949,12 @@ void NADStream::create_children(const xmlNodePtr xml_node)
     }
     // Sort according to ByteOffset
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-        return (a == nullptr || b == nullptr) ? false : (a->info.info.nad.byte_offset < b->info.info.nad.byte_offset);
+        return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
     });
     // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        s->position = p++;
+        s->_position = p++;
     }
 }
 
@@ -1005,7 +1012,7 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
                 if(node_name.compare(node::Signal) == 0){
                     std::unique_ptr<VNADSignal> signal = std::make_unique<VNADSignal>();
                     signal->load(xml_node_child_iter);
-                    _sample_max_size_bytes += (BaseSignal::sample_max_size_bytes(signal->info) + sizeof(uint16_t)) * signal->info.info.vnad.max_length;
+                    _sample_max_size_bytes += (signal->get_sample_max_size_bytes() + sizeof(uint16_t)) * signal->_vnad_max_length;
                     signals.push_back(std::move(signal));
                 }else{
                     THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
@@ -1020,12 +1027,12 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
     }
     // Sort according to ByteOffset
     std::sort(signals.begin(), signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-        return (a == nullptr || b == nullptr) ? false : (a->info.info.vnad.position < b->info.info.vnad.position);
+        return (a == nullptr || b == nullptr) ? false : (a->_vnad_position < b->_vnad_position);
     });
     // Update position attribute
     size_t p = 0;
     for(auto & s : signals){
-        s->position = p++;
+        s->_position = p++;
     }
 }
 

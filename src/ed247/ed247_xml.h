@@ -300,8 +300,23 @@ class SERIALStream : public Node, public Stream
 
 struct Signal
 {
-    ed247_signal_info_t info;
-    size_t position;
+    std::string           _name;
+    ed247_signal_type_t   _type;
+    std::string           _comment;
+    std::string           _icd;
+    uint32_t              _byte_offset;                // All signals except VNAD
+    std::string           _analogue_electrical_unit;
+    ed247_nad_type_t      _nad_type;
+    std::string           _nad_unit;                   // NAD and VNAD
+    std::vector<uint32_t> _nad_dimensions;
+    uint32_t              _vnad_position;
+    uint32_t              _vnad_max_length;
+
+    size_t                _position;                   // position in the stream vector
+
+    void Reset(ed247_signal_type_t type);
+
+    uint32_t get_sample_max_size_bytes() const;
 };
 
 class DISSignal : public Node, public Signal

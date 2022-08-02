@@ -183,67 +183,61 @@ Comment: %s\n",
 
 ed247_status_t dump_signal(ed247_signal_t signal)
 {
-    ed247_status_t              status;
-    const ed247_signal_info_t   *info;
-
-    status = ed247_signal_get_info(signal,&info);
-    if(status) return status;
-
-    if(info->type == ED247_SIGNAL_TYPE_DISCRETE){
-        fprintf(stdout,"#### ED247 DISCRETE Signal\n\
+  if(ed247_signal_get_type(signal) == ED247_SIGNAL_TYPE_DISCRETE){
+    fprintf(stdout,"#### ED247 DISCRETE Signal\n\
 Name: %s\n\
 ICD: %s\n\
 ByteOffset: %u\n\
 Comment: %s\n",
-        info->name,
-        info->icd,
-        info->info.dis.byte_offset,
-        info->comment);
-    }else if(info->type == ED247_SIGNAL_TYPE_ANALOG){
-        fprintf(stdout,"#### ED247 ANALOG Signal\n\
+            ed247_signal_get_name(signal),
+            ed247_signal_get_icd(signal),
+            ed247_signal_get_byte_offset(signal),
+            ed247_signal_get_comment(signal));
+  }else if(ed247_signal_get_type(signal) == ED247_SIGNAL_TYPE_ANALOG){
+    fprintf(stdout,"#### ED247 ANALOG Signal\n\
 Name: %s\n\
 ICD: %s\n\
 ElectricalUnit: %s\n\
 ByteOffset: %u\n\
 Comment: %s\n",
-        info->name,
-        info->icd,
-        info->info.ana.electrical_unit,
-        info->info.ana.byte_offset,
-        info->comment);
-    }else if(info->type == ED247_SIGNAL_TYPE_NAD){
-        fprintf(stdout,"#### ED247 NAD Signal\n\
+            ed247_signal_get_name(signal),
+            ed247_signal_get_icd(signal),
+            ed247_signal_analogue_get_electrical_unit(signal),
+            ed247_signal_get_byte_offset(signal),
+            ed247_signal_get_comment(signal));
+  }else if(ed247_signal_get_type(signal) == ED247_SIGNAL_TYPE_NAD){
+    fprintf(stdout,"#### ED247 NAD Signal\n\
 Name: %s\n\
 ICD: %s\n\
 Unit: %s\n\
 Type: %s\n\
 ByteOffset: %u\n\
 Comment: %s\n",
-        info->name,
-        info->icd,
-        info->info.nad.unit,
-        ed247_nad_type_string(info->info.nad.nad_type),
-        info->info.nad.byte_offset,
-        info->comment);
-        uint32_t i = 0;
-        fprintf(stdout,"Dimensions:");
-        for(i = 0;i < info->info.nad.dimensions_count ; i++){
-            fprintf(stdout," %u",info->info.nad.dimensions[i]);
-        }
-    }else if(info->type == ED247_SIGNAL_TYPE_VNAD){
-        fprintf(stdout,"#### ED247 VNAD Signal\n\
+            ed247_signal_get_name(signal),
+            ed247_signal_get_icd(signal),
+            ed247_signal_nad_get_unit(signal),
+            ed247_nad_type_string(ed247_signal_nad_get_type(signal)),
+            ed247_signal_get_byte_offset(signal),
+            ed247_signal_get_comment(signal));
+    uint32_t i = 0;
+    fprintf(stdout,"Dimensions:");
+    for(i = 0;i < ed247_signal_nad_get_dimensions_count(signal) ; i++){
+      fprintf(stdout," %u",ed247_signal_nad_get_dimension(signal, i));
+    }
+  }else if(ed247_signal_get_type(signal) == ED247_SIGNAL_TYPE_VNAD){
+    fprintf(stdout,"#### ED247 VNAD Signal\n\
 Name: %s\n\
 ICD: %s\n\
 Unit: %s\n\
 Type: %s\n\
 MaxLength: %u\n\
 Comment: %s\n",
-        info->name,
-        info->icd,
-        info->info.vnad.unit,
-        ed247_nad_type_string(info->info.vnad.nad_type),
-        info->info.vnad.max_length,
-        info->comment);
+            ed247_signal_get_name(signal),
+            ed247_signal_get_icd(signal),
+            ed247_signal_nad_get_unit(signal),
+            ed247_nad_type_string(ed247_signal_nad_get_type(signal)),
+            ed247_signal_vnad_get_max_length(signal),
+            ed247_signal_get_comment(signal));
     }else{
         return EXIT_FAILURE;
     }

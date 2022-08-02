@@ -38,7 +38,7 @@ struct Signal {
 
     Stream *stream;
     ed247_signal_t signal;
-    const ed247_signal_info_t *info;
+    std::string name;
     void *sample = nullptr;
     size_t sample_size = 0;
 };
@@ -121,9 +121,9 @@ int main(int argc, char *argv[])
                 si = new Signal();
                 si->stream = st;
                 si->signal = signal;
-                status = ed247_signal_get_info(signal, &si->info);
+                si->name = ed247_signal_get_name(signal);
                 if(check_status(context,status)) return EXIT_FAILURE;
-                PRINT_INFO("Initialize stream [" << st->name << "] / signal [" << std::string(si->info->name) << "]");
+                PRINT_INFO("Initialize stream [" << st->name << "] / signal [" << std::string(si->name) << "]");
                 status = ed247_signal_allocate_sample(si->signal, &si->sample, &si->sample_size);
                 if(check_status(context,status)) return EXIT_FAILURE;
                 st->signals.push_back(si);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
                         } else {
                           memset(si->sample, value, si->sample_size);
                         }
-                        PRINT_INFO("Update stream [" << st->name << "] / sample [" << i << "] / signal [" << std::string(si->info->name) << "]: push [" << value << "]");
+                        PRINT_INFO("Update stream [" << st->name << "] / sample [" << i << "] / signal [" << std::string(si->name) << "]: push [" << value << "]");
                         status = ed247_stream_assistant_write_signal(st->assistant, si->signal, si->sample, si->sample_size);
                         if(check_status(context,status)) return EXIT_FAILURE;
                     }

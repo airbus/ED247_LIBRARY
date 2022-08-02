@@ -58,7 +58,7 @@ namespace ed247 {
     auto signal = pool_signals->find(".*").front();
     auto signal_sample = signal->allocate_sample();
     ASSERT_EQ(signal_sample->size(), (size_t)0);
-    ASSERT_EQ(signal_sample->capacity(), ed247::BaseSignal::sample_max_size_bytes(signal->get_configuration()->info));
+    ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
 
     // Check BaseStream::Assistant creation
     auto assistant = stream->get_assistant();
@@ -70,7 +70,7 @@ namespace ed247 {
     for(auto & signal : *assistant->get_stream()->signals()){
       auto sample = signal->allocate_sample();
       ASSERT_EQ(sample->size(), (size_t)0);
-      ASSERT_EQ(sample->capacity(), ed247::BaseSignal::sample_max_size_bytes(signal->get_configuration()->info));
+      ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
       sample->copy(msg.c_str(), sample->capacity());
       assistant->write(signal, sample->data(), sample->size());
@@ -98,7 +98,7 @@ namespace ed247 {
     for(auto & signal : *assistant->get_stream()->signals()){
       auto sample = signal->allocate_sample();
       ASSERT_EQ(sample->size(), (size_t)0);
-      ASSERT_EQ(sample->capacity(), ed247::BaseSignal::sample_max_size_bytes(signal->get_configuration()->info));
+      ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
       sample->copy(msg.c_str(), sample->capacity());
       assistant->write(signal, sample->data(), sample->size());
