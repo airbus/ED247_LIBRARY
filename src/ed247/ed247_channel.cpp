@@ -308,7 +308,7 @@ channel_ptr_t Channel::Pool::get(std::shared_ptr<xml::Channel> & configuration)
 {
     static Channel::Builder builder;
     channel_ptr_t sp_channel;
-    std::string name{configuration->info.name};
+    std::string name{configuration->_name};
 
     auto iter = std::find_if(_channels->begin(),_channels->end(),
         [&name](const channel_ptr_t & c){ return c->get_name() == name; });

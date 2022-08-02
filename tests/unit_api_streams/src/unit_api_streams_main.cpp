@@ -388,7 +388,6 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     ed247_context_t context;
     ed247_channel_list_t channel_list;
     ed247_channel_t channel;
-    const ed247_channel_info_t* channel_info;
     ed247_stream_list_t stream_list;
     ed247_stream_t stream;
     const ed247_stream_info_t* stream_info;
@@ -399,8 +398,6 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     // Get the first channel and retrieve streams
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
-    ASSERT_FALSE(strcmp(channel_info->name, "MultipleStreamsChannel"));
     ASSERT_EQ(ed247_channel_get_stream_list(NULL, &stream_list), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_stream_list(channel, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_stream_list(channel, &stream_list), ED247_STATUS_SUCCESS);
@@ -449,7 +446,6 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     ed247_context_t context;
     ed247_channel_list_t channel_list;
     ed247_channel_t channel;
-    const ed247_channel_info_t* channel_info;
     ed247_stream_list_t stream_list;
     ed247_stream_t stream, stream_test;
     const ed247_stream_info_t* stream_info;
@@ -466,8 +462,6 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     // Get a single channel and retrieve streams
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel2", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_channel_get_info(channel, &channel_info), ED247_STATUS_SUCCESS);
-    ASSERT_FALSE(strcmp(channel_info->name, "MultipleStreamsChannel2"));
     ASSERT_EQ(ed247_channel_find_streams(NULL, NULL, &stream_list), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_find_streams(channel, NULL, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_find_streams(channel, ".*[", &stream_list), ED247_STATUS_FAILURE);

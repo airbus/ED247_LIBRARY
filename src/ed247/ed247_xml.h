@@ -414,7 +414,10 @@ class Channel: public Node, public std::enable_shared_from_this<Channel>
         virtual void reset() final;
 
     public:
-        ed247_channel_info_t info;
+        std::string      _name;
+        std::string      _comment;
+        ed247_standard_t _frame_standard_revision;
+
         ComInterface com_interface;
         Header header;
         std::vector<std::shared_ptr<Stream>> streams;

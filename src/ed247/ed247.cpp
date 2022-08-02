@@ -871,27 +871,22 @@ ed247_status_t ed247_unregister_recv_callback(
 /* =========================================================================
  * Channel
  * ========================================================================= */
-ed247_status_t ed247_channel_get_info(
-  ed247_channel_t               channel,
-  const ed247_channel_info_t ** info)
+const char* ed247_channel_get_name(ed247_channel_t channel)
 {
-  PRINT_DEBUG("function " << __func__ << "()");
+  auto ed247_channel = static_cast<ed247::Channel*>(channel);
+  return ed247_channel->get_configuration()->_name.c_str();
+}
 
-  if(!channel) {
-    PRINT_ERROR(__func__ << ": Invalid channel");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!info) {
-    PRINT_ERROR(__func__ << ": Empty info pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  *info = nullptr;
-  try{
-    auto ed247_channel = static_cast<ed247::Channel*>(channel);
-    *info = &ed247_channel->get_configuration()->info;
-  }
-  LIBED247_CATCH("Get channel info");
-  return ED247_STATUS_SUCCESS;
+const char* ed247_channel_get_comment(ed247_channel_t channel)
+{
+  auto ed247_channel = static_cast<ed247::Channel*>(channel);
+  return ed247_channel->get_configuration()->_comment.c_str();
+}
+
+ed247_standard_t ed247_channel_get_frame_standard_revision(ed247_channel_t channel)
+{
+  auto ed247_channel = static_cast<ed247::Channel*>(channel);
+  return ed247_channel->get_configuration()->_frame_standard_revision;
 }
 
 ed247_status_t ed247_channel_get_stream_list(

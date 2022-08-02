@@ -135,7 +135,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         const FrameHeader & get_header() const { return _header; }
 
-        std::string get_name() const { return _configuration ? std::string(_configuration->info.name) : std::string(); }
+        std::string get_name() const { return _configuration ? _configuration->_name : std::string(); }
 
         void add_emitter(ComInterface & com_interface)
         {

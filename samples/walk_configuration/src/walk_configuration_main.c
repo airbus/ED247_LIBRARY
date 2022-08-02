@@ -157,21 +157,16 @@ Revision: %s\n",
 
 ed247_status_t dump_channel(ed247_channel_t channel)
 {
-    ed247_status_t              status;
-    const ed247_channel_info_t  *info;
-
-    status = ed247_channel_get_info(channel,&info);
-    if(status) return status;
-
     fprintf(stdout,"## ED247 Channel\n\
 Name: %s\n\
 Comment: %s\n\
 FrameFormat/StandardRevision: %s\n",
-        info->name,
-        info->comment,
-        ed247_standard_string(info->frame_format.standard_revision));
+            ed247_channel_get_name(channel),
+            ed247_channel_get_comment(channel),
+            ed247_standard_string(ed247_channel_get_frame_standard_revision(channel))
+      );
 
-    return status;
+    return ED247_STATUS_SUCCESS;
 }
 
 ed247_status_t dump_stream(ed247_stream_t stream)

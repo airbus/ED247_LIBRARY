@@ -303,15 +303,6 @@ typedef enum {
  * Shared Types
  * ========================================================================= */
 /**
- * @brief Frame format
- * @ingroup shared
- */
-typedef struct ed247_frame_format_s {
-    ed247_standard_t standard_revision;
-} ed247_frame_format_t;
-#define LIBED247_FRAME_FORMAT_DEFAULT ed247_standard_t{ED247_STANDARD__INVALID}
-
-/**
  * @brief Timestamp structure, seconds from EPOCH (January 1st 1970) and nanoseconds offset with reference to previous field
  * @ingroup shared
  */
@@ -1005,27 +996,14 @@ extern LIBED247_EXPORT void ed247_get_receive_timestamp(ed247_timestamp_t* times
  * Channel
  * ========================================================================= */
 /**
- * @brief Channel information structure
  * @ingroup channel
+ * @{
  */
-typedef struct ed247_channel_info_s {
-    const char *         name;
-    const char *         comment;
-    ed247_frame_format_t frame_format;
-} ed247_channel_info_t;
-#define LIBED247_CHANNEL_INFO_DEFAULT ed247_channel_info_t{NULL, "", LIBED247_FRAME_FORMAT_DEFAULT}
+extern LIBED247_EXPORT const char* ed247_channel_get_name(ed247_channel_t channel);
+extern LIBED247_EXPORT const char* ed247_channel_get_comment(ed247_channel_t channel);
+extern LIBED247_EXPORT ed247_standard_t ed247_channel_get_frame_standard_revision(ed247_channel_t channel);
+/** @} */
 
-/**
- * @brief Retrieve attributes of the channel
- * @ingroup channel
- * @param[in] channel The channel identifier
- * @param[out] info Channel information
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_channel_get_info(
-    ed247_channel_t               channel,
-    const ed247_channel_info_t ** info);
 
 /**
  * @brief Retrieve all the streams of the channel

@@ -55,7 +55,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         // Channel (Emitter)
         auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_emitter_conf->info.name = "ChannelOutput";
+        sp_channel_emitter_conf->_name = "ChannelOutput";
         sp_channel_emitter_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_emitter_conf->streams.push_back(sp_stream_emitter_conf);
         auto channel_emitter = pool_channels->get(sp_channel_emitter_conf);
@@ -69,7 +69,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         // Channel (Receiver)
         auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_receiver_conf->info.name = "ChannelInput";
+        sp_channel_receiver_conf->_name = "ChannelInput";
         sp_channel_receiver_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_receiver_conf->streams.push_back(sp_stream_receiver_conf);
         auto channel_receiver = pool_channels->get(sp_channel_receiver_conf);
@@ -165,7 +165,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
         // Channel (Emitter)
         auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_emitter_conf->info.name = "ChannelOutput";
+        sp_channel_emitter_conf->_name = "ChannelOutput";
         sp_channel_emitter_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_emitter_conf->streams.push_back(sp_stream_emitter_conf);
         auto channel_emitter = pool_channels->get(sp_channel_emitter_conf);
@@ -179,7 +179,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
         // Channel (Receiver)
         auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_receiver_conf->info.name = "ChannelInput";
+        sp_channel_receiver_conf->_name = "ChannelInput";
         sp_channel_receiver_conf->com_interface.udp_sockets.push_back(sp_socket_conf);
         sp_channel_receiver_conf->streams.push_back(sp_stream_receiver_conf);
         auto channel_receiver = pool_channels->get(sp_channel_receiver_conf);

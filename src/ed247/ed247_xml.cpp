@@ -1052,7 +1052,9 @@ void Header::create_children(const xmlNodePtr xml_node)
 
 void Channel::reset()
 {
-    info = LIBED247_CHANNEL_INFO_DEFAULT;
+    _name = std::string();
+    _comment = std::string();
+    _frame_standard_revision = ED247_STANDARD__INVALID;
 }
 
 void Channel::fill_attributes(const xmlNodePtr xml_node)
@@ -1060,9 +1062,9 @@ void Channel::fill_attributes(const xmlNodePtr xml_node)
     for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
         auto attr_name = xmlChar2string(xml_attr->name);
         if(attr_name.compare(attr::Name) == 0){
-            set_value(info.name,xml_attr);
+            set_value(_name, xml_attr);
         }else if(attr_name.compare(attr::Comment) == 0){
-            set_value(info.comment,xml_attr);
+            set_value(_comment, xml_attr);
         }else{
             THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::MultiChannel << "] or [" << node::Channel << "]");
         }
@@ -1083,7 +1085,7 @@ void Channel::create_children(const xmlNodePtr xml_node)
             for(auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
                 auto attr_name = xmlChar2string(xml_attr->name);
                 if(attr_name.compare(attr::StandardRevision) == 0){
-                    set_value(info.frame_format.standard_revision,xml_attr);
+                    set_value(_frame_standard_revision, xml_attr);
                 }else{
                     THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::FrameFormat <<"]");
                 }
@@ -1251,14 +1253,14 @@ void Component::create_children(const xmlNodePtr xml_node)
                     std::unique_ptr<Channel> channel = std::make_unique<Channel>();
                     channel->simple = false; // store if it is a simple channel (only one stream)
                     channel->load(xml_node_channel);
-                    if(channel->info.frame_format.standard_revision != ED247_STANDARD_ED247A)
+                    if(channel->_frame_standard_revision != ED247_STANDARD_ED247A)
                         THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
                     channels.push_back(std::move(channel));
                 }else if(node_name.compare(node::Channel) == 0){
                     std::unique_ptr<Channel> channel = std::make_unique<Channel>();
                     channel->simple = true; // store if it is a simple channel (only one stream)
                     channel->load(xml_node_channel);
-                    if(channel->info.frame_format.standard_revision != ED247_STANDARD_ED247A)
+                    if(channel->_frame_standard_revision != ED247_STANDARD_ED247A)
                         THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
                     channels.push_back(std::move(channel));
                 }else{

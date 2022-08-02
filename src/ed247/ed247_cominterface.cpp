@@ -209,7 +209,7 @@ void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket
     std::weak_ptr<Channel> weak_channel = channel.shared_from_this();
     if(dest_iter == _destinations.end())
         dest_iter = (_destinations.insert(std::make_pair(&channel,std::make_shared<std::vector<SocketInfos>>()))).first;
-    PRINT_DEBUG("Socket [" << _socket_infos << "] appends the destination [" << socket_infos_dst << "] for channel [" << std::string(channel.get_configuration()->info.name) << "]");
+    PRINT_DEBUG("Socket [" << _socket_infos << "] appends the destination [" << socket_infos_dst << "] for channel [" << channel.get_configuration()->_name << "]");
     dest_iter->second->push_back(socket_infos_dst);
     channel.add_emitter(*this);
 
