@@ -41,15 +41,15 @@ std::ostream& output() { return output_stream.is_open() ? output_stream : std::c
 
 int main(int argc, char *argv[])
 {
-    ed247_status_t              status = ED247_STATUS_SUCCESS;
-    ed247_context_t             context = nullptr;
-    ed247_stream_list_t         streams = nullptr;
-    ed247_stream_t              stream = nullptr;
-    const void                  *sample = nullptr;
-    size_t                      sample_size = 0;
-    const ed247_timestamp_t     *data_timestamp = nullptr;
-    const ed247_timestamp_t     *recv_timestamp = nullptr;
-    const ed247_sample_info_t   *info = nullptr;
+    ed247_status_t               status = ED247_STATUS_SUCCESS;
+    ed247_context_t              context = nullptr;
+    ed247_stream_list_t          streams = nullptr;
+    ed247_stream_t               stream = nullptr;
+    const void                   *sample = nullptr;
+    size_t                       sample_size = 0;
+    const ed247_timestamp_t      *data_timestamp = nullptr;
+    const ed247_timestamp_t      *recv_timestamp = nullptr;
+    const ed247_sample_details_t *sample_details = nullptr;
 
     std::string ecic_file = std::string();
     std::string output_file = std::string();
@@ -120,12 +120,12 @@ int main(int argc, char *argv[])
                     stream_type == ED247_STREAM_TYPE_AUDIO ||
                     stream_type == ED247_STREAM_TYPE_VIDEO ||
                     stream_type == ED247_STREAM_TYPE_ETHERNET){
-                    status = ed247_stream_pop_sample(stream, &sample, &sample_size, &data_timestamp, &recv_timestamp, &info, NULL);
+                    status = ed247_stream_pop_sample(stream, &sample, &sample_size, &data_timestamp, &recv_timestamp, &sample_details, NULL);
                     if(check_status(context, status)) return status;
-                    output() << info->component_identifier << ";"
-                        << info->sequence_number << ";"
-                        << info->transport_timestamp.epoch_s << ";"
-                        << info->transport_timestamp.offset_ns << ";"
+                    output() << sample_details->component_identifier << ";"
+                        << sample_details->sequence_number << ";"
+                        << sample_details->transport_timestamp.epoch_s << ";"
+                        << sample_details->transport_timestamp.offset_ns << ";"
                         << stream_name << ";"
                         << data_timestamp->epoch_s << ";"
                         << data_timestamp->offset_ns << ";"
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
                     ed247_stream_assistant_t assistant;
                     status = ed247_stream_get_assistant(stream, &assistant);
                     if(check_status(context, status)) return status;
-                    status = ed247_stream_assistant_pop_sample(assistant, &data_timestamp, &recv_timestamp, &info, NULL);
+                    status = ed247_stream_assistant_pop_sample(assistant, &data_timestamp, &recv_timestamp, &sample_details, NULL);
                     if(check_status(context, status)) return status;
                     ed247_signal_list_t signals;
                     ed247_signal_t signal;
@@ -158,10 +158,10 @@ int main(int argc, char *argv[])
                         size_t signal_sample_size;
                         status = ed247_stream_assistant_read_signal(assistant, signal, &signal_sample, &signal_sample_size);
                         if(check_status(context, status)) return status;
-                        output() << info->component_identifier << ";"
-                            << info->sequence_number << ";"
-                            << info->transport_timestamp.epoch_s << ";"
-                            << info->transport_timestamp.offset_ns << ";"
+                        output() << sample_details->component_identifier << ";"
+                            << sample_details->sequence_number << ";"
+                            << sample_details->transport_timestamp.epoch_s << ";"
+                            << sample_details->transport_timestamp.offset_ns << ";"
                             << stream_name << ";"
                             << data_timestamp->epoch_s << ";"
                             << data_timestamp->offset_ns << ";"

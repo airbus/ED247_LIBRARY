@@ -171,7 +171,7 @@ TEST_P(Context, MetricsCross)
     ed247_stream_assistant_t assistant = NULL;
     ed247_signal_list_t signal_list = NULL;
     ed247_signal_t data_signal = NULL;
-    const ed247_sample_info_t *sample_info;
+    const ed247_sample_details_t *sample_details;
 
     uint16_t expected_sn_cross [2][4] = {
         {10, 15, 56, 413},
@@ -220,9 +220,9 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
             ASSERT_EQ(count, (size_t)1);
         
-            ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(sample_info->transport_timestamp.epoch_s,(uint16_t)10);
-            ASSERT_EQ(sample_info->transport_timestamp.offset_ns,(uint16_t)12);
+            ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+            ASSERT_EQ(sample_details->transport_timestamp.epoch_s,(uint16_t)10);
+            ASSERT_EQ(sample_details->transport_timestamp.offset_ns,(uint16_t)12);
             ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, data_signal, (const void**)(&data_buffer), &data_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
         

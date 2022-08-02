@@ -35,17 +35,17 @@ namespace ed247
 
 // StreamSample
 
-void StreamSample::update_info(const FrameHeader & header)
+void StreamSample::update_details(const FrameHeader & header)
 {
     if(header._recv_headers_iter == header._recv_headers.end()){
-        _info.component_identifier = 0;
-        _info.sequence_number = 0;
-        _info.transport_timestamp.epoch_s = 0;
-        _info.transport_timestamp.offset_ns = 0;
+        _details.component_identifier = 0;
+        _details.sequence_number = 0;
+        _details.transport_timestamp.epoch_s = 0;
+        _details.transport_timestamp.offset_ns = 0;
     }else{
-        _info.component_identifier = header._recv_headers_iter->component_identifier;
-        _info.sequence_number = header._recv_headers_iter->sequence_number;
-        _info.transport_timestamp = header._recv_headers_iter->transport_timestamp;
+        _details.component_identifier = header._recv_headers_iter->component_identifier;
+        _details.sequence_number = header._recv_headers_iter->sequence_number;
+        _details.transport_timestamp = header._recv_headers_iter->transport_timestamp;
     }
 }
 
@@ -287,7 +287,7 @@ bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, size_t frame_siz
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -395,7 +395,7 @@ bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_siz
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -492,7 +492,7 @@ bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, size_t frame_siz
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -588,7 +588,7 @@ bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_s
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -684,7 +684,7 @@ bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, size_t frame_si
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -756,7 +756,7 @@ bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, size_t frame
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -841,7 +841,7 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_s
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -987,7 +987,7 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks
@@ -1110,7 +1110,7 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
         sample->update_recv_timestamp();
         // Attach header
         if(header)
-            sample->update_info(*header);
+            sample->update_details(*header);
         _recv_stack.increment();
     }
     // Callbacks

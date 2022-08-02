@@ -957,7 +957,7 @@ extern LIBED247_EXPORT void ed247_get_time(ed247_timestamp_t* timestamp);
  * @brief Set the function to use to timestamp the transport (aka emit date)
  * The default function is ed247_get_time().
  * The TTS is only wrote in the stream if enabled by ECIC file.
- * The receiver can read the value in the field ed247_sample_info_t->transport_timestamp
+ * The receiver can read the value in the field ed247_sample_details_t->transport_timestamp
  * returned by ed247_*_pop_sample() functions.
  * @ingroup time
  * @param[in] callback Function that will provide current time
@@ -1124,15 +1124,15 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_list_free(
  * Stream
  * ========================================================================= */
 /**
- * @brief Sample information
+ * @brief Sample Details
  * @ingroup stream
  */
-typedef struct ed247_sample_info_s {
+typedef struct ed247_sample_details_s {
     ed247_uid_t       component_identifier;
     uint16_t          sequence_number;
     ed247_timestamp_t transport_timestamp;
-} ed247_sample_info_t;
-#define LIBED247_SAMPLE_INFO_DEFAULT ed247_sample_info_t{0, 0, LIBED247_TIMESTAMP_DEFAULT}
+} ed247_sample_details_t;
+#define LIBED247_SAMPLE_DETAILS_DEFAULT ed247_sample_details_t{0, 0, LIBED247_TIMESTAMP_DEFAULT}
 
 /**
  * @ingroup stream
@@ -1354,20 +1354,20 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_push_samples(
  * @param[out] recv_timestamp Pointer on the internal buffer recv timestamp.
  * The value is set according to ::libed247_set_simulation_time_ns() callback that has to be specified by the user.
  * If no callback is specified, the pointer is set to NULL
- * @param[out] info Stream sample additional information
+ * @param[out] sample_details Stream sample details
  * @param[out] empty Returns true if the internal stack is empty
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_NODATA Receive stack is empty
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_pop_sample(
-    ed247_stream_t               stream,
-    const void **                sample_data,
-    size_t *                     sample_size,
-    const ed247_timestamp_t **   data_timestamp,
-    const ed247_timestamp_t **   recv_timestamp,
-    const ed247_sample_info_t ** info,
-    bool *                       empty);
+    ed247_stream_t                  stream,
+    const void **                   sample_data,
+    size_t *                        sample_size,
+    const ed247_timestamp_t **      data_timestamp,
+    const ed247_timestamp_t **      recv_timestamp,
+    const ed247_sample_details_t ** sample_details,
+    bool *                          empty);
 
 
 /* =========================================================================
@@ -1701,18 +1701,18 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_push_sample(
  * @param[out] recv_timestamp Pointer on the internal buffer recv timestamp.
  * The value is set according to ::libed247_set_simulation_time_ns() callback that has to be specified by the user.
  * If no callback is specified, the pointer is set to NULL
- * @param[out] info Stream sample additional information
+ * @param[out] sample_details Stream sample details
  * @param[out] empty Returns true if the internal stack is empty
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_NODATA Receive stack is empty
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_pop_sample(
-    ed247_stream_assistant_t     assistant,
-    const ed247_timestamp_t **   data_timestamp,
-    const ed247_timestamp_t **   recv_timestamp,
-    const ed247_sample_info_t ** info,
-    bool *                       empty);
+    ed247_stream_assistant_t        assistant,
+    const ed247_timestamp_t **      data_timestamp,
+    const ed247_timestamp_t **      recv_timestamp,
+    const ed247_sample_details_t ** sample_details,
+    bool *                          empty);
 
 /* =========================================================================
  * Deprecated stuff

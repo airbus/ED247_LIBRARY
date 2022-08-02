@@ -1528,13 +1528,13 @@ ed247_status_t ed247_stream_push_samples(
 }
 
 ed247_status_t ed247_stream_pop_sample(
-  ed247_stream_t               stream,
-  const void **                sample_data,
-  size_t *                     sample_size,
-  const ed247_timestamp_t **   data_timestamp,
-  const ed247_timestamp_t **   recv_timestamp,
-  const ed247_sample_info_t ** info,
-  bool *                       empty)
+  ed247_stream_t                  stream,
+  const void **                   sample_data,
+  size_t *                        sample_size,
+  const ed247_timestamp_t **      data_timestamp,
+  const ed247_timestamp_t **      recv_timestamp,
+  const ed247_sample_details_t ** sample_details,
+  bool *                          empty)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!stream){
@@ -1563,7 +1563,7 @@ ed247_status_t ed247_stream_pop_sample(
     *sample_size = sample->size();
     if(data_timestamp) *data_timestamp = sample->data_timestamp();
     if(recv_timestamp) *recv_timestamp = sample->recv_timestamp();
-    if(info) *info = sample->info();
+    if(sample_details) *sample_details = sample->details();
   }
   LIBED247_CATCH("Pop stream sample");
   return ED247_STATUS_SUCCESS;
@@ -1950,11 +1950,11 @@ ed247_status_t ed247_stream_assistant_push_sample(
 }
 
 ed247_status_t ed247_stream_assistant_pop_sample(
-  ed247_stream_assistant_t     assistant,
-  const ed247_timestamp_t **   data_timestamp,
-  const ed247_timestamp_t **   recv_timestamp,
-  const ed247_sample_info_t ** info,
-  bool *                       empty)
+  ed247_stream_assistant_t        assistant,
+  const ed247_timestamp_t **      data_timestamp,
+  const ed247_timestamp_t **      recv_timestamp,
+  const ed247_sample_details_t ** sample_details,
+  bool *                          empty)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!assistant){
@@ -1967,7 +1967,7 @@ ed247_status_t ed247_stream_assistant_pop_sample(
       PRINT_CRAZY("Stream '" << ed247_assistant->get_stream()->get_name() << "': no data received.");
       return ED247_STATUS_NODATA;
     }
-    if (ed247_assistant->pop(data_timestamp, recv_timestamp, info, empty) == false) {
+    if (ed247_assistant->pop(data_timestamp, recv_timestamp, sample_details, empty) == false) {
       return ED247_STATUS_FAILURE;
     }
   }

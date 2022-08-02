@@ -33,20 +33,20 @@ TEST_P(exchangeTTSFixture, exchangeTTSMain)
 
   const char* payload = nullptr;
   size_t payload_size;
-  const ed247_sample_info_t* sample_info;
+  const ed247_sample_details_t* sample_details;
 
   // Receive TTS 1
   TEST_SYNC("Receive TTS 1");
   ASSERT_EQ(ed247_wait_during(_context, &stream_list, ED247_100_MILI), ED247_STATUS_SUCCESS);
 
-  ASSERT_EQ(ed247_stream_pop_sample(streamNoHeader, (const void**)&payload, &payload_size, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-  ASSERT_TRUE(timestamp_eq(sample_info->transport_timestamp, timestampEmpty));
+  ASSERT_EQ(ed247_stream_pop_sample(streamNoHeader, (const void**)&payload, &payload_size, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+  ASSERT_TRUE(timestamp_eq(sample_details->transport_timestamp, timestampEmpty));
 
-  ASSERT_EQ(ed247_stream_pop_sample(streamNoTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-  ASSERT_TRUE(timestamp_eq(sample_info->transport_timestamp, timestampEmpty));
+  ASSERT_EQ(ed247_stream_pop_sample(streamNoTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+  ASSERT_TRUE(timestamp_eq(sample_details->transport_timestamp, timestampEmpty));
 
-  ASSERT_EQ(ed247_stream_pop_sample(streamWithTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-  ASSERT_TRUE(timestamp_eq(sample_info->transport_timestamp, timestamp1));
+  ASSERT_EQ(ed247_stream_pop_sample(streamWithTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+  ASSERT_TRUE(timestamp_eq(sample_details->transport_timestamp, timestamp1));
 
   TEST_SYNC("TTS 1 Received");
 
@@ -54,14 +54,14 @@ TEST_P(exchangeTTSFixture, exchangeTTSMain)
   TEST_SYNC("Receive TTS 2");
   ASSERT_EQ(ed247_wait_during(_context, &stream_list, ED247_100_MILI), ED247_STATUS_SUCCESS);
 
-  ASSERT_EQ(ed247_stream_pop_sample(streamNoHeader, (const void**)&payload, &payload_size, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-  ASSERT_TRUE(timestamp_eq(sample_info->transport_timestamp, timestampEmpty));
+  ASSERT_EQ(ed247_stream_pop_sample(streamNoHeader, (const void**)&payload, &payload_size, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+  ASSERT_TRUE(timestamp_eq(sample_details->transport_timestamp, timestampEmpty));
 
-  ASSERT_EQ(ed247_stream_pop_sample(streamNoTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-  ASSERT_TRUE(timestamp_eq(sample_info->transport_timestamp, timestampEmpty));
+  ASSERT_EQ(ed247_stream_pop_sample(streamNoTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+  ASSERT_TRUE(timestamp_eq(sample_details->transport_timestamp, timestampEmpty));
 
-  ASSERT_EQ(ed247_stream_pop_sample(streamWithTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_info, NULL), ED247_STATUS_SUCCESS);
-  ASSERT_TRUE(timestamp_eq(sample_info->transport_timestamp, timestamp2));
+  ASSERT_EQ(ed247_stream_pop_sample(streamWithTTS, (const void**)&payload, &payload_size, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
+  ASSERT_TRUE(timestamp_eq(sample_details->transport_timestamp, timestamp2));
 
   TEST_SYNC("TTS 2 Received");
 

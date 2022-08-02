@@ -112,7 +112,7 @@ class StreamSample : public BaseSample
             BaseSample(),
             _data_timestamp(LIBED247_TIMESTAMP_DEFAULT),
             _recv_timestamp(LIBED247_TIMESTAMP_DEFAULT),
-            _info(LIBED247_SAMPLE_INFO_DEFAULT)
+            _details(LIBED247_SAMPLE_DETAILS_DEFAULT)
         {}
 
         StreamSample(const StreamSample & other) = delete;
@@ -124,7 +124,7 @@ class StreamSample : public BaseSample
           if (BaseSample::copy(sample.data(), sample.size()) == false) return false;
           set_data_timestamp(*sample.data_timestamp());
           set_recv_timestamp(*sample.recv_timestamp());
-          set_info(*sample.info());
+          set_details(*sample.details());
           return true;
         }
 
@@ -153,22 +153,22 @@ class StreamSample : public BaseSample
           ed247_get_receive_timestamp(&_recv_timestamp);
         }
 
-        void set_info(const ed247_sample_info_t & info)
+        void set_details(const ed247_sample_details_t & details)
         {
-            _info = info;
+            _details = details;
         }
 
-        const ed247_sample_info_t * info() const
+        const ed247_sample_details_t * details() const
         {
-            return &_info;
+            return &_details;
         }
 
-        void update_info(const FrameHeader & header);
+        void update_details(const FrameHeader & header);
 
     protected:
-        ed247_timestamp_t   _data_timestamp;
-        ed247_timestamp_t   _recv_timestamp;
-        ed247_sample_info_t _info;
+        ed247_timestamp_t      _data_timestamp;
+        ed247_timestamp_t      _recv_timestamp;
+        ed247_sample_details_t _details;
 };
 
 class CircularStreamSampleBuffer {
@@ -622,7 +622,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 }
 
                 // return false if the signal has not been successfully decoded
-                bool pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr, const ed247_sample_info_t **info = nullptr, bool *empty = nullptr)
+                bool pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr,
+                         const ed247_sample_details_t **details = nullptr, bool *empty = nullptr)
                 {
                     if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_IN)) {
                         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot pop from a non-input stream");
@@ -632,7 +633,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     if (!sample) return false;
                     if(data_timestamp)*data_timestamp = sample->data_timestamp();
                     if(recv_timestamp)*recv_timestamp = sample->recv_timestamp();
-                    if(info)*info = sample->info();
+                    if(details) *details = sample->details();
                     return decode(sample->data(), sample->size());
                 };
 

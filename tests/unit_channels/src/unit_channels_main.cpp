@@ -188,12 +188,12 @@ TEST_P(ChannelContext, MultiPushPop)
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
                 if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
-                    ASSERT_EQ(sample->info()->component_identifier, channel0->get_header()._send_header.component_identifier);
-                    ASSERT_EQ(sample->info()->sequence_number, i ? (channel0->get_header()._send_header.sequence_number-1) : 0);
+                    ASSERT_EQ(sample->details()->component_identifier, channel0->get_header()._send_header.component_identifier);
+                    ASSERT_EQ(sample->details()->sequence_number, i ? (channel0->get_header()._send_header.sequence_number-1) : 0);
                 }
                 if(channel0->get_configuration()->header.transport_timestamp == ED247_YESNO_YES){
-                    ASSERT_EQ(sample->info()->transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
-                    ASSERT_EQ(sample->info()->transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
+                    ASSERT_EQ(sample->details()->transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
+                    ASSERT_EQ(sample->details()->transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
                 }
                 if(i < (stream.second.stream->get_configuration()->_sample_max_number-1))
                     ASSERT_FALSE(empty);
