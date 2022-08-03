@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <inttypes.h>
+#include <stdlib.h>
 
 #include <ed247.h>
 

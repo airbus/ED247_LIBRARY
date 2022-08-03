@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #ifdef __unix__
@@ -51,129 +51,30 @@ extern "C" {
 # endif
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-# define DEPRECATED __attribute__((deprecated))
-#elif defined(_MSC_VER)
-# define DEPRECATED __declspec(deprecated)
-#endif
-
-
 /* =========================================================================
- * Doxygen
+ * Global
  * ========================================================================= */
 /**
- * @defgroup shared Shared resources
+ * @defgroup global Global resources
  */
-
-/**
- * @defgroup context ED247 Context
- * The context is the main entry point to load and use an ECIC.
- */
-
-/**
- * @defgroup context_init Initialization
- * @ingroup context
- */
-
-/**
- * @defgroup context_info General informations
- * @ingroup context
- */
-
-/**
- * @defgroup context_config Read configuration
- * @ingroup context
- */
-
-/**
- * @defgroup context_io Receive and send
- * @ingroup context
- * Receive and send data from/o network. To read/write data, see streams methods.
- */
-
-/**
- * @defgroup context_callback Receive and send callbacks
- * @ingroup context
- */
-
-/**
- * @defgroup context_advanced Advanced
- * @ingroup context
- */
-
-/**
- * @defgroup time Simulation Time
- * Functions to set simulation time for receive timestamp
- */
-
-/**
- * @defgroup channel Channel
- */
-
-/**
- * @defgroup channel_list Channel list
- * @ingroup channel
- */
-
-/**
- * @defgroup stream Stream
- */
-
-/**
- * @defgroup stream_io Read and Write
- * @ingroup stream
- * Note: to read/write signals see stream assistant
- */
-
-/**
- * @defgroup stream_list Stream list
- * @ingroup stream
- */
-
-/**
- * @defgroup signal Signal
- * Note: To read/write signals, see stream assistant
- */
-
-/**
- * @defgroup signal_list Signal list
- * @ingroup signal
- */
-
-/**
- * @defgroup stream_assistant Stream Assistant (read/write signals)
- * Helper methods to read and write signals within a stream
- */
-
-/**
- * @defgroup strings String conversion
- * Helper to convert type to/from strings.
- */
-
-
-/**
- * @defgroup deprecated
- * Do not use.
- */
-
 
 /* =========================================================================
- * Shared constants
+ * Global constants
  * ========================================================================= */
 /**
  * @brief Status codes
- * @ingroup shared
+ * @ingroup global
  */
 typedef enum {
-    ED247_STATUS_SUCCESS = EXIT_SUCCESS,    // Success
-    ED247_STATUS_FAILURE = EXIT_FAILURE,    // Failure
+    ED247_STATUS_SUCCESS = 0,
+    ED247_STATUS_FAILURE,
     ED247_STATUS_TIMEOUT,
     ED247_STATUS_NODATA
 } ed247_status_t;
 
 /**
  * @brief Logging level
- * @ingroup shared
+ * @ingroup global
  */
 typedef enum {
     ED247_LOG_LEVEL_MIN       =   0,
@@ -189,7 +90,7 @@ typedef enum {
 
 /**
  * @brief Yes / No
- * @ingroup shared
+ * @ingroup global
  */
 typedef enum {
     ED247_YESNO_NO = 0,
@@ -199,7 +100,7 @@ typedef enum {
 
 /**
  * @brief ED247 Standard revisions
- * @ingroup shared
+ * @ingroup global
  */
 typedef enum {
     ED247_STANDARD__INVALID,
@@ -210,13 +111,13 @@ typedef enum {
 
 /**
  * @brief Unique identifier type
- * @ingroup shared
+ * @ingroup global
  */
 typedef uint16_t ed247_uid_t;
 
 /**
  * @brief Component types
- * @ingroup context_info
+ * @ingroup context
  */
 typedef enum {
     ED247_COMPONENT_TYPE__INVALID,
@@ -258,7 +159,7 @@ typedef enum {
 } ed247_direction_t;
 
 /**
- * @brief Signal types, with reference to stream values of ::ed247_stream_type_t
+ * @brief Signal types
  * @ingroup signal
  */
 typedef enum {
@@ -300,11 +201,11 @@ typedef enum {
 
 
 /* =========================================================================
- * Shared Types
+ * Global Types
  * ========================================================================= */
 /**
  * @brief Timestamp structure, seconds from EPOCH (January 1st 1970) and nanoseconds offset with reference to previous field
- * @ingroup shared
+ * @ingroup global
  */
 typedef struct {
     uint32_t epoch_s;
@@ -314,7 +215,7 @@ typedef struct {
 
 /**
  * @brief Context identifier
- * @ingroup context_init
+ * @ingroup context
  */
 typedef struct ed247_internal_context_t *ed247_context_t;
 
@@ -326,7 +227,7 @@ typedef struct ed247_internal_channel_t *ed247_channel_t;
 
 /**
  * @brief Channel list identifier
- * @ingroup channel
+ * @ingroup channel_list
  */
 typedef struct ed247_internal_channel_list_t *ed247_channel_list_t;
 
@@ -338,7 +239,7 @@ typedef struct ed247_internal_stream_t *ed247_stream_t;
 
 /**
  * @brief Stream list identifier
- * @ingroup stream
+ * @ingroup stream_list
  */
 typedef struct ed247_internal_stream_list_t *ed247_stream_list_t;
 
@@ -350,172 +251,30 @@ typedef struct ed247_internal_signal_t *ed247_signal_t;
 
 /**
  * @brief Signal list identifier
- * @ingroup signal
+ * @ingroup signal_list
  */
 typedef struct ed247_internal_signal_list_t *ed247_signal_list_t;
 
 /**
  * @brief An assistant to help building stream samples
- * @ingroup signal
+ * @ingroup stream_assistant
  */
 typedef struct ed247_internal_stream_assistant_t *ed247_stream_assistant_t;
 
 
-
-
 /* =========================================================================
- * Strings conversion
- * ========================================================================= */
-
-/**
- * @brief ::ed247_status_t to string conversion
- * @ingroup strings
- * @param[in] status The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_status_string(
-    ed247_status_t status);
-
-/**
- * @brief ::ed247_standard_t to string conversion
- * @ingroup strings
- * @param[in] standard The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_standard_string(
-    ed247_standard_t standard);
-
-/**
- * @brief ::ed247_standard_t from string conversion
- * @ingroup strings
- * @param[in] standard The string to convert
- * @return The corresponding ::ed247_standard_t value
- */
-extern LIBED247_EXPORT ed247_standard_t ed247_standard_from_string(
-    const char *standard);
-
-/**
- * @brief ::ed247_direction_t to string conversion
- * @ingroup strings
- * @param[in] direction The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_direction_string(
-    ed247_direction_t direction);
-
-/**
- * @brief ::ed247_direction_t from string conversion
- * @ingroup strings
- * @param[in] direction The string to convert
- * @return The corresponding ::ed247_direction_t value
- */
-extern LIBED247_EXPORT ed247_direction_t ed247_direction_from_string(
-    const char *direction);
-
-/**
- * @brief ::ed247_yesno_t to string conversion
- * @ingroup strings
- * @param[in] yesno The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_yesno_string(
-    ed247_yesno_t yesno);
-
-/**
- * @brief ::ed247_yesno_t from string conversion
- * @ingroup strings
- * @param[in] yesno The string to convert
- * @return The corresponding ::ed247_yesno_t value
- */
-extern LIBED247_EXPORT ed247_yesno_t ed247_yesno_from_string(
-    const char *yesno);
-
-/**
- * @brief ::ed247_component_type_t to string conversion
- * @ingroup strings
- * @param[in] component_type The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_component_type_string(
-    ed247_component_type_t component_type);
-
-/**
- * @brief ::ed247_component_type_t from string conversion
- * @ingroup strings
- * @param[in] component_type The string to convert
- * @return The corresponding ::ed247_component_type_t value
- */
-extern LIBED247_EXPORT ed247_component_type_t ed247_component_type_from_string(
-    const char *component_type);
-
-/**
- * @brief ::ed247_stream_type_t to string conversion
- * @ingroup strings
- * @param[in] stream_type The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_stream_type_string(
-    ed247_stream_type_t stream_type);
-
-/**
- * @brief ::ed247_stream_type_t from string conversion
- * @ingroup strings
- * @param[in] stream_type The string to convert
- * @return The corresponding ::ed247_stream_type_t value
- */
-extern LIBED247_EXPORT ed247_stream_type_t ed247_stream_type_from_string(
-    const char *stream_type);
-
-/**
- * @brief ::ed247_signal_type_t to string conversion
- * @ingroup strings
- * @param[in] signal_type The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_signal_type_string(
-    ed247_signal_type_t signal_type);
-
-/**
- * @brief ::ed247_signal_type_t from string conversion
- * @ingroup strings
- * @param[in] signal_type The string to convert
- * @return The corresponding ::ed247_signal_type_t value
- */
-extern LIBED247_EXPORT ed247_signal_type_t ed247_signal_type_from_string(
-    const char *signal_type);
-
-/**
- * @brief ::ed247_nad_type_t to string conversion
- * @ingroup strings
- * @param[in] nad_type The value to convert
- * @return The corresponding string
- */
-extern LIBED247_EXPORT const char * ed247_nad_type_string(
-    ed247_nad_type_t nad_type);
-
-/**
- * @brief ::ed247_nad_type_t from string conversion
- * @ingroup strings
- * @param[in] nad_type The string to convert
- * @return The corresponding ::ed247_nad_type_t value
- */
-extern LIBED247_EXPORT ed247_nad_type_t ed247_nad_type_from_string(
-    const char *nad_type);
-
-
-/* =========================================================================
- * Shared
+ * Global Methods
  * ========================================================================= */
 /**
  * @brief The name of the current implementation
- * @ingroup shared
+ * @ingroup global
  * @return Current implementation name
  */
 extern LIBED247_EXPORT const char * ed247_get_implementation_name();
 
 /**
  * @brief The version of the current implementation
- * @ingroup shared
+ * @ingroup global
  * @return Current implementation version
  */
 extern LIBED247_EXPORT const char * ed247_get_implementation_version();
@@ -523,7 +282,7 @@ extern LIBED247_EXPORT const char * ed247_get_implementation_version();
 /**
  * @brief Setup the logging parameters
  * Environment variables have the priority: This function will be ignored if they are set.
- * @ingroup shared
+ * @ingroup global
  * @param[in] Logging level
  * @retval ED247_STATUS_SUCCESS
  */
@@ -534,7 +293,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_set_log(
 /**
  * @brief Setup the logging level (see ::ed247_log_level_t)
  * Environment variables have the priority: This function will be ignored if they are set.
- * @ingroup shared
+ * @ingroup global
  * @param[in] Logging level
  * @retval ED247_STATUS_SUCCESS
  */
@@ -543,16 +302,53 @@ extern LIBED247_EXPORT ed247_status_t ed247_set_log_level(
 
 /**
  * @brief Get the logging level (see ::ed247_log_level_t)
- * @ingroup shared
+ * @ingroup global
  * @param[out] Logging level
  * @retval ED247_STATUS_SUCCESS
  */
 extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
     ed247_log_level_t * log_level);
 
+
+/* =========================================================================
+ * ED247 Context
+ * ========================================================================= */
+/**
+ * @defgroup context ED247 Context
+ * The context is the main entry point to load and use an ECIC.
+ */
+
+/**
+ * @brief Library runtime metrics
+ * @ingroup context
+ */
+typedef struct {
+    uint32_t missed_frames;
+    uint32_t sample_timestamp_offset_overflows;
+} libed247_runtime_metrics_t;
+#define LIBED247_RUNTIME_METRICS_DEFAULT libed247_runtime_metrics_t{0, 0}
+
+/**
+ * @brief Retrieve runtime metrics
+ * @ingroup context
+ * @param[in] context The context for which the runtime metrics are required
+ * @param[out] metrics Pointer to the runtime metrics structure
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_get_runtime_metrics(
+    ed247_context_t context,
+    const libed247_runtime_metrics_t ** metrics);
+
+
 /* =========================================================================
  * ED247 Context - Init
  * ========================================================================= */
+/**
+ * @defgroup context_init Initialization
+ * @ingroup context
+ */
+
 /**
  * @brief Loading function: the entry point of the library
  * @ingroup context_init
@@ -580,7 +376,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_content(
     ed247_context_t * context);
 
 /**
- * @brief Unload ressources linked to the given context
+ * @brief Unload resources linked to the given context
  * @ingroup context_init
  * @param[in] context Context identifier
  * @retval ED247_STATUS_SUCCESS
@@ -588,28 +384,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_content(
  */
 extern LIBED247_EXPORT ed247_status_t ed247_unload(
     ed247_context_t ed247_context);
-
-/**
- * @brief Library runtime metrics
- * @ingroup shared
- */
-typedef struct {
-    uint32_t missed_frames;
-    uint32_t sample_timestamp_offset_overflows;
-} libed247_runtime_metrics_t;
-#define LIBED247_RUNTIME_METRICS_DEFAULT libed247_runtime_metrics_t{0, 0}
-
-/**
- * @brief Retrieve runtime metrics
- * @ingroup context_init
- * @param[in] context The context for which the runtime metrics are required
- * @param[out] metrics Pointer to the runtime metrics structure
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_get_runtime_metrics(
-    ed247_context_t context,
-    const libed247_runtime_metrics_t ** metrics);
 
 /**
  * @brief Assign user data to the context
@@ -640,7 +414,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_component_get_user_data(
  * ED247 Context - Global information
  * ========================================================================= */
 /**
- * @ingroup context_info
+ * @defgroup context_info General information
+ * @ingroup context
  * @{
  */
 extern LIBED247_EXPORT const char* ed247_component_get_version(ed247_context_t context);
@@ -657,6 +432,11 @@ extern LIBED247_EXPORT const char* ed247_file_producer_get_comment(ed247_context
 /* =========================================================================
  * ED247 Context - Get Configuration
  * ========================================================================= */
+/**
+ * @defgroup context_config Read configuration
+ * @ingroup context
+ */
+
 /**
  * @brief Retrieve all the channels of the component
  * @ingroup context_config
@@ -795,10 +575,16 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_signal(
  * ED247 Context - Receive and send
  * ========================================================================= */
 /**
+ * @defgroup context_io Receive and send
+ * @ingroup context
+ * Receive and send data from/o network. To read/write data, see streams methods.
+ */
+
+/**
  * @brief Blocks until the first frame is received and processed, and at least a stream has available data.
  * If several frames has been received, they are all processed.
  * output streams:
- * - [new in 1.1.4] Can be set to NULL if you need't the list. (this will prevent list computation)
+ * - [new in 1.1.4] Can be set to NULL if you needn't the list. (this will prevent list computation)
  * - Release memory with ::ed247_stream_list_free(streams)
  * - To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup context_io
@@ -817,7 +603,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_wait_frame(
 /**
  * @brief Blocks until duration is elapsed, processing all received data.
  * output streams:
- * - [new in 1.1.4] Can be set to NULL if you need't the list. (this will prevent list computation)
+ * - [new in 1.1.4] Can be set to NULL if you needn't the list. (this will prevent list computation)
  * - Release memory with ::ed247_stream_list_free(streams)
  * - To limit memory allocation, streams will be invalidate by next calls.
  * @ingroup context_io
@@ -847,6 +633,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_send_pushed_samples(
 /* =========================================================================
  * ED247 Context - Callbacks
  * ========================================================================= */
+/**
+ * @defgroup context_callback Receive and send callbacks
+ * @ingroup context
+ */
+
 /**
  * @brief Stream receive callback function pointer.
  * The argument stream is the stream identifier that received something.
@@ -936,6 +727,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_unregister_recv_callback(
  * Time handing
  * ========================================================================= */
 /**
+ * @defgroup time Time management
+ * Functions to set simulation time for receive timestamp
+ */
+
+/**
  * @brief Prototype of a function to get time
  * @ingroup time
  */
@@ -965,11 +761,11 @@ extern LIBED247_EXPORT void ed247_get_time(ed247_timestamp_t* timestamp);
 extern LIBED247_EXPORT void ed247_set_transport_timestamp_callback(ed247_get_time_t callback);
 
 /**
- * @brief Set the function to use to timestamp the incomming streams (aka receive date)
+ * @brief Set the function to use to timestamp the incoming streams (aka receive date)
  * The default function is ed247_get_time().
- * The library will date incomming stream during the call of ed247_wait_*() methods.
+ * The library will date incoming stream during the call of ed247_wait_*() methods.
  * It will provide the value in the recv_timestamp field of ed247_*_pop_sample() functions.
- * This may be usefull if you call ed247_wait_*() periodycally but not ed247_*_pop_sample().
+ * This may be useful if you call ed247_wait_*() periodically but not ed247_*_pop_sample().
  * @ingroup time
  * @param[in] callback Function that will provide current time
  */
@@ -984,7 +780,7 @@ extern LIBED247_EXPORT void ed247_set_receive_timestamp_callback(ed247_get_time_
 extern LIBED247_EXPORT void ed247_get_transport_timestamp(ed247_timestamp_t* timestamp);
 
 /**
- * @brief Return the time to timestamp the incomming streams
+ * @brief Return the time to timestamp the incoming streams
  * Call either ed247_get_time() or the function set by ed247_set_receive_timestamp_callback()
  * @ingroup time
  * @param[out] timestamp Filled with the appropriate time
@@ -995,6 +791,10 @@ extern LIBED247_EXPORT void ed247_get_receive_timestamp(ed247_timestamp_t* times
 /* =========================================================================
  * Channel
  * ========================================================================= */
+/**
+ * @defgroup channel Channel
+ */
+
 /**
  * @ingroup channel
  * @{
@@ -1083,6 +883,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_user_data(
  * Channel - List
  * ========================================================================= */
 /**
+ * @defgroup channel_list Channel list
+ * @ingroup channel
+ */
+
+/**
  * @brief Get the size of the list
  * @ingroup channel_list
  * @param[in] channels The channel list
@@ -1123,6 +928,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_list_free(
 /* =========================================================================
  * Stream
  * ========================================================================= */
+/**
+ * @defgroup stream Stream
+ */
+
 /**
  * @brief Sample Details
  * @ingroup stream
@@ -1254,6 +1063,12 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_user_data(
  * Stream - Read & Write
  * ========================================================================= */
 /**
+ * @defgroup stream_io Read and Write
+ * @ingroup stream
+ * Note: to read/write signals see stream assistant
+ */
+
+/**
  * @brief Get an assistant to build stream samples based on signals.
  * @ingroup stream_io
  * @param[in] stream Stream identifier
@@ -1374,6 +1189,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_pop_sample(
  * Stream - List
  * ========================================================================= */
 /**
+ * @defgroup stream_list Stream list
+ * @ingroup stream
+ */
+
+/**
  * @brief Get the size of the list
  * @ingroup stream_list
  * @param[in] streams The stream list
@@ -1415,6 +1235,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_list_free(
 /* =========================================================================
  * Signal
  * ========================================================================= */
+/**
+ * @defgroup signal Signal
+ * Note: To read/write signals, see stream assistant
+ */
+
 /**
  * @brief Size of a single element of ::ed247_nad_type_t
  * @ingroup signal
@@ -1513,6 +1338,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_free_sample(
  * Signal - List
  * ========================================================================= */
 /**
+ * @defgroup signal_list Signal list
+ * @ingroup signal
+ */
+
+/**
  * @brief Get the size of the list
  * @ingroup signal_list
  * @param[in] signals The signal list
@@ -1555,6 +1385,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_list_free(
 /* =========================================================================
  * Stream assistant
  * ========================================================================= */
+/**
+ * @defgroup stream_assistant Stream Assistant (read/write signals)
+ * Helper methods to read and write signals within a stream
+ */
+
 /**
  * @brief Get the stream associated to the assistant
  * @ingroup stream_assistant
@@ -1656,8 +1491,163 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_pop_sample(
     bool *                          empty);
 
 /* =========================================================================
+ * Strings conversion
+ * ========================================================================= */
+/**
+ * @defgroup strings String conversion
+ * Helper to convert type to/from strings.
+ */
+
+/**
+ * @brief ::ed247_status_t to string conversion
+ * @ingroup strings
+ * @param[in] status The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_status_string(
+    ed247_status_t status);
+
+/**
+ * @brief ::ed247_standard_t to string conversion
+ * @ingroup strings
+ * @param[in] standard The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_standard_string(
+    ed247_standard_t standard);
+
+/**
+ * @brief ::ed247_standard_t from string conversion
+ * @ingroup strings
+ * @param[in] standard The string to convert
+ * @return The corresponding ::ed247_standard_t value
+ */
+extern LIBED247_EXPORT ed247_standard_t ed247_standard_from_string(
+    const char *standard);
+
+/**
+ * @brief ::ed247_direction_t to string conversion
+ * @ingroup strings
+ * @param[in] direction The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_direction_string(
+    ed247_direction_t direction);
+
+/**
+ * @brief ::ed247_direction_t from string conversion
+ * @ingroup strings
+ * @param[in] direction The string to convert
+ * @return The corresponding ::ed247_direction_t value
+ */
+extern LIBED247_EXPORT ed247_direction_t ed247_direction_from_string(
+    const char *direction);
+
+/**
+ * @brief ::ed247_yesno_t to string conversion
+ * @ingroup strings
+ * @param[in] yesno The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_yesno_string(
+    ed247_yesno_t yesno);
+
+/**
+ * @brief ::ed247_yesno_t from string conversion
+ * @ingroup strings
+ * @param[in] yesno The string to convert
+ * @return The corresponding ::ed247_yesno_t value
+ */
+extern LIBED247_EXPORT ed247_yesno_t ed247_yesno_from_string(
+    const char *yesno);
+
+/**
+ * @brief ::ed247_component_type_t to string conversion
+ * @ingroup strings
+ * @param[in] component_type The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_component_type_string(
+    ed247_component_type_t component_type);
+
+/**
+ * @brief ::ed247_component_type_t from string conversion
+ * @ingroup strings
+ * @param[in] component_type The string to convert
+ * @return The corresponding ::ed247_component_type_t value
+ */
+extern LIBED247_EXPORT ed247_component_type_t ed247_component_type_from_string(
+    const char *component_type);
+
+/**
+ * @brief ::ed247_stream_type_t to string conversion
+ * @ingroup strings
+ * @param[in] stream_type The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_stream_type_string(
+    ed247_stream_type_t stream_type);
+
+/**
+ * @brief ::ed247_stream_type_t from string conversion
+ * @ingroup strings
+ * @param[in] stream_type The string to convert
+ * @return The corresponding ::ed247_stream_type_t value
+ */
+extern LIBED247_EXPORT ed247_stream_type_t ed247_stream_type_from_string(
+    const char *stream_type);
+
+/**
+ * @brief ::ed247_signal_type_t to string conversion
+ * @ingroup strings
+ * @param[in] signal_type The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_signal_type_string(
+    ed247_signal_type_t signal_type);
+
+/**
+ * @brief ::ed247_signal_type_t from string conversion
+ * @ingroup strings
+ * @param[in] signal_type The string to convert
+ * @return The corresponding ::ed247_signal_type_t value
+ */
+extern LIBED247_EXPORT ed247_signal_type_t ed247_signal_type_from_string(
+    const char *signal_type);
+
+/**
+ * @brief ::ed247_nad_type_t to string conversion
+ * @ingroup strings
+ * @param[in] nad_type The value to convert
+ * @return The corresponding string
+ */
+extern LIBED247_EXPORT const char * ed247_nad_type_string(
+    ed247_nad_type_t nad_type);
+
+/**
+ * @brief ::ed247_nad_type_t from string conversion
+ * @ingroup strings
+ * @param[in] nad_type The string to convert
+ * @return The corresponding ::ed247_nad_type_t value
+ */
+extern LIBED247_EXPORT ed247_nad_type_t ed247_nad_type_from_string(
+    const char *nad_type);
+
+
+/* =========================================================================
  * Deprecated stuff
  * ========================================================================= */
+/**
+ * @defgroup deprecated
+ * Do not use.
+ */
+
+#if defined(__GNUC__) || defined(__clang__)
+# define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+# define DEPRECATED __declspec(deprecated)
+#endif
+
 /**
  * @brief Deprecated. Return NULL.
  * @ingroup deprecated
