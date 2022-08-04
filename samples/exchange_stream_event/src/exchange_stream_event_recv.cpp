@@ -134,7 +134,7 @@ ed247_status_t stream_receive(ed247_context_t context, ed247_stream_t stream)
     ed247_status_t status;
     bool empty = false;
     const void * sample;
-    size_t sample_size;
+    uint32_t sample_size;
 
     do{
         status = ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, NULL, NULL, &empty);
@@ -153,7 +153,7 @@ ed247_status_t stream_receive_callback(ed247_context_t context, ed247_stream_t s
     ed247_status_t status;
     bool empty = false;
     const void * sample;
-    size_t sample_size;
+    uint32_t sample_size;
 
     do{
 

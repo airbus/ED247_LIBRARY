@@ -49,11 +49,11 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_find_channels (context, NULL, &channel_list), ED247_STATUS_SUCCESS);
 
     // Get channel list size, chek invalid calls
-    size_t size;
+    uint32_t size;
     ASSERT_EQ(ed247_channel_list_size(NULL, &size), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_size(channel_list, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_list_size(channel_list, &size), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(size, (size_t)4);
+    ASSERT_EQ(size, (uint32_t)4);
 
     // Retrieve the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_list_next(NULL, &channel), ED247_STATUS_FAILURE);

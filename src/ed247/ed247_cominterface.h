@@ -131,7 +131,7 @@ namespace std
 
 template<> struct hash<ed247::SocketInfos>
 {
-    std::size_t operator () (const ed247::SocketInfos & infos) const
+  std::size_t operator () (const ed247::SocketInfos & infos) const
     {
         std::size_t ret = 0;
         hash_combine(ret,(uint64_t)infos.sin_addr.s_addr,(uint16_t)infos.sin_port);
@@ -163,7 +163,7 @@ class ComInterface : public std::enable_shared_from_this<ComInterface>
             return "";
         }
         
-        virtual void send_frame(Channel & from, const void * frame, const size_t frame_size) = 0;
+        virtual void send_frame(Channel & from, const void * frame, const uint32_t frame_size) = 0;
 
     protected:
         std::vector<std::weak_ptr<Channel>> _channels;
@@ -205,8 +205,8 @@ class UdpSocket : public ComInterface
 
         struct Frame
         {
-            char    frame[MAX_FRAME_SIZE];
-            size_t  size{MAX_FRAME_SIZE};
+            char     frame[MAX_FRAME_SIZE];
+            uint32_t size{MAX_FRAME_SIZE};
         };
 
         static std::string get_last_error();
@@ -235,7 +235,7 @@ class UdpSocket : public ComInterface
         const socket_t & get_socket() const { return _socket; }
         const SocketInfos & get_socket_infos() const { return _socket_infos; }
 
-        virtual void send_frame(Channel & from, const void * frame, const size_t frame_size) final;
+        virtual void send_frame(Channel & from, const void * frame, const uint32_t frame_size) final;
         void recv();
         
         // Associate to a channel as an emitter
@@ -245,7 +245,7 @@ class UdpSocket : public ComInterface
 
         virtual void unregister_channel(Channel & channel) final;
 
-        void get_recv_frame(const char * & frame, size_t & frame_size)
+        void get_recv_frame(const char * & frame, uint32_t & frame_size)
         {
             frame = _recv.frame;
             frame_size = _recv.size;

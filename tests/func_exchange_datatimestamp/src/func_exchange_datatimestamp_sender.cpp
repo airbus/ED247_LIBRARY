@@ -51,9 +51,9 @@ TEST_P(StreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    size_t sample_max_size_bytes;
+    uint32_t sample_max_size_bytes;
     void *sample;
-    size_t sample_size;
+    uint32_t sample_size;
     std::string str_send;
 
     // Stream

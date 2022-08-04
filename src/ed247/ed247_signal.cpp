@@ -109,7 +109,7 @@ signal_ptr_t BaseSignal::Pool::get(std::string str_name)
     return nullptr;
 }
 
-size_t BaseSignal::Pool::size() const
+uint32_t BaseSignal::Pool::size() const
 {
     return _signals.size();
 }

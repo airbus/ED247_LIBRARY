@@ -41,7 +41,7 @@ TEST_P(StreamContext, LimitOneByOne)
     //ed247_set_log_level(ED247_LOG_LEVEL_ERROR);
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    size_t size;
+    uint32_t size;
     
     // Synchro at startup
     SAY_SELF("Startup");
@@ -77,7 +77,7 @@ TEST_P(StreamContext, LimitAllInOne)
     //ed247_set_log_level(ED247_LOG_LEVEL_ERROR);
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    size_t size;
+    uint32_t size;
     
     // Synchro at startup
     SAY_SELF("Startup");

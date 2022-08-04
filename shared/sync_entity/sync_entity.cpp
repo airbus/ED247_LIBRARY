@@ -68,7 +68,7 @@ std::string get_last_socket_error()
 #ifdef _WIN32
     LPSTR messageBuffer = nullptr;
     DWORD dwError = WSAGetLastError();
-    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dwError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    uint32_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dwError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
     char errmsg[1024];
     strerror_s(errmsg, 1024, errno);
     std::string err = std::string(messageBuffer, size);
@@ -135,7 +135,7 @@ std::string get_env_variable(const std::string & variable)
 {
     char * value;
 #ifdef _MSC_VER
-    size_t len;
+    uint32_t len;
     _dupenv_s(&value, &len, variable.c_str());
 #else
     value = getenv(variable.c_str());

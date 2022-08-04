@@ -65,17 +65,17 @@ TEST(UtApiMisc, InfoGetter)
     ASSERT_TRUE(strcmp(ed247_file_producer_get_comment(context), "COMMENT") == 0);
 
 
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE__INVALID), (size_t)0);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT8), (size_t)1);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT16), (size_t)2);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT32), (size_t)4);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT64), (size_t)8);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT8), (size_t)1);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT16), (size_t)2);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT32), (size_t)4);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT64), (size_t)8);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_FLOAT32), (size_t)4);
-    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_FLOAT64), (size_t)8);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE__INVALID), (uint32_t)0);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT8), (uint32_t)1);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT16), (uint32_t)2);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT32), (uint32_t)4);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_INT64), (uint32_t)8);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT8), (uint32_t)1);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT16), (uint32_t)2);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT32), (uint32_t)4);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_UINT64), (uint32_t)8);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_FLOAT32), (uint32_t)4);
+    ASSERT_EQ(ed247_nad_type_size(ED247_NAD_TYPE_FLOAT64), (uint32_t)8);
 
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }

@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     if(check_status(context,status)) return EXIT_FAILURE;
 
     void * signal_sample;
-    size_t signal_sample_size;
+    uint32_t signal_sample_size;
     status = ed247_signal_allocate_sample(signal, &signal_sample, &signal_sample_size);
     if(check_status(context,status)) return EXIT_FAILURE;
 

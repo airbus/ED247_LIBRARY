@@ -73,7 +73,7 @@ stream_ptr_t StreamBuilder<T>::create(const ed247_stream_type_t & type, std::sha
 }
 
 // BaseStream
-bool BaseStream::push_sample(const void * sample_data, size_t sample_size, const ed247_timestamp_t * data_timestamp, bool * full)
+bool BaseStream::push_sample(const void * sample_data, uint32_t sample_size, const ed247_timestamp_t * data_timestamp, bool * full)
 {
   if(!(_configuration->_direction & ED247_DIRECTION_OUT)) {
     PRINT_ERROR("Stream '" << get_name() << "': Cannot write sample on a stream which is not an output one");
@@ -183,7 +183,7 @@ std::shared_ptr<stream_list_t> BaseStream::Pool::streams()
     return _streams;
 }
 
-size_t BaseStream::Pool::size() const
+uint32_t BaseStream::Pool::size() const
 {
     return _streams->size();
 }
@@ -241,10 +241,10 @@ Stream<E>::allocate_sample_impl() const
 // Stream<A429>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_A429>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_A429>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -263,9 +263,9 @@ size_t Stream<ED247_STREAM_TYPE_A429>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -295,7 +295,7 @@ bool Stream<ED247_STREAM_TYPE_A429>::decode(const char * frame, size_t frame_siz
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_A429>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_A429>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size == _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -314,10 +314,10 @@ void Stream<ED247_STREAM_TYPE_A429>::allocate_buffer()
 // Stream<A664>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_A664>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_A664>::encode(char * frame, uint32_t frame_size)
 {
     auto enable_message_size = std::static_pointer_cast<xml::A664Stream>(_configuration)->enable_message_size == ED247_YESNO_YES;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     while (_send_stack.size() > 0) {
         const auto & sample = _send_stack.pop_front();
 
@@ -351,11 +351,11 @@ size_t Stream<ED247_STREAM_TYPE_A664>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
     auto enable_message_size = std::static_pointer_cast<xml::A664Stream>(_configuration)->enable_message_size == ED247_YESNO_YES;
-    size_t frame_index = 0;
-    size_t sample_size = 0;
+    uint32_t frame_index = 0;
+    uint32_t sample_size = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -403,7 +403,7 @@ bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, size_t frame_siz
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_A664>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_A664>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size == _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -425,10 +425,10 @@ void Stream<ED247_STREAM_TYPE_A664>::allocate_buffer()
 // Stream<A825>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_A825>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_A825>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -457,10 +457,10 @@ size_t Stream<ED247_STREAM_TYPE_A825>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
-    size_t sample_size = 0;
+    uint32_t frame_index = 0;
+    uint32_t sample_size = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -500,7 +500,7 @@ bool Stream<ED247_STREAM_TYPE_A825>::decode(const char * frame, size_t frame_siz
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_A825>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_A825>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size == _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -521,10 +521,10 @@ void Stream<ED247_STREAM_TYPE_A825>::allocate_buffer()
 // Stream<SERIAL>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_SERIAL>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_SERIAL>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -553,10 +553,10 @@ size_t Stream<ED247_STREAM_TYPE_SERIAL>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
-    size_t sample_size = 0;
+    uint32_t frame_index = 0;
+    uint32_t sample_size = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -596,7 +596,7 @@ bool Stream<ED247_STREAM_TYPE_SERIAL>::decode(const char * frame, size_t frame_s
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_SERIAL>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_SERIAL>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size == _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -617,10 +617,10 @@ void Stream<ED247_STREAM_TYPE_SERIAL>::allocate_buffer()
 // Stream<AUDIO>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_AUDIO>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_AUDIO>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -649,10 +649,10 @@ size_t Stream<ED247_STREAM_TYPE_AUDIO>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
-    size_t sample_size = 0;
+    uint32_t frame_index = 0;
+    uint32_t sample_size = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -692,7 +692,7 @@ bool Stream<ED247_STREAM_TYPE_AUDIO>::decode(const char * frame, size_t frame_si
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_AUDIO>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_AUDIO>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size == _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -713,10 +713,10 @@ void Stream<ED247_STREAM_TYPE_AUDIO>::allocate_buffer()
 // Stream<DISCRETE>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_DISCRETE>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_DISCRETE>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -732,9 +732,9 @@ size_t Stream<ED247_STREAM_TYPE_DISCRETE>::encode(char * frame, size_t frame_siz
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -764,7 +764,7 @@ bool Stream<ED247_STREAM_TYPE_DISCRETE>::decode(const char * frame, size_t frame
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_DISCRETE>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_DISCRETE>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size <= _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -783,10 +783,10 @@ void Stream<ED247_STREAM_TYPE_DISCRETE>::allocate_buffer()
 // Stream<ANALOG>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -809,9 +809,9 @@ size_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -849,7 +849,7 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, size_t frame_s
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_ANALOG>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_ANALOG>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size <= _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -867,55 +867,55 @@ void Stream<ED247_STREAM_TYPE_ANALOG>::allocate_buffer()
 
 // Stream<NAD>
 
-void swap_nad(void *sample_data, const ed247_nad_type_t & nad_type, const size_t & sample_element_length)
+void swap_nad(void *sample_data, const ed247_nad_type_t & nad_type, const uint32_t & sample_element_length)
 {
     // SWAP
         switch((uint8_t)nad_type){
             case ED247_NAD_TYPE_INT16:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint16_t*)sample_data+i) = bswap_16(*((uint16_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_INT32:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint32_t*)sample_data+i) = bswap_32(*((uint32_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_INT64:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint64_t*)sample_data+i) = bswap_64(*((uint64_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_UINT16:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint16_t*)sample_data+i) = bswap_16(*((uint16_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_UINT32:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint32_t*)sample_data+i) = bswap_32(*((uint32_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_UINT64:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint64_t*)sample_data+i) = bswap_64(*((uint64_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_FLOAT32:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint32_t*)sample_data+i) = bswap_32(*((uint32_t*)sample_data+i));
                     }
                 } break;
             case ED247_NAD_TYPE_FLOAT64:
                 {
-                    for(size_t i = 0 ; i < sample_element_length ; i++){
+                    for(uint32_t i = 0 ; i < sample_element_length ; i++){
                         *((uint64_t*)sample_data+i) = bswap_64(*((uint64_t*)sample_data+i));
                     }
                 } break;
@@ -925,10 +925,10 @@ void swap_nad(void *sample_data, const ed247_nad_type_t & nad_type, const size_t
 }
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -940,7 +940,7 @@ size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
         // SWAP
         for(auto signal : *_signals){
             void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->_byte_offset);
-            size_t sample_element_length = signal->get_sample_max_size_bytes() / xml::nad_type_size(signal->get_configuration()->_nad_type);
+            uint32_t sample_element_length = signal->get_sample_max_size_bytes() / xml::nad_type_size(signal->get_configuration()->_nad_type);
             swap_nad(sample_data, signal->get_configuration()->_nad_type, sample_element_length);
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
@@ -953,9 +953,9 @@ size_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -974,7 +974,7 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
         // SWAP
         for(auto signal : *_signals){
             void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->_byte_offset);
-            size_t sample_element_length = signal->get_sample_max_size_bytes() / xml::nad_type_size(signal->get_configuration()->_nad_type);
+            uint32_t sample_element_length = signal->get_sample_max_size_bytes() / xml::nad_type_size(signal->get_configuration()->_nad_type);
             swap_nad(sample_data, signal->get_configuration()->_nad_type, sample_element_length);
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
@@ -995,7 +995,7 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, size_t frame_size
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_NAD>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_NAD>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size <= _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }
@@ -1014,10 +1014,10 @@ void Stream<ED247_STREAM_TYPE_NAD>::allocate_buffer()
 // Stream<VNAD>
 
 template<>
-size_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, size_t frame_size)
+uint32_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, uint32_t frame_size)
 {
     if(_send_stack.size() == 0) return 0;
-    size_t frame_index = 0;
+    uint32_t frame_index = 0;
     bool empty;
     do{
         const auto & sample = _send_stack.pop_front(&empty);
@@ -1027,8 +1027,8 @@ size_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, size_t frame_size)
 
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
-        size_t cursor = 0;
-        size_t cursor_step = 0;
+        uint32_t cursor = 0;
+        uint32_t cursor_step = 0;
         uint32_t isignal = 0;
         uint16_t sample_size_bytes = 0;
         while(cursor < sample->size()){
@@ -1058,10 +1058,10 @@ size_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, size_t frame_size)
 }
 
 template<>
-bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_size, const FrameHeader * header)
+bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    size_t frame_index = 0;
-    size_t sample_size = 0;
+    uint32_t frame_index = 0;
+    uint32_t sample_size = 0;
     static ed247_timestamp_t data_timestamp;
     static ed247_timestamp_t timestamp;
     while(frame_index < frame_size){
@@ -1088,8 +1088,8 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
 
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
-        size_t cursor = 0;
-        size_t cursor_step = 0;
+        uint32_t cursor = 0;
+        uint32_t cursor_step = 0;
         uint32_t isignal = 0;
         uint16_t sample_size_bytes = 0;
         while(cursor < sample->size()){
@@ -1118,7 +1118,7 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, size_t frame_siz
 }
 
 template<>
-ed247_status_t Stream<ED247_STREAM_TYPE_VNAD>::check_sample_size(size_t sample_size) const
+ed247_status_t Stream<ED247_STREAM_TYPE_VNAD>::check_sample_size(uint32_t sample_size) const
 {
     return sample_size <= _configuration->_sample_max_size_bytes ? ED247_STATUS_SUCCESS : ED247_STATUS_FAILURE;
 }

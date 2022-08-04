@@ -27,7 +27,7 @@ TEST_P(complexMultichannelFixture, complexMultichannelMain)
 
   const char* payload = nullptr;
   uint8_t* sample_data;
-  size_t payload_size;
+  uint32_t payload_size;
 
   ASSERT_EQ(ed247_stream_pop_sample(afdx_stream, (const void**)&payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(payload_size, 100);

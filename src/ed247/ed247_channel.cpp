@@ -35,12 +35,12 @@ namespace ed247
 
 // Header
 
-size_t FrameHeader::length()
+uint32_t FrameHeader::length()
 {
     return _configuration.enable == ED247_YESNO_YES ? (sizeof(uint16_t)*2+sizeof(uint32_t)*2) : 0;
 }
 
-void FrameHeader::encode(char * frame, size_t frame_capacity, size_t & frame_index, ed247_uid_t component_identifier)
+void FrameHeader::encode(char * frame, uint32_t frame_capacity, uint32_t & frame_index, ed247_uid_t component_identifier)
 {
     if(_configuration.enable == ED247_YESNO_YES){
         if(_configuration.transport_timestamp == ED247_YESNO_YES) {
@@ -74,7 +74,7 @@ void FrameHeader::encode(char * frame, size_t frame_capacity, size_t & frame_ind
     }
 }
 
-bool FrameHeader::decode(const char * frame, size_t frame_size, size_t & frame_index)
+bool FrameHeader::decode(const char * frame, uint32_t frame_size, uint32_t & frame_index)
 {
     frame_index = 0;
     // Increment the regular number of the sequence number
@@ -171,11 +171,11 @@ bool Channel::has_samples_to_send()
 
 void Channel::encode(const ed247_uid_t & component_identifier)
 {
-    size_t buffer_index = 0;
-    size_t stream_data_size = 0;
+    uint32_t buffer_index = 0;
+    uint32_t stream_data_size = 0;
     // Encode header
     _header.encode(_buffer.data_rw(), _buffer.capacity(), buffer_index, component_identifier);
-    size_t header_index = buffer_index;
+    uint32_t header_index = buffer_index;
     // Encode channel payload
     if(!_configuration->simple){
         for(auto & p : _streams){
@@ -214,9 +214,9 @@ void Channel::encode(const ed247_uid_t & component_identifier)
     }
 }
 
-bool Channel::decode(const char * frame, size_t frame_size)
+bool Channel::decode(const char * frame, uint32_t frame_size)
 {
-  size_t frame_index = 0;
+  uint32_t frame_index = 0;
   if (_header.decode(frame, frame_size, frame_index) == false) return false;
 
   if(_configuration->simple == false) {
@@ -356,7 +356,7 @@ void Channel::Pool::encode(const ed247_uid_t & component_identifier)
     }
 }
 
-size_t Channel::Pool::size() const
+uint32_t Channel::Pool::size() const
 {
     return _channels->size();
 }

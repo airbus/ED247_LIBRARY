@@ -137,7 +137,7 @@ namespace attr
 
 std::string xmlChar2string(const xmlChar *str);
 
-size_t nad_type_size(ed247_nad_type_t type);
+uint32_t nad_type_size(ed247_nad_type_t type);
 
 template<typename T>
 void set_value(T & variable, const xmlAttrPtr attribute);
@@ -245,8 +245,8 @@ struct Stream
     std::string         _comment;
     std::string         _icd;
     ed247_uid_t         _uid;
-    size_t              _sample_max_number;
-    size_t              _sample_max_size_bytes;
+    uint32_t            _sample_max_number;
+    uint32_t            _sample_max_size_bytes;
     uint32_t            _sampling_period_us;
     DataTimestamp       _data_timestamp;
 
@@ -312,7 +312,7 @@ struct Signal
     uint32_t              _vnad_position;
     uint32_t              _vnad_max_length;
 
-    size_t                _position;                   // position in the stream vector
+    uint32_t              _position;                   // position in the stream vector
 
     void Reset(ed247_signal_type_t type);
 

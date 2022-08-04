@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     ed247_stream_list_t          streams = nullptr;
     ed247_stream_t               stream = nullptr;
     const void                   *sample = nullptr;
-    size_t                       sample_size = 0;
+    uint32_t                     sample_size = 0;
     const ed247_timestamp_t      *data_timestamp = nullptr;
     const ed247_timestamp_t      *recv_timestamp = nullptr;
     const ed247_sample_details_t *sample_details = nullptr;
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
                         << data_timestamp->offset_ns << ";"
                         << recv_timestamp->epoch_s << ";"
                         << recv_timestamp->offset_ns << ";";
-                    for(size_t i = 0 ; i < sample_size ; i++){
+                    for(uint32_t i = 0 ; i < sample_size ; i++){
                         if(i > 0) output() << " ";
                         output() << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)((unsigned char*)sample)[i];
                     }
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
                     while(ed247_signal_list_next(signals, &signal) == ED247_STATUS_SUCCESS && signal != NULL){
                         std::string signal_name = ed247_signal_get_name(signal);
                         const void * signal_sample;
-                        size_t signal_sample_size;
+                        uint32_t signal_sample_size;
                         status = ed247_stream_assistant_read_signal(assistant, signal, &signal_sample, &signal_sample_size);
                         if(check_status(context, status)) return status;
                         output() << sample_details->component_identifier << ";"
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
                             << recv_timestamp->offset_ns << ";"
                             << "" << ";"
                             << signal_name << ";"; // Stream data
-                        for(size_t i = 0 ; i < signal_sample_size ; i++){
+                        for(uint32_t i = 0 ; i < signal_sample_size ; i++){
                             if(i > 0) output() << " ";
                             output() << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)((unsigned char*)signal_sample)[i];
                         }

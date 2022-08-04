@@ -31,7 +31,6 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
 
 #ifdef __unix__
@@ -897,7 +896,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_get_user_data(
  */
 extern LIBED247_EXPORT ed247_status_t ed247_channel_list_size(
     ed247_channel_list_t channels,
-    size_t *             size);
+    uint32_t *           size);
 
 /**
  * @brief Iterate over a channel identifier list
@@ -953,9 +952,9 @@ extern LIBED247_EXPORT ed247_stream_type_t ed247_stream_get_type(ed247_stream_t 
 extern LIBED247_EXPORT const char* ed247_stream_get_comment(ed247_stream_t stream);
 extern LIBED247_EXPORT const char* ed247_stream_get_icd(ed247_stream_t stream);
 extern LIBED247_EXPORT ed247_uid_t ed247_stream_get_uid(ed247_stream_t stream);
-extern LIBED247_EXPORT size_t ed247_stream_get_sample_max_number(ed247_stream_t stream);
-extern LIBED247_EXPORT size_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream);
-extern LIBED247_EXPORT size_t ed247_stream_get_sampling_period_us(ed247_stream_t stream);
+extern LIBED247_EXPORT uint32_t ed247_stream_get_sample_max_number(ed247_stream_t stream);
+extern LIBED247_EXPORT uint32_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream);
+extern LIBED247_EXPORT uint32_t ed247_stream_get_sampling_period_us(ed247_stream_t stream);
 /** @} */
 
 
@@ -1094,7 +1093,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_get_assistant(
 extern LIBED247_EXPORT ed247_status_t ed247_stream_allocate_sample(
     ed247_stream_t stream,
     void **        sample_data,
-    size_t *       sample_size);
+    uint32_t *     sample_size);
 
 /**
  * @brief Free memory allocated by ::ed247_stream_allocate_sample().
@@ -1117,7 +1116,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_free_sample(
 extern LIBED247_EXPORT ed247_status_t ed247_stream_samples_number(
     ed247_stream_t    stream,
     ed247_direction_t direction,
-    size_t *          size);
+    uint32_t *        size);
 
 /**
  * @brief Write & push a single sample in the sample buffer of the stream.
@@ -1134,7 +1133,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_samples_number(
 extern LIBED247_EXPORT ed247_status_t ed247_stream_push_sample(
     ed247_stream_t            stream,
     const void *              sample_data,
-    size_t                    sample_data_size,
+    uint32_t                  sample_data_size,
     const ed247_timestamp_t * data_timestamp,
     bool *                    full);
 
@@ -1154,8 +1153,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_push_sample(
 extern LIBED247_EXPORT ed247_status_t ed247_stream_push_samples(
     ed247_stream_t            stream,
     const void *              samples_data,
-    const size_t *            samples_size,
-    size_t                    samples_number,
+    const uint32_t *          samples_size,
+    uint32_t                  samples_number,
     const ed247_timestamp_t * data_timestamp,
     bool *                    full);
 
@@ -1178,7 +1177,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_push_samples(
 extern LIBED247_EXPORT ed247_status_t ed247_stream_pop_sample(
     ed247_stream_t                  stream,
     const void **                   sample_data,
-    size_t *                        sample_size,
+    uint32_t *                      sample_size,
     const ed247_timestamp_t **      data_timestamp,
     const ed247_timestamp_t **      recv_timestamp,
     const ed247_sample_details_t ** sample_details,
@@ -1203,7 +1202,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_pop_sample(
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_list_size(
     ed247_stream_list_t streams,
-    size_t *            size);
+    uint32_t *          size);
 
 /**
  * @brief Iterate over a stream identifier list
@@ -1246,7 +1245,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_list_free(
  * @param[in] nad_type The NAD type
  * @return The size of the NAD type element (sizeof equivalent)
  */
-extern LIBED247_EXPORT size_t ed247_nad_type_size(ed247_nad_type_t nad_type);
+extern LIBED247_EXPORT uint32_t ed247_nad_type_size(ed247_nad_type_t nad_type);
 
 /**
  * @ingroup signal
@@ -1322,7 +1321,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_get_stream(
 extern LIBED247_EXPORT ed247_status_t ed247_signal_allocate_sample(
     ed247_signal_t signal,
     void **        sample_data,
-    size_t *       sample_size);
+    uint32_t *     sample_size);
 
 /**
  * @brief Free memory allocated by ::ed247_signal_allocate_sample().
@@ -1352,7 +1351,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_free_sample(
  */
 extern LIBED247_EXPORT ed247_status_t ed247_signal_list_size(
     ed247_signal_list_t signals,
-    size_t *            size);
+    uint32_t *          size);
 
 /**
  * @brief Iterate over a signal identifier list
@@ -1425,7 +1424,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_write_signal(
     ed247_stream_assistant_t assistant,
     ed247_signal_t           signal,
     const void *             signal_sample_data,
-    size_t                   signal_sample_size);
+    uint32_t                 signal_sample_size);
 
 /**
  * @brief Read signal sample from the assistant buffer. The assistant internal stream sample buffer is updated by calling ::ed247_stream_signal_assistant_pop_sample().
@@ -1450,7 +1449,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_read_signal(
     ed247_stream_assistant_t assistant,
     ed247_signal_t           signal,
     const void **            signal_sample_data,
-    size_t *                 signal_sample_size);
+    uint32_t *               signal_sample_size);
 
 
 

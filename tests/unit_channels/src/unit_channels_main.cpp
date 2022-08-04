@@ -81,25 +81,25 @@ TEST_P(ChannelContext, MultiPushPop)
 
         // Retrieve the pool of channels
         auto pool_channels = context->getPoolChannels();
-        ASSERT_EQ(pool_channels->size(), (size_t)2);
+        ASSERT_EQ(pool_channels->size(), (uint32_t)2);
 
         // Check finder for find all
         auto channels = pool_channels->find(".*");
-        ASSERT_EQ(channels.size(), (size_t)2);
+        ASSERT_EQ(channels.size(), (uint32_t)2);
 
         // Check finder for a single channel
         auto channels0 = pool_channels->find("Channel0");
-        ASSERT_EQ(channels0.size(), (size_t)1);
+        ASSERT_EQ(channels0.size(), (uint32_t)1);
         auto channel0 = channels0[0];
         auto channels1 = pool_channels->find("Channel1");
-        ASSERT_EQ(channels1.size(), (size_t)1);
+        ASSERT_EQ(channels1.size(), (uint32_t)1);
         auto channel1 = channels1[0];
 
         // Push stream samples
         for(auto stream : channel0->streams()){
             auto sample = stream.second.stream->allocate_sample();
             bool full;
-            for(size_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
+            for(uint32_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
                 std::string sample_str = strize() << std::setw(stream.second.stream->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
                 sample->copy(sample_str.c_str(),stream.second.stream->get_configuration()->_sample_max_size_bytes);
                 malloc_count_start();
@@ -116,7 +116,7 @@ TEST_P(ChannelContext, MultiPushPop)
         malloc_count_start();
         channel0->encode(0);
         ASSERT_EQ(malloc_count_stop(), 0);
-        size_t frame_index = 0;
+        uint32_t frame_index = 0;
         if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
             uint16_t pid = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
             frame_index += sizeof(uint16_t);
@@ -178,7 +178,7 @@ TEST_P(ChannelContext, MultiPushPop)
         // Pop sample & check samples
         bool empty;
         for(auto stream : channel1->streams()){
-            for(size_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
+            for(uint32_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
                 malloc_count_start();
                 auto sample = stream.second.stream->pop_sample(&empty);
                 ASSERT_TRUE((bool)sample);

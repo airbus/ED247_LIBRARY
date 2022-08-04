@@ -66,10 +66,10 @@ class FrameHeader
         {}
 
         // Return false on error
-        void encode(char * frame, size_t frame_capacity, size_t & frame_index, ed247_uid_t component_identifier);
-        bool decode(const char * frame, size_t frame_size, size_t & frame_index);
+        void encode(char * frame, uint32_t frame_capacity, uint32_t & frame_index, ed247_uid_t component_identifier);
+        bool decode(const char * frame, uint32_t frame_size, uint32_t & frame_index);
 
-        size_t length();
+        uint32_t length();
 
         bool operator == (const FrameHeader & other) const
         {
@@ -178,7 +178,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         // Return false on error
         void encode(const ed247_uid_t & component_identifier);
-        bool decode(const char * frame, size_t frame_size);
+        bool decode(const char * frame, uint32_t frame_size);
 
         std::vector<std::weak_ptr<ComInterface>> & get_emitters() { return _emitters; }
         std::vector<std::weak_ptr<ComInterface>> & get_receivers() { return _receivers; }
@@ -207,7 +207,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         void allocate_buffer()
         {
-            size_t capacity = 0;
+            uint32_t capacity = 0;
             capacity += _header.length();
             for(auto & p : _streams){
                 capacity += sizeof(ed247_uid_t) + sizeof(uint16_t);
@@ -248,7 +248,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 void encode(const ed247_uid_t & component_identifier);
                 void encode_and_send(const ed247_uid_t & component_identifier);
 
-                size_t size() const;
+                uint32_t size() const;
 
             private:
                 std::shared_ptr<channel_list_t>      _channels;

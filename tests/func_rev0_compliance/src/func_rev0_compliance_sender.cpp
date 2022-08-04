@@ -54,7 +54,7 @@ TEST_P(StreamContext, BackupRecv)
     ed247_stream_list_t streams;
     ed247_stream_t stream;
     std::string str;
-    size_t sample_size;
+    uint32_t sample_size;
     const void *sample;
     const ed247_timestamp_t *data_timestamp;
     const ed247_timestamp_t *recv_timestamp;
@@ -74,7 +74,7 @@ TEST_P(StreamContext, BackupRecv)
         str = strize() << std::setw(100) << std::setfill('0') << i;
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, &data_timestamp, &recv_timestamp, &sample_details, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(sample_details->component_identifier, 1);
-        ASSERT_EQ(sample_details->sequence_number, (size_t)i);
+        ASSERT_EQ(sample_details->sequence_number, (uint32_t)i);
 
         // Checkpoint
         SAY_SELF("Checkpoint n~" << i);
@@ -92,7 +92,7 @@ TEST_P(StreamContext, BackupSend)
     ed247_stream_list_t streams;
     ed247_stream_t stream;
     std::string str;
-    size_t sample_size;
+    uint32_t sample_size;
     void *sample;
     ed247_timestamp_t data_timestamp;
 

@@ -40,7 +40,7 @@ struct Signal {
     ed247_signal_t signal;
     std::string name;
     void *sample = nullptr;
-    size_t sample_size = 0;
+    uint32_t sample_size = 0;
 };
 
 struct Stream {
@@ -55,9 +55,9 @@ struct Stream {
     ed247_stream_assistant_t assistant;
     std::string name;
     ed247_direction_t direction;
-    size_t sample_max_number;
+    uint32_t sample_max_number;
     void *sample = nullptr;
-    size_t sample_size = 0;
+    uint32_t sample_size = 0;
     std::list<Signal*> signals;
 };
 

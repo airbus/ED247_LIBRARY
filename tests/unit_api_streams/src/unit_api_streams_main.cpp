@@ -54,9 +54,9 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_EQ(ed247_get_stream_list(context, &stream_list), ED247_STATUS_SUCCESS);
 
     // Check stream list size
-    size_t size;
+    uint32_t size;
     ASSERT_EQ(ed247_stream_list_size(stream_list, &size), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(size, (size_t)16);
+    ASSERT_EQ(size, (uint32_t)16);
 
     // Check the retrieved content, perform unvalid calls to verify robustness
     ASSERT_EQ(ed247_stream_list_next(stream_list, NULL), ED247_STATUS_FAILURE);
@@ -86,8 +86,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)4);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)4);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream2full");
@@ -96,8 +96,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Optional for A429");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for A429");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)101);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)3);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)4);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)3);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)4);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream3");
@@ -106,8 +106,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)2);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)69);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)69);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream3full");
@@ -116,8 +116,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "A825 designates CAN");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for A825");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)102);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)17);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)69);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)17);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)69);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream1");
@@ -126,8 +126,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)0);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)1471);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)1471);
 
     // Perform checks for all other Streams
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -137,8 +137,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Optional for A664");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "Test for A664");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)100);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)42);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)1471);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)42);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)1471);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "StreamSerialFull");
@@ -147,8 +147,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "SERIAL line");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for SERIAL");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)1002);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)27);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)123);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)27);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)123);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "StreamSerial");
@@ -157,8 +157,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)1003);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)321);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)321);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream4");
@@ -167,8 +167,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)3);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)4);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)4);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)10000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -178,8 +178,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Discrete input signals");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for DSI");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)103);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)14);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)4);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)14);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)4);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)15000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -189,8 +189,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)4);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)16);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)16);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)20000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -200,8 +200,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Analog input signals");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for ANA");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)104);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)36);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)16);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)36);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)16);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)25000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -211,8 +211,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)5);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)6);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)6);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)100000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -222,8 +222,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Non Avionic Data input signals");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for NAD");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)105);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)23);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)15);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)23);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)15);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)110000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -233,8 +233,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)6);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)1);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)12);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)1);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)12);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)500000);
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -244,8 +244,8 @@ TEST(UtApiStreams, LoadStreams)
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Variable Non Avionic Data input signals");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for VNAD");
     ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)106);
-    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (size_t)12);
-    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (size_t)13);
+    ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)12);
+    ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)13);
     ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)1000000);
 
     // Check the end of the list is reached and that on next request it will restart from the beginning
@@ -402,9 +402,9 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
 
     // Check channel list size
     ASSERT_EQ(ed247_find_channels(context, ".*", &channel_list), ED247_STATUS_SUCCESS);
-    size_t size;
+    uint32_t size;
     ASSERT_EQ(ed247_channel_list_size(channel_list, &size), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(size, (size_t)2);
+    ASSERT_EQ(size, (uint32_t)2);
 
     // Get a single channel and retrieve streams
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel2", &channel_list), ED247_STATUS_SUCCESS);

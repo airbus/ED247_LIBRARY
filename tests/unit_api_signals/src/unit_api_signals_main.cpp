@@ -63,11 +63,11 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_EQ(ed247_find_signals(context, NULL, &signal_list), ED247_STATUS_SUCCESS);
 
     // Check size
-    size_t size;
+    uint32_t size;
     ASSERT_EQ(ed247_signal_list_size(NULL, &size), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_signal_list_size(signal_list, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_signal_list_size(signal_list, &size), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(size, (size_t)8);
+    ASSERT_EQ(size, (uint32_t)8);
     
     // Check the retrieved content, perform invalid calls to verify robustness
     ASSERT_EQ(ed247_signal_list_next(signal_list, NULL), ED247_STATUS_FAILURE);

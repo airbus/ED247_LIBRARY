@@ -65,10 +65,10 @@ TEST_P(StreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    size_t sample_max_size_bytes;
-    size_t sample_max_number;
+    uint32_t sample_max_size_bytes;
+    uint32_t sample_max_number;
     const void *sample;
-    size_t sample_size;
+    uint32_t sample_size;
     bool empty;
     std::string str_send, str_recv;
     const ed247_timestamp_t* receive_timestamp;
@@ -126,7 +126,7 @@ TEST_P(StreamContext, SingleFrame)
         str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-        size_t stack_size = 0;
+        uint32_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         SAY_SELF("Receive stack size [" << stack_size << "]");
@@ -156,7 +156,7 @@ TEST_P(StreamContext, SingleFrame)
             str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-            size_t stack_size = 0;
+            uint32_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
             SAY_SELF("Receive stack size [" << stack_size << "]");
@@ -187,7 +187,7 @@ TEST_P(StreamContext, SingleFrame)
             str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-            size_t stack_size = 0;
+            uint32_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
             SAY_SELF("Receive stack size [" << stack_size << "]");
@@ -357,10 +357,10 @@ TEST_P(SimpleStreamContext, SingleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    size_t sample_max_size_bytes;
-    size_t sample_max_number;
+    uint32_t sample_max_size_bytes;
+    uint32_t sample_max_number;
     const void *sample;
-    size_t sample_size;
+    uint32_t sample_size;
     bool empty;
     std::string str_send, str_recv;
     const ed247_timestamp_t* receive_timestamp;
@@ -408,7 +408,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
         str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
         malloc_count_start();
         ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-        size_t stack_size = 0;
+        uint32_t stack_size = 0;
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
         SAY_SELF("Receive stack size [" << stack_size << "]");
@@ -438,7 +438,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
             str_send = strize() << std::setw(sample_max_size_bytes) << std::setfill('0') << i;
             malloc_count_start();
             ASSERT_EQ(ed247_stream_pop_sample(stream, &sample, &sample_size, NULL, &receive_timestamp, NULL, &empty), ED247_STATUS_SUCCESS);
-            size_t stack_size = 0;
+            uint32_t stack_size = 0;
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &stack_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
             SAY_SELF("Receive stack size [" << stack_size << "]");
@@ -463,10 +463,10 @@ TEST_P(StreamContext, MultipleFrame)
 {
     ed247_stream_list_t streams;
     ed247_stream_t stream;
-    size_t sample_max_size_bytes;
-    size_t sample_max_number;
+    uint32_t sample_max_size_bytes;
+    uint32_t sample_max_number;
     const void *sample;
-    size_t sample_size;
+    uint32_t sample_size;
     bool empty;
     std::string str_send, str_recv;
     const ed247_timestamp_t* receive_timestamp;
@@ -563,7 +563,7 @@ TEST_P(SignalContext, SingleFrame)
         signal_name = ed247_signal_get_name(signal);
         signal_type = ed247_signal_get_type(signal);
         const void * sample_data;
-        size_t sample_size;
+        uint32_t sample_size;
         malloc_count_start();
         // Extract and check the content of each signal of the frame
         ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, signal, &sample_data, &sample_size), ED247_STATUS_SUCCESS);

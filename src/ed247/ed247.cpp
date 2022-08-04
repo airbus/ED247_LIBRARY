@@ -1045,7 +1045,7 @@ ed247_status_t ed247_get_channel_stream(
  * ========================================================================= */
 ed247_status_t ed247_channel_list_size(
   ed247_channel_list_t channels,
-  size_t *             size)
+  uint32_t *           size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -1144,19 +1144,19 @@ ed247_uid_t ed247_stream_get_uid(ed247_stream_t stream)
   return ed247_stream->get_configuration()->_uid;
 }
 
-size_t ed247_stream_get_sample_max_number(ed247_stream_t stream)
+uint32_t ed247_stream_get_sample_max_number(ed247_stream_t stream)
 {
   auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
   return ed247_stream->get_configuration()->_sample_max_number;
 }
 
-size_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream)
+uint32_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream)
 {
   auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
   return ed247_stream->get_configuration()->_sample_max_size_bytes;
 }
 
-size_t ed247_stream_get_sampling_period_us(ed247_stream_t stream)
+uint32_t ed247_stream_get_sampling_period_us(ed247_stream_t stream)
 {
   auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
   return ed247_stream->get_configuration()->_sampling_period_us;
@@ -1397,7 +1397,7 @@ ed247_status_t ed247_stream_get_assistant(
 ed247_status_t ed247_stream_allocate_sample(
   ed247_stream_t stream,
   void **        sample_data,
-  size_t *       sample_size)
+  uint32_t *     sample_size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!stream){
@@ -1443,7 +1443,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_free_sample(
 ed247_status_t ed247_stream_samples_number(
   ed247_stream_t    stream,
   ed247_direction_t direction,
-  size_t *          size)
+  uint32_t *        size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!stream){
@@ -1470,7 +1470,7 @@ ed247_status_t ed247_stream_samples_number(
 ed247_status_t ed247_stream_push_sample(
   ed247_stream_t            stream,
   const void *              sample_data,
-  size_t                    sample_size,
+  uint32_t                  sample_size,
   const ed247_timestamp_t * timestamp,
   bool *                    full)
 {
@@ -1495,8 +1495,8 @@ ed247_status_t ed247_stream_push_sample(
 ed247_status_t ed247_stream_push_samples(
   ed247_stream_t            stream,
   const void *              samples_data,
-  const size_t *            samples_size,
-  size_t                    samples_number,
+  const uint32_t *          samples_size,
+  uint32_t                  samples_number,
   const ed247_timestamp_t * timestamp,
   bool *                    full)
 {
@@ -1515,7 +1515,7 @@ ed247_status_t ed247_stream_push_samples(
   }
   try{
     auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    size_t sum_size = 0;
+    uint32_t sum_size = 0;
     for(uint32_t i = 0 ; i < samples_number ; i++){
       if (ed247_stream->push_sample((const char*)samples_data+sum_size, samples_size[i], timestamp, full) == false) {
         return ED247_STATUS_FAILURE;
@@ -1530,7 +1530,7 @@ ed247_status_t ed247_stream_push_samples(
 ed247_status_t ed247_stream_pop_sample(
   ed247_stream_t                  stream,
   const void **                   sample_data,
-  size_t *                        sample_size,
+  uint32_t *                      sample_size,
   const ed247_timestamp_t **      data_timestamp,
   const ed247_timestamp_t **      recv_timestamp,
   const ed247_sample_details_t ** sample_details,
@@ -1574,7 +1574,7 @@ ed247_status_t ed247_stream_pop_sample(
  * ========================================================================= */
 ed247_status_t ed247_stream_list_size(
   ed247_stream_list_t streams,
-  size_t *            size)
+  uint32_t *          size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -1636,7 +1636,7 @@ ed247_status_t ed247_stream_list_free(
 /* =========================================================================
  * Signal
  * ========================================================================= */
-size_t ed247_nad_type_size(
+uint32_t ed247_nad_type_size(
   ed247_nad_type_t nad_type)
 {
   return ed247::BaseSignal::nad_type_size(nad_type);
@@ -1781,7 +1781,7 @@ ed247_status_t ed247_signal_get_stream(
 ed247_status_t ed247_signal_allocate_sample(
   ed247_signal_t signal,
   void **        sample_data,
-  size_t *       sample_size)
+  uint32_t *     sample_size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!signal){
@@ -1829,7 +1829,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_free_sample(
  * ========================================================================= */
 ed247_status_t ed247_signal_list_size(
   ed247_signal_list_t signals,
-  size_t *            size)
+  uint32_t *          size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -1917,7 +1917,7 @@ ed247_status_t ed247_stream_assistant_write_signal(
   ed247_stream_assistant_t assistant,
   ed247_signal_t           signal,
   const void *             signal_sample_data,
-  size_t                   signal_sample_size)
+  uint32_t                 signal_sample_size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!assistant){
@@ -1947,7 +1947,7 @@ ed247_status_t ed247_stream_assistant_read_signal(
   ed247_stream_assistant_t assistant,
   ed247_signal_t           signal,
   const void **            signal_sample_data,
-  size_t *                 signal_sample_size)
+  uint32_t *               signal_sample_size)
 {
   PRINT_DEBUG("function " << __func__ << "()");
   if(!assistant){

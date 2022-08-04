@@ -101,7 +101,7 @@ __attribute__((unused)) static void memhooks_backtrace(memhooks_type_t type)
 extern "C" {
   static uint8_t memhook_recusive_lock = 0;
 
-  extern void* __libc_malloc(size_t size);
+  extern void* __libc_malloc(uint32_t size);
   extern void __libc_free(void* ptr);
 
   void *malloc(size_t size)

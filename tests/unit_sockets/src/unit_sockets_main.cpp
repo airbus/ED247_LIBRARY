@@ -76,7 +76,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         // Prepare frame to send
         std::string send_msg{"Hell"};
-        size_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;
+        uint32_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;
         char *msg = (char *)malloc(msg_size);
         *(ed247_uid_t*)(msg) = htons(sp_stream_emitter_conf->_uid);
         *(uint16_t*)(msg+sizeof(ed247_uid_t)) = htons(4);
@@ -84,7 +84,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 
         // Prepare for reception
         const char *recv_frame;
-        size_t recv_frame_size;
+        uint32_t recv_frame_size;
 
         malloc_count_start();
 
@@ -185,7 +185,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         auto channel_receiver = pool_channels->get(sp_channel_receiver_conf);
 
         // Prepare frame to send
-        size_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;
+        uint32_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;
         std::string send_msg_a{"HelA"};
         char *msg_a = (char *)malloc(msg_size);
         *(ed247_uid_t*)(msg_a) = htons(sp_stream_emitter_conf->_uid);
@@ -199,7 +199,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
         // Prepare for reception
         const char *recv_frame;
-        size_t recv_frame_size;
+        uint32_t recv_frame_size;
 
         malloc_count_start();
 

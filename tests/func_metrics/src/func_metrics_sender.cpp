@@ -41,24 +41,24 @@ TEST_P(Context, Metrics)
     ed247_stream_t stream = NULL;
     ed247_stream_t second_stream = NULL;
     void *second_stream_value;
-    size_t second_stream_size;
+    uint32_t second_stream_size;
     ed247_stream_assistant_t assistant = NULL;
     ed247_signal_list_t signals = NULL;
     ed247_signal_t dummy_header_sn = NULL;
     void *sn_value;
-    size_t sn_size;
+    uint32_t sn_size;
     ed247_signal_t dummy_header_pid = NULL;
     void *pid_value;
-    size_t pid_size;
+    uint32_t pid_size;
     ed247_signal_t dummy_header_tts1 = NULL;
     void *tts1_value;
-    size_t tts1_size;
+    uint32_t tts1_size;
     ed247_signal_t dummy_header_tts2 = NULL;
     void *tts2_value;
-    size_t tts2_size;
+    uint32_t tts2_size;
     ed247_signal_t data_signal = NULL;
     void *data_value;
-    size_t data_size;
+    uint32_t data_size;
     
     uint16_t header_values [] = {
         65000,
@@ -170,24 +170,24 @@ TEST_P(Context, MetricsCross)
     ed247_stream_t stream = NULL;
     ed247_stream_t second_stream = NULL;
     void *second_stream_value;
-    size_t second_stream_size;
+    uint32_t second_stream_size;
     ed247_stream_assistant_t assistant = NULL;
     ed247_signal_list_t signals = NULL;
     ed247_signal_t dummy_header_sn = NULL;
     void *sn_value;
-    size_t sn_size;
+    uint32_t sn_size;
     ed247_signal_t dummy_header_pid = NULL;
     void *pid_value;
-    size_t pid_size;
+    uint32_t pid_size;
     ed247_signal_t dummy_header_tts1 = NULL;
     void *tts1_value;
-    size_t tts1_size;
+    uint32_t tts1_size;
     ed247_signal_t dummy_header_tts2 = NULL;
     void *tts2_value;
-    size_t tts2_size;
+    uint32_t tts2_size;
     ed247_signal_t data_signal = NULL;
     void *data_value;
-    size_t data_size;
+    uint32_t data_size;
 
     uint16_t header_values_cross [2][4] = {
         {10, 15, 56, 413},

@@ -38,26 +38,26 @@ namespace ed247 {
     // Retrieve the pool of signals
     auto pool_signals = context->getPoolSignals();
     if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
-      ASSERT_EQ(pool_signals->size(), (size_t)25);
+      ASSERT_EQ(pool_signals->size(), (uint32_t)25);
     else
-      ASSERT_EQ(pool_signals->size(), (size_t)12);
+      ASSERT_EQ(pool_signals->size(), (uint32_t)12);
 
     // Check finder for find all
     auto signals = pool_signals->find(".*");
     if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
-      ASSERT_EQ(signals.size(), (size_t)25);
+      ASSERT_EQ(signals.size(), (uint32_t)25);
     else
-      ASSERT_EQ(signals.size(), (size_t)12);
+      ASSERT_EQ(signals.size(), (uint32_t)12);
 
     // Check stream finder
     auto pool_streams = context->getPoolStreams();
     auto stream = pool_streams->find("Stream").front();
-    ASSERT_EQ(stream->find_signals(".*").size(), (size_t)2);
+    ASSERT_EQ(stream->find_signals(".*").size(), (uint32_t)2);
 
     // Check signal sample allocation
     auto signal = pool_signals->find(".*").front();
     auto signal_sample = signal->allocate_sample();
-    ASSERT_EQ(signal_sample->size(), (size_t)0);
+    ASSERT_EQ(signal_sample->size(), (uint32_t)0);
     ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
 
     // Check BaseStream::Assistant creation
@@ -69,7 +69,7 @@ namespace ed247 {
     auto stream_sample = stream->allocate_sample();
     for(auto & signal : *assistant->get_stream()->signals()){
       auto sample = signal->allocate_sample();
-      ASSERT_EQ(sample->size(), (size_t)0);
+      ASSERT_EQ(sample->size(), (uint32_t)0);
       ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
       sample->copy(msg.c_str(), sample->capacity());
@@ -97,7 +97,7 @@ namespace ed247 {
     // Check push
     for(auto & signal : *assistant->get_stream()->signals()){
       auto sample = signal->allocate_sample();
-      ASSERT_EQ(sample->size(), (size_t)0);
+      ASSERT_EQ(sample->size(), (uint32_t)0);
       ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
       sample->copy(msg.c_str(), sample->capacity());
@@ -105,7 +105,7 @@ namespace ed247 {
       samples.push_back(std::move(sample));
     }
     assistant->push();
-    ASSERT_EQ(assistant->get_stream()->send_stack().size(), (size_t)1);
+    ASSERT_EQ(assistant->get_stream()->send_stack().size(), (uint32_t)1);
 
     // Check decode & read
     stream = pool_streams->find("StreamInput").front();
@@ -116,7 +116,7 @@ namespace ed247 {
     for(auto & signal : *assistant->get_stream()->signals()){
       auto sample = signal->allocate_sample();
       const void *data;
-      size_t size;
+      uint32_t size;
       assistant->read(signal, &data, &size);
       ASSERT_EQ(size, sample->capacity());
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;

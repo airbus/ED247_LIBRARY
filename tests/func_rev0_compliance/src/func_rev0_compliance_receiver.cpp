@@ -47,9 +47,9 @@ TEST_P(StreamContext, BackupRecv)
     ed247_stream_list_t streams;
     ed247_stream_t stream;
     std::string str;
-    size_t sample_size;
+    uint32_t sample_size;
     void *sample;
-    size_t sample_index = 0;
+    uint32_t sample_index = 0;
 
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
@@ -106,9 +106,9 @@ TEST_P(StreamContext, BakcupSend)
     ed247_stream_list_t streams;
     ed247_stream_t stream;
     std::string str;
-    size_t sample_size;
+    uint32_t sample_size;
     const void *sample;
-    size_t sample_index = 0;
+    uint32_t sample_index = 0;
 
     ASSERT_EQ(ed247_find_streams(_context, "Stream1", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);

@@ -49,7 +49,7 @@ namespace tests_tools {
 #define ASSERT_POP_EQ(stream, size, expected_data)                                                                                     \
   do {                                                                                                                                 \
     const char* payload = nullptr;                                                                                                     \
-    size_t payload_size;                                                                                                               \
+    uint32_t payload_size;                                                                                                             \
     char expected[size];                                                                                                               \
     memset(expected, expected_data, size);                                                                                             \
     ASSERT_EQ(ed247_stream_pop_sample((stream), (const void**)&payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS); \
@@ -61,7 +61,7 @@ namespace tests_tools {
 #define ASSERT_POP_NODATA(stream)                                                                                                     \
   do {                                                                                                                                \
     const char* payload = nullptr;                                                                                                    \
-    size_t payload_size;                                                                                                              \
+    uint32_t payload_size;                                                                                                            \
     ASSERT_EQ(ed247_stream_pop_sample((stream), (const void**)&payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_NODATA)  \
       << " Received payload (size " << payload_size << ") is: " << std::endl << "  " << hex_stream(payload, payload_size);            \
     } while (0)

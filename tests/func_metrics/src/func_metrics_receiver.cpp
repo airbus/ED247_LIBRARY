@@ -63,8 +63,8 @@ TEST_P(Context, Metrics)
         0xFFFF};
     uint16_t expected_sn_size = 5;
     
-    size_t count = 0;
-    size_t data_size = 0;
+    uint32_t count = 0;
+    uint32_t data_size = 0;
     const uint16_t *data_buffer = NULL;
     
     ASSERT_EQ(ed247_find_streams(_context, "MyStream", &streams), ED247_STATUS_SUCCESS);
@@ -111,13 +111,13 @@ TEST_P(Context, Metrics)
         malloc_count_start();
         ASSERT_EQ(ed247_wait_frame(_context, &temp_list, 1*1000*1000), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
-        ASSERT_EQ(count, (size_t)1);
+        ASSERT_EQ(count, (uint32_t)1);
     
         ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, data_signal, (const void**)(&data_buffer), &data_size), ED247_STATUS_SUCCESS);
         ASSERT_EQ(malloc_count_stop(), 0);
     
-        ASSERT_EQ(data_size, (size_t)2);
+        ASSERT_EQ(data_size, (uint32_t)2);
         ASSERT_NE(data_buffer, (const uint16_t*)NULL);
         ASSERT_EQ(*data_buffer, (uint16_t)i);
     
@@ -130,7 +130,7 @@ TEST_P(Context, Metrics)
         
         // Double receive for the second stream even if not analysed
         uint32_t* sample_data = NULL;
-        size_t sample_data_size = 0;
+        uint32_t sample_data_size = 0;
         ASSERT_EQ(ed247_wait_frame(_context, &temp_list, 1*1000*1000), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_pop_sample(second_stream, (const void**)(&sample_data), &sample_data_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_stream_pop_sample(NULL, (const void**)(&sample_data), &sample_data_size, NULL, NULL, NULL, NULL), ED247_STATUS_FAILURE);
@@ -181,8 +181,8 @@ TEST_P(Context, MetricsCross)
         0, 0, 4, 37, 77, 86, 442, 900
     };
     
-    size_t count = 0;
-    size_t data_size = 0;
+    uint32_t count = 0;
+    uint32_t data_size = 0;
     const uint16_t *data_buffer = NULL;
     
     ASSERT_EQ(ed247_find_streams(_context, "MyStream", &streams), ED247_STATUS_SUCCESS);
@@ -218,7 +218,7 @@ TEST_P(Context, MetricsCross)
             malloc_count_start();
             ASSERT_EQ(ed247_wait_frame(_context, &temp_list, 1*1000*1000), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_samples_number(stream, ED247_DIRECTION_IN, &count), ED247_STATUS_SUCCESS);
-            ASSERT_EQ(count, (size_t)1);
+            ASSERT_EQ(count, (uint32_t)1);
         
             ASSERT_EQ(ed247_stream_assistant_pop_sample(assistant, NULL, NULL, &sample_details, NULL), ED247_STATUS_SUCCESS);
             ASSERT_EQ(sample_details->transport_timestamp.epoch_s,(uint16_t)10);
@@ -226,7 +226,7 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(ed247_stream_assistant_read_signal(assistant, data_signal, (const void**)(&data_buffer), &data_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(malloc_count_stop(), 0);
         
-            ASSERT_EQ(data_size, (size_t)2);
+            ASSERT_EQ(data_size, (uint32_t)2);
             ASSERT_NE(data_buffer, (const uint16_t*)NULL);
             ASSERT_EQ(*data_buffer, (uint16_t)counter);
         
@@ -239,7 +239,7 @@ TEST_P(Context, MetricsCross)
             
             // Double receive for the second stream even if not analysed
             uint32_t* sample_data = NULL;
-            size_t sample_data_size = 0;
+            uint32_t sample_data_size = 0;
             ASSERT_EQ(ed247_wait_frame(_context, &temp_list, 1*1000*1000), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_pop_sample(second_stream, (const void**)(&sample_data), &sample_data_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_pop_sample(NULL, (const void**)(&sample_data), &sample_data_size, NULL, NULL, NULL, NULL), ED247_STATUS_FAILURE);

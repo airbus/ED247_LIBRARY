@@ -95,7 +95,7 @@ std::string UdpSocket::get_last_error()
 #ifdef _WIN32
     LPSTR messageBuffer = nullptr;
     DWORD dwError = WSAGetLastError();
-    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dwError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    uint32_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dwError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
     char errmsg[1024];
     strerror_s(errmsg, 1024, errno);
     std::string err = std::string(messageBuffer, size);
@@ -106,7 +106,7 @@ std::string UdpSocket::get_last_error()
 #endif
 }
 
-void UdpSocket::send_frame(Channel & channel, const void * frame, const size_t frame_size)
+void UdpSocket::send_frame(Channel & channel, const void * frame, const uint32_t frame_size)
 {
     PRINT_CRAZY("Socket [" << _socket_infos << "] sends a frame of channel [" << channel.get_name() << "]");
     auto & destinations = *(_destinations[&channel]);

@@ -126,7 +126,7 @@ ed247_status_t stream_receive(ed247_context_t context, ed247_stream_t stream)
     ed247_signal_list_t signals;
     bool empty = false;
     const void * signal_sample;
-    size_t signal_sample_size;
+    uint32_t signal_sample_size;
     ed247_stream_assistant_t assistant;
 
     status = ed247_stream_get_assistant(stream, &assistant);
@@ -160,7 +160,7 @@ ed247_status_t stream_receive_callback(ed247_context_t context, ed247_stream_t s
     ed247_signal_list_t signals;
     bool empty = false;
     const void * signal_sample;
-    size_t signal_sample_size;
+    uint32_t signal_sample_size;
     ed247_stream_assistant_t assistant;
 
     status = ed247_stream_get_assistant(stream, &assistant);

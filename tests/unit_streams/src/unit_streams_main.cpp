@@ -32,7 +32,7 @@ TEST(CircularStreamSampleBuffer, Main)
 {
     ed247::CircularStreamSampleBuffer cbuffer;
     cbuffer.allocate(sizeof(uint32_t), 4);
-    ASSERT_EQ(cbuffer.size(), (size_t)0);
+    ASSERT_EQ(cbuffer.size(), (uint32_t)0);
     ASSERT_EQ(cbuffer.front(), nullptr);
     ASSERT_EQ(cbuffer.back(), nullptr);
 
@@ -44,14 +44,14 @@ TEST(CircularStreamSampleBuffer, Main)
 
     ASSERT_TRUE(cbuffer.next_write()->copy(sample));
     ASSERT_FALSE(cbuffer.increment());
-    ASSERT_EQ(cbuffer.size(), (size_t)1);
+    ASSERT_EQ(cbuffer.size(), (uint32_t)1);
     ASSERT_EQ(*(uint32_t*)(cbuffer.front()->data()), (uint32_t)1);
     ASSERT_EQ(*(uint32_t*)(cbuffer.back()->data()), (uint32_t)1);
 
     bool empty;
     cbuffer.pop_front(&empty);
     ASSERT_TRUE(empty);
-    ASSERT_EQ(cbuffer.size(), (size_t)0);
+    ASSERT_EQ(cbuffer.size(), (uint32_t)0);
     cbuffer.pop_front(&empty);
     ASSERT_TRUE(empty);
 
@@ -67,14 +67,14 @@ TEST(CircularStreamSampleBuffer, Main)
     i = 4; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
     ASSERT_TRUE(cbuffer.next_write()->copy(sample));
     ASSERT_TRUE(cbuffer.increment());
-    ASSERT_EQ(cbuffer.size(), (size_t)4);
+    ASSERT_EQ(cbuffer.size(), (uint32_t)4);
     ASSERT_EQ(*(uint32_t*)(cbuffer.front()->data()), (uint32_t)1);
     ASSERT_EQ(*(uint32_t*)(cbuffer.back()->data()), (uint32_t)4);
 
     i = 5; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
     ASSERT_TRUE(cbuffer.next_write()->copy(sample));
     ASSERT_TRUE(cbuffer.increment());
-    ASSERT_EQ(cbuffer.size(), (size_t)4);
+    ASSERT_EQ(cbuffer.size(), (uint32_t)4);
     ASSERT_EQ(*(uint32_t*)(cbuffer.front()->data()), (uint32_t)2);
     ASSERT_EQ(*(uint32_t*)(cbuffer.back()->data()), (uint32_t)5);
 
@@ -136,20 +136,20 @@ TEST_P(StreamContext, SinglePushPop)
 
         // Retrieve the pool of streams
         auto pool_streams = context->getPoolStreams();
-        ASSERT_EQ(pool_streams->size(), (size_t)6);
+        ASSERT_EQ(pool_streams->size(), (uint32_t)6);
 
         // Check finder for find all
         auto streams_0 = pool_streams->find(".*");
-        ASSERT_EQ(streams_0.size(), (size_t)6);
+        ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
         auto streams_1 = pool_streams->find("Stream1"); // UID=2
-        ASSERT_EQ(streams_1.size(), (size_t)1);
+        ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 
         // Create a stream sample compatible with the stream
         auto stream_1_sample = stream_1->allocate_sample();
-        ASSERT_EQ(stream_1_sample->size(), (size_t)0);
+        ASSERT_EQ(stream_1_sample->size(), (uint32_t)0);
         ASSERT_EQ(stream_1_sample->capacity(), stream_1->get_configuration()->_sample_max_size_bytes);
         std::string str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << "H";
         stream_1_sample->copy(str_sample.c_str(), stream_1->get_configuration()->_sample_max_size_bytes);
@@ -224,20 +224,20 @@ TEST_P(StreamContext, MultiPushPop)
 
         // Retrieve the pool of streams
         auto pool_streams = context->getPoolStreams();
-        ASSERT_EQ(pool_streams->size(), (size_t)6);
+        ASSERT_EQ(pool_streams->size(), (uint32_t)6);
 
         // Check finder for find all
         auto streams_0 = pool_streams->find(".*");
-        ASSERT_EQ(streams_0.size(), (size_t)6);
+        ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
         auto streams_1 = pool_streams->find("Stream"); // UID=0
-        ASSERT_EQ(streams_1.size(), (size_t)1);
+        ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 
         // Create a stream sample compatible with the stream
         auto stream_1_sample = stream_1->allocate_sample();
-        ASSERT_EQ(stream_1_sample->size(), (size_t)0);
+        ASSERT_EQ(stream_1_sample->size(), (uint32_t)0);
         ASSERT_EQ(stream_1_sample->capacity(), stream_1->get_configuration()->_sample_max_size_bytes);
 
         // Push sample (to send stack)
@@ -267,7 +267,7 @@ TEST_P(StreamContext, MultiPushPop)
         uint32_t size = stream_1->encode(stream_1->buffer().data_rw(), stream_1->buffer().capacity());
         stream_1->buffer().set_size(size);
         std::string str_sample_frame;
-        size_t frame_index = 0;
+        uint32_t frame_index = 0;
         if(stream_1->get_configuration()->_type != ED247_STREAM_TYPE_VNAD){
             for(uint32_t i = 0 ; i < 10 ; i++){
                 str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
@@ -339,20 +339,20 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
 
         // Retrieve the pool of streams
         auto pool_streams = context->getPoolStreams();
-        ASSERT_EQ(pool_streams->size(), (size_t)6);
+        ASSERT_EQ(pool_streams->size(), (uint32_t)6);
 
         // Check finder for find all
         auto streams_0 = pool_streams->find(".*");
-        ASSERT_EQ(streams_0.size(), (size_t)6);
+        ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
         auto streams_out = pool_streams->find("StreamDatatimestampOut"); // UID=4
-        ASSERT_EQ(streams_out.size(), (size_t)1);
+        ASSERT_EQ(streams_out.size(), (uint32_t)1);
         auto stream_out = streams_out[0];
 
         // Create a stream sample compatible with the stream
         auto stream_out_sample = stream_out->allocate_sample();
-        ASSERT_EQ(stream_out_sample->size(), (size_t)0);
+        ASSERT_EQ(stream_out_sample->size(), (uint32_t)0);
         ASSERT_EQ(stream_out_sample->capacity(), stream_out->get_configuration()->_sample_max_size_bytes);
 
         // Push sample (to send stack)
@@ -392,7 +392,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         std::string str_sample_frame;
         ed247_timestamp_t data_timestamp;
         ed247_timestamp_t timestamp_frame;
-        size_t frame_index = 0;
+        uint32_t frame_index = 0;
         bool precise_timestamp = stream_out->get_configuration()->_data_timestamp.enable_sample_offset == ED247_YESNO_YES;
         if(stream_out->get_configuration()->_type != ED247_STREAM_TYPE_VNAD){
             for(uint32_t i = 0 ; i < 10 ; i++){

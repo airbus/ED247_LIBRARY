@@ -81,7 +81,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
             *user_data = _user_data;
         }
 
-        static size_t nad_type_size(const ed247_nad_type_t & nad_type)
+        static uint32_t nad_type_size(const ed247_nad_type_t & nad_type)
         {
             switch(nad_type){
                 case ED247_NAD_TYPE_INT8:       return sizeof(int8_t);
@@ -120,7 +120,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
         std::unique_ptr<BaseSample> allocate_sample() const;
 
-        size_t position() const { return _configuration->_position; }
+        uint32_t position() const { return _configuration->_position; }
 
     protected:
         std::shared_ptr<xml::Signal> _configuration;
@@ -144,7 +144,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
                 signal_list_t & signals() { return _signals; }
 
-                size_t size() const;
+                uint32_t size() const;
 
             private:
                 signal_list_t _signals;

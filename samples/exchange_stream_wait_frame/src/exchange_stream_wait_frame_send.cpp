@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     if(check_status(context, status)) return EXIT_FAILURE;
 
     void * sample;
-    size_t sample_size;
+    uint32_t sample_size;
     status = ed247_stream_allocate_sample(stream, &sample, &sample_size);
     if(check_status(context,status)) return EXIT_FAILURE;
 

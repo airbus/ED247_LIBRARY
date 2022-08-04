@@ -122,7 +122,7 @@ std::string xmlChar2string(const xmlChar *str)
     return std::string((const char *)str);
 }
 
-size_t nad_type_size(ed247_nad_type_t type){
+uint32_t nad_type_size(ed247_nad_type_t type){
     switch(type){
         case ED247_NAD_TYPE_INT8    : return sizeof(int8_t);
         case ED247_NAD_TYPE_INT16   : return sizeof(int16_t);
@@ -792,7 +792,7 @@ void DISStream::create_children(const xmlNodePtr xml_node)
         return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
     });
     // Update position attribute
-    size_t p = 0;
+    uint32_t p = 0;
     for(auto & s : signals){
         s->_position = p++;
     }
@@ -872,7 +872,7 @@ void ANAStream::create_children(const xmlNodePtr xml_node)
         return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
     });
     // Update position attribute
-    size_t p = 0;
+    uint32_t p = 0;
     for(auto & s : signals){
         s->_position = p++;
     }
@@ -952,7 +952,7 @@ void NADStream::create_children(const xmlNodePtr xml_node)
         return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
     });
     // Update position attribute
-    size_t p = 0;
+    uint32_t p = 0;
     for(auto & s : signals){
         s->_position = p++;
     }
@@ -1030,7 +1030,7 @@ void VNADStream::create_children(const xmlNodePtr xml_node)
         return (a == nullptr || b == nullptr) ? false : (a->_vnad_position < b->_vnad_position);
     });
     // Update position attribute
-    size_t p = 0;
+    uint32_t p = 0;
     for(auto & s : signals){
         s->_position = p++;
     }

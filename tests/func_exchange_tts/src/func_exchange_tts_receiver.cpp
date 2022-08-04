@@ -32,7 +32,7 @@ TEST_P(exchangeTTSFixture, exchangeTTSMain)
 
 
   const char* payload = nullptr;
-  size_t payload_size;
+  uint32_t payload_size;
   const ed247_sample_details_t* sample_details;
 
   // Receive TTS 1
