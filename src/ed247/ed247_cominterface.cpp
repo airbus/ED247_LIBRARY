@@ -83,7 +83,7 @@ void ComInterface::Builder::build(std::shared_ptr<Pool> pool, const xml::ComInte
     auto udp_socket_pool = std::dynamic_pointer_cast<UdpSocket::Pool>(pool);
     if(!udp_socket_pool)
         THROW_ED247_ERROR("Failed to retrieve the UdpSocket pool from base ComInterface pool");
-    for(auto & sp_udp_socket_configuration : configuration.udp_sockets){
+    for(auto & sp_udp_socket_configuration : configuration._udp_sockets){
         udp_socket_builder.build(udp_socket_pool, *sp_udp_socket_configuration, channel);
     }
 }
@@ -203,7 +203,7 @@ void UdpSocket::initialize()
 
 void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket & configuration)
 {
-    SocketInfos socket_infos_dst{configuration.dst_ip_address,configuration.dst_ip_port,configuration.mc_ttl};
+    SocketInfos socket_infos_dst{configuration._dst_ip_address,configuration._dst_ip_port,configuration._mc_ttl};
 
     auto dest_iter = _destinations.find(&channel);
     std::weak_ptr<Channel> weak_channel = channel.shared_from_this();
@@ -245,7 +245,7 @@ void UdpSocket::register_channel_emitter(Channel & channel, const xml::UdpSocket
 
 void UdpSocket::register_channel_receiver(Channel & channel, const xml::UdpSocket & configuration)
 {
-    SocketInfos socket_infos_dst{configuration.dst_ip_address, configuration.dst_ip_port};
+    SocketInfos socket_infos_dst{configuration._dst_ip_address, configuration._dst_ip_port};
 
     if(std::find(_sources.begin(), _sources.end(), &channel) != _sources.end())
         THROW_ED247_ERROR("Channel [" << channel.get_name() << "] has already been registered as incoming in socket [" << _socket_infos << "]");
@@ -269,7 +269,7 @@ void UdpSocket::register_channel_receiver(Channel & channel, const xml::UdpSocke
         sockerr = setsockopt(_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char *)&imreq, sizeof(struct ip_mreq));
         if(sockerr){
             close();
-            THROW_ED247_ERROR("The socket [" << _socket_infos << "] failed to join the multicast group [" << configuration.dst_ip_address << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
+            THROW_ED247_ERROR("The socket [" << _socket_infos << "] failed to join the multicast group [" << configuration._dst_ip_address << "] (" << sockerr << ":" << UdpSocket::get_last_error() << ")");
         }
         _socket_infos.mtc_groups.push_back(socket_infos_dst);
     }
@@ -322,32 +322,32 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
 {
     Pair socket_pair;
 
-    SocketInfos socket_infos_dst{configuration.dst_ip_address, configuration.dst_ip_port};
-    SocketInfos socket_infos_src{configuration.src_ip_address, configuration.src_ip_port};
-    SocketInfos socket_infos_dst_mtc{configuration.mc_ip_address, configuration.dst_ip_port, configuration.mc_ttl};
-    SocketInfos socket_infos_src_mtc{configuration.mc_ip_address, configuration.src_ip_port};
+    SocketInfos socket_infos_dst{configuration._dst_ip_address, configuration._dst_ip_port};
+    SocketInfos socket_infos_src{configuration._src_ip_address, configuration._src_ip_port};
+    SocketInfos socket_infos_dst_mtc{configuration._mc_ip_address, configuration._dst_ip_port, configuration._mc_ttl};
+    SocketInfos socket_infos_src_mtc{configuration._mc_ip_address, configuration._src_ip_port};
 
     bool is_multicast = IN_MULTICAST(ntohl(socket_infos_dst.sin_addr.s_addr));
 
     if(!is_multicast){
         // UNICAST
-        if(is_host_ip_address(socket_infos_dst.sin_addr) && (configuration.direction & ED247_DIRECTION_IN)){
+        if(is_host_ip_address(socket_infos_dst.sin_addr) && (configuration._direction & ED247_DIRECTION_IN)){
             // receiver (dst)
             socket_pair.second = find_or_create(socket_infos_dst);
         }
-        if(configuration.direction & ED247_DIRECTION_OUT){
+        if(configuration._direction & ED247_DIRECTION_OUT){
             // emitter (src)
             socket_pair.first = find_or_create(socket_infos_src);
         }
     }else{
         // MULTICAST ()
-        if(configuration.direction & ED247_DIRECTION_IN){
+        if(configuration._direction & ED247_DIRECTION_IN){
             // receiver (mtc)
             socket_pair.second = find_or_create(socket_infos_dst_mtc);
         }
-        if(configuration.direction & ED247_DIRECTION_OUT){
+        if(configuration._direction & ED247_DIRECTION_OUT){
             // emitter (if src specified, overrides mtc)
-            if(!configuration.src_ip_address.empty() &&
+            if(!configuration._src_ip_address.empty() &&
                 is_host_ip_address(socket_infos_src.sin_addr)){
                 // emitter (src)
                 socket_pair.first = find_or_create(socket_infos_src);
@@ -358,11 +358,10 @@ UdpSocket::Pair UdpSocket::Factory::create(const xml::UdpSocket & configuration)
         }
     }
 
-    PRINT_INFO("Socket[" << configuration.toString() << "] " <<
+    PRINT_INFO("Socket[" << configuration << "] " <<
     "[" << (is_multicast ? std::string("MULTICAST") : std::string("UNICAST")) << "] " <<
     "Emitter[" << (socket_pair.emitter() ? std::string(socket_pair.emitter()->_socket_infos) : std::string("NONE")) << "] " <<
     "Receiver[" << (socket_pair.receiver() ? std::string(socket_pair.receiver()->_socket_infos) : std::string("NONE")) << "]");
-
     return socket_pair;
 }
 

@@ -117,14 +117,14 @@ TEST_P(ChannelContext, MultiPushPop)
         channel0->encode(0);
         ASSERT_EQ(malloc_count_stop(), 0);
         uint32_t frame_index = 0;
-        if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
+        if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
             uint16_t pid = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
             frame_index += sizeof(uint16_t);
             ASSERT_EQ(pid, 0);
             uint16_t sn = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
             frame_index += sizeof(uint16_t);
             ASSERT_EQ(sn, channel0->get_header()._send_header.sequence_number-1);
-            if(channel0->get_configuration()->header.transport_timestamp == ED247_YESNO_YES){
+            if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
                 ed247_timestamp_t timestamp;
                 timestamp.epoch_s = ntohl(*(uint32_t*)((char*)channel0->buffer().data()+frame_index));
                 frame_index += sizeof(uint32_t);
@@ -166,11 +166,11 @@ TEST_P(ChannelContext, MultiPushPop)
         ASSERT_EQ(malloc_count_stop(), 0);
 
         // Check frame header
-        if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
+        if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
             ASSERT_EQ(channel0->get_header()._send_header.component_identifier, channel1->get_header()._recv_headers_iter->component_identifier);
             ASSERT_EQ(channel0->get_header()._send_header.sequence_number-1, channel1->get_header()._recv_headers_iter->sequence_number);
         }
-        if(channel0->get_configuration()->header.transport_timestamp == ED247_YESNO_YES){
+        if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
             ASSERT_EQ(channel0->get_header()._send_header.transport_timestamp.epoch_s, channel1->get_header()._recv_headers_iter->transport_timestamp.epoch_s);
             ASSERT_EQ(channel0->get_header()._send_header.transport_timestamp.offset_ns, channel1->get_header()._recv_headers_iter->transport_timestamp.offset_ns);
         }
@@ -187,11 +187,11 @@ TEST_P(ChannelContext, MultiPushPop)
                 auto str_sample_recv = std::string((char*)sample->data(), stream.second.stream->get_configuration()->_sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
-                if(channel0->get_configuration()->header.enable == ED247_YESNO_YES){
+                if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
                     ASSERT_EQ(sample->details()->component_identifier, channel0->get_header()._send_header.component_identifier);
                     ASSERT_EQ(sample->details()->sequence_number, i ? (channel0->get_header()._send_header.sequence_number-1) : 0);
                 }
-                if(channel0->get_configuration()->header.transport_timestamp == ED247_YESNO_YES){
+                if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
                     ASSERT_EQ(sample->details()->transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
                     ASSERT_EQ(sample->details()->transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
                 }

@@ -115,7 +115,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         Channel(std::shared_ptr<xml::Channel> & configuration):
             _configuration(configuration),
             _sstreams(std::make_shared<stream_list_t>()),
-            _header(configuration->header, get_name()),
+            _header(configuration->_header, get_name()),
             _user_data(NULL)
         {
         }

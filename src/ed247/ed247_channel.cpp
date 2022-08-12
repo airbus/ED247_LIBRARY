@@ -37,13 +37,13 @@ namespace ed247
 
 uint32_t FrameHeader::length()
 {
-    return _configuration.enable == ED247_YESNO_YES ? (sizeof(uint16_t)*2+sizeof(uint32_t)*2) : 0;
+    return _configuration._enable == ED247_YESNO_YES ? (sizeof(uint16_t)*2+sizeof(uint32_t)*2) : 0;
 }
 
 void FrameHeader::encode(char * frame, uint32_t frame_capacity, uint32_t & frame_index, ed247_uid_t component_identifier)
 {
-    if(_configuration.enable == ED247_YESNO_YES){
-        if(_configuration.transport_timestamp == ED247_YESNO_YES) {
+    if(_configuration._enable == ED247_YESNO_YES){
+        if(_configuration._transport_timestamp == ED247_YESNO_YES) {
           ed247_get_transport_timestamp(&_send_header.transport_timestamp);
         }
 
@@ -59,7 +59,7 @@ void FrameHeader::encode(char * frame, uint32_t frame_capacity, uint32_t & frame
         *(uint16_t*)(frame+frame_index) = htons(_send_header.sequence_number);
         _send_header.sequence_number++;
         frame_index += sizeof(uint16_t);
-        if(_configuration.transport_timestamp == ED247_YESNO_YES){
+        if(_configuration._transport_timestamp == ED247_YESNO_YES){
             if(frame_index + sizeof(ed247_timestamp_t) > frame_capacity) {
                 THROW_ED247_ERROR("Channel '" << _channel_name << "': Failed to write Transport timestamp in header (not enough space). Size: " << frame_capacity);
             }
@@ -80,7 +80,7 @@ bool FrameHeader::decode(const char * frame, uint32_t frame_size, uint32_t & fra
     // Increment the regular number of the sequence number
     // This number shall be rewriten if the sequence number is present in the header
     // In case of frames without the sequence number, it allows to count the number of frames that are discarded (missformated/corrupted)
-    if(_configuration.enable == ED247_YESNO_YES){
+    if(_configuration._enable == ED247_YESNO_YES){
         static header_element_t recv_header;
         if(frame_index + sizeof(uint16_t) > frame_size) {
           PRINT_ERROR("Channel '" << _channel_name << "': Invalid frame size: " << frame_size);
@@ -94,7 +94,7 @@ bool FrameHeader::decode(const char * frame, uint32_t frame_size, uint32_t & fra
         }
         recv_header.sequence_number = ntohs(*(uint16_t*)(frame+frame_index));
         frame_index += sizeof(uint16_t);
-        if(_configuration.transport_timestamp == ED247_YESNO_YES){
+        if(_configuration._transport_timestamp == ED247_YESNO_YES){
             if(frame_index + sizeof(ed247_timestamp_t) > frame_size) {
               PRINT_ERROR("Channel '" << _channel_name << "': Invalid frame size: " << frame_size);
               return false;
@@ -177,7 +177,7 @@ void Channel::encode(const ed247_uid_t & component_identifier)
     _header.encode(_buffer.data_rw(), _buffer.capacity(), buffer_index, component_identifier);
     uint32_t header_index = buffer_index;
     // Encode channel payload
-    if(!_configuration->simple){
+    if(!_configuration->_simple){
         for(auto & p : _streams){
             auto & s = p.second.stream;
             if(!(p.second.direction & ED247_DIRECTION_OUT))
@@ -219,7 +219,7 @@ bool Channel::decode(const char * frame, uint32_t frame_size)
   uint32_t frame_index = 0;
   if (_header.decode(frame, frame_size, frame_index) == false) return false;
 
-  if(_configuration->simple == false) {
+  if(_configuration->_simple == false) {
     while(frame_index < frame_size) {
       // A multichannel stream starts by its UID and its size
       if (frame_size - frame_index < sizeof(ed247_uid_t) + sizeof(uint16_t)) {
@@ -389,9 +389,9 @@ channel_ptr_t Channel::Builder::create(std::shared_ptr<xml::Channel> & configura
     static BaseStream::Builder builder_streams;
 
     auto sp_channel = std::make_shared<Channel>(configuration);
-    builder_interface.build(pool_interfaces, configuration->com_interface, *sp_channel);
+    builder_interface.build(pool_interfaces, configuration->_com_interface, *sp_channel);
 
-    for(auto stream_configuration : configuration->streams){
+    for(auto stream_configuration : configuration->_streams){
         builder_streams.build(pool_streams, stream_configuration, *sp_channel);
     }
 

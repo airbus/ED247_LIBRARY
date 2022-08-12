@@ -112,7 +112,7 @@ Context * Context::Builder::create_content(std::string ecic_content)
 
 void Context::Builder::initialize(Context & context)
 {
-  for(auto & sp_channel_configuration : context._component->channels){
+  for(auto & sp_channel_configuration : context._component->_channels){
     // The get() method create and append the channel. Refactoring needed...
     context._pool_channels.get(sp_channel_configuration);
   }

@@ -315,6 +315,8 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             *user_data = _user_data;
         }
 
+        bool is_signal_based() { return _configuration->is_signal_based(); }
+
         const xml::Stream * get_configuration() const
         {
             return _configuration.get();
@@ -440,7 +442,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
         void encode_data_timestamp(const std::shared_ptr<StreamSample> & sample, char * frame, uint32_t frame_size, uint32_t & frame_index)
         {
-            if(_configuration->_data_timestamp.enable == ED247_YESNO_YES){
+            if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
                 if(frame_index == 0){
                     // Datatimestamp
                     if((frame_index + sizeof(uint32_t) + sizeof(uint32_t)) > frame_size) {
@@ -451,7 +453,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     frame_index += sizeof(uint32_t);
                     *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp()->offset_ns);
                     frame_index += sizeof(uint32_t);
-                }else if(_configuration->_data_timestamp.enable_sample_offset == ED247_YESNO_YES){
+                }else if(_configuration->_data_timestamp._enable_sample_offset == ED247_YESNO_YES){
                     // Precise Datatimestamp
                     if((frame_index + sizeof(uint32_t)) > frame_size) {
                       THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
@@ -467,7 +469,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         // return false if the frame has not been successfully decoded
         bool decode_data_timestamp(const char * frame, const uint32_t & frame_size, uint32_t & frame_index, ed247_timestamp_t & data_timestamp, ed247_timestamp_t & timestamp)
         {
-            if(_configuration->_data_timestamp.enable == ED247_YESNO_YES){
+            if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
                 if(frame_index == 0){
                     // Data Timestamp
                     if((frame_size-frame_index) < sizeof(ed247_timestamp_t)) {
@@ -480,7 +482,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     frame_index += sizeof(uint32_t);
                     data_timestamp = timestamp;
                     _working_sample.set_data_timestamp(data_timestamp);
-                }else if(_configuration->_data_timestamp.enable_sample_offset == ED247_YESNO_YES){
+                }else if(_configuration->_data_timestamp._enable_sample_offset == ED247_YESNO_YES){
                     // Precise Data Timestamp
                     int32_t offset_ns = (int32_t)ntohl(*(uint32_t*)(frame+frame_index));
                     frame_index += sizeof(uint32_t);

@@ -1,4 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4 -*-  */
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -22,460 +22,247 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #ifndef _ED247_XML_H_
 #define _ED247_XML_H_
-
-#include "ed247_internals.h"
-
-#include <libxml/tree.h>
-
+#include "ed247.h"
+#include <string>
 #include <vector>
+#include <memory> // TODO: shared_ptr
 
-#define DECL_STREAM_OPERATOR_SIGNATURE(x,strx,xstr)             \
-    std::ostream & operator << (std::ostream & os, const x & e);\
-    std::istream & operator >> (std::istream & is, x & e);      \
+// Prevent include of libxml2 header
+typedef struct _xmlNode *xmlNodePtr;
 
-DECL_STREAM_OPERATOR_SIGNATURE(
-    ed247_component_type_t,
-    ed247_component_type_from_string,
-    ed247_component_type_string
-)
+namespace ed247 {
+  namespace xml {
+    class Node;
 
-DECL_STREAM_OPERATOR_SIGNATURE(
-    ed247_standard_t,
-    ed247_standard_from_string,
-    ed247_standard_string
-)
+    // Load ECIC and return an ed247::xml::Component node
+    std::shared_ptr<Node> load_filepath(const std::string & filepath);
+    std::shared_ptr<Node> load_content(const std::string & content);
 
-DECL_STREAM_OPERATOR_SIGNATURE(
-    ed247_yesno_t,
-    ed247_yesno_from_string,
-    ed247_yesno_string
-)
 
-DECL_STREAM_OPERATOR_SIGNATURE(
-    ed247_direction_t,
-    ed247_direction_from_string,
-    ed247_direction_string
-)
+    struct Node
+    {
+      virtual void load(const xmlNodePtr xml_node) = 0;
+    };
 
-DECL_STREAM_OPERATOR_SIGNATURE(
-    ed247_nad_type_t,
-    ed247_nad_type_from_string,
-    ed247_nad_type_string
-)
+    struct UdpSocket : public Node
+    {
+      std::string       _dst_ip_address;
+      uint16_t          _dst_ip_port;
+      std::string       _src_ip_address;
+      uint16_t          _src_ip_port;
+      std::string       _mc_ip_address;
+      uint16_t          _mc_ttl;
+      ed247_direction_t _direction;
 
-namespace ed247
-{
+      UdpSocket();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
 
-namespace xml
-{
+    struct ComInterface : public Node
+    {
+      std::vector<std::shared_ptr<UdpSocket>> _udp_sockets;
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
 
-namespace node
-{
-    static const std::string DataTimestamp { "DataTimestamp" };
-    static const std::string FileProducer { "FileProducer" };
-    static const std::string UdpSockets { "UDP_Sockets" };
-    static const std::string UdpSocket { "UDP_Socket" };
-    static const std::string FrameFormat { "FrameFormat" };
-    static const std::string ComInterface { "ComInterface" };
-    static const std::string Header { "Header" };
-    static const std::string SampleTimestampOffset { "SampleTimestampOffset" };
-    static const std::string Errors { "Errors" };
-    static const std::string Signal { "Signal" };
-    static const std::string Signals { "Signals" };
-    static const std::string A429_Stream { "A429_Stream" };
-    static const std::string A664_Stream { "A664_Stream" };
-    static const std::string MessageSize { "MessageSize" };
-    static const std::string A825_Stream { "A825_Stream" };
-    static const std::string SERIAL_Stream { "SERIAL_Stream" };
-    static const std::string DIS_Stream { "DIS_Stream" };
-    static const std::string ANA_Stream { "ANA_Stream" };
-    static const std::string NAD_Stream { "NAD_Stream" };
-    static const std::string VNAD_Stream { "VNAD_Stream" };
-    static const std::string Streams { "Streams" };
-    static const std::string Stream { "Stream" };
-    static const std::string MultiChannel { "MultiChannel" };
-    static const std::string Channel { "Channel" };
-    static const std::string Channels { "Channels" };
-    static const std::string ED247ComponentInstanceConfiguration { "ED247ComponentInstanceConfiguration" };
+    struct DataTimestamp : public Node
+    {
+      ed247_yesno_t _enable;
+      ed247_yesno_t _enable_sample_offset;
+
+      DataTimestamp();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct Errors : public Node
+    {
+      ed247_yesno_t _enable;
+
+      Errors();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct Header: public Node
+    {
+      ed247_yesno_t _enable;
+      ed247_yesno_t _transport_timestamp;
+
+      Header();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    //
+    // Signals
+    //
+    struct Signal : public Node
+    {
+      std::string           _name;
+      ed247_signal_type_t   _type;
+      std::string           _comment;
+      std::string           _icd;
+      uint32_t              _byte_offset;                // All signals except VNAD
+      std::string           _analogue_electrical_unit;
+      ed247_nad_type_t      _nad_type;
+      std::string           _nad_unit;                   // NAD and VNAD
+      std::vector<uint32_t> _nad_dimensions;
+      uint32_t              _vnad_position;
+      uint32_t              _vnad_max_length;
+      uint32_t              _position;                   // position in the stream vector
+
+      uint32_t get_sample_max_size_bytes() const;
+      inline uint32_t get_nad_type_size() const { return get_nad_type_size(_nad_type); }
+      static uint32_t get_nad_type_size(ed247_nad_type_t nad_type);
+
+      Signal(ed247_signal_type_t type);
+    };
+
+    struct DISSignal : public Signal
+    {
+      DISSignal();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct ANASignal : public Signal
+    {
+      ANASignal();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct NADSignal : public Signal
+    {
+      NADSignal();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct VNADSignal : public Signal
+    {
+      VNADSignal();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    //
+    // Streams
+    //
+    struct Stream : public Node
+    {
+      std::string         _name;
+      ed247_direction_t   _direction;
+      ed247_stream_type_t _type;
+      std::string         _comment;
+      std::string         _icd;
+      ed247_uid_t         _uid;
+      uint32_t            _sample_max_number;
+      uint32_t            _sample_max_size_bytes;
+      DataTimestamp       _data_timestamp;
+
+      virtual bool is_signal_based() = 0;
+      Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
+    };
+
+    struct StreamProtocoled : public Stream
+    {
+      Errors _errors;
+      virtual bool is_signal_based() override final { return false; }
+      StreamProtocoled(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
+    };
+
+    struct StreamSignals : public Stream
+    {
+      std::vector<std::shared_ptr<Signal>> _signals;
+      uint32_t                             _sampling_period_us;
+      virtual bool is_signal_based() override final { return true; }
+      StreamSignals(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
+    };
+
+    struct A429Stream : public StreamProtocoled
+    {
+      A429Stream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct A664Stream : public StreamProtocoled
+    {
+      ed247_yesno_t _enable_message_size;
+
+      A664Stream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct A825Stream : public StreamProtocoled
+    {
+      A825Stream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct SERIALStream : public StreamProtocoled
+    {
+      SERIALStream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct DISStream : public StreamSignals
+    {
+      DISStream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct ANAStream : public StreamSignals
+    {
+      ANAStream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct NADStream : public StreamSignals
+    {
+      NADStream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    struct VNADStream : public StreamSignals
+    {
+      VNADStream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    //
+    // Channels
+    //
+    struct Channel: public Node, public std::enable_shared_from_this<Channel>
+    {
+      std::string                           _name;
+      std::string                           _comment;
+      ed247_standard_t                      _frame_standard_revision;
+      ComInterface                          _com_interface;
+      Header                                _header;
+      std::vector<std::shared_ptr<Stream>>  _streams;
+      bool                                  _simple;
+
+      Channel();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+
+    //
+    // Component (root)
+    //
+    struct Component: public Node
+    {
+      ed247_uid_t            _identifier;
+      std::string            _name;
+      std::string            _version;
+      ed247_component_type_t _component_type;
+      ed247_standard_t       _standard_revision;
+      std::string            _comment;
+      std::string            _file_producer_identifier;
+      std::string            _file_producer_comment;
+      std::vector<std::shared_ptr<Channel>> _channels;
+
+      Component();
+      virtual void load(const xmlNodePtr xml_node) override final;
+    };
+  }
 }
 
-namespace attr
-{
-    static const std::string Name { "Name" };
-    static const std::string Direction { "Direction" };
-    static const std::string ComponentVersion { "ComponentVersion" };
-    static const std::string Comment { "Comment" };
-    static const std::string Identifier { "Identifier" };
-    static const std::string DstIP { "DstIP" };
-    static const std::string DstPort { "DstPort" };
-    static const std::string SrcIP { "SrcIP" };
-    static const std::string SrcPort { "SrcPort" };
-    static const std::string MulticastInterfaceIP { "MulticastInterfaceIP" };
-    static const std::string MulticastTTL { "MulticastTTL" };
-    static const std::string TransportTimestamp { "TransportTimestamp" };
-    static const std::string SampleMaxNumber { "SampleMaxNumber" };
-    static const std::string SampleMaxSizeBytes { "SampleMaxSizeBytes" };
-    static const std::string Position { "Position" };
-    static const std::string Enable { "Enable" };
-    static const std::string UID { "UID" };
-    static const std::string ICD { "ICD" };
-    static const std::string FifoSize { "FifoSize" };
-    static const std::string ByteOffset { "ByteOffset" };
-    static const std::string ComponentType { "ComponentType" };
-    static const std::string StandardRevision { "StandardRevision" };
-    static const std::string SamplingPeriodUs { "SamplingPeriodUs" };
-    static const std::string Type { "Type" };
-    static const std::string MaxLength { "MaxLength" };
-    static const std::string Unit { "Unit" };
-    static const std::string SampleDataTimestampOffset { "SampleDataTimestampOffset" };
-    static const std::string ElectricalUnit { "ElectricalUnit" };
-    static const std::string Dimensions { "Dimensions" };
-}
-
-std::string xmlChar2string(const xmlChar *str);
-
-uint32_t nad_type_size(ed247_nad_type_t type);
-
-template<typename T>
-void set_value(T & variable, const xmlAttrPtr attribute);
-
-class exception : public ed247::exception
-{
-public:
-  exception(std::string message) : ed247::exception(std::string("xml parse exception: ") + message) {};
-  virtual ~exception() throw () override {}
-};
-
-class Node
-{
-    public:
-        void load(const xmlNodePtr xml_node);
-        virtual void reset() {};
-
-    protected:
-        virtual void fill_attributes(const xmlNodePtr xml_node) {_UNUSED(xml_node);};
-        virtual void create_children(const xmlNodePtr xml_node) {_UNUSED(xml_node);};
-};
-
-class DataTimestamp : public Node
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-    public:
-        ed247_yesno_t enable;
-        ed247_yesno_t enable_sample_offset;
-};
-
-class Errors : public Node
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-    public:
-        ed247_yesno_t enable;
-};
-
-class UdpSocket : public Node
-{
-    public:
-        explicit UdpSocket(std::string new_dst_ip_address = "",
-            uint16_t new_dst_ip_port = 0,
-            std::string new_src_ip_address = "",
-            uint16_t new_src_ip_port = 0,
-            std::string new_mc_ip_address = "",
-            uint16_t new_mc_ttl = 1,
-            ed247_direction_t new_direction = ED247_DIRECTION_INOUT):
-            dst_ip_address(new_dst_ip_address),
-            dst_ip_port(new_dst_ip_port),
-            src_ip_address(new_src_ip_address),
-            src_ip_port(new_src_ip_port),
-            mc_ip_address(new_mc_ip_address),
-            mc_ttl(new_mc_ttl),
-            direction(new_direction){}
-        virtual ~UdpSocket() {}
-
-        std::string toString() const;
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-    public:
-        std::string dst_ip_address;
-        uint16_t dst_ip_port;
-        std::string src_ip_address;
-        uint16_t src_ip_port;
-        std::string mc_ip_address;
-        uint16_t mc_ttl;
-        ed247_direction_t direction;
-};
-
-class ComInterface : public Node
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-    public:
-        std::vector<std::shared_ptr<UdpSocket>> udp_sockets;
-};
-
-struct Stream
-{
-    std::string         _name;
-    ed247_direction_t   _direction;
-    ed247_stream_type_t _type;
-    std::string         _comment;
-    std::string         _icd;
-    ed247_uid_t         _uid;
-    uint32_t            _sample_max_number;
-    uint32_t            _sample_max_size_bytes;
-    uint32_t            _sampling_period_us;
-    DataTimestamp       _data_timestamp;
-
-    void reset(ed247_stream_type_t type);
-};
-
-class A429Stream : public Node, public Stream
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-        Errors errors;
-};
-
-class A664Stream : public Node, public Stream
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-        Errors errors;
-        ed247_yesno_t enable_message_size;
-};
-
-class A825Stream : public Node, public Stream
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-        Errors errors;
-};
-
-class SERIALStream : public Node, public Stream
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-        Errors errors;
-};
-
-struct Signal
-{
-    std::string           _name;
-    ed247_signal_type_t   _type;
-    std::string           _comment;
-    std::string           _icd;
-    uint32_t              _byte_offset;                // All signals except VNAD
-    std::string           _analogue_electrical_unit;
-    ed247_nad_type_t      _nad_type;
-    std::string           _nad_unit;                   // NAD and VNAD
-    std::vector<uint32_t> _nad_dimensions;
-    uint32_t              _vnad_position;
-    uint32_t              _vnad_max_length;
-
-    uint32_t              _position;                   // position in the stream vector
-
-    void Reset(ed247_signal_type_t type);
-
-    uint32_t get_sample_max_size_bytes() const;
-};
-
-class DISSignal : public Node, public Signal
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-class ANASignal : public Node, public Signal
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-class NADSignal : public Node, public Signal
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-    public:
-        virtual ~NADSignal();
-        virtual void reset() final;
-};
-
-class VNADSignal : public Node, public Signal
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-struct StreamSignals : public Stream
-{
-    std::vector<std::shared_ptr<Signal>> signals;
-};
-
-class DISStream : public Node, public StreamSignals
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-class ANAStream : public Node, public StreamSignals
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-class NADStream : public Node, public StreamSignals
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-class VNADStream : public Node, public StreamSignals
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-};
-
-class Header: public Node
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-    public:
-        ed247_yesno_t enable;
-        ed247_yesno_t transport_timestamp;
-
-        bool operator == (const Header & other) const
-        {
-            return enable == other.enable &&
-                transport_timestamp == other.transport_timestamp;
-        }
-
-        bool operator != (const Header & other) const
-        {
-            return !operator==(other);
-        }
-};
-
-class Channel: public Node, public std::enable_shared_from_this<Channel>
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-    public:
-        std::string      _name;
-        std::string      _comment;
-        ed247_standard_t _frame_standard_revision;
-
-        ComInterface com_interface;
-        Header header;
-        std::vector<std::shared_ptr<Stream>> streams;
-        bool simple;
-};
-
-class Component: public Node
-{
-    private:
-        virtual void fill_attributes(const xmlNodePtr xml_node) final;
-        virtual void create_children(const xmlNodePtr xml_node) final;
-
-    public:
-        virtual void reset() final;
-
-        ed247_uid_t            _identifier;
-        std::string            _name;
-        std::string            _version;
-        ed247_component_type_t _component_type;
-        ed247_standard_t       _standard_revision;
-        std::string            _comment;
-
-        std::string _file_producer_identifier;
-        std::string _file_producer_comment;
-
-        std::vector<std::shared_ptr<Channel>> channels;
-};
-
-std::shared_ptr<Node> load_filepath(const std::string & filepath);
-std::shared_ptr<Node> load_content(const std::string & content);
-
-}
-
-}
+std::ostream& operator<<(std::ostream& stream, const ed247::xml::UdpSocket& socket);
 
 #endif

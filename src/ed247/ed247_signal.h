@@ -81,22 +81,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
             *user_data = _user_data;
         }
 
-        static uint32_t nad_type_size(const ed247_nad_type_t & nad_type)
-        {
-            switch(nad_type){
-                case ED247_NAD_TYPE_INT8:       return sizeof(int8_t);
-                case ED247_NAD_TYPE_INT16:      return sizeof(int16_t);
-                case ED247_NAD_TYPE_INT32:      return sizeof(int32_t);
-                case ED247_NAD_TYPE_INT64:      return sizeof(int64_t);
-                case ED247_NAD_TYPE_UINT8:      return sizeof(uint8_t);
-                case ED247_NAD_TYPE_UINT16:     return sizeof(uint16_t);
-                case ED247_NAD_TYPE_UINT32:     return sizeof(uint32_t);
-                case ED247_NAD_TYPE_UINT64:     return sizeof(uint64_t);
-                case ED247_NAD_TYPE_FLOAT32:    return sizeof(float);
-                case ED247_NAD_TYPE_FLOAT64:    return sizeof(double);
-                default:                        return 0;
-            }
-        }
+        inline uint32_t get_nad_type_size() const { return _configuration->get_nad_type_size(); }
 
         uint32_t get_sample_max_size_bytes() const
         {

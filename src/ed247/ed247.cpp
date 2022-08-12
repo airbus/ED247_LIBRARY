@@ -1159,7 +1159,11 @@ uint32_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream)
 uint32_t ed247_stream_get_sampling_period_us(ed247_stream_t stream)
 {
   auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-  return ed247_stream->get_configuration()->_sampling_period_us;
+  if (ed247_stream->is_signal_based() != 0) {
+    return ((ed247::xml::StreamSignals*)ed247_stream->get_configuration())->_sampling_period_us;
+  } else {
+    return 0;
+  }
 }
 
 ed247_status_t ed247_stream_has_signals(
@@ -1178,7 +1182,7 @@ ed247_status_t ed247_stream_has_signals(
   *yesno = 0;
   try{
     auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    *yesno = ed247_stream->signals()->size() != 0;
+    *yesno = ed247_stream->is_signal_based();
   }
   LIBED247_CATCH("Stream contains signals");
   return ED247_STATUS_SUCCESS;
@@ -1639,7 +1643,7 @@ ed247_status_t ed247_stream_list_free(
 uint32_t ed247_nad_type_size(
   ed247_nad_type_t nad_type)
 {
-  return ed247::BaseSignal::nad_type_size(nad_type);
+  return ed247::xml::Signal::get_nad_type_size(nad_type);
 }
 
 const char* ed247_signal_get_name(ed247_signal_t signal)

@@ -173,7 +173,7 @@ TEST_P(StreamContext, SinglePushPop)
         if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_VNAD)
             ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
-                static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->enable_message_size == ED247_YESNO_YES)
+                static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->_enable_message_size == ED247_YESNO_YES)
             ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A825)
             ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
@@ -273,7 +273,7 @@ TEST_P(StreamContext, MultiPushPop)
                 str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
                 auto sample_size = stream_1->get_configuration()->_sample_max_size_bytes;
                 if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
-                    static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->enable_message_size == ED247_YESNO_YES){
+                    static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->_enable_message_size == ED247_YESNO_YES){
                     sample_size = ntohs(*(uint16_t*)(stream_1->buffer().data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A825){
@@ -393,7 +393,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         ed247_timestamp_t data_timestamp;
         ed247_timestamp_t timestamp_frame;
         uint32_t frame_index = 0;
-        bool precise_timestamp = stream_out->get_configuration()->_data_timestamp.enable_sample_offset == ED247_YESNO_YES;
+        bool precise_timestamp = stream_out->get_configuration()->_data_timestamp._enable_sample_offset == ED247_YESNO_YES;
         if(stream_out->get_configuration()->_type != ED247_STREAM_TYPE_VNAD){
             for(uint32_t i = 0 ; i < 10 ; i++){
                 str_sample = strize() << std::setw(stream_out->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
@@ -420,7 +420,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                 }
                 auto sample_size = stream_out->get_configuration()->_sample_max_size_bytes;
                 if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
-                    static_cast<const ed247::xml::A664Stream*>(stream_out->get_configuration())->enable_message_size == ED247_YESNO_YES){
+                    static_cast<const ed247::xml::A664Stream*>(stream_out->get_configuration())->_enable_message_size == ED247_YESNO_YES){
                     sample_size = ntohs(*(uint16_t*)(stream_out->buffer().data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }else if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_A825){
