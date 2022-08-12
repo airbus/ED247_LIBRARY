@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 #include "ed247.h"
 
 #ifndef _MSC_VER

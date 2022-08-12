@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 #ifndef ED247_TIME_H
 #define ED247_TIME_H
 #include <stdint.h>
