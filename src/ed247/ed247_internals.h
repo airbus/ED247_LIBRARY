@@ -35,7 +35,6 @@
  ************/
 
 #include "ed247.h"
-#include "ed247_types.h"
 #include "ed247_logs.h"
 
 #include <string>
