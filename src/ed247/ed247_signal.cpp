@@ -33,14 +33,14 @@ namespace ed247
 // SignalBuilder<>
 
 template<ed247_signal_type_t ... E>
-signal_ptr_t SignalBuilder<E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t SignalBuilder<E...>::create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream)
 {
     THROW_ED247_ERROR("Cannot create signal [" << std::string(configuration->_name) << "]");
     return nullptr;
 }
 
 template<ed247_signal_type_t T, ed247_signal_type_t ... E>
-signal_ptr_t SignalBuilder<T, E...>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t SignalBuilder<T, E...>::create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream)
 {
     if(type == T){
         static typename Signal<T>::Builder builder;
@@ -51,7 +51,7 @@ signal_ptr_t SignalBuilder<T, E...>::create(const ed247_signal_type_t & type, st
 }
 
 template<ed247_signal_type_t T>
-signal_ptr_t SignalBuilder<T>::create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t SignalBuilder<T>::create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream)
 {
     if(type == T){
         static typename Signal<T>::Builder builder;
@@ -72,7 +72,7 @@ std::unique_ptr<BaseSample> BaseSignal::allocate_sample() const
 
 // BaseSignal::Pool
 
-signal_ptr_t BaseSignal::Pool::get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream)
+signal_ptr_t BaseSignal::Pool::get(const xml::Signal* configuration, BaseStream & stream)
 {
     signal_ptr_t sp_base_signal;
     std::string name{configuration->_name};
@@ -116,7 +116,7 @@ uint32_t BaseSignal::Pool::size() const
 
 // BaseSignal::Builder
 
-signal_ptr_t BaseSignal::Builder::build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const
+signal_ptr_t BaseSignal::Builder::build(std::shared_ptr<Pool> & pool, const xml::Signal* configuration, BaseStream & stream) const
 {
     return pool->get(configuration, stream);
 }
@@ -124,7 +124,7 @@ signal_ptr_t BaseSignal::Builder::build(std::shared_ptr<Pool> & pool, std::share
 // Signal<>::Builder
 
 template<ed247_signal_type_t E>
-std::shared_ptr<Signal<E>> Signal<E>::Builder::create(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const
+std::shared_ptr<Signal<E>> Signal<E>::Builder::create(const xml::Signal* configuration, BaseStream & stream) const
 {
     auto sp_stream = stream.shared_from_this();
     return std::make_shared<Signal<E>>(configuration, sp_stream);

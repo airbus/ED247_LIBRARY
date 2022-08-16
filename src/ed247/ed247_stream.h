@@ -274,19 +274,19 @@ class CircularStreamSampleBuffer {
 template<ed247_stream_type_t ... E>
 struct StreamBuilder {
     StreamBuilder() {}
-    stream_ptr_t create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
 
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
 struct StreamBuilder<T, E...> : public StreamBuilder<E...>, private StreamTypeChecker<T> {
     StreamBuilder() : StreamBuilder<E...>() {}
-    stream_ptr_t create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
 
 template<ed247_stream_type_t T>
 struct StreamBuilder<T> : private StreamTypeChecker<T> {
     StreamBuilder() {}
-    stream_ptr_t create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
 };
 
 class FrameHeader;
@@ -296,7 +296,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         BaseStream():
             _user_data(NULL)
         {}
-        BaseStream(std::shared_ptr<xml::Stream> & configuration):
+        BaseStream(const xml::Stream* configuration):
             _configuration(configuration),
             _signals(std::make_shared<signal_list_t>()),
             _user_data(NULL)
@@ -315,11 +315,11 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
             *user_data = _user_data;
         }
 
-        bool is_signal_based() { return _configuration->is_signal_based(); }
+        bool is_signal_based() const { return _configuration->is_signal_based(); }
 
         const xml::Stream * get_configuration() const
         {
-            return _configuration.get();
+            return _configuration;
         }
 
         std::string get_name() const
@@ -395,7 +395,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
     protected:
 
-        std::shared_ptr<xml::Stream> _configuration;
+        const xml::Stream* _configuration;
         std::weak_ptr<Channel> _channel;
         CircularStreamSampleBuffer _recv_stack;
         std::shared_ptr<StreamSample> _recv_working_sample; // Pointer on a recv_stack element
@@ -507,7 +507,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
                 ~Pool(){};
 
-                stream_ptr_t get(std::shared_ptr<xml::Stream> & configuration);
+                stream_ptr_t get(const xml::Stream* configuration);
 
                 stream_list_t find(std::string str_regex);
 
@@ -535,7 +535,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         class Builder
         {
             public:
-                void build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Stream> & configuration, Channel & channel) const;
+                void build(std::shared_ptr<Pool> & pool, const xml::Stream* configuration, Channel & channel) const;
         };
         class Assistant : public ed247_internal_stream_assistant_t
         {
@@ -770,12 +770,12 @@ class Stream : public BaseStream, private StreamTypeChecker<E>
             public:
                 template<ed247_stream_type_t T = E>
                 typename std::enable_if<!StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
-                create(std::shared_ptr<xml::Stream> & configuration,
+                create(const xml::Stream* configuration,
                     std::shared_ptr<BaseSignal::Pool> & pool_signals) const;
 
                 template<ed247_stream_type_t T = E>
                 typename std::enable_if<StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
-                create(std::shared_ptr<xml::Stream> & configuration,
+                create(const xml::Stream* configuration,
                     std::shared_ptr<BaseSignal::Pool> & pool_signals) const;
         };
 };

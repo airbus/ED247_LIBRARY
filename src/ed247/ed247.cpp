@@ -299,49 +299,49 @@ ed247_status_t ed247_load(
 const char* ed247_file_producer_get_identifier(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_file_producer_identifier.c_str();
+  return ed247_context->getConfiguration()->_file_producer_identifier.c_str();
 }
 
 const char* ed247_file_producer_get_comment(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_file_producer_comment.c_str();
+  return ed247_context->getConfiguration()->_file_producer_comment.c_str();
 }
 
 const char* ed247_component_get_version(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_version.c_str();
+  return ed247_context->getConfiguration()->_version.c_str();
 }
 
 ed247_component_type_t ed247_component_get_type(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_component_type;
+  return ed247_context->getConfiguration()->_component_type;
 }
 
 const char* ed247_component_get_name(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_name.c_str();
+  return ed247_context->getConfiguration()->_name.c_str();
 }
 
 const char* ed247_component_get_comment(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_comment.c_str();
+  return ed247_context->getConfiguration()->_comment.c_str();
 }
 
 ed247_uid_t ed247_component_get_identifier(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_identifier;
+  return ed247_context->getConfiguration()->_identifier;
 }
 
 ed247_standard_t ed247_component_get_standard_revision(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getComponent()->_standard_revision;
+  return ed247_context->getConfiguration()->_standard_revision;
 }
 
 /* =========================================================================

@@ -112,7 +112,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         } stream_dir_t;
         using map_streams_t = std::map<ed247_uid_t,stream_dir_t>;
 
-        Channel(std::shared_ptr<xml::Channel> & configuration):
+        Channel(const xml::Channel* configuration):
             _configuration(configuration),
             _sstreams(std::make_shared<stream_list_t>()),
             _header(configuration->_header, get_name()),
@@ -131,7 +131,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             *user_data = _user_data;
         }
 
-        const xml::Channel * get_configuration() const { return _configuration.get(); }
+        const xml::Channel * get_configuration() const { return _configuration; }
 
         const FrameHeader & get_header() const { return _header; }
 
@@ -196,7 +196,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         uint32_t missed_frames();
 
     protected:
-        std::shared_ptr<xml::Channel> _configuration;
+        const xml::Channel* _configuration;
         std::vector<std::weak_ptr<ComInterface>> _emitters;
         std::vector<std::weak_ptr<ComInterface>> _receivers;
         map_streams_t _streams;
@@ -236,7 +236,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                     std::shared_ptr<BaseStream::Pool> & pool_streams);
                 ~Pool();
 
-                channel_ptr_t get(std::shared_ptr<xml::Channel> & configuration);
+                channel_ptr_t get(const xml::Channel* configuration);
 
                 std::vector<channel_ptr_t> find(std::string str_regex);
 
@@ -257,7 +257,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         };
 
         class Builder{
-            channel_ptr_t create(std::shared_ptr<xml::Channel> & configuration,
+            channel_ptr_t create(const xml::Channel* configuration,
                 std::shared_ptr<ComInterface::Pool> & pool_interfaces,
                 std::shared_ptr<BaseStream::Pool> & pool_streams) const;
             friend class Pool;

@@ -51,7 +51,7 @@ void StreamSample::update_details(const FrameHeader & header)
 
 // StreamBuilder<>
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
-stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
+stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
 {
     if(type == T){
         static typename Stream<T>::Builder builder;
@@ -62,7 +62,7 @@ stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, st
 }
 
 template<ed247_stream_type_t T>
-stream_ptr_t StreamBuilder<T>::create(const ed247_stream_type_t & type, std::shared_ptr<xml::Stream> & configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
+stream_ptr_t StreamBuilder<T>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
 {
     if(type == T){
         static typename Stream<T>::Builder builder;
@@ -140,7 +140,7 @@ BaseStream::Pool::Pool(std::shared_ptr<BaseSignal::Pool> & pool_signals):
 {
 }
 
-stream_ptr_t BaseStream::Pool::get(std::shared_ptr<xml::Stream> & configuration)
+stream_ptr_t BaseStream::Pool::get(const xml::Stream* configuration)
 {
     stream_ptr_t sp_base_stream;
     std::string name{configuration->_name};
@@ -190,7 +190,7 @@ uint32_t BaseStream::Pool::size() const
 
 // BaseStream::Builder
 
-void BaseStream::Builder::build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Stream> & configuration, Channel & channel) const
+void BaseStream::Builder::build(std::shared_ptr<Pool> & pool, const xml::Stream* configuration, Channel & channel) const
 {
     auto sp_stream = pool->get(configuration);
     sp_stream->register_channel(channel, configuration->_direction);
@@ -316,7 +316,7 @@ void Stream<ED247_STREAM_TYPE_A429>::allocate_buffer()
 template<>
 uint32_t Stream<ED247_STREAM_TYPE_A664>::encode(char * frame, uint32_t frame_size)
 {
-    auto enable_message_size = std::static_pointer_cast<xml::A664Stream>(_configuration)->_enable_message_size == ED247_YESNO_YES;
+    auto enable_message_size = ((const xml::A664Stream*)_configuration)->_enable_message_size == ED247_YESNO_YES;
     uint32_t frame_index = 0;
     while (_send_stack.size() > 0) {
         const auto & sample = _send_stack.pop_front();
@@ -353,7 +353,7 @@ uint32_t Stream<ED247_STREAM_TYPE_A664>::encode(char * frame, uint32_t frame_siz
 template<>
 bool Stream<ED247_STREAM_TYPE_A664>::decode(const char * frame, uint32_t frame_size, const FrameHeader * header)
 {
-    auto enable_message_size = std::static_pointer_cast<xml::A664Stream>(_configuration)->_enable_message_size == ED247_YESNO_YES;
+    auto enable_message_size = ((const xml::A664Stream*)_configuration)->_enable_message_size == ED247_YESNO_YES;
     uint32_t frame_index = 0;
     uint32_t sample_size = 0;
     static ed247_timestamp_t data_timestamp;
@@ -411,7 +411,7 @@ ed247_status_t Stream<ED247_STREAM_TYPE_A664>::check_sample_size(uint32_t sample
 template<>
 void Stream<ED247_STREAM_TYPE_A664>::allocate_buffer()
 {
-    auto enable_message_size = std::static_pointer_cast<xml::A664Stream>(_configuration)->_enable_message_size == ED247_YESNO_YES;
+    auto enable_message_size = ((const xml::A664Stream*)_configuration)->_enable_message_size == ED247_YESNO_YES;
     auto size = _configuration->_sample_max_number * (_configuration->_sample_max_size_bytes + (enable_message_size ? sizeof(uint16_t) : 0));
     if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
         // Data Timestamp
@@ -1139,7 +1139,7 @@ void Stream<ED247_STREAM_TYPE_VNAD>::allocate_buffer()
 template<ed247_stream_type_t E>
 template<ed247_stream_type_t T>
 typename std::enable_if<!StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
-Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
+Stream<E>::Builder::create(const xml::Stream*  configuration,
     std::shared_ptr<BaseSignal::Pool> & pool_signals) const
 {
     _UNUSED(pool_signals);
@@ -1156,18 +1156,18 @@ Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
 template<ed247_stream_type_t E>
 template<ed247_stream_type_t T>
 typename std::enable_if<StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
-Stream<E>::Builder::create(std::shared_ptr<xml::Stream> & configuration,
+Stream<E>::Builder::create(const xml::Stream* configuration,
     std::shared_ptr<BaseSignal::Pool> & pool_signals) const
 {
     static BaseSignal::Builder builder;
 
     PRINT_DEBUG("Create signal based stream [" << configuration->_name << "] ...");
     auto sp_stream = std::make_shared<Stream<E>>(configuration);
-    auto sconfiguration = std::static_pointer_cast<xml::StreamSignals>(configuration);
+    const xml::StreamSignals* sconfiguration = (const xml::StreamSignals*)configuration;
     if(!sconfiguration)
         THROW_ED247_ERROR("Stream '" << configuration->_name << "': Wrong stream type, not a signal based one");
-    for(auto signal_configuration : sconfiguration->_signals){
-        sp_stream->_signals->push_back(builder.build(pool_signals, signal_configuration, *sp_stream));
+    for(auto& signal_configuration : sconfiguration->_signal_list){
+      sp_stream->_signals->push_back(builder.build(pool_signals, signal_configuration.get(), *sp_stream));
     }
     sp_stream->_assistant = std::make_shared<Assistant>(sp_stream);
     sp_stream->allocate_stacks();

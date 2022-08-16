@@ -27,18 +27,18 @@
 #include "ed247.h"
 #include <string>
 #include <vector>
-#include <memory> // TODO: shared_ptr
+#include <memory>
 
 // Prevent include of libxml2 header
 typedef struct _xmlNode *xmlNodePtr;
 
 namespace ed247 {
   namespace xml {
-    class Node;
+    struct Component;
 
     // Load ECIC and return an ed247::xml::Component node
-    std::shared_ptr<Node> load_filepath(const std::string & filepath);
-    std::shared_ptr<Node> load_content(const std::string & content);
+    std::unique_ptr<Component> load_filepath(const std::string & filepath);
+    std::unique_ptr<Component> load_content(const std::string & content);
 
 
     struct Node
@@ -62,7 +62,7 @@ namespace ed247 {
 
     struct ComInterface : public Node
     {
-      std::vector<std::shared_ptr<UdpSocket>> _udp_sockets;
+      std::vector<UdpSocket> _udp_sockets;
       virtual void load(const xmlNodePtr xml_node) override final;
     };
 
@@ -156,22 +156,22 @@ namespace ed247 {
       uint32_t            _sample_max_size_bytes;
       DataTimestamp       _data_timestamp;
 
-      virtual bool is_signal_based() = 0;
+      virtual bool is_signal_based() const = 0;
       Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
     };
 
     struct StreamProtocoled : public Stream
     {
       Errors _errors;
-      virtual bool is_signal_based() override final { return false; }
+      virtual bool is_signal_based() const override final { return false; }
       StreamProtocoled(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
     };
 
     struct StreamSignals : public Stream
     {
-      std::vector<std::shared_ptr<Signal>> _signals;
+      std::vector<std::unique_ptr<Signal>> _signal_list;
       uint32_t                             _sampling_period_us;
-      virtual bool is_signal_based() override final { return true; }
+      virtual bool is_signal_based() const override final { return true; }
       StreamSignals(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
     };
 
@@ -228,14 +228,14 @@ namespace ed247 {
     //
     // Channels
     //
-    struct Channel: public Node, public std::enable_shared_from_this<Channel>
+    struct Channel : public Node
     {
       std::string                           _name;
       std::string                           _comment;
       ed247_standard_t                      _frame_standard_revision;
       ComInterface                          _com_interface;
       Header                                _header;
-      std::vector<std::shared_ptr<Stream>>  _streams;
+      std::vector<std::unique_ptr<Stream>>  _stream_list;
       bool                                  _simple;
 
       Channel();
@@ -255,7 +255,7 @@ namespace ed247 {
       std::string            _comment;
       std::string            _file_producer_identifier;
       std::string            _file_producer_comment;
-      std::vector<std::shared_ptr<Channel>> _channels;
+      std::vector<Channel>   _channel_list;
 
       Component();
       virtual void load(const xmlNodePtr xml_node) override final;

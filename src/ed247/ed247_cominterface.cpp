@@ -83,8 +83,8 @@ void ComInterface::Builder::build(std::shared_ptr<Pool> pool, const xml::ComInte
     auto udp_socket_pool = std::dynamic_pointer_cast<UdpSocket::Pool>(pool);
     if(!udp_socket_pool)
         THROW_ED247_ERROR("Failed to retrieve the UdpSocket pool from base ComInterface pool");
-    for(auto & sp_udp_socket_configuration : configuration._udp_sockets){
-        udp_socket_builder.build(udp_socket_pool, *sp_udp_socket_configuration, channel);
+    for(const ed247::xml::UdpSocket& sp_udp_socket_configuration : configuration._udp_sockets){
+        udp_socket_builder.build(udp_socket_pool, sp_udp_socket_configuration, channel);
     }
 }
 

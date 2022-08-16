@@ -25,9 +25,7 @@
 #include "ed247_xml.h"
 #include "ed247_logs.h"
 #include "ed247_xsd.h"
-
 #include <libxml/xmlschemas.h>
-#include "cpp_14.h"
 #include <algorithm>
 
 /*
@@ -300,9 +298,8 @@ void ed247::xml::ComInterface::load(const xmlNodePtr xml_node)
           continue;
         node_name = ::xml::xmlChar_as_string(xml_node_child_iter->name);
         if(node_name.compare(node::UdpSocket) == 0){
-          std::unique_ptr<UdpSocket> udp_socket = std::make_unique<UdpSocket>();
-          udp_socket->load(xml_node_child_iter);
-          _udp_sockets.push_back(std::move(udp_socket));
+          _udp_sockets.emplace_back();
+          _udp_sockets.back().load(xml_node_child_iter);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::UdpSockets << "]");
         }
@@ -760,14 +757,14 @@ void ed247::xml::DISStream::load(const xmlNodePtr xml_node)
             THROW_PARSER_ERROR(xml_node_child_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::DIS_Stream << "]");
           }
         }
-        if(node_name.compare(node::Signal) == 0){
-          std::unique_ptr<DISSignal> signal = std::make_unique<DISSignal>();
+        if(node_name.compare(node::Signal) == 0) {
+          DISSignal* signal = new DISSignal();
           signal->load(xml_node_child_iter);
           if(signal->_byte_offset + signal->get_sample_max_size_bytes() > _sample_max_size_bytes)
             THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->_name << "]: "
                                "ByteOffset [" << signal->_byte_offset << "] + [" << signal->get_sample_max_size_bytes() << "] > "
                                "Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
-          _signals.push_back(std::move(signal));
+          _signal_list.emplace_back(signal);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
         }
@@ -779,12 +776,13 @@ void ed247::xml::DISStream::load(const xmlNodePtr xml_node)
     }
   }
   // Sort according to ByteOffset
-  std::sort(_signals.begin(), _signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-                                                return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
-                                              });
+  std::sort(_signal_list.begin(), _signal_list.end(),
+            [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
+              return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
+            });
   // Update position attribute
   uint32_t p = 0;
-  for(auto & s : _signals){
+  for(auto & s : _signal_list){
     s->_position = p++;
   }
 }
@@ -838,13 +836,13 @@ void ed247::xml::ANAStream::load(const xmlNodePtr xml_node)
           }
         }
         if(node_name.compare(node::Signal) == 0){
-          std::unique_ptr<ANASignal> signal = std::make_unique<ANASignal>();
+          ANASignal* signal = new ANASignal();
           signal->load(xml_node_child_iter);
           if(signal->_byte_offset + signal->get_sample_max_size_bytes() > _sample_max_size_bytes)
             THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->_name << "]: "
                                "ByteOffset [" << signal->_byte_offset << "] + [" << signal->get_sample_max_size_bytes() << "] > "
                                "Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
-          _signals.push_back(std::move(signal));
+          _signal_list.emplace_back(signal);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
         }
@@ -856,12 +854,13 @@ void ed247::xml::ANAStream::load(const xmlNodePtr xml_node)
     }
   }
   // Sort according to ByteOffset
-  std::sort(_signals.begin(), _signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-                                                return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
-                                              });
+  std::sort(_signal_list.begin(), _signal_list.end(),
+            [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
+              return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
+            });
   // Update position attribute
   uint32_t p = 0;
-  for(auto & s : _signals){
+  for(auto & s : _signal_list){
     s->_position = p++;
   }
 }
@@ -915,13 +914,13 @@ void ed247::xml::NADStream::load(const xmlNodePtr xml_node)
           }
         }
         if(node_name.compare(node::Signal) == 0){
-          std::unique_ptr<NADSignal> signal = std::make_unique<NADSignal>();
+          NADSignal* signal = new NADSignal();
           signal->load(xml_node_child_iter);
           if(signal->_byte_offset + signal->get_sample_max_size_bytes() > _sample_max_size_bytes)
             THROW_PARSER_ERROR(xml_node_child_iter, "Stream [" << _name << "] Signal [" << signal->_name << "]: "
                                "ByteOffset [" << signal->_byte_offset << "] + [" << signal->get_sample_max_size_bytes() << "] > "
                                "Stream SampleMaxSizeBytes [" << _sample_max_size_bytes << "]");
-          _signals.push_back(std::move(signal));
+          _signal_list.emplace_back(signal);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
         }
@@ -933,12 +932,13 @@ void ed247::xml::NADStream::load(const xmlNodePtr xml_node)
     }
   }
   // Sort according to ByteOffset
-  std::sort(_signals.begin(), _signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-                                                return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
-                                              });
+  std::sort(_signal_list.begin(), _signal_list.end(),
+            [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
+              return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
+            });
   // Update position attribute
   uint32_t p = 0;
-  for(auto & s : _signals){
+  for(auto & s : _signal_list){
     s->_position = p++;
   }
 }
@@ -990,10 +990,10 @@ void ed247::xml::VNADStream::load(const xmlNodePtr xml_node)
           }
         }
         if(node_name.compare(node::Signal) == 0){
-          std::unique_ptr<VNADSignal> signal = std::make_unique<VNADSignal>();
+          VNADSignal* signal = new VNADSignal();
           signal->load(xml_node_child_iter);
           _sample_max_size_bytes += (signal->get_sample_max_size_bytes() + sizeof(uint16_t)) * signal->_vnad_max_length;
-          _signals.push_back(std::move(signal));
+          _signal_list.emplace_back(signal);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");
         }
@@ -1005,13 +1005,15 @@ void ed247::xml::VNADStream::load(const xmlNodePtr xml_node)
       THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::VNAD_Stream << "]");
     }
   }
-  // Sort according to ByteOffset
-  std::sort(_signals.begin(), _signals.end(), [](std::shared_ptr<Signal> a, std::shared_ptr<Signal>b){
-                                                return (a == nullptr || b == nullptr) ? false : (a->_vnad_position < b->_vnad_position);
-                                              });
+  // Sort according to VNAD position
+  std::sort(_signal_list.begin(), _signal_list.end(),
+            [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
+              return (a == nullptr || b == nullptr) ? false : (a->_vnad_position < b->_vnad_position);
+            });
+
   // Update position attribute
   uint32_t p = 0;
-  for(auto & s : _signals){
+  for(auto & s : _signal_list){
     s->_position = p++;
   }
 }
@@ -1084,44 +1086,44 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
         node_name = ::xml::xmlChar_as_string(xml_node_child_iter->name);
         // A429
         if(node_name.compare(node::A429_Stream) == 0){
-          std::unique_ptr<A429Stream> stream = std::make_unique<A429Stream>();
+          A429Stream* stream = new A429Stream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // A664
         }else if(node_name.compare(node::A664_Stream) == 0){
-          std::unique_ptr<A664Stream> stream = std::make_unique<A664Stream>();
+          A664Stream* stream = new A664Stream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // A825
         }else if(node_name.compare(node::A825_Stream) == 0){
-          std::unique_ptr<A825Stream> stream = std::make_unique<A825Stream>();
+          A825Stream* stream = new A825Stream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // SERIAL
         }else if(node_name.compare(node::SERIAL_Stream) == 0){
-          std::unique_ptr<SERIALStream> stream = std::make_unique<SERIALStream>();
+          SERIALStream* stream = new SERIALStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // DISCRETE
         }else if(node_name.compare(node::DIS_Stream) == 0){
-          std::unique_ptr<DISStream> stream = std::make_unique<DISStream>();
+          DISStream* stream = new DISStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // ANALOG
         }else if(node_name.compare(node::ANA_Stream) == 0){
-          std::unique_ptr<ANAStream> stream = std::make_unique<ANAStream>();
+          ANAStream* stream = new ANAStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // NAD
         }else if(node_name.compare(node::NAD_Stream) == 0){
-          std::unique_ptr<NADStream> stream = std::make_unique<NADStream>();
+          NADStream* stream = new NADStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // VNAD
         }else if(node_name.compare(node::VNAD_Stream) == 0){
-          std::unique_ptr<VNADStream> stream = std::make_unique<VNADStream>();
+          VNADStream* stream = new VNADStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+          _stream_list.emplace_back(stream);
           // Otherwise
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Streams << "]");
@@ -1134,44 +1136,44 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
         node_name = ::xml::xmlChar_as_string(xml_node_child_iter->name);
         // A429
         if(node_name.compare(node::A429_Stream) == 0){
-          std::unique_ptr<A429Stream> stream = std::make_unique<A429Stream>();
+          A429Stream* stream = new A429Stream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // A664
         }else if(node_name.compare(node::A664_Stream) == 0){
-          std::unique_ptr<A664Stream> stream = std::make_unique<A664Stream>();
+          A664Stream* stream = new A664Stream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // A825
         }else if(node_name.compare(node::A825_Stream) == 0){
-          std::unique_ptr<A825Stream> stream = std::make_unique<A825Stream>();
+          A825Stream* stream = new A825Stream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // SERIAL
         }else if(node_name.compare(node::SERIAL_Stream) == 0){
-          std::unique_ptr<SERIALStream> stream = std::make_unique<SERIALStream>();
+          SERIALStream* stream = new SERIALStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // DISCRETE
         }else if(node_name.compare(node::DIS_Stream) == 0){
-          std::unique_ptr<DISStream> stream = std::make_unique<DISStream>();
+          DISStream* stream = new DISStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // ANALOG
         }else if(node_name.compare(node::ANA_Stream) == 0){
-          std::unique_ptr<ANAStream> stream = std::make_unique<ANAStream>();
+          ANAStream* stream = new ANAStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // NAD
         }else if(node_name.compare(node::NAD_Stream) == 0){
-          std::unique_ptr<NADStream> stream = std::make_unique<NADStream>();
+          NADStream* stream = new NADStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // VNAD
         }else if(node_name.compare(node::VNAD_Stream) == 0){
-          std::unique_ptr<VNADStream> stream = std::make_unique<VNADStream>();
+          VNADStream* stream = new VNADStream();
           stream->load(xml_node_child_iter);
-          _streams.push_back(std::move(stream));
+           _stream_list.emplace_back(stream);
           // Otherwise
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Channel << "]");
@@ -1227,20 +1229,20 @@ void ed247::xml::Component::load(const xmlNodePtr xml_node)
         if(xml_node_channel->type != XML_ELEMENT_NODE)
           continue;
         node_name = ::xml::xmlChar_as_string(xml_node_channel->name);
-        if(node_name.compare(node::MultiChannel) == 0){
-          std::unique_ptr<Channel> channel = std::make_unique<Channel>();
-          channel->_simple = false; // store if it is a simple channel (only one stream)
-          channel->load(xml_node_channel);
-          if(channel->_frame_standard_revision != ED247_STANDARD_ED247A)
+        if(node_name.compare(node::MultiChannel) == 0) {
+          _channel_list.emplace_back();
+          Channel& channel = _channel_list.back();
+          channel._simple = false; // store if it is a simple channel (only one stream)
+          channel.load(xml_node_channel);
+          if(channel._frame_standard_revision != ED247_STANDARD_ED247A)
             THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
-          _channels.push_back(std::move(channel));
-        }else if(node_name.compare(node::Channel) == 0){
-          std::unique_ptr<Channel> channel = std::make_unique<Channel>();
-          channel->_simple = true; // store if it is a simple channel (only one stream)
-          channel->load(xml_node_channel);
-          if(channel->_frame_standard_revision != ED247_STANDARD_ED247A)
+        }else if(node_name.compare(node::Channel) == 0) {
+          _channel_list.emplace_back();
+          Channel& channel = _channel_list.back();
+          channel._simple = true; // store if it is a simple channel (only one stream)
+          channel.load(xml_node_channel);
+          if(channel._frame_standard_revision != ED247_STANDARD_ED247A)
             THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
-          _channels.push_back(std::move(channel));
         }else{
           THROW_PARSER_ERROR(xml_node_channel, "Unknown node [" << node_name << "] in tag [" << node::Channels << "]");
         }
@@ -1265,7 +1267,7 @@ void ed247::xml::Component::load(const xmlNodePtr xml_node)
 //
 // load
 //
-static std::shared_ptr<ed247::xml::Node> ed247_ecic_load(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_xml_doc)
+static std::unique_ptr<ed247::xml::Component> ed247_ecic_load(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_xml_doc)
 {
   xmlDocPtr              p_xsd_doc;
   xmlSchemaParserCtxtPtr p_xsd_schema_parser;
@@ -1291,14 +1293,13 @@ static std::shared_ptr<ed247::xml::Node> ed247_ecic_load(xmlParserCtxtPtr & p_xm
   // Load Nodes
   xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
 
-  auto root = std::make_shared<ed247::xml::Component>();
-
+  std::unique_ptr<ed247::xml::Component> root(new ed247::xml::Component());
   root->load(xmlRootNode);
 
-  return std::dynamic_pointer_cast<ed247::xml::Node>(root);
+  return root;
 }
 
-std::shared_ptr<ed247::xml::Node> ed247::xml::load_filepath(const std::string & filepath)
+std::unique_ptr<ed247::xml::Component> ed247::xml::load_filepath(const std::string & filepath)
 {
   xmlParserCtxtPtr    p_xml_context;
   xmlDocPtr           p_xml_doc;
@@ -1319,7 +1320,7 @@ std::shared_ptr<ed247::xml::Node> ed247::xml::load_filepath(const std::string & 
     p_xml_doc->name = strdup(filepath.c_str());
   }
 
-  auto root = ed247_ecic_load(p_xml_context, p_xml_doc);
+  std::unique_ptr<ed247::xml::Component> root = ed247_ecic_load(p_xml_context, p_xml_doc);
 
   if(p_xml_doc)
     xmlFreeDoc(p_xml_doc);
@@ -1329,7 +1330,7 @@ std::shared_ptr<ed247::xml::Node> ed247::xml::load_filepath(const std::string & 
   return root;
 }
 
-std::shared_ptr<ed247::xml::Node> ed247::xml::load_content(const std::string & content)
+std::unique_ptr<ed247::xml::Component> ed247::xml::load_content(const std::string & content)
 {
   xmlParserCtxtPtr    p_xml_context;
   xmlDocPtr           p_xml_doc;
@@ -1345,7 +1346,7 @@ std::shared_ptr<ed247::xml::Node> ed247::xml::load_content(const std::string & c
   if((p_xml_doc = xmlCtxtReadMemory(p_xml_context,content.c_str(),(int)content.length(),nullptr,nullptr,0)) == nullptr)
     THROW_PARSER_ERROR(nullptr, "Failed to read XML file content");
 
-  auto root = ed247_ecic_load(p_xml_context, p_xml_doc);
+  std::unique_ptr<ed247::xml::Component> root = ed247_ecic_load(p_xml_context, p_xml_doc);
 
   if(p_xml_doc)
     xmlFreeDoc(p_xml_doc);

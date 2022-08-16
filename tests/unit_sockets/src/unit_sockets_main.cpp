@@ -37,40 +37,38 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
         auto pool_sockets = std::make_shared<ed247::UdpSocket::Pool>();
         auto pool_streams = std::make_shared<ed247::BaseStream::Pool>();
         auto pool_interfaces = std::dynamic_pointer_cast<ed247::ComInterface::Pool>(pool_sockets);
-        auto pool_channels = std::make_shared<ed247::Channel::Pool>(
-                pool_interfaces,
-                pool_streams);
+        ed247::Channel::Pool pool_channels(pool_interfaces, pool_streams);
 
         // Socket
-        auto sp_socket_conf = std::make_shared<ed247::xml::UdpSocket>(GetParam());
+        ed247::xml::UdpSocket sp_socket_conf = GetParam();
 
         RecordProperty("description", strize() << "Send a single frame from a single channel with one socket to another channel with another socket. [" << sp_socket_conf << "]");
 
         // Stream (Emitter)
-        auto sp_stream_emitter_conf = std::make_shared<ed247::xml::A429Stream>();
+        ed247::xml::A429Stream* sp_stream_emitter_conf = new ed247::xml::A429Stream();
         sp_stream_emitter_conf->_name = "StreamOut";
         sp_stream_emitter_conf->_direction = ED247_DIRECTION_OUT;
         sp_stream_emitter_conf->_uid = 0;
 
         // Channel (Emitter)
-        auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_emitter_conf->_name = "ChannelOutput";
-        sp_channel_emitter_conf->_com_interface._udp_sockets.push_back(sp_socket_conf);
-        sp_channel_emitter_conf->_streams.push_back(sp_stream_emitter_conf);
-        auto channel_emitter = pool_channels->get(sp_channel_emitter_conf);
+        ed247::xml::Channel sp_channel_emitter_conf;
+        sp_channel_emitter_conf._name = "ChannelOutput";
+        sp_channel_emitter_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
+        sp_channel_emitter_conf._stream_list.emplace_back(sp_stream_emitter_conf);
+        auto channel_emitter = pool_channels.get(&sp_channel_emitter_conf);
 
         // Stream (Receiver)
-        auto sp_stream_receiver_conf = std::make_shared<ed247::xml::A429Stream>();
+        ed247::xml::A429Stream* sp_stream_receiver_conf = new ed247::xml::A429Stream();
         sp_stream_receiver_conf->_name = "StreamIn";
         sp_stream_receiver_conf->_direction = ED247_DIRECTION_IN;
         sp_stream_receiver_conf->_uid = 0;
 
         // Channel (Receiver)
-        auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_receiver_conf->_name = "ChannelInput";
-        sp_channel_receiver_conf->_com_interface._udp_sockets.push_back(sp_socket_conf);
-        sp_channel_receiver_conf->_streams.push_back(sp_stream_receiver_conf);
-        auto channel_receiver = pool_channels->get(sp_channel_receiver_conf);
+        ed247::xml::Channel sp_channel_receiver_conf;
+        sp_channel_receiver_conf._name = "ChannelInput";
+        sp_channel_receiver_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
+        sp_channel_receiver_conf._stream_list.emplace_back(sp_stream_receiver_conf);
+        auto channel_receiver = pool_channels.get(&sp_channel_receiver_conf);
 
         // Prepare frame to send
         std::string send_msg{"Hell"};
@@ -145,40 +143,38 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
         auto pool_sockets = std::make_shared<ed247::UdpSocket::Pool>();
         auto pool_streams = std::make_shared<ed247::BaseStream::Pool>();
         auto pool_interfaces = std::dynamic_pointer_cast<ed247::ComInterface::Pool>(pool_sockets);
-        auto pool_channels = std::make_shared<ed247::Channel::Pool>(
-                pool_interfaces,
-                pool_streams);
+        ed247::Channel::Pool pool_channels(pool_interfaces, pool_streams);
 
         // Socket
-        auto sp_socket_conf = std::make_shared<ed247::xml::UdpSocket>(GetParam());
+        ed247::xml::UdpSocket sp_socket_conf = GetParam();
 
         RecordProperty("description", strize() << "Send two frames from a single channel with one socket to another channel with another socket. [" << sp_socket_conf << "]");
 
         // Stream (Emitter)
-        auto sp_stream_emitter_conf = std::make_shared<ed247::xml::A429Stream>();
+        ed247::xml::A429Stream* sp_stream_emitter_conf = new ed247::xml::A429Stream();
         sp_stream_emitter_conf->_name = "StreamOut";
         sp_stream_emitter_conf->_direction = ED247_DIRECTION_OUT;
         sp_stream_emitter_conf->_uid = 0;
 
         // Channel (Emitter)
-        auto sp_channel_emitter_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_emitter_conf->_name = "ChannelOutput";
-        sp_channel_emitter_conf->_com_interface._udp_sockets.push_back(sp_socket_conf);
-        sp_channel_emitter_conf->_streams.push_back(sp_stream_emitter_conf);
-        auto channel_emitter = pool_channels->get(sp_channel_emitter_conf);
+        ed247::xml::Channel sp_channel_emitter_conf;
+        sp_channel_emitter_conf._name = "ChannelOutput";
+        sp_channel_emitter_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
+        sp_channel_emitter_conf._stream_list.emplace_back(sp_stream_emitter_conf);
+        auto channel_emitter = pool_channels.get(&sp_channel_emitter_conf);
 
         // Stream (Receiver)
-        auto sp_stream_receiver_conf = std::make_shared<ed247::xml::A429Stream>();
+        auto sp_stream_receiver_conf = new ed247::xml::A429Stream();
         sp_stream_receiver_conf->_name = "StreamIn";
         sp_stream_receiver_conf->_direction = ED247_DIRECTION_IN;
         sp_stream_receiver_conf->_uid = 0;
 
         // Channel (Receiver)
-        auto sp_channel_receiver_conf = std::make_shared<ed247::xml::Channel>();
-        sp_channel_receiver_conf->_name = "ChannelInput";
-        sp_channel_receiver_conf->_com_interface._udp_sockets.push_back(sp_socket_conf);
-        sp_channel_receiver_conf->_streams.push_back(sp_stream_receiver_conf);
-        auto channel_receiver = pool_channels->get(sp_channel_receiver_conf);
+        ed247::xml::Channel sp_channel_receiver_conf;
+        sp_channel_receiver_conf._name = "ChannelInput";
+        sp_channel_receiver_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
+        sp_channel_receiver_conf._stream_list.emplace_back(sp_stream_receiver_conf);
+        auto channel_receiver = pool_channels.get(&sp_channel_receiver_conf);
 
         // Prepare frame to send
         uint32_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;

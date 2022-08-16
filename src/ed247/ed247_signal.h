@@ -44,26 +44,26 @@ class Stream;
 template<ed247_signal_type_t ... E>
 struct SignalBuilder {
     SignalBuilder() {}
-    signal_ptr_t create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+    signal_ptr_t create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream);
 };
 
 template<ed247_signal_type_t T, ed247_signal_type_t ... E>
 struct SignalBuilder<T, E...> : public SignalBuilder<E...>, private SignalTypeChecker<T> {
     SignalBuilder() : SignalBuilder<E...>() {}
-    signal_ptr_t create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+    signal_ptr_t create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream);
 };
 
 template<ed247_signal_type_t T>
 struct SignalBuilder<T> : private SignalTypeChecker<T> {
     SignalBuilder() {}
-    signal_ptr_t create(const ed247_signal_type_t & type, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+    signal_ptr_t create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream);
 };
 
 class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_from_this<BaseSignal>
 {
     public:
         BaseSignal(){}
-        BaseSignal(std::shared_ptr<xml::Signal> & configuration, std::shared_ptr<BaseStream> & stream):
+        BaseSignal(const xml::Signal* configuration, std::shared_ptr<BaseStream> & stream):
             _configuration(configuration),
             _stream(stream),
             _user_data(nullptr)
@@ -90,7 +90,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
 
         const xml::Signal * get_configuration() const
         {
-            return _configuration.get();
+          return _configuration;
         }
 
         std::string get_name() const
@@ -108,7 +108,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
         uint32_t position() const { return _configuration->_position; }
 
     protected:
-        std::shared_ptr<xml::Signal> _configuration;
+        const xml::Signal* _configuration;
         std::weak_ptr<BaseStream> _stream;
 
     private:
@@ -121,7 +121,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
                 Pool(){}
                 ~Pool(){};
 
-                signal_ptr_t get(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream);
+                signal_ptr_t get(const xml::Signal* configuration, BaseStream & stream);
 
                 signal_list_t find(std::string str_regex);
 
@@ -143,7 +143,7 @@ class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_fro
         class Builder
         {
             public:
-                signal_ptr_t build(std::shared_ptr<Pool> & pool, std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const;
+                signal_ptr_t build(std::shared_ptr<Pool> & pool, const xml::Signal* configuration, BaseStream & stream) const;
         };
 };
 
@@ -159,7 +159,7 @@ class Signal : public BaseSignal, private SignalTypeChecker<E>
         class Builder
         {
             public:
-                std::shared_ptr<Signal<E>> create(std::shared_ptr<xml::Signal> & configuration, BaseStream & stream) const;
+                std::shared_ptr<Signal<E>> create(const xml::Signal* configuration, BaseStream & stream) const;
         };
 };
 

@@ -304,7 +304,7 @@ Channel::Pool::~Pool()
     _pool_interfaces.reset();
 }
 
-channel_ptr_t Channel::Pool::get(std::shared_ptr<xml::Channel> & configuration)
+channel_ptr_t Channel::Pool::get(const xml::Channel* configuration)
 {
     static Channel::Builder builder;
     channel_ptr_t sp_channel;
@@ -381,7 +381,7 @@ void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 }
 
 // Channel::Builder
-channel_ptr_t Channel::Builder::create(std::shared_ptr<xml::Channel> & configuration,
+channel_ptr_t Channel::Builder::create(const xml::Channel* configuration,
     std::shared_ptr<ComInterface::Pool> & pool_interfaces,
     std::shared_ptr<BaseStream::Pool> & pool_streams) const
 {
@@ -391,8 +391,8 @@ channel_ptr_t Channel::Builder::create(std::shared_ptr<xml::Channel> & configura
     auto sp_channel = std::make_shared<Channel>(configuration);
     builder_interface.build(pool_interfaces, configuration->_com_interface, *sp_channel);
 
-    for(auto stream_configuration : configuration->_streams){
-        builder_streams.build(pool_streams, stream_configuration, *sp_channel);
+    for(auto& stream_configuration : configuration->_stream_list){
+      builder_streams.build(pool_streams, stream_configuration.get(), *sp_channel);
     }
 
     sp_channel->allocate_buffer();
