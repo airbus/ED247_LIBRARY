@@ -26,6 +26,9 @@ project(ED247_LIBRARY VERSION 1.1.3) # Define target version ${CMAKE_PROJECT_VER
 include(cmake/version.cmake)         # Compute ${VERSION} according to git
 include(cmake/flags.cmake)
 
+option(BUILD_SAMPLES "Build samples folder" ON)
+option(BUILD_UTILS "Build utils folder" ON)
+
 # Options multi-platform delivery.
 if (PLATFORM_INSTALL_SUBDIR)
   if (NOT ${PLATFORM_INSTALL_SUBDIR} MATCHES "/$")
@@ -78,9 +81,13 @@ add_subdirectory(src)
 
 add_subdirectory(shared)
 
-add_subdirectory(samples)
+if (BUILD_SAMPLES)
+  add_subdirectory(samples)
+endif()
 
-add_subdirectory(utils)
+if (BUILD_UTILS)
+  add_subdirectory(utils)
+endif()
 
 # Enable tests only if GTest found
 # To unsure find_package manage properly
