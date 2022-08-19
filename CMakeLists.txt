@@ -29,6 +29,11 @@ include(cmake/flags.cmake)
 option(BUILD_SAMPLES "Build samples folder" ON)
 option(BUILD_UTILS "Build utils folder" ON)
 
+if (CMAKE_CROSSCOMPILING AND CMAKE_HOST_WIN32)
+  # Windows does not support RPATH
+  set(CMAKE_SKIP_RPATH TRUE)
+endif()
+
 # Options multi-platform delivery.
 if (PLATFORM_INSTALL_SUBDIR)
   if (NOT ${PLATFORM_INSTALL_SUBDIR} MATCHES "/$")
