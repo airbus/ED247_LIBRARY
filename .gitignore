@@ -4,6 +4,7 @@
 # build_Linux64
 # build_Win32_mingw
 # build_Win64_mingw
+.vscode
 _build*
 _install*
 *.cmd
