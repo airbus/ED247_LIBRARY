@@ -26,13 +26,9 @@ project(ED247_LIBRARY VERSION 1.1.3) # Define target version ${CMAKE_PROJECT_VER
 include(cmake/version.cmake)         # Compute ${VERSION} according to git
 include(cmake/flags.cmake)
 
+# User-tunable build options
 option(BUILD_SAMPLES "Build samples folder" ON)
 option(BUILD_UTILS "Build utils folder" ON)
-
-if (CMAKE_CROSSCOMPILING AND CMAKE_HOST_WIN32)
-  # Windows does not support RPATH
-  set(CMAKE_SKIP_RPATH TRUE)
-endif()
 
 # Options multi-platform delivery.
 if (PLATFORM_INSTALL_SUBDIR)
@@ -68,7 +64,7 @@ endif()
 
 # Simulink RT logger
 add_library(SimulinkLogger INTERFACE)
-find_path(SimulinkLogger_INCLUDE_DIR "Logger.hpp" HINTS ${SimulinkLogger_INCLUDE_DIR})
+find_path(SimulinkLogger_INCLUDE_DIR "Logger.hpp" HINTS ${MATLAB_ROOT_DIR}"/toolbox/slrealtime/target/kernel/dist/include")
 find_package_handle_standard_args(SimulinkLogger DEFAULT_MSG SimulinkLogger_INCLUDE_DIR)
 if (SimulinkLogger_FOUND)
   target_include_directories(SimulinkLogger INTERFACE ${SimulinkLogger_INCLUDE_DIR})

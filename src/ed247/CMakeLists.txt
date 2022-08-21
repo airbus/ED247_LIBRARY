@@ -42,7 +42,6 @@ target_link_libraries(ed247_objects
      $<$<PLATFORM_ID:Windows>:ws2_32>
      $<$<PLATFORM_ID:QNX>:socket>
      $<$<PLATFORM_ID:QNX>:regex>
-     $<$<BOOL:${SimulinkLogger_FOUND}>:SimulinkLogger>
 )
 
 target_include_directories(ed247_objects

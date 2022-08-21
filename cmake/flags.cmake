@@ -29,3 +29,14 @@ set (CMAKE_C_STANDARD 11)
 # We are building a library
 # TODO: this flag shal not be global as is it not needed for binaries (tools, tests, ...)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+if (CMAKE_CROSSCOMPILING AND CMAKE_HOST_WIN32)
+  # Windows does not support RPATH
+  set(CMAKE_SKIP_RPATH TRUE)
+endif()
+
+# Report unresolved symbol references as errors
+if(NOT MSVC)
+  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,--no-undefined")
+  string(APPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--no-undefined")
+endif()
