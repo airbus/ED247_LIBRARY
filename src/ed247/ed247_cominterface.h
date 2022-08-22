@@ -223,11 +223,14 @@ class UdpSocket : public ComInterface
 
     public:
         UdpSocket(const SocketInfos & socket_infos):
-            _socket_infos(socket_infos) {}
+        _socket_infos(socket_infos)
+        {
+          MEMCHECK_NEW(this, "UdpSocket " << _socket_infos);
+        }
         ~UdpSocket() override
         {
-            PRINT_DEBUG("Delete Socket [" << _socket_infos << "]");
-            close();
+          MEMCHECK_DEL(this, "UdpSocket " << _socket_infos);
+          close();
         };
 
         bool is_valid(){ return _socket_infos.valid; }

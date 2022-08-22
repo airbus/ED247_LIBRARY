@@ -201,6 +201,8 @@ TEST_P(ChannelContext, MultiPushPop)
                     ASSERT_TRUE(empty);
             }
         }
+
+        delete context;
     }
     catch(std::exception & e)
     {

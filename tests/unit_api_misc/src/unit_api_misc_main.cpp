@@ -49,6 +49,7 @@ TEST(UtApiMisc, InfoGetter)
 
     ASSERT_TRUE(strcmp(ed247_file_producer_get_identifier(context), "") == 0);
     ASSERT_TRUE(strcmp(ed247_file_producer_get_comment(context), "") == 0);
+    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 
     // Load a second configuration with optional fields filled
     filepath = config_path+"/ecic_unit_api_misc.xml";

@@ -91,22 +91,22 @@ TEST(RobustnessLoad, Loading)
     // Context address not provided, unload after error checked
     ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_a429.xml").c_str(), NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unload(NULL), ED247_STATUS_FAILURE);
-    
+
     // ECIC file path not provided, unload after error checked
     ASSERT_EQ(ed247_load_file(NULL, &context), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_FAILURE);
-    
+
     // ECIC file path is erroneous, unload after error checked
     ASSERT_EQ(ed247_load_file("NotExistingFile.xml", &context), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_FAILURE);
-    
+
     // ECIC file path is miss formatted
     ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_missformatted.xml").c_str(), &context), ED247_STATUS_FAILURE);
-    
+
     // Check the errors did not mess up the loading capabilities
     ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_a429.xml").c_str(), &context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
-    
+
     // ECIC file with duplicated stream
     ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_stream_duplicated.xml").c_str(), &context), ED247_STATUS_FAILURE);
 
@@ -117,6 +117,7 @@ TEST(RobustnessLoad, Loading)
     ASSERT_EQ(ed247_load_content(ecic_content, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_load_content(NULL, &context), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_load_content(ecic_content, &context), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 
     // Check load by content fails if wrong ECIC content is provided
     ASSERT_EQ(ed247_load_content("I am a wrong configuration file content !", &context), ED247_STATUS_FAILURE);
@@ -133,6 +134,7 @@ TEST(NoInputs, Wait)
     ASSERT_EQ(ed247_wait_during(context, &streams, 1000), ED247_STATUS_NODATA);
 
     ASSERT_EQ(ed247_unload(NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }
 
 

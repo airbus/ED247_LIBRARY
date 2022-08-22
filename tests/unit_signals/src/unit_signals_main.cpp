@@ -122,6 +122,8 @@ namespace ed247 {
       std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
       ASSERT_EQ(memcmp(data, msg.c_str(), size), 0);
     }
+
+    delete context;
   }
 
   std::vector<std::string> configuration_files;

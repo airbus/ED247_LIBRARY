@@ -185,6 +185,8 @@ TEST(UtApiChannel,GetChannelList)
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "FilledChannel") == 0);
     ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
+
+    ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }
 
 int main(int argc, char **argv)

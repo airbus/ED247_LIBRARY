@@ -200,6 +200,7 @@ TEST_P(StreamContext, SinglePushPop)
             str_sample_recv = std::string((char *)stream_1_recv_sample->data(), stream_1->get_configuration()->_sample_max_size_bytes);
             ASSERT_EQ(str_sample, str_sample_recv);
         }
+        delete context;
     }
     catch(std::exception & e)
     {
@@ -315,6 +316,7 @@ TEST_P(StreamContext, MultiPushPop)
                     ASSERT_TRUE(empty);
             }
         }
+        delete context;
     }
     catch(std::exception & e)
     {
@@ -472,6 +474,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                     ASSERT_TRUE(empty);
             }
         }
+        delete context;
     }
     catch(std::exception & e)
     {

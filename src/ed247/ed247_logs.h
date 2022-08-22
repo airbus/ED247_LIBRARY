@@ -32,7 +32,6 @@
 #include <fstream>
 #include <exception>
 
-
 // Prefix traces by file:line
 #define LOG_SHORTFILE       (strrchr("/" __FILE__, '/') + 1)
 #define LOG_STREAM_FILELINE LOG_SHORTFILE << ":" << __LINE__ << " "
@@ -130,6 +129,33 @@ inline std::ostream& operator<<(std::ostream& stream, const ed247_direction_t& d
 inline std::ostream& operator<<(std::ostream& stream, const ed247_stream_type_t& stype)   { return (stream << ed247_stream_type_string(stype));   }
 inline std::ostream& operator<<(std::ostream& stream, const ed247_signal_type_t& stype)   { return (stream << ed247_signal_type_string(stype));   }
 inline std::ostream& operator<<(std::ostream& stream, const ed247_nad_type_t& ntype)      { return (stream << ed247_nad_type_string(ntype));      }
+
+
+// Memcheck
+//#define ENABLE_MEMCHECK
+#ifdef ENABLE_MEMCHECK
+namespace ed247 {
+  namespace memcheck {
+    void add(const void* ptr, std::string title);
+    void remove(const void* ptr);
+    void assert_freed();
+    void free();
+  }
+}
+#define MEMCHECK_SAY(ptr, m)     SAY("[MEMCHECK " << ptr << "] " << m)
+#define MEMCHECK_NEW(ptr, title) do { MEMCHECK_SAY(ptr, "NEW " << title); ed247::memcheck::add(ptr, strize() << title); } while (0)
+#define MEMCHECK_DEL(ptr, title) do { MEMCHECK_SAY(ptr, "DEL " << title); ed247::memcheck::remove(ptr); } while (0)
+#define MEMCHECK_FREED()         ed247::memcheck::assert_freed()
+#define MEMCHECK_RESET()         ed247::memcheck::free()
+#else
+#define MEMCHECK_SAY(ptr, m)
+#define MEMCHECK_NEW(ptr, title)
+#define MEMCHECK_DEL(ptr, title)
+#define MEMCHECK_FREED()
+#define MEMCHECK_RESET()
+#endif
+
+
 
 // Helper to create a string from stream: std::string foo = strize() << "hello " << 42;
 struct strize {

@@ -274,6 +274,7 @@ TEST(UtApiStreams, CheckFindStreamMethod)
 
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel", &channel_list), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_find_streams(NULL, NULL, &stream_list), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_find_streams(context, NULL, NULL), ED247_STATUS_FAILURE);

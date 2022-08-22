@@ -118,6 +118,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             _header(configuration->_header, get_name()),
             _user_data(NULL)
         {
+          MEMCHECK_NEW(this, "Channel " << _configuration->_name);
         }
         virtual ~Channel();
 

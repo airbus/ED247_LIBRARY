@@ -219,6 +219,8 @@ ed247_status_t ed247_unload(
     auto ed247_context = static_cast<ed247::Context*>(context);
     delete(ed247_context);
     ed247_context=nullptr;
+    MEMCHECK_FREED();
+    MEMCHECK_RESET();
   }
   LIBED247_CATCH("Unload");
   return ED247_STATUS_SUCCESS;

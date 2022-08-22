@@ -139,6 +139,7 @@ bool FrameHeader::decode(const char * frame, uint32_t frame_size, uint32_t & fra
 
 Channel::~Channel()
 {
+    MEMCHECK_DEL(this, "Channel " << _configuration->_name);
     //_emitters.clear();
     for(auto iter = _emitters.begin() ; iter != _emitters.end() ; iter = _emitters.erase(iter)){
         auto sp_interface = iter->lock();

@@ -455,12 +455,14 @@ bool UdpSocket::Factory::is_host_ip_address(const ip_address_t & ip_address)
 
 UdpSocket::Pool::Pool()
 {
+    MEMCHECK_NEW(this, "UdpSocket::Pool");
     FD_ZERO(&_select_options.fd);
     _select_options.nfds = 0;
 }
 
 UdpSocket::Pool::~Pool()
 {
+    MEMCHECK_DEL(this, "UdpSocket::Pool");
     for(auto iter = _outputs.begin() ; iter != _outputs.end(); ){
         SocketInfos & socket_infos = (*iter)->_socket_infos;
         iter = _outputs.erase(iter);

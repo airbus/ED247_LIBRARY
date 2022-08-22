@@ -40,9 +40,9 @@
 #define BACKTRACE_DISABLED
 #endif
 
-//
+// ================================
 // Logger
-//
+// ================================
 
 // Note: Ctor and Dtor cannot be inlined to prevent symbols
 // finding issue on Windows with dllexport/dllimport.
@@ -148,9 +148,9 @@ std::string ed247::log::level_name(ed247_log_level_t level)
 }
 
 
-//
+// ================================
 // Format hexa payload
-//
+// ================================
 std::ostream& operator<<(std::ostream &stream, const hex_stream& self)
 {
   if (self._payload != nullptr) {
@@ -173,6 +173,9 @@ std::ostream& operator<<(std::ostream &stream, const hex_stream& self)
   return stream;
 }
 
+// ================================
+// Backtraces
+// ================================
 #ifdef BACKTRACE_DISABLED
 void ed247_log_backtrace()
 {
@@ -249,4 +252,40 @@ void ed247_log_backtrace()
   }
 }
 #endif
+
+// ================================
+// Memory allocation check
+// ================================
+#ifdef ENABLE_MEMCHECK
+#include <map>
+namespace ed247
+{
+  namespace memcheck
+  {
+    typedef std::map<const void*, std::string>  map_ptr_t;
+    static map_ptr_t map_ptr;
+
+    void add(const void* ptr, std::string title) {
+      map_ptr.insert(map_ptr_t::value_type(ptr, title));
+    }
+    void remove(const void* ptr) {
+      map_ptr.erase(ptr);
+    }
+    void assert_freed() {
+      if (map_ptr.empty()) {
+        MEMCHECK_SAY("OK", "Everything is free.");
+      } else {
+        for(const auto& pair : map_ptr) {
+          MEMCHECK_SAY("NOT FREE", "- [" << pair.first << "] " << pair.second);
+        }
+        throw ed247::exception("[MEMCHECK] Some objects still allocated.");
+      }
+    }
+    void free() {
+      map_ptr.clear();
+    }
+  }
+}
+#endif
+
 
