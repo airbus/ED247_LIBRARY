@@ -91,7 +91,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream2full");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_IN);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_A429);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Optional for A429");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for A429");
@@ -101,7 +101,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream3");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_INOUT);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_A825);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
@@ -111,7 +111,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream3full");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_INOUT);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_A825);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "A825 designates CAN");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for A825");
@@ -132,7 +132,7 @@ TEST(UtApiStreams, LoadStreams)
     // Perform checks for all other Streams
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream1full");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_IN);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_A664);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Optional for A664");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "Test for A664");
@@ -142,7 +142,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "StreamSerialFull");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_INOUT);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_SERIAL);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "SERIAL line");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for SERIAL");
@@ -173,7 +173,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream4full");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_IN);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_DISCRETE);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Discrete input signals");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for DSI");
@@ -195,7 +195,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream5full");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_IN);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_ANALOG);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "Analog input signals");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "ICD for ANA");
@@ -206,7 +206,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream6");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_IN);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_NAD);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");
@@ -228,7 +228,7 @@ TEST(UtApiStreams, LoadStreams)
 
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_STREQ(ed247_stream_get_name(stream), "Stream7");
-    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_IN);
+    ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
     ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_VNAD);
     ASSERT_STREQ(ed247_stream_get_comment(stream), "");
     ASSERT_STREQ(ed247_stream_get_icd(stream), "");

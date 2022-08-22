@@ -86,7 +86,7 @@ struct TestParams {
 class TestContext : public ::testing::TestWithParam<TestParams>
 {
 protected:
-  TestContext() : _actor(nullptr) {
+  TestContext() : _context(nullptr), _actor(nullptr) {
     synchro::Entity::init();
   }
 
@@ -100,13 +100,17 @@ protected:
     }
     ASSERT_NE(_actor, nullptr);
 
-    SAY_SELF("Load ECIC: " << GetParam().filepath);
-    ASSERT_EQ(ed247_load_file(GetParam().filepath.c_str(), &_context), ED247_STATUS_SUCCESS);
+    if (GetParam().filepath.empty() == false) {
+      SAY_SELF("Load ECIC: " << GetParam().filepath);
+      ASSERT_EQ(ed247_load_file(GetParam().filepath.c_str(), &_context), ED247_STATUS_SUCCESS);
+    }
     TEST_SYNC("Setup");
   }
 
   void TearDown() override {
-    ASSERT_EQ(ed247_unload(_context), ED247_STATUS_SUCCESS);
+    if (_context) {
+      ASSERT_EQ(ed247_unload(_context), ED247_STATUS_SUCCESS);
+    }
   }
 
   void test_signal() {

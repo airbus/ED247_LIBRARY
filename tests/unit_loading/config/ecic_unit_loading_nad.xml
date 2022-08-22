@@ -42,7 +42,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="NAD_Signal_out1" Comment="Comment" ICD="File.xml:NAD_Signal_out1" Unit="" Type="uint8" Dimensions="1" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
-                <NAD_Stream UID="1" Name="NAD_StreamInput" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <NAD_Stream UID="1" Name="NAD_StreamInput" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="NAD_Signal_in0" Comment="Comment" ICD="File.xml:NAD_Signal_in0" Unit="" Type="uint8" Dimensions="1" ByteOffset="0"/>
                         <Signal Name="NAD_Signal_in1" Comment="Comment" ICD="File.xml:NAD_Signal_in1" Unit="" Type="uint8" Dimensions="1" ByteOffset="1"/>

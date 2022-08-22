@@ -182,19 +182,29 @@ namespace ed247 {
   }
 }
 
-#define THROW_PARSER_ERROR(closest_node, msg)                                                                     \
-  do {                                                                                                            \
-    std::string message = strize() << msg;                                                                        \
-    if (ed247::xml::libxml_error.file != nullptr) {                                                               \
-      message += strize() << ". From " << ed247::xml::libxml_error.file << ':' << ed247::xml::libxml_error.line;  \
-    } else if (closest_node != nullptr) {                                                                         \
-      message += std::string(". Near ") + ::xml::xmlNode_get_fileline(closest_node);                              \
-    }                                                                                                             \
-    if (ed247::xml::libxml_error.message != nullptr) {                                                            \
-      message += strize() << " " << ed247::xml::libxml_error.message;                                             \
-    }                                                                                                             \
-    PRINT_ERROR(message);                                                                                         \
-    throw ed247::xml::exception(message);                                                                         \
+#define PARSER_WARNING(closest_node, msg)                                                                        \
+  do {                                                                                                           \
+  std::string message = strize() << msg;                                                                         \
+  if (closest_node != nullptr) {                                                                                 \
+    message += std::string(". Near ") + ::xml::xmlNode_get_fileline(closest_node);                               \
+  }                                                                                                              \
+  PRINT_WARNING(message);                                                                                        \
+} while (0)
+
+#define THROW_PARSER_ERROR(closest_node, msg)                                                                    \
+  do {                                                                                                           \
+    std::string message = strize() << msg;                                                                       \
+    if (ed247::xml::libxml_error.file != nullptr) {                                                              \
+      message += strize() << ". From " << ed247::xml::libxml_error.file << ':' << ed247::xml::libxml_error.line; \
+    } else if (closest_node != nullptr) {                                                                        \
+      message += std::string(". Near ") + ::xml::xmlNode_get_fileline(closest_node);                             \
+    }                                                                                                            \
+    if (ed247::xml::libxml_error.message != nullptr) {                                                           \
+      message += strize() << " " << ed247::xml::libxml_error.message;                                            \
+    }                                                                                                            \
+    xmlResetError(&ed247::xml::libxml_error);                                                                    \
+    PRINT_ERROR(message);                                                                                        \
+    throw ed247::xml::exception(message);                                                                        \
   } while (0)
 
 //
@@ -247,7 +257,7 @@ ed247::xml::UdpSocket::UdpSocket() :
   _dst_ip_port(0),
   _src_ip_port(0),
   _mc_ttl(1),
-  _direction(ED247_DIRECTION_INOUT)
+  _direction(ED247_DIRECTION__INVALID)
 {
 }
 
@@ -272,6 +282,9 @@ void ed247::xml::UdpSocket::load(const xmlNodePtr xml_node)
     }else{
       THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::UdpSocket << "]");
     }
+  }
+  if (_direction == ED247_DIRECTION_INOUT) {
+    THROW_PARSER_ERROR(xml_node, "Bidirectional UDP_Socket is not supported.");
   }
 }
 
@@ -439,7 +452,6 @@ void ed247::xml::A664Stream::load(const xmlNodePtr xml_node)
 ed247::xml::A825Stream::A825Stream() :
   StreamProtocoled(ED247_STREAM_TYPE_A825, 69)
 {
-  _direction = ED247_DIRECTION_INOUT;
 }
 
 void ed247::xml::A825Stream::load(const xmlNodePtr xml_node)
@@ -483,7 +495,6 @@ void ed247::xml::A825Stream::load(const xmlNodePtr xml_node)
 ed247::xml::SERIALStream::SERIALStream() :
   StreamProtocoled(ED247_STREAM_TYPE_SERIAL, 1)
 {
-  _direction = ED247_DIRECTION_INOUT;
 }
 
 void ed247::xml::SERIALStream::load(const xmlNodePtr xml_node)
@@ -1051,6 +1062,8 @@ ed247::xml::Channel::Channel() :
 
 void ed247::xml::Channel::load(const xmlNodePtr xml_node)
 {
+  ed247_direction_t streams_direction(ED247_DIRECTION__INVALID);
+
   for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
     auto attr_name = ::xml::xmlChar_as_string(xml_attr->name);
     if(attr_name.compare(attr::Name) == 0){
@@ -1079,7 +1092,10 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
           THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::FrameFormat <<"]");
         }
       }
-    }else if(!_simple && node_name.compare(node::Streams) == 0){
+    }
+    else if((_simple == false && node_name.compare(node::Streams) == 0) ||
+            (_simple == true  && node_name.compare(node::Stream) == 0))
+    {
       for(auto xml_node_child_iter = xml_node_iter->children ; xml_node_child_iter != nullptr ; xml_node_child_iter = xml_node_child_iter->next){
         if(xml_node_child_iter->type != XML_ELEMENT_NODE)
           continue;
@@ -1128,61 +1144,46 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Streams << "]");
         }
-      }
-    }else if(_simple && node_name.compare(node::Stream) == 0){
-      for(auto xml_node_child_iter = xml_node_iter->children ; xml_node_child_iter != nullptr ; xml_node_child_iter = xml_node_child_iter->next){
-        if(xml_node_child_iter->type != XML_ELEMENT_NODE)
-          continue;
-        node_name = ::xml::xmlChar_as_string(xml_node_child_iter->name);
-        // A429
-        if(node_name.compare(node::A429_Stream) == 0){
-          A429Stream* stream = new A429Stream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // A664
-        }else if(node_name.compare(node::A664_Stream) == 0){
-          A664Stream* stream = new A664Stream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // A825
-        }else if(node_name.compare(node::A825_Stream) == 0){
-          A825Stream* stream = new A825Stream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // SERIAL
-        }else if(node_name.compare(node::SERIAL_Stream) == 0){
-          SERIALStream* stream = new SERIALStream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // DISCRETE
-        }else if(node_name.compare(node::DIS_Stream) == 0){
-          DISStream* stream = new DISStream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // ANALOG
-        }else if(node_name.compare(node::ANA_Stream) == 0){
-          ANAStream* stream = new ANAStream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // NAD
-        }else if(node_name.compare(node::NAD_Stream) == 0){
-          NADStream* stream = new NADStream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // VNAD
-        }else if(node_name.compare(node::VNAD_Stream) == 0){
-          VNADStream* stream = new VNADStream();
-          stream->load(xml_node_child_iter);
-           _stream_list.emplace_back(stream);
-          // Otherwise
-        }else{
-          THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Channel << "]");
-        }
+        streams_direction = (ed247_direction_t)(streams_direction | _stream_list.back()->_direction);
       }
     }else{
-      THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::MultiChannel << "] or [" << node::Channel << "]");
+      THROW_PARSER_ERROR(xml_node_iter, "Unexpected node [" << node_name << "]");
     }
   }
+
+  //
+  // Consolidate direction
+  //
+
+  // Set a direction on UdpSockets without direction & look for overall ComInterface direction
+  ed247_direction_t com_interface_direction(ED247_DIRECTION__INVALID);
+  for(UdpSocket& udp_socket : _com_interface._udp_sockets) {
+    if (udp_socket._direction == ED247_DIRECTION__INVALID) {
+      if (streams_direction == ED247_DIRECTION__INVALID || streams_direction == ED247_DIRECTION_INOUT)
+        THROW_PARSER_ERROR(xml_node, "Cannot decide UdpSocket " << udp_socket._dst_ip_address << ":" <<
+                           udp_socket._dst_ip_port << " direction for channel " << _name);
+      udp_socket._direction = streams_direction;
+    }
+    com_interface_direction = (ed247_direction_t)(com_interface_direction | udp_socket._direction);
+  }
+
+  // Set a direction on Steams without direction & look for overall streams direction
+  // This prevent the creation of bidirectional streams when channel has only one-way UdpSockets
+  for (std::unique_ptr<Stream>& stream : _stream_list) {
+    if (stream->_direction == ED247_DIRECTION__INVALID) {
+      stream->_direction = com_interface_direction;
+    }
+    streams_direction = (ed247_direction_t)(streams_direction | _stream_list.back()->_direction);
+  }
+
+  // Warn if some streams are not able to communicate
+  if (((streams_direction       & ED247_DIRECTION_IN) != 0) &&
+      ((com_interface_direction & ED247_DIRECTION_IN) == 0))
+    PARSER_WARNING(xml_node, "Channel " << _name << " has input streams without input UdpSockets.");
+
+  if (((streams_direction       & ED247_DIRECTION_OUT) != 0) &&
+      ((com_interface_direction & ED247_DIRECTION_OUT) == 0))
+    PARSER_WARNING(xml_node, "Channel " << _name << " has output streams without output UdpSockets.");
 }
 
 //

@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
                 </UDP_Sockets>
             </ComInterface>
 			<Streams>
-				<A429_Stream UID="0" Name="A429StreamOutput" Direction="Out" Comment="" ICD="File.xml:BUS45">
+				<A429_Stream UID="0" Name="A429StreamOutput" Direction="In" Comment="" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
 				</A429_Stream>
@@ -56,7 +56,7 @@ DEALINGS IN THE SOFTWARE.
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
 				</A429_Stream>
-				<A429_Stream UID="1" Name="A429StreamInput2" Direction="In" Comment="" ICD="File.xml:BUS45">
+				<A429_Stream UID="1" Name="A429StreamInput2" Direction="Out" Comment="" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
                 </A429_Stream>

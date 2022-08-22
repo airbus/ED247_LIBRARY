@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -21,317 +22,161 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #ifndef _ED247_COMINTERFACE_H_
 #define _ED247_COMINTERFACE_H_
-
-#include "ed247_internals.h"
 #include "ed247_xml.h"
-
-#include <unordered_map>
-#include <map>
-#include <unordered_set>
+#include "ed247_logs.h"
 #include <functional>
-#include <memory>
 
-namespace ed247
-{
-
-struct SocketInfos : public sockaddr_in
-{
-
-    static const uint16_t DEFAULT_PORT{1901};
-
-    bool valid = false;
-    std::vector<SocketInfos> mtc_groups;
-    uint16_t ttl;
-
-    SocketInfos()
-    {
-        sin_family = PF_INET;
-        sin_addr.s_addr = htonl(INADDR_ANY);
-        sin_port = DEFAULT_PORT;
-        ttl = 1;
-    }
-
-    explicit SocketInfos(std::string ip_address, uint16_t ip_port, uint16_t new_ttl = 1)
-    {
-        sin_family = PF_INET;
-#ifdef _MSC_VER
-        if(ip_address.empty()){
-            sin_addr.s_addr = htonl(INADDR_ANY);
-        }else{
-            inet_pton(AF_INET, ip_address.c_str(), &sin_addr.s_addr);
-        }
-#else
-        sin_addr.s_addr = ip_address.empty() ? htonl(INADDR_ANY) : inet_addr(ip_address.c_str());
+// Networking
+#ifdef __unix__
+# include <sys/socket.h>
+# include <netinet/in.h>
+using ed247_socket_t = int;
+# define INVALID_SOCKET (-1)
+#elif _WIN32
+# include <winsock2.h>
+using ed247_socket_t = SOCKET;
 #endif
-        sin_port = htons(ip_port == 0 ? DEFAULT_PORT : ip_port);
-        ttl = new_ttl;
-        valid = true;
-    }
 
-    SocketInfos(const SocketInfos & s)
+
+//
+// socket_address_t : store a network address (ip/port)
+//
+namespace ed247 {
+  namespace udp {
+    struct socket_address_t: public sockaddr_in
     {
-        sin_family = s.sin_family;
-        sin_addr.s_addr = s.sin_addr.s_addr;
-        sin_port = s.sin_port;
-        ttl = s.ttl;
-        valid = s.valid;
-        mtc_groups = s.mtc_groups;
-    }
-
-    SocketInfos & operator = (const SocketInfos & s)
-    {
-        sin_family = s.sin_family;
-        sin_addr.s_addr = s.sin_addr.s_addr;
-        sin_port = s.sin_port;
-        ttl = s.ttl;
-        valid = s.valid;
-        mtc_groups = s.mtc_groups;
-        return *this;
-    }
-
-    bool is_default() const
-    {
-        return sin_port == htons(DEFAULT_PORT);
-    }
-
-    operator std::string() const
-    {
-        std::string ipaddr;
-#ifdef _MSC_VER
-        char straddr[INET_ADDRSTRLEN];
-        static struct in_addr sin_addr_temp = sin_addr;
-        InetNtop(AF_INET, &sin_addr_temp, straddr, INET_ADDRSTRLEN);
-        ipaddr = std::string(straddr);
-#elif __linux__
-        char straddr[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &sin_addr, straddr, INET_ADDRSTRLEN);
-        ipaddr = std::string(straddr);
-#else
-        ipaddr = std::string(inet_ntoa(sin_addr));
-#endif
-        return strize() << ipaddr << ":" << ntohs(sin_port) << (!valid ? std::string("[NOK]") : std::string());
-    }
-
-    bool operator == (const SocketInfos & other) const
-    {
-        return sin_addr.s_addr == other.sin_addr.s_addr && 
-            sin_port == other.sin_port &&
-            valid == other.valid &&
-            ttl == other.ttl;
-    }
-};
-
+      socket_address_t(std::string ip_address, uint16_t ip_port);
+      void set_ip_address(std::string ip_address);
+      void set_ip_port(uint16_t ip_port);
+      bool is_multicast() const;
+      bool is_unicast() const;
+      bool is_any_addr() const;
+    };
+  }
 }
+std::ostream& operator<<(std::ostream & os, const ed247::udp::socket_address_t& socket_address);
 
-namespace std
-{
 
-template<> struct hash<ed247::SocketInfos>
-{
-  std::size_t operator () (const ed247::SocketInfos & infos) const
-    {
-        std::size_t ret = 0;
-        hash_combine(ret,(uint64_t)infos.sin_addr.s_addr,(uint16_t)infos.sin_port);
-        return ret;
-    }
-};
 
-}
+namespace ed247 {
+  namespace udp {
 
-std::ostream & operator << (std::ostream & os, const ed247::SocketInfos & e);
-
-bool operator == (const struct in_addr & x, const struct in_addr & y);
-
-namespace ed247
-{
-
-class Channel;
-
-class ComInterface : public std::enable_shared_from_this<ComInterface>
-{
+    //
+    // transceiver (aka ECIC UdpSocket)
+    // Hold a system socket and prepare it for transceiving.
+    // base class for emitter and receiver.
+    //
+    class transceiver {
     public:
-        virtual ~ComInterface() {}
+      transceiver(const socket_address_t& socket_address);
+      ~transceiver();
 
-        virtual void unregister_channel(Channel & channel) {
-            _UNUSED(channel);
-        }
+      transceiver(const transceiver&) = delete;
+      transceiver& operator=(const transceiver&) = delete;
 
-        virtual std::string get_name() {
-            return "";
-        }
-        
-        virtual void send_frame(Channel & from, const void * frame, const uint32_t frame_size) = 0;
+      const ed247_socket_t& get_socket() const { return _socket; }
 
     protected:
-        std::vector<std::weak_ptr<Channel>> _channels;
+      socket_address_t _socket_address;           // Where the packets come from (regardless direction)
+      ed247_socket_t   _socket{INVALID_SOCKET};   // Where the packets come from (regardless direction)
+    };
 
+    class emitter : public transceiver
+    {
     public:
-        struct Pool : public std::enable_shared_from_this<Pool>
-        {
-            virtual ~Pool() {};
-            
-            virtual ed247_status_t wait_frame(int32_t timeout_us) {
-                _UNUSED(timeout_us);
-                return ED247_STATUS_FAILURE;
-            };
+      emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl = 1);
+      void send_frame(const void* payload, const uint32_t payload_size);
 
-            virtual ed247_status_t wait_during(int32_t duration_us) {
-                _UNUSED(duration_us);
-                return ED247_STATUS_FAILURE;
-            };
-        };
-        class Builder
-        {
-            public:
-                void build(std::shared_ptr<Pool> pool, const xml::ComInterface & configuration, Channel & channel);
-        };
-};
+    private:
+      socket_address_t _destination_address;
+    };
 
-class UdpSocket : public ComInterface
-{
+    class receiver : public transceiver
+    {
     public:
+      using receive_callback_t = std::function<void(const char* payload, uint32_t size)>;
 
-        static const uint32_t MAX_FRAME_SIZE{65508};
+      receiver(socket_address_t from_address, socket_address_t multicast_group_address, receive_callback_t callback);
+      void receive();
 
-        class Pair : public std::pair<std::shared_ptr<UdpSocket>,std::shared_ptr<UdpSocket>>
-        {
-            public:
-                std::shared_ptr<UdpSocket> & emitter() { return first;  }
-                std::shared_ptr<UdpSocket> & receiver() { return second; }
-        };
+    private:
+      static const uint32_t MAX_FRAME_SIZE{65508};
+      struct frame_t
+      {
+        char     payload[MAX_FRAME_SIZE];
+        uint32_t size{MAX_FRAME_SIZE};
+      };
 
-        struct Frame
-        {
-            char     frame[MAX_FRAME_SIZE];
-            uint32_t size{MAX_FRAME_SIZE};
-        };
+      receive_callback_t  _receive_callback;
+      static frame_t      _receive_frame;    // static: all receive will share the same memory to prevent 65k alloc per receiver
 
-        static std::string get_last_error();
+      ED247_FRIEND_TEST();
+    };
 
-#ifdef _MSC_VER
-        using ip_address_t = struct ::in_addr;
-#else
-        using ip_address_t = struct in_addr;
-#endif
-        using socket_t = ED247_SOCKET;
-        using map_destinations_t = std::unordered_map<Channel*,std::shared_ptr<std::vector<SocketInfos>>>;
-        using sources_t = std::vector<Channel*>;
-        using frame_t = Frame;
-
+    //
+    // receiver_set_t
+    // Store receiver and allows to receive data on all of them.
+    // There is only one of this class per context.
+    //
+    class receiver_set_t
+    {
     public:
-        UdpSocket(const SocketInfos & socket_infos):
-        _socket_infos(socket_infos)
-        {
-          MEMCHECK_NEW(this, "UdpSocket " << _socket_infos);
-        }
-        ~UdpSocket() override
-        {
-          MEMCHECK_DEL(this, "UdpSocket " << _socket_infos);
-          close();
-        };
+      receiver_set_t();
+      ~receiver_set_t();
 
-        bool is_valid(){ return _socket_infos.valid; }
-        virtual std::string get_name() final;
-        const socket_t & get_socket() const { return _socket; }
-        const SocketInfos & get_socket_infos() const { return _socket_infos; }
+      // Add receiver and take onership
+      void emplace(receiver* receiver);
 
-        virtual void send_frame(Channel & from, const void * frame, const uint32_t frame_size) final;
-        void recv();
-        
-        // Associate to a channel as an emitter
-        void register_channel_emitter(Channel & channel, const xml::UdpSocket & configuration);
-        // Associate to a channel as a receiver
-        void register_channel_receiver(Channel & channel, const xml::UdpSocket & configuration);
+      // Receive frames from all registered receivers.
+      // Call receive_callback(s) set by ComInterface::load()
+      ed247_status_t wait_frame(int32_t timeout_us);
+      ed247_status_t wait_during(int32_t duration_us);
 
-        virtual void unregister_channel(Channel & channel) final;
+    private:
+      std::vector<std::unique_ptr<receiver>> _receivers;
 
-        void get_recv_frame(const char * & frame, uint32_t & frame_size)
-        {
-            frame = _recv.frame;
-            frame_size = _recv.size;
-        }
+      struct select_options_s {
+        fd_set fd;
+        int nfds;
+      } _select_options;
 
-    protected:
-        SocketInfos                 _socket_infos; // Contains ip address & port to bind the socket on
-        socket_t                    _socket{INVALID_SOCKET};
-        map_destinations_t          _destinations;
-        std::vector<ip_address_t>   _joined_multicast_groups; // Relevant only for mc inputs
-        sources_t                   _sources;
-        frame_t                     _recv;
+      ED247_FRIEND_TEST();
+    };
 
-        void initialize();
 
-        void close();
-
-        ED247_FRIEND_TEST();
-
+    //
+    // ComInterface
+    // The ComInterface will load all its transceivers (aka ECIC UdpSokets) and :
+    // - Store its emitters to allow to send_frame to all of them,
+    // - Store its receivers in context_receiver_set to allow to receive on all context receivers.
+    //
+    class ComInterface
+    {
     public:
+      // Load configuration and
+      // - store emmiters
+      // - store receivers in context_receiver_set,
+      // - set receive_callback on each of them.
+      void load(const xml::ComInterface& configuration,
+                receiver_set_t& context_receiver_set,
+                receiver::receive_callback_t receive_callback);
 
-        class Pool : public ComInterface::Pool
-        {
-            public:
-                Pool();
-                ~Pool() override;
+      // Send a frame to all ComInterface emitters
+      void send_frame(const void* payload, const uint32_t payload_size);
 
-                UdpSocket::Pair get(const xml::UdpSocket & configuration);
+      ComInterface()  { MEMCHECK_NEW(this, "ComInterface"); }
+      ~ComInterface() { MEMCHECK_DEL(this, "ComInterface"); }
 
-                virtual ed247_status_t wait_frame(int32_t timeout_us) final;
-                virtual ed247_status_t wait_during(int32_t duration_us) final;
+    private:
+      std::vector<std::unique_ptr<emitter>> _emitters;
+    };
 
-            private:
-                std::vector<std::shared_ptr<UdpSocket>> _outputs;
-                std::vector<std::shared_ptr<UdpSocket>> _inputs;
-                struct select_options_s {
-                    fd_set fd;
-                    int nfds;
-                } _select_options;
-        };
 
-        class Builder
-        {
-            void build(std::shared_ptr<UdpSocket::Pool> pool, const xml::UdpSocket & configuration, Channel & channel);
-            friend class ComInterface::Builder;
-        };
-
-        class Factory
-        {
-            protected:
-
-                static Factory & getInstance()
-                {
-                    static Factory factory;
-                    if(factory._host_ip_addresses.empty())
-                        factory.setup();
-                    return factory;
-                }
-
-                Pair create(const xml::UdpSocket & configuration);
-
-                void unregister(const SocketInfos & socket_infos);
-
-                static std::vector<ip_address_t> host_ip_address();
-
-            private:
-                std::unordered_map<SocketInfos,std::shared_ptr<UdpSocket>> _sockets;
-                std::vector<ip_address_t> _host_ip_addresses;
-
-                Factory(){}
-
-                void setup();
-
-                std::shared_ptr<UdpSocket> find_or_create(SocketInfos & socket_infos);
-                bool is_host_ip_address(const ip_address_t & ip_address);
-
-            friend class UdpSocket::Pool;
-
-            ED247_FRIEND_TEST();
-
-        };
-};
-
+    // throw an exception if not all socket are closed (debug purpose)
+    void assert_sockets_closed();
+  }
 }
 
 #endif

@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
                     <MessageSize Enable="Yes"/>
                     <Errors Enable="No"/>
                 </A664_Stream>
-                <A664_Stream UID="1" Name="A664StreamInput" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <A664_Stream UID="1" Name="A664StreamInput" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Errors Enable="No"/>
                 </A664_Stream>
             </Streams>

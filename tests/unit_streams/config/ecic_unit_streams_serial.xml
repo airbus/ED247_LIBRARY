@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- SERIAL -->
-                <SERIAL_Stream UID="0" Name="Stream" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10" SampleMaxSizeBytes="123">
+                <SERIAL_Stream UID="0" Name="Stream" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
                     <Errors Enable="No"/>
                     <!-- <PacketStrategy> -->
                     <!-- <Periodic PeriodNs=""/> -->
@@ -57,17 +57,17 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- SERIAL -->
-                <SERIAL_Stream UID="2" Name="Stream1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
+                <SERIAL_Stream UID="2" Name="Stream1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123" SampleMaxNumber="10">
                     <Errors Enable="No"/>
                 </SERIAL_Stream>
-                <SERIAL_Stream UID="3" Name="StreamInput1" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
+                <SERIAL_Stream UID="3" Name="StreamInput1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
                     <Errors Enable="No"/>
                 </SERIAL_Stream>
                 <SERIAL_Stream UID="4" Name="StreamDatatimestampOut" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10" SampleMaxSizeBytes="123">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
                 </SERIAL_Stream>
-                <SERIAL_Stream UID="5" Name="StreamDatatimestampIn" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10" SampleMaxSizeBytes="123">
+                <SERIAL_Stream UID="5" Name="StreamDatatimestampIn" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10" SampleMaxSizeBytes="123">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="No"/>
                     <Errors Enable="No"/>
                 </SERIAL_Stream>

@@ -159,7 +159,6 @@ TEST_P(StreamContext, SinglePushPop)
         bool full;
         malloc_count_start();
         ASSERT_TRUE(stream_1->push_sample(stream_1_sample->data(), stream_1_sample->size(), NULL, &full));
-        ASSERT_TRUE(full); // Should be full
         ASSERT_EQ(malloc_count_stop(), 0);
         std::string str_sample_recv = std::string(stream_1->send_stack().front()->data(), stream_1->get_configuration()->_sample_max_size_bytes);
         ASSERT_TRUE(memcmp(stream_1_sample->data(),stream_1->send_stack().front()->data(),stream_1_sample->size()) == 0);
@@ -232,7 +231,7 @@ TEST_P(StreamContext, MultiPushPop)
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_1 = pool_streams->find("Stream"); // UID=0
+        auto streams_1 = pool_streams->find("Stream1");
         ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 

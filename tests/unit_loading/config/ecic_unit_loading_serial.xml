@@ -42,7 +42,7 @@ DEALINGS IN THE SOFTWARE.
                     <!-- <Periodic PeriodNs=""/> -->
                     <!-- </PacketStrategy> -->
                 </SERIAL_Stream>
-                <SERIAL_Stream UID="1" Name="SERIALStreamInput" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
+                <SERIAL_Stream UID="1" Name="SERIALStreamInput" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
                     <Errors Enable="No"/>
                 </SERIAL_Stream>
             </Streams>

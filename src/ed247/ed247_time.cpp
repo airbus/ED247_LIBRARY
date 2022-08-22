@@ -56,7 +56,20 @@ namespace ed247 {
     }
 #endif
   }
+
+  void sleep_us(uint32_t duration_us)
+  {
+#ifdef _WIN32
+    Sleep(duration_us / 1000);
+#else
+    struct timespec ts;
+    ts.tv_sec = duration_us / (1000 * 1000);
+    ts.tv_nsec = (duration_us % (1000 * 1000)) * 1000;
+    nanosleep(&ts, NULL);
+#endif
+  }
 }
+
 
 // ed247.h time implementation
 namespace ed247 {

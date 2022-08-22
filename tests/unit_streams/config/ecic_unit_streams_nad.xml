@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- NAD -->
-                <NAD_Stream UID="0" Name="Stream" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <NAD_Stream UID="0" Name="Stream" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="NAD_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:NAD_Signal_out0" Unit="" Type="uint8" Dimensions="1x1"/>
                         <Signal Name="NAD_Signal_out1" ByteOffset="1" Comment="Comment" ICD="File.xml:NAD_Signal_out1" Unit="" Type="uint8" Dimensions="1"/>
@@ -59,13 +59,13 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- NAD -->
-                <NAD_Stream UID="2" Name="Stream1" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
+                <NAD_Stream UID="2" Name="Stream1" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="NAD_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:NAD_Signal_out0" Unit="" Type="uint8" Dimensions="1"/>
                         <Signal Name="NAD_Signal_out1" ByteOffset="1" Comment="Comment" ICD="File.xml:NAD_Signal_out1" Unit="" Type="uint8" Dimensions="1"/>
                     </Signals>
                 </NAD_Stream>
-                <NAD_Stream UID="3" Name="StreamInput1" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <NAD_Stream UID="3" Name="StreamInput1" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="NAD_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:NAD_Signal_in0" Unit="" Type="uint8" Dimensions="1"/>
                         <Signal Name="NAD_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:NAD_Signal_in1" Unit="" Type="uint8" Dimensions="1"/>
@@ -78,7 +78,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="NAD_Signal_in1" ByteOffset="1" Comment="Comment" ICD="File.xml:NAD_Signal_in1" Unit="" Type="uint8" Dimensions="1"/>
                     </Signals>
                 </NAD_Stream>
-                <NAD_Stream UID="5" Name="StreamDatatimestampIn" SampleMaxSizeBytes="2" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <NAD_Stream UID="5" Name="StreamDatatimestampIn" SampleMaxSizeBytes="2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="NAD_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:NAD_Signal_in0" Unit="" Type="uint8" Dimensions="1"/>

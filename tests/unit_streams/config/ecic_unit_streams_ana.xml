@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- ANA -->
-                <ANA_Stream UID="0" Name="Stream" SampleMaxSizeBytes="8" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <ANA_Stream UID="0" Name="Stream" SampleMaxSizeBytes="8" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="ANA_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:ANA_Signal_out0" ElectricalUnit=""/>
                         <Signal Name="ANA_Signal_out1" ByteOffset="4" Comment="Comment" ICD="File.xml:ANA_Signal_out1" ElectricalUnit=""/>
@@ -59,13 +59,13 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <!-- ANA -->
-                <ANA_Stream UID="2" Name="Stream1" SampleMaxSizeBytes="8" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
+                <ANA_Stream UID="2" Name="Stream1" SampleMaxSizeBytes="8" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="ANA_Signal_out0" ByteOffset="0" Comment="Comment" ICD="File.xml:ANA_Signal_out0" ElectricalUnit=""/>
                         <Signal Name="ANA_Signal_out1" ByteOffset="4" Comment="Comment" ICD="File.xml:ANA_Signal_out1" ElectricalUnit=""/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="3" Name="StreamInput1" SampleMaxSizeBytes="8" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <ANA_Stream UID="3" Name="StreamInput1" SampleMaxSizeBytes="8" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="ANA_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:ANA_Signal_in0" ElectricalUnit=""/>
                         <Signal Name="ANA_Signal_in1" ByteOffset="4" Comment="Comment" ICD="File.xml:ANA_Signal_in1" ElectricalUnit=""/>
@@ -78,7 +78,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="ANA_Signal_in1" ByteOffset="4" Comment="Comment" ICD="File.xml:ANA_Signal_in1" ElectricalUnit=""/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="5" Name="StreamDatatimestampIn" SampleMaxSizeBytes="8" Direction="In" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
+                <ANA_Stream UID="5" Name="StreamDatatimestampIn" SampleMaxSizeBytes="8" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="ANA_Signal_in0" ByteOffset="0" Comment="Comment" ICD="File.xml:ANA_Signal_in0" ElectricalUnit=""/>

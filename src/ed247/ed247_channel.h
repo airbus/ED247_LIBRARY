@@ -138,30 +138,6 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         std::string get_name() const { return _configuration ? _configuration->_name : std::string(); }
 
-        void add_emitter(ComInterface & com_interface)
-        {
-            PRINT_DEBUG("Channel [" << get_name() << "] append emitter [" << com_interface.get_name() << "]");
-            _emitters.push_back(com_interface.shared_from_this());
-        }
-
-        bool has_emitter(const std::shared_ptr<ComInterface> & com_interface)
-        {
-            return std::find_if(_emitters.begin(), _emitters.end(),
-                [&com_interface](const std::weak_ptr<ComInterface> & p){ return p.lock() == com_interface ; }) != _emitters.end();
-        }
-
-        void add_receiver(ComInterface & com_interface)
-        {
-            PRINT_DEBUG("Channel [" << get_name() << "] append receiver [" << com_interface.get_name() << "]");
-            _receivers.push_back(com_interface.shared_from_this());
-        }
-
-        bool has_receiver(const std::shared_ptr<ComInterface> & com_interface)
-        {
-            return std::find_if(_receivers.begin(), _receivers.end(),
-                [&com_interface](const std::weak_ptr<ComInterface> & p){ return p.lock() == com_interface ; }) != _receivers.end();
-        }
-
         void add_stream(BaseStream & stream, ed247_direction_t direction)
         {
             PRINT_DEBUG("Channel [" << get_name() << "] append stream [" << stream.get_name() << "]");
@@ -181,9 +157,6 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         void encode(const ed247_uid_t & component_identifier);
         bool decode(const char * frame, uint32_t frame_size);
 
-        std::vector<std::weak_ptr<ComInterface>> & get_emitters() { return _emitters; }
-        std::vector<std::weak_ptr<ComInterface>> & get_receivers() { return _receivers; }
-
         BaseSample & buffer() { return _buffer; }
 
         map_streams_t & streams() { return _streams; }
@@ -198,8 +171,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
     protected:
         const xml::Channel* _configuration;
-        std::vector<std::weak_ptr<ComInterface>> _emitters;
-        std::vector<std::weak_ptr<ComInterface>> _receivers;
+        udp::ComInterface _com_interface;
         map_streams_t _streams;
         std::shared_ptr<stream_list_t> _sstreams;
         FrameHeader _header;
@@ -235,7 +207,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         class Pool {
             public:
-                explicit Pool(std::shared_ptr<ComInterface::Pool> & pool_interfaces,
+                explicit Pool(udp::receiver_set_t& context_receiver_set,
                     std::shared_ptr<BaseStream::Pool> & pool_streams);
                 ~Pool();
 
@@ -254,15 +226,15 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                 uint32_t size() const;
 
             private:
-                std::shared_ptr<channel_list_t>      _channels;
-                std::shared_ptr<ComInterface::Pool>  _pool_interfaces;
-                std::shared_ptr<BaseStream::Pool>    _pool_streams;
+                std::shared_ptr<channel_list_t>    _channels;
+                udp::receiver_set_t&               _context_receiver_set;
+                std::shared_ptr<BaseStream::Pool>  _pool_streams;
         };
 
         class Builder{
             channel_ptr_t create(const xml::Channel* configuration,
-                std::shared_ptr<ComInterface::Pool> & pool_interfaces,
-                std::shared_ptr<BaseStream::Pool> & pool_streams) const;
+                                 udp::receiver_set_t& context_receiver_set,
+                                 std::shared_ptr<BaseStream::Pool> & pool_streams) const;
             friend class Pool;
         };
 };

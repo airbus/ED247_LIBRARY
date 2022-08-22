@@ -7,6 +7,7 @@
 
 namespace ed247 {
   uint64_t get_monotonic_time_us();
+  void sleep_us(uint32_t duration_us);
 }
 
 

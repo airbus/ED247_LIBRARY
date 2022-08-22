@@ -35,9 +35,9 @@ DEALINGS IN THE SOFTWARE.
             </ComInterface>
             <Streams>
                 <A664_Stream UID="0" Name="Stream1" Direction="Out"/>
-                <A664_Stream UID="100" Name="Stream1full" Direction="In" SampleMaxNumber="42" ICD="Test for A664" Comment="Optional for A664"/>
+                <A664_Stream UID="100" Name="Stream1full" Direction="Out" SampleMaxNumber="42" ICD="Test for A664" Comment="Optional for A664"/>
                 <A429_Stream UID="1" Name="Stream2" Direction="Out"/>
-                <A429_Stream UID="101" Name="Stream2full" Direction="In" SampleMaxNumber="3" ICD="ICD for A429" Comment="Optional for A429"/>
+                <A429_Stream UID="101" Name="Stream2full" Direction="Out" SampleMaxNumber="3" ICD="ICD for A429" Comment="Optional for A429"/>
                 <A825_Stream UID="2" Name="Stream3"/>
                 <A825_Stream UID="102" Name="Stream3full" SampleMaxNumber="17" Comment="A825 designates CAN" ICD="ICD for A825"/>
                 <SERIAL_Stream UID="1003" Name="StreamSerial" Direction="Out"/>
@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="Signal4" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
-                <DIS_Stream UID="103" Name="Stream4full" SampleMaxSizeBytes="4" Direction="In" SampleMaxNumber="14" Comment="Discrete input signals" ICD="ICD for DSI">
+                <DIS_Stream UID="103" Name="Stream4full" SampleMaxSizeBytes="4" Direction="Out" SampleMaxNumber="14" Comment="Discrete input signals" ICD="ICD for DSI">
                     <Signals SamplingPeriodUs="15000">
                         <Signal Name="Signal1" ByteOffset="0"/>
                         <Signal Name="Signal2" ByteOffset="1"/>
@@ -66,7 +66,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalAna4" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
-                <ANA_Stream UID="104" Name="Stream5full" SampleMaxSizeBytes="16" Direction="In" SampleMaxNumber="36" Comment="Analog input signals" ICD="ICD for ANA">
+                <ANA_Stream UID="104" Name="Stream5full" SampleMaxSizeBytes="16" Direction="Out" SampleMaxNumber="36" Comment="Analog input signals" ICD="ICD for ANA">
                     <Signals SamplingPeriodUs="25000">
                         <Signal Name="SignalAna1" ByteOffset="0"/>
                         <Signal Name="SignalAna2" ByteOffset="4"/>
@@ -74,7 +74,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalAna4" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
-                <NAD_Stream UID="5" Name="Stream6" SampleMaxSizeBytes="6" Direction="In">
+                <NAD_Stream UID="5" Name="Stream6" SampleMaxSizeBytes="6" Direction="Out">
                     <Signals SamplingPeriodUs="100000">
                         <Signal Name="SignalNAD1" Type="int8" ByteOffset="0"/>
                         <Signal Name="SignalNAD2" Type="int8" ByteOffset="1"/>
@@ -91,7 +91,7 @@ DEALINGS IN THE SOFTWARE.
                         <Signal Name="SignalNAD4" Type="int64" ByteOffset="7"/>
                     </Signals>
                 </NAD_Stream>
-                <VNAD_Stream UID="6" Name="Stream7" Direction="In">
+                <VNAD_Stream UID="6" Name="Stream7" Direction="Out">
                     <Signals SamplingPeriodUs="500000">
                         <Signal Name="SignalVNAD1" Type="int8" MaxLength="1" Position="0"/>
                         <Signal Name="SignalVNAD2" Type="int8" MaxLength="1" Position="1"/>

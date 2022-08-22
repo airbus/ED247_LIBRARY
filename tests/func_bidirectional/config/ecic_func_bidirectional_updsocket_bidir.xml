@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_1" Comment="" StandardRevision="A" Identifier="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+  <Channels>
+	<Channel Name="Channel1" Comment="">
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5000" Direction="InOut"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Stream>
+		<A664_Stream Name="AFDXStream1" SampleMaxNumber="3" SampleMaxSizeBytes="500" Direction="Out" />
+      </Stream>
+    </Channel>
+  </Channels>
+</ED247ComponentInstanceConfiguration>

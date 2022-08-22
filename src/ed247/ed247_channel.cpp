@@ -140,26 +140,12 @@ bool FrameHeader::decode(const char * frame, uint32_t frame_size, uint32_t & fra
 Channel::~Channel()
 {
     MEMCHECK_DEL(this, "Channel " << _configuration->_name);
-    //_emitters.clear();
-    for(auto iter = _emitters.begin() ; iter != _emitters.end() ; iter = _emitters.erase(iter)){
-        auto sp_interface = iter->lock();
-        if(sp_interface)
-            sp_interface->unregister_channel(*this);
-    }
-    //_receivers.clear();
-    for(auto iter = _receivers.begin() ; iter != _receivers.end() ; iter = _receivers.erase(iter)){
-        auto sp_interface = iter->lock();
-        if(sp_interface)
-            sp_interface->unregister_channel(*this);
-    }
 }
 
 void Channel::send()
 {
     if(_buffer.empty()) return;
-    for(auto & we : _emitters){
-        we.lock()->send_frame(*this, _buffer.data(), _buffer.size());
-    }
+    _com_interface.send_frame(_buffer.data(), _buffer.size());
 }
 
 bool Channel::has_samples_to_send()
@@ -291,10 +277,10 @@ uint32_t Channel::missed_frames()
 
 // Channel::Pool
 
-Channel::Pool::Pool(std::shared_ptr<ComInterface::Pool> & pool_interfaces,
+Channel::Pool::Pool(udp::receiver_set_t& context_receiver_set,
                     std::shared_ptr<BaseStream::Pool> & pool_streams):
                     _channels(std::make_shared<channel_list_t>()),
-                    _pool_interfaces(pool_interfaces),
+                    _context_receiver_set(context_receiver_set),
                     _pool_streams(pool_streams)
 {
 }
@@ -302,7 +288,6 @@ Channel::Pool::Pool(std::shared_ptr<ComInterface::Pool> & pool_interfaces,
 Channel::Pool::~Pool()
 {
     _channels->clear();
-    _pool_interfaces.reset();
 }
 
 channel_ptr_t Channel::Pool::get(const xml::Channel* configuration)
@@ -314,7 +299,7 @@ channel_ptr_t Channel::Pool::get(const xml::Channel* configuration)
     auto iter = std::find_if(_channels->begin(),_channels->end(),
         [&name](const channel_ptr_t & c){ return c->get_name() == name; });
     if(iter == _channels->end()){
-        sp_channel = builder.create(configuration, _pool_interfaces, _pool_streams);
+        sp_channel = builder.create(configuration, _context_receiver_set, _pool_streams);
         _channels->push_back(sp_channel);
     }else{
         // sp_channel = *iter;
@@ -383,14 +368,13 @@ void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 
 // Channel::Builder
 channel_ptr_t Channel::Builder::create(const xml::Channel* configuration,
-    std::shared_ptr<ComInterface::Pool> & pool_interfaces,
+    udp::receiver_set_t& context_receiver_set,
     std::shared_ptr<BaseStream::Pool> & pool_streams) const
 {
-    static ComInterface::Builder builder_interface;
     static BaseStream::Builder builder_streams;
 
     auto sp_channel = std::make_shared<Channel>(configuration);
-    builder_interface.build(pool_interfaces, configuration->_com_interface, *sp_channel);
+    sp_channel->_com_interface.load(configuration->_com_interface, context_receiver_set, std::bind(&Channel::decode, sp_channel.get(), std::placeholders::_1, std::placeholders::_2));
 
     for(auto& stream_configuration : configuration->_stream_list){
       builder_streams.build(pool_streams, stream_configuration.get(), *sp_channel);

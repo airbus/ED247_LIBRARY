@@ -42,10 +42,9 @@ namespace ed247
 {
 
 Context::Context():
-    _pool_interfaces(std::make_shared<UdpSocket::Pool>()),
     _pool_signals(std::make_shared<BaseSignal::Pool>()),
     _pool_streams(std::make_shared<BaseStream::Pool>(_pool_signals)),
-    _pool_channels(_pool_interfaces, _pool_streams)
+    _pool_channels(_receiver_set, _pool_streams)
 {
     PRINT_DEBUG("[Context] Ctor");
 }

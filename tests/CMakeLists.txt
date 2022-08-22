@@ -97,6 +97,7 @@ test_create_for_two_actors(func_limit                  functional)
 test_create_for_two_actors(func_metrics                functional)
 test_create_for_two_actors(func_error_handling         functional)
 test_create_for_two_actors(func_complex_multichannel   functional)
+test_create_for_two_actors(func_bidirectional          functional)
 
 # Unitary tests
 test_create_for_one_actor(unit_api_channels            unitary)

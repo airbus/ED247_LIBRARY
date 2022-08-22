@@ -55,8 +55,6 @@ class Context : public ed247_internal_context_t
 
         std::shared_ptr<BaseStream::Pool> getPoolStreams() { return _pool_streams; }
 
-        std::shared_ptr<ComInterface::Pool> getPoolInterfaces() { return _pool_interfaces; }
-
         Channel::Pool * getPoolChannels() { return &_pool_channels; }
 
         void send_pushed_samples()
@@ -66,11 +64,11 @@ class Context : public ed247_internal_context_t
 
         ed247_status_t wait_frame(int32_t timeout_us)
         {
-            return _pool_interfaces->wait_frame(timeout_us);
+            return _receiver_set.wait_frame(timeout_us);
         }
         ed247_status_t wait_during(int32_t duration_us)
         {
-            return _pool_interfaces->wait_during(duration_us);
+            return _receiver_set.wait_during(duration_us);
         }
 
         const libed247_runtime_metrics_t* get_runtime_metrics();
@@ -102,13 +100,13 @@ class Context : public ed247_internal_context_t
 
     private:
 
-        std::unique_ptr<xml::Component>         _configuration;
-        std::shared_ptr<ComInterface::Pool>     _pool_interfaces;
-        std::shared_ptr<BaseSignal::Pool>       _pool_signals;
-        std::shared_ptr<BaseStream::Pool>       _pool_streams;
-        Channel::Pool                           _pool_channels;
-        libed247_runtime_metrics_t              _runtime_metrics;
-        void*                                   _user_data;
+        std::unique_ptr<xml::Component>    _configuration;
+        udp::receiver_set_t                _receiver_set;
+        std::shared_ptr<BaseSignal::Pool>  _pool_signals;
+        std::shared_ptr<BaseStream::Pool>  _pool_streams;
+        Channel::Pool                      _pool_channels;
+        libed247_runtime_metrics_t         _runtime_metrics;
+        void*                              _user_data;
 
         void encode(ed247_uid_t component_identifier)
         {
