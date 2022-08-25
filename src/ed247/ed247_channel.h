@@ -226,6 +226,8 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             std::unique(_sstreams->begin(), _sstreams->end());
         }
 
+        ED247_FRIEND_TEST();
+
     private:
         void *_user_data;
 

@@ -22,6 +22,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
+// Set ED247_FRIEND_TEST to have access to class private members
+#define TEST_CLASS_NAME(test_case_name, test_name) test_case_name##_##test_name##_Test
+class TEST_CLASS_NAME(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1);
+class TEST_CLASS_NAME(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1);
+#define ED247_FRIEND_TEST()                                             \
+  friend TEST_CLASS_NAME(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1); \
+  friend TEST_CLASS_NAME(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
+
 #include "unitary_test.h"
 #include "ed247_channel.h"
 

@@ -266,6 +266,8 @@ class UdpSocket : public ComInterface
 
         void close();
 
+        ED247_FRIEND_TEST();
+
     public:
 
         class Pool : public ComInterface::Pool
@@ -324,6 +326,9 @@ class UdpSocket : public ComInterface
                 bool is_host_ip_address(const ip_address_t & ip_address);
 
             friend class UdpSocket::Pool;
+
+            ED247_FRIEND_TEST();
+
         };
 };
 

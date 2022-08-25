@@ -22,6 +22,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
+// Set ED247_FRIEND_TEST to have access to class private members
+#define TEST_CLASS_NAME(test_case_name, test_name) test_case_name##_##test_name##_Test
+class TEST_CLASS_NAME(LogConfigurationTest, LoggingByEnv);
+class TEST_CLASS_NAME(LogConfigurationTest, LoggingByArgs);
+#define ED247_FRIEND_TEST()                                     \
+  friend TEST_CLASS_NAME(LogConfigurationTest, LoggingByEnv);   \
+  friend TEST_CLASS_NAME(LogConfigurationTest, LoggingByArgs)
+
 #include "functional_test.h"
 
 std::string config_path = "../config";
@@ -40,7 +48,6 @@ static struct _stat unused_stat_buffer;
 #endif
 
 
-namespace ed247 {
 
 /******************************************************************************
 Test the log routines and customization of output.
@@ -48,171 +55,171 @@ Execute several time the same sequence (load + unload of a simple ECIC).
 Each time the configuration tells to print more output.
 Check on the out file that output is growing.
 ******************************************************************************/
-  class LogConfigurationTest : public ::testing::Test{};
+class LogConfigurationTest : public ::testing::Test{};
 
-  TEST(LogConfigurationTest, LoggingByEnv)
-  {
-    constexpr const char* log_filepath = "./ed247_test_log_by_env.log";
-    const uint32_t* match_count = nullptr;
-    ed247_log_level_t level = ED247_LOG_LEVEL_UNSET;
-    std::string level_str;
+TEST(LogConfigurationTest, LoggingByEnv)
+{
+  constexpr const char* log_filepath = "./ed247_test_log_by_env.log";
+  const uint32_t* match_count = nullptr;
+  ed247_log_level_t level = ED247_LOG_LEVEL_UNSET;
+  std::string level_str;
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
-    EXPECT_FALSE(file_exist(log_filepath));
+  ed247::log::delete_logger();
+  unlink(log_filepath);
+  EXPECT_FALSE(file_exist(log_filepath));
 
-    env_set("ED247_LOG_FILEPATH", log_filepath);
+  env_set("ED247_LOG_FILEPATH", log_filepath);
 
-    level_str = strize() << (int)ED247_LOG_LEVEL_ERROR;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  level_str = strize() << (int)ED247_LOG_LEVEL_ERROR;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 
-    level_str = strize() << (int)ED247_LOG_LEVEL_WARNING;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  level_str = strize() << (int)ED247_LOG_LEVEL_WARNING;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 
-    level_str = strize() << (int)ED247_LOG_LEVEL_INFO;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  level_str = strize() << (int)ED247_LOG_LEVEL_INFO;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 
-    level_str = strize() << (int)ED247_LOG_LEVEL_DEBUG;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  level_str = strize() << (int)ED247_LOG_LEVEL_DEBUG;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 
-    level_str = strize() << (int)ED247_LOG_LEVEL_CRAZY;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_INFO);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  level_str = strize() << (int)ED247_LOG_LEVEL_CRAZY;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_INFO);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 
-    level_str = strize() << (int)(ED247_LOG_LEVEL_MAX) + 1;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_INFO);
-    ed247_get_log_level(&level);
-    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MAX);
+  level_str = strize() << (int)(ED247_LOG_LEVEL_MAX) + 1;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_INFO);
+  ed247_get_log_level(&level);
+  EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MAX);
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 
-    level_str = strize() << (int)(ED247_LOG_LEVEL_MIN) - 1;
-    env_set("ED247_LOG_LEVEL", level_str.c_str());
-    ed247_set_log_level(ED247_LOG_LEVEL_INFO);
-    ed247_get_log_level(&level);
-    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MIN);
+  level_str = strize() << (int)(ED247_LOG_LEVEL_MIN) - 1;
+  env_set("ED247_LOG_LEVEL", level_str.c_str());
+  ed247_set_log_level(ED247_LOG_LEVEL_INFO);
+  ed247_get_log_level(&level);
+  EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MIN);
 
-    ed247::log::delete_logger();
-    unlink(log_filepath);
-  }
-
-  TEST(LogConfigurationTest, LoggingByArgs)
-  {
-    constexpr const char* log_filepath = "./ed247_test_log_by_args.log";
-    const uint32_t* match_count = nullptr;
-    ed247_log_level_t level = ED247_LOG_LEVEL_UNSET;
-
-    ed247::log::delete_logger();
-    unlink(log_filepath);
-    EXPECT_FALSE(file_exist(log_filepath));
-
-    env_rm("ED247_LOG_FILEPATH");
-    env_rm("ED247_LOG_LEVEL");
-
-    ed247_set_log(ED247_LOG_LEVEL_ERROR, log_filepath);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-
-    ed247_set_log(ED247_LOG_LEVEL_INFO, log_filepath);
-    EXPECT_TRUE(file_exist(log_filepath));
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-    match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
-    EXPECT_NE(match_count, nullptr);
-    if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
-
-    ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MAX + 10));
-    ed247_get_log_level(&level);
-    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MAX);
-
-    ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MIN - 1));
-    ed247_get_log_level(&level);
-    EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MIN);
-
-    ed247::log::delete_logger();
-    unlink(log_filepath);
-  }
+  ed247::log::delete_logger();
+  unlink(log_filepath);
 }
+
+TEST(LogConfigurationTest, LoggingByArgs)
+{
+  constexpr const char* log_filepath = "./ed247_test_log_by_args.log";
+  const uint32_t* match_count = nullptr;
+  ed247_log_level_t level = ED247_LOG_LEVEL_UNSET;
+
+  ed247::log::delete_logger();
+  unlink(log_filepath);
+  EXPECT_FALSE(file_exist(log_filepath));
+
+  env_rm("ED247_LOG_FILEPATH");
+  env_rm("ED247_LOG_LEVEL");
+
+  ed247_set_log(ED247_LOG_LEVEL_ERROR, log_filepath);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+  ed247_set_log(ED247_LOG_LEVEL_INFO, log_filepath);
+  EXPECT_TRUE(file_exist(log_filepath));
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
+  EXPECT_NE(match_count, nullptr);
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+
+  ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MAX + 10));
+  ed247_get_log_level(&level);
+  EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MAX);
+
+  ed247_set_log_level((ed247_log_level_t)(ED247_LOG_LEVEL_MIN - 1));
+  ed247_get_log_level(&level);
+  EXPECT_EQ((int)level, (int)ED247_LOG_LEVEL_MIN);
+
+  ed247::log::delete_logger();
+  unlink(log_filepath);
+}
+
 
 int main(int argc, char **argv)
 {

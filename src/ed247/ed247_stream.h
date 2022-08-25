@@ -720,7 +720,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                 std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _recv_samples;
                 BaseSample _buffer;
 
-                FRIEND_TEST(SignalContext, SinglePushPop);
+                ED247_FRIEND_TEST();
         };
 
     protected:

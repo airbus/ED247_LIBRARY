@@ -25,9 +25,9 @@
 #ifndef _ED247_INTERNALS_H_
 #define _ED247_INTERNALS_H_
 
-// FRIEND_TEST macro will be defined by gtest only while building unitary tests
-#ifndef FRIEND_TEST
-#define FRIEND_TEST(...)
+// ED247_FRIEND_TEST macro will be defined by tests only when building tests
+#ifndef ED247_FRIEND_TEST
+#define ED247_FRIEND_TEST(...)
 #endif
 
 /************

@@ -50,9 +50,9 @@
 #define ED247_LOG_ENABLED(level) ed247::log::get().enabled(level)
 #define SAY_STREAM(stream, m)    do { (stream) << LOG_STREAM_FILELINE << m << std::endl; } while (0)
 
-// FRIEND_TEST macro will be defined by gtest only while building unitary tests
-#ifndef FRIEND_TEST
-#define FRIEND_TEST(...)
+// ED247_FRIEND_TEST macro will be defined by tests only when building tests
+#ifndef ED247_FRIEND_TEST
+#define ED247_FRIEND_TEST(...)
 #endif
 
 // Logger internals
@@ -95,8 +95,7 @@ namespace ed247 {
     std::ofstream     _fstream;
     std::string       _filepath;
 
-    FRIEND_TEST(LogConfigurationTest, LoggingByEnv);
-    FRIEND_TEST(LogConfigurationTest, LoggingByArgs);
+    ED247_FRIEND_TEST();
   };
 }
 
