@@ -27,6 +27,7 @@ include(cmake/version.cmake)         # Compute ${VERSION} according to git
 include(cmake/flags.cmake)
 
 # User-tunable build options
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(BUILD_SAMPLES "Build samples folder" ON)
 option(BUILD_UTILS "Build utils folder" ON)
 

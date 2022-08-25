@@ -59,7 +59,7 @@ target_compile_definitions(ed247_objects
 )
 
 # ED247 Library definition
-add_library(ed247 SHARED)
+add_library(ed247)
 add_library(Ed247::ed247 ALIAS ed247)
 target_link_libraries(ed247 PUBLIC ed247_objects)
 set_target_properties(ed247 PROPERTIES PUBLIC_HEADER ed247.h)
