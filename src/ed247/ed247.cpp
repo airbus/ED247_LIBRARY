@@ -176,8 +176,13 @@ ed247_status_t ed247_load_file(
   }
   try{
     auto ed247_context = ed247::Context::Builder::create_filepath(ecic_file_path);
-    ed247_context->initialize();
-    *context = ed247_context;
+    try {
+      ed247_context->initialize();
+      *context = ed247_context;
+    } catch(...) {
+      delete ed247_context;
+      throw;
+    }
   }
   LIBED247_CATCH("Load");
   return ED247_STATUS_SUCCESS;
@@ -200,8 +205,13 @@ ed247_status_t ed247_load_content(
   }
   try{
     auto ed247_context = ed247::Context::Builder::create_content(ecic_file_content);
-    ed247_context->initialize();
-    *context = ed247_context;
+    try {
+      ed247_context->initialize();
+      *context = ed247_context;
+    } catch(...) {
+      delete ed247_context;
+      throw;
+    }
   }
   LIBED247_CATCH("Load content");
   return ED247_STATUS_SUCCESS;
