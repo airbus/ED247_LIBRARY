@@ -78,8 +78,8 @@ typedef enum {
 typedef enum {
     ED247_LOG_LEVEL_MIN       =   0,
     ED247_LOG_LEVEL_ERROR     =   ED247_LOG_LEVEL_MIN,
-    ED247_LOG_LEVEL_DEFAULT   =   ED247_LOG_LEVEL_ERROR,
     ED247_LOG_LEVEL_WARNING   =   1,
+    ED247_LOG_LEVEL_DEFAULT   =   ED247_LOG_LEVEL_WARNING,
     ED247_LOG_LEVEL_INFO      =   2,
     ED247_LOG_LEVEL_DEBUG     =   3,
     ED247_LOG_LEVEL_CRAZY     =  99,      // Will log each payload

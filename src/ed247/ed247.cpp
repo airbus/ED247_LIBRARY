@@ -441,7 +441,7 @@ ed247_status_t ed247_get_channel(
     auto && ed247_channel = ed247_context->getPoolChannels()->get(std::string(name));
     *channel = ed247_channel ? ed247_channel.get() : nullptr;
     if(*channel == nullptr) {
-      PRINT_WARNING("Cannot finnd channel '" << name << "'");
+      PRINT_INFO("Cannot finnd channel '" << name << "'");
       return ED247_STATUS_FAILURE;
     }
   }
@@ -531,7 +531,7 @@ ed247_status_t ed247_get_stream(
     auto && ed247_stream = ed247_context->getPoolStreams()->get(std::string(name));
     *stream = ed247_stream ? ed247_stream.get() : nullptr;
     if(*stream == nullptr) {
-      PRINT_WARNING("Cannot find stream '" << name << "'");
+      PRINT_INFO("Cannot find stream '" << name << "'");
       return ED247_STATUS_FAILURE;
     }
   }
@@ -593,7 +593,7 @@ ed247_status_t ed247_get_signal(
     auto && ed247_signal = ed247_context->getPoolSignals()->get(std::string(name));
     *signal = ed247_signal ? ed247_signal.get() : nullptr;
     if(*signal == nullptr) {
-      PRINT_WARNING("Cannot find signal '" << name << "'");
+      PRINT_INFO("Cannot find signal '" << name << "'");
       return ED247_STATUS_FAILURE;
     }
   }
@@ -981,7 +981,7 @@ ed247_status_t ed247_channel_get_stream(
     auto && ed247_stream = ed247_channel->get_stream(std::string(name));
     *stream = ed247_stream ? ed247_stream.get() : nullptr;
     if(*stream == nullptr) {
-      PRINT_WARNING("Cannot find channel '" << name << "'");
+      PRINT_INFO("Cannot find channel '" << name << "'");
       return ED247_STATUS_FAILURE;
     }
   }
@@ -1281,7 +1281,7 @@ ed247_status_t ed247_stream_get_signal(
     auto && ed247_signal = ed247_stream->get_signal(std::string(name));
     *signal = ed247_signal ? ed247_signal.get() : nullptr;
     if(*signal == nullptr) {
-      PRINT_WARNING("Cannot find signal '" << name << "'");
+      PRINT_INFO("Cannot find signal '" << name << "'");
       return ED247_STATUS_FAILURE;
     }
   }

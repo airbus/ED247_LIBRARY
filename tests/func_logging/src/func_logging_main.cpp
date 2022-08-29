@@ -69,6 +69,7 @@ TEST(LogConfigurationTest, LoggingByEnv)
   EXPECT_FALSE(file_exist(log_filepath));
 
   env_set("ED247_LOG_FILEPATH", log_filepath);
+  SAY(log_filepath);
 
   level_str = strize() << (int)ED247_LOG_LEVEL_ERROR;
   env_set("ED247_LOG_LEVEL", level_str.c_str());
@@ -76,7 +77,7 @@ TEST(LogConfigurationTest, LoggingByEnv)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 1); } // trace 'Log level is set to ERROR'
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
   EXPECT_NE(match_count, nullptr);
   if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
@@ -90,7 +91,7 @@ TEST(LogConfigurationTest, LoggingByEnv)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // WARNING is the default log level
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
   EXPECT_NE(match_count, nullptr);
   if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
@@ -104,7 +105,7 @@ TEST(LogConfigurationTest, LoggingByEnv)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 1); } // trace 'Log level is set to INFO'
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
   EXPECT_NE(match_count, nullptr);
   if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
@@ -118,7 +119,7 @@ TEST(LogConfigurationTest, LoggingByEnv)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*DEBUG.*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 1); } // trace 'Log level is set to DEBUG'
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
   EXPECT_NE(match_count, nullptr);
   if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
@@ -132,10 +133,7 @@ TEST(LogConfigurationTest, LoggingByEnv)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*CRAZY.*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_GT(*match_count, 0); }
-  match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*INFO.*");
-  EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 1); } // trace 'Log level is set to CRAZY'
 
   ed247::log::delete_logger();
   unlink(log_filepath);
@@ -176,7 +174,7 @@ TEST(LogConfigurationTest, LoggingByArgs)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); } // ERROR level do not display any traces
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 1); } // trace 'Log level is set to ERROR'
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
   EXPECT_NE(match_count, nullptr);
   if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
@@ -194,7 +192,7 @@ TEST(LogConfigurationTest, LoggingByArgs)
   EXPECT_TRUE(file_exist(log_filepath));
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*ERROR.*");
   EXPECT_NE(match_count, nullptr);
-  if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
+  if (match_count != nullptr) { EXPECT_EQ(*match_count, 1); } // trace 'Log level is set to ERROR'
   match_count = tests_tools::count_matching_lines_in_file(log_filepath, ".*WARNING.*");
   EXPECT_NE(match_count, nullptr);
   if (match_count != nullptr) { EXPECT_EQ(*match_count, 0); }
