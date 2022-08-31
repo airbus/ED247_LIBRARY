@@ -33,6 +33,9 @@ TEST_P(bidirectionalFixture, ecicCheck)
 TEST_P(bidirectionalFixture, loopback_different_channels)
 {
   ed247_context_t context(nullptr);
+  char output_payload[500];
+  const char* input_payload = nullptr;
+  uint32_t payload_size;
 
   ASSERT_EQ(ed247_load_file((config_path + "/ecic_func_bidirectional_loopback_channels_sender.xml").c_str(), &context),
             ED247_STATUS_SUCCESS);
@@ -51,30 +54,39 @@ TEST_P(bidirectionalFixture, loopback_different_channels)
   ASSERT_EQ(ed247_find_streams(context, "StreamMCIn", &stream_list), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(stream_list, &input_stream_mc), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_free(stream_list), ED247_STATUS_SUCCESS);
+  TEST_SYNC("Receiver ready"); // Wait receiver bind.
 
-  char output_payload[500];
+  // Unicast
   memset(output_payload, 0x01, 100);
   ASSERT_EQ(ed247_stream_push_sample(output_stream, output_payload, 100, NULL, NULL), ED247_STATUS_SUCCESS);
-  memset(output_payload, 0x42, 100);
-  ASSERT_EQ(ed247_stream_push_sample(output_stream_mc, output_payload, 100, NULL, NULL), ED247_STATUS_SUCCESS);
 
   ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
-  TEST_SYNC("loopback on different channels");
+  TEST_SYNC("unicast loopback on different channels");
 
   // Receive data we just have sent
-  const char* input_payload = nullptr;
-  uint32_t payload_size;
-  ASSERT_EQ(ed247_wait_during(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_wait_frame(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
 
   ASSERT_EQ(ed247_stream_pop_sample(input_stream, (const void**)&input_payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(payload_size, 100);
   ASSERT_EQ(input_payload[10], 0x01);
 
+  TEST_SYNC("Receiver done");
+
+  // Multicast
+  memset(output_payload, 0x42, 100);
+  ASSERT_EQ(ed247_stream_push_sample(output_stream_mc, output_payload, 100, NULL, NULL), ED247_STATUS_SUCCESS);
+
+  ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
+  TEST_SYNC("multicast loopback on different channels");
+
+  // Receive data we just have sent
+  ASSERT_EQ(ed247_wait_frame(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
+
   ASSERT_EQ(ed247_stream_pop_sample(input_stream_mc, (const void**)&input_payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(payload_size, 100);
   ASSERT_EQ(input_payload[10], 0x42);
 
-  ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);  
+  ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }
 
 //
@@ -83,6 +95,9 @@ TEST_P(bidirectionalFixture, loopback_different_channels)
 TEST_P(bidirectionalFixture, loopback_same_channels)
 {
   ed247_context_t context(nullptr);
+  char output_payload[500];
+  const char* input_payload = nullptr;
+  uint32_t payload_size;
 
   ASSERT_EQ(ed247_load_file((config_path + "/ecic_func_bidirectional_loopback_stream_inout_sender.xml").c_str(), &context),
             ED247_STATUS_SUCCESS);
@@ -95,32 +110,41 @@ TEST_P(bidirectionalFixture, loopback_same_channels)
   ASSERT_EQ(ed247_find_streams(context, "StreamMCInOut", &stream_list), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(stream_list, &bidir_stream_mc), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_free(stream_list), ED247_STATUS_SUCCESS);
+  TEST_SYNC("Receiver ready"); // Wait receiver bind.
 
-  char output_payload[500];
+  // Unicast
   memset(output_payload, 0x01, 4);
   ASSERT_EQ(ed247_stream_push_sample(bidir_stream, output_payload, 4, NULL, NULL), ED247_STATUS_SUCCESS);
-  memset(output_payload, 0x42, 4);
-  ASSERT_EQ(ed247_stream_push_sample(bidir_stream_mc, output_payload, 4, NULL, NULL), ED247_STATUS_SUCCESS);
 
   ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
-  TEST_SYNC("loopback on different channels");
+  TEST_SYNC("Unicast loopback on different channels");
 
   // Receive data we just have sent
-  const char* input_payload = nullptr;
-  uint32_t payload_size;
-  ASSERT_EQ(ed247_wait_during(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_wait_frame(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
 
   ASSERT_EQ(ed247_stream_pop_sample(bidir_stream, (const void**)&input_payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(payload_size, 4);
   ASSERT_EQ(input_payload[2], 0x01);
 
+  TEST_SYNC("Receiver done");
+
+  // Multicast
+  memset(output_payload, 0x42, 4);
+  ASSERT_EQ(ed247_stream_push_sample(bidir_stream_mc, output_payload, 4, NULL, NULL), ED247_STATUS_SUCCESS);
+
+  ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
+  TEST_SYNC("Multicast loopback on different channels");
+
+  // Receive data we just have sent
+  ASSERT_EQ(ed247_wait_frame(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
+
   ASSERT_EQ(ed247_stream_pop_sample(bidir_stream_mc, (const void**)&input_payload, &payload_size, NULL, NULL, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(payload_size, 4);
-  ASSERT_EQ(input_payload[2], 0x42);  
+  ASSERT_EQ(input_payload[2], 0x42);
 
-  ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);   
+  ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);
 }
-  
+
 
 std::vector<TestParams> stream_files;
 INSTANTIATE_TEST_CASE_P(bidirectional, bidirectionalFixture,
