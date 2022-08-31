@@ -58,8 +58,8 @@ DEALINGS IN THE SOFTWARE.
                 </NAD_Stream>
                 <VNAD_Stream UID="6" Name="Stream4" Direction="Out">
                     <Signals SamplingPeriodUs="500000">
-                        <Signal Name="SignalVNADmin" Type="float32" MaxLength="11" Position="2"/>
-                        <Signal Name="SignalVNADmax" Type="float64" MaxLength="7" Position="1" Unit="Mpc" ICD="little" Comment="test"/>
+                        <Signal Name="SignalVNADmin" Type="float32" MaxNumber="11" Position="2"/>
+                        <Signal Name="SignalVNADmax" Type="float64" MaxNumber="7" Position="1" Unit="Mpc" ICD="little" Comment="test"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

@@ -38,14 +38,14 @@ DEALINGS IN THE SOFTWARE.
                 <!-- VNAD -->
                 <VNAD_Stream UID="0" Name="VNAD_StreamOutput" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="VNAD_Signal_out0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_out0" Type="uint8" MaxLength="10" Unit=""/>
-                        <Signal Name="VNAD_Signal_out1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_out1" Type="uint8" MaxLength="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_out0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_out0" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_out1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_out1" Type="uint8" MaxNumber="10" Unit=""/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="1" Name="VNAD_StreamInput" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="VNAD_Signal_in0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxLength="10" Unit=""/>
-                        <Signal Name="VNAD_Signal_in1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxLength="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

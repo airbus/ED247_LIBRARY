@@ -87,7 +87,8 @@ namespace ed247 {
       static const std::string StandardRevision { "StandardRevision" };
       static const std::string SamplingPeriodUs { "SamplingPeriodUs" };
       static const std::string Type { "Type" };
-      static const std::string MaxLength { "MaxLength" };
+      static const std::string MaxNumber { "MaxNumber" };
+      static const std::string MaxLength { "MaxLength" };  // Backward compatibility
       static const std::string Unit { "Unit" };
       static const std::string SampleDataTimestampOffset { "SampleDataTimestampOffset" };
       static const std::string ElectricalUnit { "ElectricalUnit" };
@@ -539,7 +540,7 @@ ed247::xml::Signal::Signal(ed247_signal_type_t type) :
   _byte_offset(0),
   _nad_type(ED247_NAD_TYPE__INVALID),
   _vnad_position(0),
-  _vnad_max_length(0)
+  _vnad_max_number(0)
 {
   _nad_dimensions.push_back(1);
 }
@@ -561,7 +562,7 @@ uint32_t ed247::xml::Signal::get_sample_max_size_bytes() const
     return size;
   }
   case ED247_SIGNAL_TYPE_VNAD:
-    return get_nad_type_size() * _vnad_max_length;
+    return get_nad_type_size() * _vnad_max_number;
   default:
     return 0;
   }
@@ -709,8 +710,10 @@ void ed247::xml::VNADSignal::load(const xmlNodePtr xml_node)
       ::xml::xmlAttr_get_value(xml_attr, _nad_type);
     }else if(attr_name.compare(attr::Unit) == 0){
       ::xml::xmlAttr_get_value(xml_attr, _nad_unit);
-    }else if(attr_name.compare(attr::MaxLength) == 0){
-      ::xml::xmlAttr_get_value(xml_attr, _vnad_max_length);
+    }else if(attr_name.compare(attr::MaxNumber) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _vnad_max_number);
+    }else if(attr_name.compare(attr::MaxLength) == 0){            // Backward compatibility
+      ::xml::xmlAttr_get_value(xml_attr, _vnad_max_number);
     }else if(attr_name.compare(attr::Position) == 0){
       ::xml::xmlAttr_get_value(xml_attr, _vnad_position);
     }else{
@@ -1003,7 +1006,7 @@ void ed247::xml::VNADStream::load(const xmlNodePtr xml_node)
         if(node_name.compare(node::Signal) == 0){
           VNADSignal* signal = new VNADSignal();
           signal->load(xml_node_child_iter);
-          _sample_max_size_bytes += (signal->get_sample_max_size_bytes() + sizeof(uint16_t)) * signal->_vnad_max_length;
+          _sample_max_size_bytes += (signal->get_sample_max_size_bytes() + sizeof(uint16_t)) * signal->_vnad_max_number;
           _signal_list.emplace_back(signal);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");

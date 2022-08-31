@@ -93,16 +93,16 @@ DEALINGS IN THE SOFTWARE.
                 </NAD_Stream>
                 <VNAD_Stream UID="6" Name="Stream7" Direction="Out">
                     <Signals SamplingPeriodUs="500000">
-                        <Signal Name="SignalVNAD1" Type="int8" MaxLength="1" Position="0"/>
-                        <Signal Name="SignalVNAD2" Type="int8" MaxLength="1" Position="1"/>
-                        <Signal Name="SignalVNAD3" Type="int8" MaxLength="1" Position="2"/>
-                        <Signal Name="SignalVNAD4" Type="int8" MaxLength="1" Position="3"/>
+                        <Signal Name="SignalVNAD1" Type="int8" MaxNumber="1" Position="0"/>
+                        <Signal Name="SignalVNAD2" Type="int8" MaxNumber="1" Position="1"/>
+                        <Signal Name="SignalVNAD3" Type="int8" MaxNumber="1" Position="2"/>
+                        <Signal Name="SignalVNAD4" Type="int8" MaxNumber="1" Position="3"/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="106" Name="Stream7full" Direction="Out" SampleMaxNumber="12" Comment="Variable Non Avionic Data input signals" ICD="ICD for VNAD">
                     <Signals SamplingPeriodUs="1000000">
-                        <Signal Name="SignalVNAD1" Type="float64" MaxLength="1" Position="0"/>
-                        <Signal Name="SignalVNAD4" Type="int8" MaxLength="1" Position="1"/>
+                        <Signal Name="SignalVNAD1" Type="float64" MaxNumber="1" Position="0"/>
+                        <Signal Name="SignalVNAD4" Type="int8" MaxNumber="1" Position="1"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

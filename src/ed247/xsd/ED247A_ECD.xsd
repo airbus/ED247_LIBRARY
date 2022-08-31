@@ -1157,7 +1157,12 @@ DEALINGS IN THE SOFTWARE.
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
                 <xs:attribute name="Type" type="nad_type" use="required"/>
-                <xs:attribute name="MaxLength" type="xs:positiveInteger" use="required"/>
+                <!-- The MaxLenght attribute was an error,
+                     the correct one is the *required* attribute MaxNumber.
+                     This XSD support any of them for backward compatibility.
+                -->
+                <xs:attribute name="MaxNumber" type="xs:positiveInteger" use="optional"/>
+                <xs:attribute name="MaxLength" type="xs:positiveInteger" use="optional"/>
                 <xs:attribute name="Unit" type="xs:normalizedString" default=""/>
             </xs:extension>
         </xs:complexContent>

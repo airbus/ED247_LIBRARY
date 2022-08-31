@@ -231,13 +231,13 @@ Name: %s\n\
 ICD: %s\n\
 Unit: %s\n\
 Type: %s\n\
-MaxLength: %u\n\
+MaxNumber: %u\n\
 Comment: %s\n",
             ed247_signal_get_name(signal),
             ed247_signal_get_icd(signal),
             ed247_signal_nad_get_unit(signal),
             ed247_nad_type_string(ed247_signal_nad_get_type(signal)),
-            ed247_signal_vnad_get_max_length(signal),
+            ed247_signal_vnad_get_max_number(signal),
             ed247_signal_get_comment(signal));
     }else{
         return EXIT_FAILURE;

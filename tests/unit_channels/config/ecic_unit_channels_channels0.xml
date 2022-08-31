@@ -78,14 +78,14 @@ DEALINGS IN THE SOFTWARE.
                 </NAD_Stream>
                 <VNAD_Stream UID="2" Name="Stream2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" Position="0" Type="uint8" MaxLength="5"/>
-                        <Signal Name="Signal21" Position="1" Type="uint8" MaxLength="1"/>
+                        <Signal Name="Signal20" Position="0" Type="uint8" MaxNumber="5"/>
+                        <Signal Name="Signal21" Position="1" Type="uint8" MaxNumber="1"/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="3" Name="Stream3" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" Position="0" Type="uint8" MaxLength="1"/>
-                        <Signal Name="Signal31" Position="1" Type="uint8" MaxLength="2"/>
+                        <Signal Name="Signal30" Position="0" Type="uint8" MaxNumber="1"/>
+                        <Signal Name="Signal31" Position="1" Type="uint8" MaxNumber="2"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>
@@ -141,14 +141,14 @@ DEALINGS IN THE SOFTWARE.
                 </NAD_Stream>
                 <VNAD_Stream UID="2" Name="InStream2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" Position="0" Type="uint8" MaxLength="5"/>
-                        <Signal Name="Signal21" Position="1" Type="uint8" MaxLength="1"/>
+                        <Signal Name="Signal20" Position="0" Type="uint8" MaxNumber="5"/>
+                        <Signal Name="Signal21" Position="1" Type="uint8" MaxNumber="1"/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="3" Name="InStream3" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" Position="0" Type="uint8" MaxLength="1"/>
-                        <Signal Name="Signal31" Position="1" Type="uint8" MaxLength="2"/>
+                        <Signal Name="Signal30" Position="0" Type="uint8" MaxNumber="1"/>
+                        <Signal Name="Signal31" Position="1" Type="uint8" MaxNumber="2"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

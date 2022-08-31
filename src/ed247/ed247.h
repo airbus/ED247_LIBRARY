@@ -1265,7 +1265,7 @@ extern LIBED247_EXPORT const char* ed247_signal_nad_get_unit(ed247_signal_t nad_
 extern LIBED247_EXPORT uint32_t ed247_signal_nad_get_dimensions_count(ed247_signal_t nad_signal);
 extern LIBED247_EXPORT uint32_t ed247_signal_nad_get_dimension(ed247_signal_t nad_signal, uint32_t dimention_id);
 extern LIBED247_EXPORT uint32_t ed247_signal_vnad_get_position(ed247_signal_t vnad_signal);
-extern LIBED247_EXPORT uint32_t ed247_signal_vnad_get_max_length(ed247_signal_t vnad_signal);
+extern LIBED247_EXPORT uint32_t ed247_signal_vnad_get_max_number(ed247_signal_t vnad_signal);
 /** @} */
 
 /**

@@ -163,7 +163,7 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_STREQ(ed247_signal_get_icd(signal), "little");
     ASSERT_EQ(ed247_signal_get_type(signal), ED247_SIGNAL_TYPE_VNAD);
     ASSERT_EQ(ed247_signal_nad_get_type(signal), ED247_NAD_TYPE_FLOAT64);
-    ASSERT_EQ(ed247_signal_vnad_get_max_length(signal), (uint32_t)7);
+    ASSERT_EQ(ed247_signal_vnad_get_max_number(signal), (uint32_t)7);
     ASSERT_EQ(ed247_signal_vnad_get_position(signal), (uint32_t)1);
     ASSERT_STREQ(ed247_signal_nad_get_unit(signal), "Mpc");
     
@@ -173,7 +173,7 @@ TEST(UtApiSignals, CheckSignalLoading)
     ASSERT_STREQ(ed247_signal_get_icd(signal), "");
     ASSERT_EQ(ed247_signal_get_type(signal), ED247_SIGNAL_TYPE_VNAD);
     ASSERT_EQ(ed247_signal_nad_get_type(signal), ED247_NAD_TYPE_FLOAT32);
-    ASSERT_EQ(ed247_signal_vnad_get_max_length(signal), (uint32_t)11);
+    ASSERT_EQ(ed247_signal_vnad_get_max_number(signal), (uint32_t)11);
     ASSERT_EQ(ed247_signal_vnad_get_position(signal), (uint32_t)2);
     ASSERT_STREQ(ed247_signal_nad_get_unit(signal), "");
     

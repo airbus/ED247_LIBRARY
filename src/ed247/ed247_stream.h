@@ -586,7 +586,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     return false;
                   }
                   if(signal->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
-                    uint32_t sample_max_size = signal->get_configuration()->_vnad_max_length * (signal->get_sample_max_size_bytes() + sizeof(uint16_t));
+                    uint32_t sample_max_size = signal->get_configuration()->_vnad_max_number * (signal->get_sample_max_size_bytes() + sizeof(uint16_t));
                     if(size > sample_max_size) {
                       PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] "
                                   "as Signal SampleMaxSizeBytes is [" << sample_max_size << "] and data to write is of size [" << size << "]");

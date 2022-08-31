@@ -1724,10 +1724,10 @@ uint32_t ed247_signal_vnad_get_position(ed247_signal_t signal)
   return ed247_signal->get_configuration()->_vnad_position;
 }
 
-uint32_t ed247_signal_vnad_get_max_length(ed247_signal_t signal)
+uint32_t ed247_signal_vnad_get_max_number(ed247_signal_t signal)
 {
   auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_vnad_max_length;
+  return ed247_signal->get_configuration()->_vnad_max_number;
 }
 
 

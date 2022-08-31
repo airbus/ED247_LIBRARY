@@ -37,14 +37,14 @@ DEALINGS IN THE SOFTWARE.
 			<Streams>
 				<VNAD_Stream UID="0" Name="Stream0" Direction="In" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal00" Position="0" Type="uint8" MaxLength="10"/>
-                        <Signal Name="Signal01" Position="1" Type="uint8" MaxLength="10"/>
+                        <Signal Name="Signal00" Position="0" Type="uint8" MaxNumber="10"/>
+                        <Signal Name="Signal01" Position="1" Type="uint8" MaxNumber="10"/>
                     </Signals>
 				</VNAD_Stream>
 				<VNAD_Stream UID="1" Name="Stream1" Direction="In" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
-                        <!-- <Signal Name="Signal10" Position="0" Type="uint8" MaxLength="10"/> -->
-                        <Signal Name="Signal11" Position="1" Type="uint8" MaxLength="10"/>
+                        <!-- <Signal Name="Signal10" Position="0" Type="uint8" MaxNumber="10"/> -->
+                        <Signal Name="Signal11" Position="1" Type="uint8" MaxNumber="10"/>
                     </Signals>
 				</VNAD_Stream>
 			</Streams>

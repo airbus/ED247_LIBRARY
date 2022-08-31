@@ -65,10 +65,10 @@ DEALINGS IN THE SOFTWARE.
                 </NAD_Stream>
                 <VNAD_Stream UID="6" Name="Stream7" Direction="Out">
                     <Signals SamplingPeriodUs="500000">
-                        <Signal Name="SignalVNAD1" Type="int8" MaxLength="1" Position="0"/>
-                        <Signal Name="SignalVNAD2" Type="int8" MaxLength="1" Position="1"/>
-                        <Signal Name="SignalVNAD3" Type="int8" MaxLength="1" Position="2"/>
-                        <Signal Name="SignalVNAD4" Type="int8" MaxLength="1" Position="3"/>
+                        <Signal Name="SignalVNAD1" Type="int8" MaxNumber="1" Position="0"/>
+                        <Signal Name="SignalVNAD2" Type="int8" MaxNumber="1" Position="1"/>
+                        <Signal Name="SignalVNAD3" Type="int8" MaxNumber="1" Position="2"/>
+                        <Signal Name="SignalVNAD4" Type="int8" MaxNumber="1" Position="3"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>
@@ -112,10 +112,10 @@ DEALINGS IN THE SOFTWARE.
                 </NAD_Stream>
                 <VNAD_Stream UID="6" Name="Stream17" Direction="Out">
                     <Signals SamplingPeriodUs="500000">
-                        <Signal Name="SignalVNAD1" Type="int8" MaxLength="1" Position="0"/>
-                        <Signal Name="SignalVNAD2" Type="int8" MaxLength="1" Position="1"/>
-                        <Signal Name="SignalVNAD3" Type="int8" MaxLength="1" Position="2"/>
-                        <Signal Name="SignalVNAD4" Type="int8" MaxLength="1" Position="3"/>
+                        <Signal Name="SignalVNAD1" Type="int8" MaxNumber="1" Position="0"/>
+                        <Signal Name="SignalVNAD2" Type="int8" MaxNumber="1" Position="1"/>
+                        <Signal Name="SignalVNAD3" Type="int8" MaxNumber="1" Position="2"/>
+                        <Signal Name="SignalVNAD4" Type="int8" MaxNumber="1" Position="3"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

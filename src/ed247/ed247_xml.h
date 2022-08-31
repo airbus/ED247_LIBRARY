@@ -107,7 +107,7 @@ namespace ed247 {
       std::string           _nad_unit;                   // NAD and VNAD
       std::vector<uint32_t> _nad_dimensions;
       uint32_t              _vnad_position;
-      uint32_t              _vnad_max_length;
+      uint32_t              _vnad_max_number;
       uint32_t              _position;                   // position in the stream vector
 
       uint32_t get_sample_max_size_bytes() const;
