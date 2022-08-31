@@ -903,9 +903,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_channel_list_size(
  * @ingroup channel_list
  * @param[in,out] channels The channel list
  * @param[out] channel A pointer to the current item in the list.
- * A /a null value is set when the end of the list is reached.
+ * A /a null value is set when the end of the list is reached. *Return value is SUCCESS*.
  * The next call will return the pointer to the first item of the list.
- * @retval ED247_STATUS_SUCCESS Operation completed successfully (although end of list may be reached)
+ * @retval ED247_STATUS_SUCCESS Operation completed successfully *even if end of list may be reached*
  * @retval ED247_STATUS_FAILURE Invalid parameter provided or internal error
  */
 extern LIBED247_EXPORT ed247_status_t ed247_channel_list_next(
@@ -1209,9 +1209,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_list_size(
  * @ingroup stream_list
  * @param[in,out] streams The stream list
  * @param[out] stream A pointer to the current item in the list.
- * A /a null value is set when the end of the list is reached.
+ * A /a null value is set when the end of the list is reached. *Return value is SUCCESS*.
  * The next call will return the pointer to the first item of the list.
- * @retval ED247_STATUS_SUCCESS Operation completed successfully (although end of list may be reached)
+ * @retval ED247_STATUS_SUCCESS Operation completed successfully *even if end of list may be reached*
  * @retval ED247_STATUS_FAILURE Invalid parameter provided or internal error
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_list_next(
@@ -1358,9 +1358,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_list_size(
  * @ingroup signal_list
  * @param[in,out] signals The signal list
  * @param[out] signal A pointer to the current item in the list.
- * A /a null value is set when the end of the list is reached.
+ * A /a null value is set when the end of the list is reached. *Return value is SUCCESS*.
  * The next call will return the pointer to the first item of the list.
- * @retval ED247_STATUS_SUCCESS Operation completed successfully (although end of list may be reached)
+ * @retval ED247_STATUS_SUCCESS Operation completed successfully *even if end of list may be reached*
  * @retval ED247_STATUS_FAILURE Invalid parameter provided or internal error
  */
 extern LIBED247_EXPORT ed247_status_t ed247_signal_list_next(
