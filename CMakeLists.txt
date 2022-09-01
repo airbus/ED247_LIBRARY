@@ -22,7 +22,7 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
 cmake_minimum_required(VERSION 3.22)
-project(ED247_LIBRARY VERSION 1.1.3) # Define target version ${CMAKE_PROJECT_VERSION})
+project(ED247_LIBRARY VERSION 2.0.0) # Define target version ${CMAKE_PROJECT_VERSION})
 include(cmake/version.cmake)         # Compute ${VERSION} according to git
 include(cmake/flags.cmake)
 
