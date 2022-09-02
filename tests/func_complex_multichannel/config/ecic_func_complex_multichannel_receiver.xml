@@ -16,7 +16,7 @@
           </Signals>
 		</DIS_Stream>
 
-		<A664_Stream UID="2" Name="AFDXStream" SampleMaxNumber="3" SampleMaxSizeBytes="500" Direction="In">
+		<A664_Stream UID="2" Name="AFDXStream" SampleMaxSizeBytes="500" Direction="In">
           <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
           <MessageSize Enable="No" />
           <Errors Enable="No"/>

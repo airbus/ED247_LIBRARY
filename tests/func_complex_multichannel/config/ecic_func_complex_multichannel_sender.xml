@@ -9,7 +9,7 @@
         </UDP_Sockets>
       </ComInterface>
 	  <Streams>
-		<A664_Stream UID="1" Name="AFDXNotReceived" SampleMaxNumber="3" SampleMaxSizeBytes="500" Direction="Out">
+		<A664_Stream UID="1" Name="AFDXNotReceived" SampleMaxSizeBytes="500" Direction="Out">
           <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
           <MessageSize Enable="No" />
           <Errors Enable="No"/>
@@ -22,7 +22,7 @@
           </Signals>
 		</DIS_Stream>
 
-		<A664_Stream UID="2" Name="AFDXStream" SampleMaxNumber="3" SampleMaxSizeBytes="500" Direction="Out">
+		<A664_Stream UID="2" Name="AFDXStream" SampleMaxSizeBytes="500" Direction="Out">
           <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
           <MessageSize Enable="No" />
           <Errors Enable="No"/>
