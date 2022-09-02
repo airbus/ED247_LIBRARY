@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
                 <A429_Stream UID="0" Name="A429Stream0" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                 </A429_Stream>
-                <A429_Stream UID="1" Name="A429Stream1" Direction="In" Comment="Comment" ICD="File.xml:BUS45">
+                <A429_Stream UID="1" Name="A429Stream1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <DataTimestamp Enable="No" SampleDataTimestampOffset="No"/>
                 </A429_Stream>
                 <!-- DIS -->
