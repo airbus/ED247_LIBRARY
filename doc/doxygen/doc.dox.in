@@ -1,0 +1,48 @@
+/**
+\mainpage Introduction
+@DOX_README@
+*/
+
+
+/**
+\page page_license License
+@DOX_LICENSE@
+*/
+
+
+/**
+\page schemas Configuration files
+\section ecd ECD XSD file
+\code{.xml}
+@DOX_XSD_ECD@
+\endcode
+\section ecic ECIC XSD file
+\code{.xml}
+@DOX_XSD_ECIC@
+\endcode
+*/
+
+
+
+/**
+\page page_utils Tools
+
+\section loadonly loadonly
+Load ECIC to check its validity.
+\code{.sh}
+loadonly <ecic_filepath>
+\endcode
+
+\section chatbot chatbot
+Load an ECIC file and sends as many dummy messages as possible regarding the sample max number of associated stream.
+\code{.sh}
+chatbot <ecic_filepath> <timestep_ms> <loop_count>
+\endcode
+
+\section dumper dumper
+Dump received messages into a CSV file (or stdout). The first line of the file contains the header of recorded data.
+\code{.sh}
+dumper <ecic_filepath> <dump_filepath> <timeout_ms>
+dumper <ecic_filepath> <timeout_ms>
+\endcode
+*/

@@ -27,12 +27,10 @@ include(cmake/version.cmake)         # Compute ${VERSION} according to git
 include(cmake/flags.cmake)
 
 # Options multi-platform delivery.
-if (PLATFORM_INSTALL_SUBDIR)
-  if (NOT ${PLATFORM_INSTALL_SUBDIR} MATCHES "/$")
-    set(PLATFORM_INSTALL_SUBDIR "${PLATFORM_INSTALL_SUBDIR}/")
-  endif()
+set(PLATFORM_ID "${PLATFORM_ID}" CACHE STRING "For multi-platform delivery: Alplanumeric string that identify the plateform (ex: Linux64)" FORCE)
+if (NOT PLATFORM_ID STREQUAL "")
+  set(PLATFORM_INSTALL_SUBDIR "${PLATFORM_ID}/")
 endif()
-set(PLATFORM_INSTALL_SUBDIR "${PLATFORM_INSTALL_SUBDIR}" CACHE STRING "For multi-platform delivery. Sub folder where to install platform dependant binaries." FORCE)
 
 # Options: test multicast ip.
 if (NOT TEST_MULTICAST_INTERFACE_IP)
@@ -91,6 +89,8 @@ add_subdirectory(samples)
 
 add_subdirectory(utils)
 
+add_subdirectory(doc)
+
 # Enable tests only if GTest found
 # To unsure find_package manage properly
 # version information, we force the CONFIG mode.
@@ -105,11 +105,7 @@ else()
     message(WARNING "GTest not found. The tests will not be available!")
 endif()
 
-# Doc
-add_subdirectory(doc)
-
 # Install 
-install(FILES LICENSE.md DESTINATION doc)
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 
@@ -117,7 +113,7 @@ include(InstallRequiredSystemLibraries)
 MESSAGE("# Configuration:")
 MESSAGE("# Product version:        ${VERSION}")
 MESSAGE("# System Name:            ${CMAKE_SYSTEM_NAME}")
-MESSAGE("# Platform delivery dir:  ${PLATFORM_INSTALL_SUBDIR}")
+MESSAGE("# Platform ID:            ${PLATFORM_ID}")
 MESSAGE("# LibXML2:                ${LIBXML2_LIBRARIES}")
 MESSAGE("# GTEST:                  ${GTest_DIR}")
 MESSAGE("# Doxygen:                ${DOXYGEN_EXECUTABLE}")

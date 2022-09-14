@@ -1,17 +1,30 @@
-add_subdirectory(libtests)
+add_subdirectory(libtests EXCLUDE_FROM_ALL)
 add_custom_target(tests_functional)
 add_custom_target(tests_unitary)
 add_custom_target(tests DEPENDS tests_functional tests_unitary)
 
 #
-# Generate ECIC files for ${_test_name}
+# Add a target to generate ECIC files for a test
 #
-function (test_generate_config _test_name)
-  file(GLOB config_file_list LIST_DIRECTORIES false ${_test_name}/config/*)
-  foreach(config_file ${config_file_list})
-    get_filename_component(config_filename ${config_file} NAME)
-    configure_file(${config_file} ${CMAKE_CURRENT_BINARY_DIR}/config/${config_filename} @ONLY)
+function (test_add_config _test_name)
+  set(config_target_list "")
+  file(GLOB config_template_list LIST_DIRECTORIES false ${_test_name}/config/*)
+  foreach(config_template ${config_template_list})
+    get_filename_component(config_filename ${config_template} NAME)
+    set(config_target ${CMAKE_CURRENT_BINARY_DIR}/config/${config_filename})
+    add_custom_command(
+      OUTPUT     ${config_target}
+      COMMAND    ${CMAKE_COMMAND}
+        -D INFILE=${config_template}
+        -D OUTFILE=${config_target}
+        -D TEST_MULTICAST_INTERFACE_IP=${TEST_MULTICAST_INTERFACE_IP}
+        -P ${CMAKE_CURRENT_LIST_DIR}/cmake/configure_file.cmake
+      DEPENDS    ${config_template}
+      )
+    list(APPEND config_target_list ${config_target})
   endforeach()
+  add_custom_target(${_test_name}_config DEPENDS ${config_target_list})
+  add_dependencies(${_test_name} ${_test_name}_config)
 endfunction()
 
 #
@@ -22,7 +35,7 @@ endfunction()
 #
 function (test_add_executable _test_name _kind _exe_suffix)
   set(exe_name ${_test_name}_${_exe_suffix})
-  add_executable(${exe_name} ${_test_name}/src/${exe_name}.cpp)
+  add_executable(${exe_name} EXCLUDE_FROM_ALL ${_test_name}/src/${exe_name}.cpp)
   set_target_properties(${exe_name} PROPERTIES SKIP_BUILD_RPATH TRUE)
   target_compile_definitions(${exe_name} PRIVATE "TEST_PRODUCT_VERSION=\"${VERSION}\"")
   target_link_libraries(${exe_name} libtests_${_kind})
@@ -59,8 +72,8 @@ endfunction()
 function(test_create_for_one_actor _test_name _kind)
   add_custom_target(${_test_name})
   add_dependencies(tests_${_kind} ${_test_name})
-  test_generate_config(${_test_name})
 
+  test_add_config(${_test_name})
   test_add_executable(${_test_name} ${_kind} main)
 
   test_declare_ctest(${_test_name} 1)
@@ -77,8 +90,8 @@ endfunction()
 function(test_create_for_two_actors _test_name _kind)
   add_custom_target(${_test_name})
   add_dependencies(tests_${_kind} ${_test_name})
-  test_generate_config(${_test_name})
 
+  test_add_config(${_test_name})
   test_add_executable(${_test_name} ${_kind} sender)
   test_add_executable(${_test_name} ${_kind} receiver)
 
@@ -114,15 +127,26 @@ test_create_for_one_actor(unit_sockets                 unitary)
 test_create_for_one_actor(unit_streams                 unitary)
 
 # Handle test reports
-set(TEST_REPORT ${CMAKE_BINARY_DIR}/doc/tests_report.txt)
+if (PLATFORM_ID STREQUAL "")
+  set(TEST_REPORT_BASENAME tests_report)
+else()
+  set(TEST_REPORT_BASENAME tests_report_${PLATFORM_ID})
+endif()
+set(TEST_REPORT_TXT ${CMAKE_BINARY_DIR}/tests/${TEST_REPORT_BASENAME}.txt)
+set(TEST_REPORT_XML ${CMAKE_BINARY_DIR}/tests/${TEST_REPORT_BASENAME}.xml)
 
-if(NOT EXISTS ${TEST_REPORT})
-  file(WRITE ${TEST_REPORT} "No tests has been ran.\n")
+if(NOT EXISTS ${TEST_REPORT_TXT})
+  file(WRITE ${TEST_REPORT_TXT} "No tests has been ran.\n")
 endif()
 
-install(FILES ${TEST_REPORT} DESTINATION ${PLATFORM_INSTALL_SUBDIR}doc)
+install(FILES ${TEST_REPORT_TXT} DESTINATION doc)
 
 # run_tests target
-add_custom_target(run_tests ${CMAKE_CTEST_COMMAND} -O ${TEST_REPORT} --output-on-failure DEPENDS tests)
 add_custom_target(run_tests_functional ${CMAKE_CTEST_COMMAND} -R '^func_' --output-on-failure DEPENDS tests_functional)
 add_custom_target(run_tests_unitary ${CMAKE_CTEST_COMMAND} -R '^unit_' --output-on-failure DEPENDS tests_unitary)
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/doc/airbus)
+  include(${CMAKE_SOURCE_DIR}/doc/airbus/cmake/run_tests.cmake)
+else()
+  add_custom_target(run_tests ${CMAKE_CTEST_COMMAND} -O ${TEST_REPORT_TXT} --output-junit ${TEST_REPORT_XML} --output-on-failure DEPENDS tests)
+endif()
