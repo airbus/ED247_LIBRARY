@@ -69,11 +69,18 @@ if (SimulinkLogger_INCLUDE_DIR)
   endif()
 endif()
 
-
+# Static link on Windows
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
   set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 endif()
+
+# Report unresolved symbol references as errors
+if(NOT MSVC)
+  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,--no-undefined")
+  string(APPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--no-undefined")
+endif()
+
 
 # Add source folder
 add_subdirectory(src)

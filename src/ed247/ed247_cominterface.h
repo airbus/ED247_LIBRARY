@@ -32,6 +32,7 @@
 #ifdef __unix__
 # include <sys/socket.h>
 # include <netinet/in.h>
+# include <sys/select.h>
 using ed247_socket_t = int;
 # define INVALID_SOCKET (-1)
 #elif _WIN32
