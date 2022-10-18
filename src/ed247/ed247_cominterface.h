@@ -99,7 +99,10 @@ namespace ed247 {
     public:
       using receive_callback_t = std::function<void(const char* payload, uint32_t size)>;
 
-      receiver(socket_address_t from_address, socket_address_t multicast_group_address, receive_callback_t callback);
+      receiver(socket_address_t from_address,
+               socket_address_t multicast_interface,
+               socket_address_t multicast_group_address,
+               receive_callback_t callback);
       void receive();
 
     private:

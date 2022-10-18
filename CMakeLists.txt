@@ -33,11 +33,6 @@ if (NOT PLATFORM_ID STREQUAL "")
 endif()
 
 # Options: test multicast ip.
-if (NOT TEST_MULTICAST_INTERFACE_IP)
-  if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(TEST_MULTICAST_INTERFACE_IP "127.0.0.1")
-  endif()
-endif()
 set(TEST_MULTICAST_INTERFACE_IP "${TEST_MULTICAST_INTERFACE_IP}" CACHE STRING "Ip address of the interface to use for multicast when performing the tests.")
 
 
