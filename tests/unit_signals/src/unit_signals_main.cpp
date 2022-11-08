@@ -42,9 +42,9 @@ TEST_P(SignalContext, SinglePushPop)
   // Retrieve the pool of signals
   auto pool_signals = context->getPoolSignals();
   if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
-    ASSERT_EQ(pool_signals->size(), (uint32_t)25);
+    ASSERT_EQ(pool_signals->_signals.size(), (uint32_t)25);
   else
-    ASSERT_EQ(pool_signals->size(), (uint32_t)12);
+    ASSERT_EQ(pool_signals->_signals.size(), (uint32_t)12);
 
   // Check finder for find all
   auto signals = pool_signals->find(".*");
@@ -77,7 +77,7 @@ TEST_P(SignalContext, SinglePushPop)
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
     sample->copy(msg.c_str(), sample->capacity());
-    assistant->write(signal, sample->data(), sample->size());
+    assistant->write(*signal, sample->data(), sample->size());
     if(stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
       *(uint16_t*)(stream_sample->data_rw()+(uint8_t)stream_sample->size()) = (uint16_t)htons((uint16_t)sample->size());
       stream_sample->set_size(stream_sample->size()+sizeof(uint16_t));
@@ -105,7 +105,7 @@ TEST_P(SignalContext, SinglePushPop)
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
     sample->copy(msg.c_str(), sample->capacity());
-    assistant->write(signal, sample->data(), sample->size());
+    assistant->write(*signal, sample->data(), sample->size());
     samples.push_back(std::move(sample));
   }
   assistant->push();
@@ -121,7 +121,7 @@ TEST_P(SignalContext, SinglePushPop)
     auto sample = signal->allocate_sample();
     const void *data;
     uint32_t size;
-    assistant->read(signal, &data, &size);
+    assistant->read(*signal, &data, &size);
     ASSERT_EQ(size, sample->capacity());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
     ASSERT_EQ(memcmp(data, msg.c_str(), size), 0);

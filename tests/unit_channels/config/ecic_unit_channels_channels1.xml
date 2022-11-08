@@ -43,14 +43,14 @@ DEALINGS IN THE SOFTWARE.
                 <SERIAL_Stream UID="12" Name="Stream12" Direction="Out" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
                 <DIS_Stream UID="6" Name="Stream6" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" ByteOffset="0"/>
-                        <Signal Name="Signal21" ByteOffset="1"/>
+                        <Signal Name="Signal00" ByteOffset="0"/>
+                        <Signal Name="Signal01" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
                 <DIS_Stream UID="7" Name="Stream7" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" ByteOffset="0"/>
-                        <Signal Name="Signal31" ByteOffset="1"/>
+                        <Signal Name="Signal10" ByteOffset="0"/>
+                        <Signal Name="Signal11" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
                 <ANA_Stream UID="8" Name="Stream8" SampleMaxSizeBytes="8" Direction="Out" SampleMaxNumber="2">
@@ -67,26 +67,26 @@ DEALINGS IN THE SOFTWARE.
                 </ANA_Stream>
                 <NAD_Stream UID="10" Name="Stream10" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" Type="uint8" ByteOffset="0"/>
-                        <Signal Name="Signal21" Type="uint8" ByteOffset="1"/>
+                        <Signal Name="Signal40" Type="uint8" ByteOffset="0"/>
+                        <Signal Name="Signal41" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
                 <NAD_Stream UID="11" Name="Stream11" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" Type="uint8" ByteOffset="0"/>
-                        <Signal Name="Signal31" Type="uint8" ByteOffset="1"/>
+                        <Signal Name="Signal50" Type="uint8" ByteOffset="0"/>
+                        <Signal Name="Signal51" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
                 <VNAD_Stream UID="2" Name="Stream2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" Position="0" Type="uint8" MaxNumber="5"/>
-                        <Signal Name="Signal21" Position="1" Type="uint8" MaxNumber="1"/>
+                        <Signal Name="Signal60" Position="0" Type="uint8" MaxNumber="5"/>
+                        <Signal Name="Signal61" Position="1" Type="uint8" MaxNumber="1"/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="3" Name="Stream3" Direction="Out" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" Position="0" Type="uint8" MaxNumber="1"/>
-                        <Signal Name="Signal31" Position="1" Type="uint8" MaxNumber="2"/>
+                        <Signal Name="Signal70" Position="0" Type="uint8" MaxNumber="1"/>
+                        <Signal Name="Signal71" Position="1" Type="uint8" MaxNumber="2"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>
@@ -107,50 +107,50 @@ DEALINGS IN THE SOFTWARE.
                 <SERIAL_Stream UID="12" Name="InStream12" Direction="In" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
                 <DIS_Stream UID="6" Name="InStream6" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" ByteOffset="0"/>
-                        <Signal Name="Signal21" ByteOffset="1"/>
+                        <Signal Name="Signal000" ByteOffset="0"/>
+                        <Signal Name="Signal001" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
                 <DIS_Stream UID="7" Name="InStream7" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" ByteOffset="0"/>
-                        <Signal Name="Signal31" ByteOffset="1"/>
+                        <Signal Name="Signal010" ByteOffset="0"/>
+                        <Signal Name="Signal011" ByteOffset="1"/>
                     </Signals>
                 </DIS_Stream>
                 <ANA_Stream UID="8" Name="InStream8" SampleMaxSizeBytes="8" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" ByteOffset="0"/>
-                        <Signal Name="Signal21" ByteOffset="4"/>
+                        <Signal Name="Signal020" ByteOffset="0"/>
+                        <Signal Name="Signal021" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
                 <ANA_Stream UID="9" Name="InStream9" SampleMaxSizeBytes="8" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" ByteOffset="0"/>
-                        <Signal Name="Signal31" ByteOffset="4"/>
+                        <Signal Name="Signal030" ByteOffset="0"/>
+                        <Signal Name="Signal031" ByteOffset="4"/>
                     </Signals>
                 </ANA_Stream>
                 <NAD_Stream UID="10" Name="InStream10" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" Type="uint8" ByteOffset="0"/>
-                        <Signal Name="Signal21" Type="uint8" ByteOffset="1"/>
+                        <Signal Name="Signal040" Type="uint8" ByteOffset="0"/>
+                        <Signal Name="Signal041" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
                 <NAD_Stream UID="11" Name="InStream11" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" Type="uint8" ByteOffset="0"/>
-                        <Signal Name="Signal31" Type="uint8" ByteOffset="1"/>
+                        <Signal Name="Signal050" Type="uint8" ByteOffset="0"/>
+                        <Signal Name="Signal051" Type="uint8" ByteOffset="1"/>
                     </Signals>
                 </NAD_Stream>
                 <VNAD_Stream UID="2" Name="InStream2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal20" Position="0" Type="uint8" MaxNumber="5"/>
-                        <Signal Name="Signal21" Position="1" Type="uint8" MaxNumber="1"/>
+                        <Signal Name="Signal060" Position="0" Type="uint8" MaxNumber="5"/>
+                        <Signal Name="Signal061" Position="1" Type="uint8" MaxNumber="1"/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="3" Name="InStream3" Direction="In" SampleMaxNumber="3">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal30" Position="0" Type="uint8" MaxNumber="1"/>
-                        <Signal Name="Signal31" Position="1" Type="uint8" MaxNumber="2"/>
+                        <Signal Name="Signal070" Position="0" Type="uint8" MaxNumber="1"/>
+                        <Signal Name="Signal071" Position="1" Type="uint8" MaxNumber="2"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

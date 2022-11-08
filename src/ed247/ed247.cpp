@@ -589,9 +589,8 @@ ed247_status_t ed247_get_signal(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    auto && ed247_signal = ed247_context->getPoolSignals()->get(std::string(name));
-    *signal = ed247_signal ? ed247_signal.get() : nullptr;
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    *signal = ed247_context->getPoolSignals()->get(name).get();
     if(*signal == nullptr) {
       PRINT_INFO("Cannot find signal '" << name << "'");
       return ED247_STATUS_FAILURE;
@@ -1660,74 +1659,74 @@ uint32_t ed247_nad_type_size(
 
 const char* ed247_signal_get_name(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_name.c_str();
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_name().c_str();  //note: get_name() return an internal reference.
 }
 
 const char* ed247_signal_get_comment(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_comment.c_str();
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_comment().c_str();  //note: get_comment() return an internal reference.
 }
 
 const char* ed247_signal_get_icd(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_icd.c_str();
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_icd().c_str();   //note: get_icd() return an internal reference.
 }
 
 ed247_signal_type_t ed247_signal_get_type(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_type;
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_type();
 }
 
 uint32_t ed247_signal_get_byte_offset(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_byte_offset;
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_byte_offset();
 }
 
 const char* ed247_signal_analogue_get_electrical_unit(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_analogue_electrical_unit.c_str();
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_analogue_electrical_unit().c_str(); //note: get_analogue_electrical_unit() return an internal reference.
 }
 
 ed247_nad_type_t ed247_signal_nad_get_type(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_nad_type;
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_nad_type();
 }
 
 const char* ed247_signal_nad_get_unit(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_nad_unit.c_str();
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_nad_unit().c_str();  //note: get_nad_unit() return an internal reference.
 }
 
 uint32_t ed247_signal_nad_get_dimensions_count(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_nad_dimensions.size();
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_nad_dimensions().size();
 }
 
 uint32_t ed247_signal_nad_get_dimension(ed247_signal_t signal, uint32_t dimention_id)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_nad_dimensions[dimention_id];
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_nad_dimensions()[dimention_id];
 }
 
 uint32_t ed247_signal_vnad_get_position(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_vnad_position;
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_vnad_position();
 }
 
 uint32_t ed247_signal_vnad_get_max_number(ed247_signal_t signal)
 {
-  auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-  return ed247_signal->get_configuration()->_vnad_max_number;
+  auto ed247_signal = static_cast<ed247::signal*>(signal);
+  return ed247_signal->get_vnad_max_number();
 }
 
 
@@ -1742,7 +1741,7 @@ ed247_status_t ed247_signal_set_user_data(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+    auto ed247_signal = static_cast<ed247::signal*>(signal);
     ed247_signal->set_user_data(user_data);
   }
   LIBED247_CATCH("Set signal user data");
@@ -1764,7 +1763,7 @@ ed247_status_t ed247_signal_get_user_data(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
+    auto ed247_signal = static_cast<ed247::signal*>(signal);
     ed247_signal->get_user_data(user_data);
   }
   LIBED247_CATCH("Get signal user data");
@@ -1786,9 +1785,8 @@ ed247_status_t ed247_signal_get_stream(
   }
   *stream = nullptr;
   try{
-    auto ed247_signal = static_cast<ed247::BaseSignal*>(signal);
-    auto && ed247_stream = ed247_signal->get_stream();
-    *stream = ed247_stream ? ed247_stream.get() : nullptr;
+    auto ed247_signal = static_cast<ed247::signal*>(signal);
+    *stream = ed247_signal->get_api_stream();
   }
   LIBED247_CATCH("Get signal stream");
   return ED247_STATUS_SUCCESS;
@@ -1815,7 +1813,7 @@ ed247_status_t ed247_signal_allocate_sample(
   *sample_data = nullptr;
   *sample_size = 0;
   try{
-    auto ed247_signal = (ed247::BaseSignal*)(signal);
+    auto ed247_signal = (ed247::signal*)(signal);
     auto sample = ed247_signal->allocate_sample();
     *sample_data = sample->data_rw();
     *sample_size = sample->capacity();
@@ -1949,9 +1947,9 @@ ed247_status_t ed247_stream_assistant_write_signal(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
-    auto && ed247_signal = static_cast<ed247::BaseSignal*>(signal)->shared_from_this();
-    if (ed247_assistant->write(ed247_signal, signal_sample_data, signal_sample_size) == false) {
+    ed247::BaseStream::Assistant* ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
+    ed247::signal* ed247_signal = static_cast<ed247::signal*>(signal);
+    if (ed247_assistant->write(*ed247_signal, signal_sample_data, signal_sample_size) == false) {
       return ED247_STATUS_FAILURE;
     }
   }
@@ -1985,9 +1983,9 @@ ed247_status_t ed247_stream_assistant_read_signal(
   *signal_sample_data = nullptr;
   *signal_sample_size = 0;
   try{
-    auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
-    auto ed247_signal = static_cast<ed247::BaseSignal*>(signal)->shared_from_this();
-    if (ed247_assistant->read(ed247_signal, signal_sample_data, signal_sample_size) == false) {
+    ed247::BaseStream::Assistant* ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
+    ed247::signal* ed247_signal = static_cast<ed247::signal*>(signal);
+    if (ed247_assistant->read(*ed247_signal, signal_sample_data, signal_sample_size) == false) {
       return ED247_STATUS_FAILURE;
     }
   }

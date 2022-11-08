@@ -138,12 +138,6 @@ struct StreamTypeChecker
     static_assert(E != ED247_STREAM_TYPE__INVALID && E != ED247_STREAM_TYPE__COUNT, "Invalid stream type");
 };
 
-template<ed247_signal_type_t E>
-struct SignalTypeChecker
-{
-    static_assert(E != ED247_SIGNAL_TYPE__INVALID, "Invalid signal type");
-};
-
 template<ed247_stream_type_t E>
 struct StreamSignalTypeChecker
 {
@@ -162,10 +156,6 @@ struct StreamSignalTypeChecker
 struct ed247_internal_context_t {};
 
 struct ed247_internal_channel_t {};
-
-struct ed247_internal_stream_t {};
-
-struct ed247_internal_signal_t {};
 
 struct ed247_internal_stream_assistant_t {};
 

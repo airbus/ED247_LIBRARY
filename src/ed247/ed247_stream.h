@@ -28,6 +28,7 @@
 #include "ed247_internals.h"
 #include "ed247_xml.h"
 #include "ed247_signal.h"
+#include "ed247_sample.h"
 
 #include <memory>
 #include <tuple>
@@ -38,71 +39,11 @@ namespace ed247
 
 class Channel;
 class BaseStream;
-class BaseSignal;
+class signal;
 
 typedef std::shared_ptr<BaseStream> stream_ptr_t;
 typedef std::vector<stream_ptr_t>   stream_list_t;
 
-class BaseSample
-{
-public:
-  BaseSample():
-    _data(nullptr),
-    _size(0),
-    _capacity(0)
-    {}
-
-  BaseSample(const BaseSample & other) = delete;
-  BaseSample & operator = (const BaseSample & other) = delete;
-
-  // Accessor
-  const uint32_t& size() const     { return _size;      }
-  const uint32_t& capacity() const { return _capacity;  }
-  const char* data() const         { return _data;      }
-  bool empty() const               { return _size == 0; }
-
-
-  // Fill data & size. Return false if capacity() is too small.
-  bool copy(const char* data, const uint32_t& size) {
-    if (size > _capacity) {
-      PRINT_DEBUG("ERROR: Cannot copy payload: internal buffer is too small (" << size << " > " << _capacity << ")");
-      return false;
-    }
-    _size = size;
-    memcpy(_data, data, _size);
-    return true;
-  }
-  bool copy(const void* data, const uint32_t& size) { return copy((const char*)data, size); }
-
-  void reset() { _size = 0; }
-
-  // Direct access. You have to check capacity() yourself.
-  char* data_rw()                       { return _data; }
-  void set_size(const uint32_t & size)  { _size = size; }
-
-  // Memort management
-  void allocate(uint32_t capacity) {
-    _capacity = capacity;
-    if(_data != nullptr || _size != 0) THROW_ED247_ERROR("Sample already allocated");
-    if(!_capacity) THROW_ED247_ERROR("Cannot allocate a sample with a capacity of 0");
-    _data = (char*)malloc(_capacity);
-    if(!_data) THROW_ED247_ERROR("Failed to allocate sample [" << _capacity <<"] !");
-    memset(_data,0,_capacity);
-    _size = 0;
-  }
-  bool allocated() const {
-    return _data != nullptr;
-  }
-  void deallocate() {
-    if(_data) free(_data);
-    _data = nullptr;
-  }
-
-private:
-  char*    _data;
-  uint32_t _size;
-  uint32_t _capacity;
-};
 
 class FrameHeader;
 class StreamSample : public BaseSample
@@ -274,19 +215,19 @@ class CircularStreamSampleBuffer {
 template<ed247_stream_type_t ... E>
 struct StreamBuilder {
     StreamBuilder() {}
-    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<ed247::signal_set_t> & pool_signals);
 };
 
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
 struct StreamBuilder<T, E...> : public StreamBuilder<E...>, private StreamTypeChecker<T> {
     StreamBuilder() : StreamBuilder<E...>() {}
-    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<ed247::signal_set_t> & pool_signals);
 };
 
 template<ed247_stream_type_t T>
 struct StreamBuilder<T> : private StreamTypeChecker<T> {
     StreamBuilder() {}
-    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals);
+    stream_ptr_t create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<ed247::signal_set_t> & pool_signals);
 };
 
 class FrameHeader;
@@ -503,7 +444,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
         {
             public:
                 Pool();
-                Pool(std::shared_ptr<BaseSignal::Pool> & pool_signals);
+                Pool(std::shared_ptr<ed247::signal_set_t> & pool_signals);
 
                 ~Pool(){};
 
@@ -519,7 +460,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
             private:
                 std::shared_ptr<stream_list_t>    _streams;
-                std::shared_ptr<BaseSignal::Pool> _pool_signals;
+                std::shared_ptr<ed247::signal_set_t> _pool_signals;
                 StreamBuilder<
                     ED247_STREAM_TYPE_A429,
                     ED247_STREAM_TYPE_A664,
@@ -550,7 +491,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         auto send_sample = signal->allocate_sample();
                         auto recv_sample = signal->allocate_sample();
                         capacity += send_sample->capacity();
-                        if(signal->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD)
+                        if(signal->get_type() == ED247_SIGNAL_TYPE_VNAD)
                             capacity += sizeof(uint16_t);
                         if(_send_samples.size() <= signal->position())
                             _send_samples.resize(signal->position()+1);
@@ -571,7 +512,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
 
                 bool is_valid()
                 {
-                    auto type = _stream->get_configuration()->_type;
+                  auto type = _stream->get_configuration()->_type;
                     return _stream ? (
                         type == ED247_STREAM_TYPE_DISCRETE ||
                         type == ED247_STREAM_TYPE_ANALOG ||
@@ -579,35 +520,35 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         type == ED247_STREAM_TYPE_VNAD) : false;
                 }
 
-                bool write(signal_ptr_t signal, const void *data, uint32_t size)
+                bool write(const signal& signal, const void *data, uint32_t size)
                 {
                   if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_OUT)) {
-                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] to an non-output stream");
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal.get_name() << "] to an non-output stream");
                     return false;
                   }
-                  if(signal->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
-                    uint32_t sample_max_size = signal->get_configuration()->_vnad_max_number * (signal->get_sample_max_size_bytes() + sizeof(uint16_t));
+                  if(signal.get_type() == ED247_SIGNAL_TYPE_VNAD){
+                    uint32_t sample_max_size = signal.get_vnad_max_number() * (signal.get_sample_max_size_bytes() + sizeof(uint16_t));
                     if(size > sample_max_size) {
-                      PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "] "
+                      PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal.get_name() << "] "
                                   "as Signal SampleMaxSizeBytes is [" << sample_max_size << "] and data to write is of size [" << size << "]");
                       return false;
                     }
                   }
-                  auto & sample = _send_samples[signal->position()].second;
+                  auto & sample = _send_samples[signal.position()].second;
                   if (sample->copy(data, size) == false) {
-                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal->get_name() << "]: invalid size: " << size);
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal.get_name() << "]: invalid size: " << size);
                     return false;
                   }
                   return true;
                 }
 
-                bool read(signal_ptr_t signal, const void **data, uint32_t * size)
+                bool read(const signal& signal, const void **data, uint32_t * size)
                 {
                   if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_IN)) {
-                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot read Signal [" << signal->get_name() << "] from a non-input stream");
+                    PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot read Signal [" << signal.get_name() << "] from a non-input stream");
                     return false;
                   }
-                  auto & sample = _recv_samples[signal->position()].second;
+                  auto & sample = _recv_samples[signal.position()].second;
                   *data = sample->data();
                   *size = sample->size();
                   return true;
@@ -649,17 +590,17 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                     for(auto & pair : _send_samples){
                         if(!pair.first)
                             continue;
-                        if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
+                        if(pair.first->get_type() == ED247_SIGNAL_TYPE_VNAD){
                             *(uint16_t*)(_buffer.data_rw()+buffer_index) = (uint16_t)htons((uint16_t)pair.second->size());
                             buffer_index += sizeof(uint16_t);
                             vnad_behaviour = true;
                         }else{
-                            if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_ANALOG){
-                                buffer_index = (uint32_t)pair.first->get_configuration()->_byte_offset;
-                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_DISCRETE){
-                                buffer_index = (uint32_t)pair.first->get_configuration()->_byte_offset;
-                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_NAD){
-                                buffer_index = (uint32_t)pair.first->get_configuration()->_byte_offset;
+                            if(pair.first->get_type() == ED247_SIGNAL_TYPE_ANALOG){
+                              buffer_index = (uint32_t)pair.first->get_byte_offset();
+                            }else if(pair.first->get_type() == ED247_SIGNAL_TYPE_DISCRETE){
+                                buffer_index = (uint32_t)pair.first->get_byte_offset();
+                            }else if(pair.first->get_type() == ED247_SIGNAL_TYPE_NAD){
+                                buffer_index = (uint32_t)pair.first->get_byte_offset();
                             }else{
                                 THROW_ED247_ERROR("Signal [" << pair.first->get_name() << "] has not a valid type");
                             }
@@ -687,7 +628,7 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                         if(!pair.first)
                             continue;
                         uint32_t sample_size = 0;
-                        if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_VNAD){
+                        if(pair.first->get_type() == ED247_SIGNAL_TYPE_VNAD){
                             if(buffer_index + sizeof(uint16_t) > size) {
                               PRINT_ERROR("Signal '" << pair.first->get_name() << "': invalid VNAD size : " << size);
                               return false;
@@ -697,14 +638,14 @@ class BaseStream : public ed247_internal_stream_t, public std::enable_shared_fro
                             vnad_behaviour = true;
                         }else{
                             sample_size = pair.first->get_sample_max_size_bytes();
-                            if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_ANALOG){
-                                buffer_index = (uint32_t)pair.first->get_configuration()->_byte_offset;
-                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_DISCRETE){
-                                buffer_index = (uint32_t)pair.first->get_configuration()->_byte_offset;
-                            }else if(pair.first->get_configuration()->_type == ED247_SIGNAL_TYPE_NAD){
-                                buffer_index = (uint32_t)pair.first->get_configuration()->_byte_offset;
+                            if(pair.first->get_type() == ED247_SIGNAL_TYPE_ANALOG){
+                                buffer_index = (uint32_t)pair.first->get_byte_offset();
+                            }else if(pair.first->get_type() == ED247_SIGNAL_TYPE_DISCRETE){
+                                buffer_index = (uint32_t)pair.first->get_byte_offset();
+                            }else if(pair.first->get_type() == ED247_SIGNAL_TYPE_NAD){
+                                buffer_index = (uint32_t)pair.first->get_byte_offset();
                             }else{
-                              PRINT_ERROR("Signal '" << pair.first->get_name() << "': Invalid type: " << pair.first->get_configuration()->_type);
+                              PRINT_ERROR("Signal '" << pair.first->get_name() << "': Invalid type: " << pair.first->get_type());
                               return false;
                             }
                         }
@@ -771,12 +712,12 @@ class Stream : public BaseStream, private StreamTypeChecker<E>
                 template<ed247_stream_type_t T = E>
                 typename std::enable_if<!StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
                 create(const xml::Stream* configuration,
-                    std::shared_ptr<BaseSignal::Pool> & pool_signals) const;
+                    std::shared_ptr<ed247::signal_set_t> & pool_signals) const;
 
                 template<ed247_stream_type_t T = E>
                 typename std::enable_if<StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
                 create(const xml::Stream* configuration,
-                    std::shared_ptr<BaseSignal::Pool> & pool_signals) const;
+                    std::shared_ptr<ed247::signal_set_t> & pool_signals) const;
         };
 };
 

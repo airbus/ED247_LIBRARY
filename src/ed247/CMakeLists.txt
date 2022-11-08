@@ -28,6 +28,7 @@ add_library(ed247_objects OBJECT
     ed247_conversion.cpp
     ed247_xml.cpp
     ed247_cominterface.cpp
+    ed247_sample.cpp
     ed247_signal.cpp
     ed247_stream.cpp
     ed247_channel.cpp

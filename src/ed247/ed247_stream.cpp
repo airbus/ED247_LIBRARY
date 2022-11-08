@@ -51,7 +51,7 @@ void StreamSample::update_details(const FrameHeader & header)
 
 // StreamBuilder<>
 template<ed247_stream_type_t T, ed247_stream_type_t ... E>
-stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
+stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<ed247::signal_set_t> & pool_signals)
 {
     if(type == T){
         static typename Stream<T>::Builder builder;
@@ -62,7 +62,7 @@ stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, co
 }
 
 template<ed247_stream_type_t T>
-stream_ptr_t StreamBuilder<T>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<BaseSignal::Pool> & pool_signals)
+stream_ptr_t StreamBuilder<T>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<ed247::signal_set_t> & pool_signals)
 {
     if(type == T){
         static typename Stream<T>::Builder builder;
@@ -134,7 +134,7 @@ BaseStream::Pool::Pool():
 {
 }
 
-BaseStream::Pool::Pool(std::shared_ptr<BaseSignal::Pool> & pool_signals):
+BaseStream::Pool::Pool(std::shared_ptr<ed247::signal_set_t> & pool_signals):
     _streams(std::make_shared<stream_list_t>()),
     _pool_signals(pool_signals)
 {
@@ -797,7 +797,7 @@ uint32_t Stream<ED247_STREAM_TYPE_ANALOG>::encode(char * frame, uint32_t frame_s
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset));
+            *(uint32_t*)(sample->data_rw()+signal->get_byte_offset()) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_byte_offset()));
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -829,7 +829,7 @@ bool Stream<ED247_STREAM_TYPE_ANALOG>::decode(const char * frame, uint32_t frame
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            *(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_configuration()->_byte_offset));
+            *(uint32_t*)(sample->data_rw()+signal->get_byte_offset()) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_byte_offset()));
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -939,9 +939,9 @@ uint32_t Stream<ED247_STREAM_TYPE_NAD>::encode(char * frame, uint32_t frame_size
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->_byte_offset);
+            void *sample_data = (void*)(sample->data_rw()+signal->get_byte_offset());
             uint32_t sample_element_length = signal->get_sample_max_size_bytes() / signal->get_nad_type_size();
-            swap_nad(sample_data, signal->get_configuration()->_nad_type, sample_element_length);
+            swap_nad(sample_data, signal->get_nad_type(), sample_element_length);
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -973,9 +973,9 @@ bool Stream<ED247_STREAM_TYPE_NAD>::decode(const char * frame, uint32_t frame_si
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
         // SWAP
         for(auto signal : *_signals){
-            void *sample_data = (void*)(sample->data_rw()+signal->get_configuration()->_byte_offset);
+            void *sample_data = (void*)(sample->data_rw()+signal->get_byte_offset());
             uint32_t sample_element_length = signal->get_sample_max_size_bytes() / signal->get_nad_type_size();
-            swap_nad(sample_data, signal->get_configuration()->_nad_type, sample_element_length);
+            swap_nad(sample_data, signal->get_nad_type(), sample_element_length);
         }
         PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
@@ -1035,7 +1035,7 @@ uint32_t Stream<ED247_STREAM_TYPE_VNAD>::encode(char * frame, uint32_t frame_siz
             sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
             cursor += sizeof(uint16_t);
             cursor_step = (*_signals)[isignal]->get_nad_type_size();
-            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->_nad_type, sample_size_bytes/cursor_step);
+            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_nad_type(), sample_size_bytes/cursor_step);
             cursor += sample_size_bytes;
             isignal++;
         }
@@ -1096,7 +1096,7 @@ bool Stream<ED247_STREAM_TYPE_VNAD>::decode(const char * frame, uint32_t frame_s
             sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
             cursor += sizeof(uint16_t);
             cursor_step = (*_signals)[isignal]->get_nad_type_size();
-            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_configuration()->_nad_type, sample_size_bytes/cursor_step);
+            swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_nad_type(), sample_size_bytes/cursor_step);
             cursor += sample_size_bytes;
             isignal++;
         }
@@ -1140,7 +1140,7 @@ template<ed247_stream_type_t E>
 template<ed247_stream_type_t T>
 typename std::enable_if<!StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
 Stream<E>::Builder::create(const xml::Stream*  configuration,
-    std::shared_ptr<BaseSignal::Pool> & pool_signals) const
+    std::shared_ptr<ed247::signal_set_t> & pool_signals) const
 {
     _UNUSED(pool_signals);
     PRINT_DEBUG("Create stream [" << configuration->_name << "] ...");
@@ -1157,18 +1157,19 @@ template<ed247_stream_type_t E>
 template<ed247_stream_type_t T>
 typename std::enable_if<StreamSignalTypeChecker<T>::value, std::shared_ptr<Stream<E>>>::type
 Stream<E>::Builder::create(const xml::Stream* configuration,
-    std::shared_ptr<BaseSignal::Pool> & pool_signals) const
+    std::shared_ptr<ed247::signal_set_t> & pool_signals) const
 {
-    static BaseSignal::Builder builder;
-
     PRINT_DEBUG("Create signal based stream [" << configuration->_name << "] ...");
     auto sp_stream = std::make_shared<Stream<E>>(configuration);
     const xml::StreamSignals* sconfiguration = (const xml::StreamSignals*)configuration;
     if(!sconfiguration)
         THROW_ED247_ERROR("Stream '" << configuration->_name << "': Wrong stream type, not a signal based one");
     for(auto& signal_configuration : sconfiguration->_signal_list){
-      sp_stream->_signals->push_back(builder.build(pool_signals, signal_configuration.get(), *sp_stream));
+
+      signal_ptr_t signal = pool_signals->create(signal_configuration.get(), sp_stream.get());
+      sp_stream->_signals->push_back(signal);
     }
+
     sp_stream->_assistant = std::make_shared<Assistant>(sp_stream);
     sp_stream->allocate_stacks();
     sp_stream->allocate_buffer();

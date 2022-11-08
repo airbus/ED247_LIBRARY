@@ -61,28 +61,28 @@ DEALINGS IN THE SOFTWARE.
                 <!-- VNAD -->
                 <VNAD_Stream UID="2" Name="Stream1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="VNAD_Signal_out0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_out0" Type="uint8" MaxNumber="10" Unit=""/>
-                        <Signal Name="VNAD_Signal_out1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_out1" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_out10" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_out0" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_out11" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_out1" Type="uint8" MaxNumber="10" Unit=""/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="3" Name="StreamInput1" Direction="Out" Comment="Comment" ICD="File.xml:BUS45">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="VNAD_Signal_in0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
-                        <Signal Name="VNAD_Signal_in1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in10" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in11" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="4" Name="StreamDatatimestampOut" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="VNAD_Signal_in0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
-                        <Signal Name="VNAD_Signal_in1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in20" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in21" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="5" Name="StreamDatatimestampIn" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxNumber="10">
                     <DataTimestamp Enable="Yes" SampleDataTimestampOffset="Yes"/>
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="VNAD_Signal_in0" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
-                        <Signal Name="VNAD_Signal_in1" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in30" Position="0" Comment="Comment" ICD="File.xml:VNAD_Signal_in0" Type="uint8" MaxNumber="10" Unit=""/>
+                        <Signal Name="VNAD_Signal_in31" Position="1" Comment="Comment" ICD="File.xml:VNAD_Signal_in1" Type="uint8" MaxNumber="10" Unit=""/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

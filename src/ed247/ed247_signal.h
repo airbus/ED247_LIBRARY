@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -21,148 +22,98 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #ifndef _ED247_SIGNAL_H_
 #define _ED247_SIGNAL_H_
-
-#include "ed247_internals.h"
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include "ed247.h"
+#include "ed247_logs.h"
 #include "ed247_xml.h"
+
+
+// base structures for C API
+struct ed247_internal_signal_t {};
+struct ed247_internal_stream_t {};
 
 namespace ed247
 {
+  class BaseSample;
 
-class BaseSample;
-class BaseSignal;
-class BaseStream;
+  class signal : public ed247_internal_signal_t
+  {
+  public:
+    signal(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream) :
+      _configuration(configuration),
+      _ed247_api_stream(ed247_api_stream),
+      _user_data(nullptr) {
+      // TODO: validate free (curently streams are not freed, so neither signals)
+      // MEMCHECK_NEW(this, "Signal " << _configuration->_name);
+    }
 
-typedef std::shared_ptr<BaseSignal> signal_ptr_t;
-typedef std::vector<signal_ptr_t>   signal_list_t;
+    ~signal() {
+      // TODO: validate free (curently streams are not freed, so neither signals)
+      // MEMCHECK_DEL(this, "Signal " << _configuration->_name);
+    }
 
-template<ed247_stream_type_t E>
-class Stream;
+    // No implicit copy
+    signal(const signal & other) = delete;
+    signal& operator = (const signal & other) = delete;
 
-template<ed247_signal_type_t ... E>
-struct SignalBuilder {
-    SignalBuilder() {}
-    signal_ptr_t create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream);
-};
+    // configuration accessors
+    const std::string& get_name() const                      { return _configuration->_name;                        }
+    const std::string& get_comment() const                   { return _configuration->_comment;                     }
+    const std::string& get_icd() const                       { return _configuration->_icd;                         }
+    ed247_signal_type_t get_type() const                     { return _configuration->_type;                        }
+    uint32_t get_byte_offset() const                         { return _configuration->_byte_offset;                 }
+    const std::string& get_analogue_electrical_unit() const  { return _configuration->_analogue_electrical_unit;    }
 
-template<ed247_signal_type_t T, ed247_signal_type_t ... E>
-struct SignalBuilder<T, E...> : public SignalBuilder<E...>, private SignalTypeChecker<T> {
-    SignalBuilder() : SignalBuilder<E...>() {}
-    signal_ptr_t create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream);
-};
+    ed247_nad_type_t get_nad_type() const                    { return _configuration->_nad_type;                    }
+    uint32_t get_nad_type_size() const                       { return _configuration->get_nad_type_size();          }
+    const std::string& get_nad_unit() const                  { return _configuration->_nad_unit;                    }
+    const std::vector<uint32_t> get_nad_dimensions()         { return _configuration->_nad_dimensions;              }
 
-template<ed247_signal_type_t T>
-struct SignalBuilder<T> : private SignalTypeChecker<T> {
-    SignalBuilder() {}
-    signal_ptr_t create(const ed247_signal_type_t & type, const xml::Signal* configuration, BaseStream & stream);
-};
+    uint32_t get_vnad_position() const                       { return _configuration->_vnad_position;               }
+    uint32_t get_vnad_max_number() const                     { return _configuration->_vnad_max_number;             }
+    uint32_t get_sample_max_size_bytes() const               { return _configuration->get_sample_max_size_bytes();  }
+    uint32_t position() const                                { return _configuration->_position;                    }
 
-class BaseSignal : public ed247_internal_signal_t, public std::enable_shared_from_this<BaseSignal>
-{
-    public:
-        BaseSignal(){}
-        BaseSignal(const xml::Signal* configuration, std::shared_ptr<BaseStream> & stream):
-            _configuration(configuration),
-            _stream(stream),
-            _user_data(nullptr)
-        {}
 
-        virtual ~BaseSignal(){}
+    // implementation of ed247_signal_get_stream()
+    ed247_internal_stream_t* get_api_stream() { return _ed247_api_stream; }
 
-        void set_user_data(void *user_data)
-        {
-            _user_data = user_data;
-        }
+    // Handle user-data
+    void set_user_data(void *user_data)  { _user_data = user_data;  }
+    void get_user_data(void **user_data) { *user_data = _user_data; }
 
-        void get_user_data(void **user_data)
-        {
-            *user_data = _user_data;
-        }
 
-        inline uint32_t get_nad_type_size() const { return _configuration->get_nad_type_size(); }
+    std::unique_ptr<BaseSample> allocate_sample() const;
 
-        uint32_t get_sample_max_size_bytes() const
-        {
-          return _configuration->get_sample_max_size_bytes();
-        }
+  private:
+    const xml::Signal*       _configuration;
+    ed247_internal_stream_t* _ed247_api_stream;  // Needed for API method ed247_signal_get_stream()
+    void*                    _user_data;
+  };
 
-        const xml::Signal * get_configuration() const
-        {
-          return _configuration;
-        }
 
-        std::string get_name() const
-        {
-            return _configuration ? std::string(_configuration->_name) : std::string();
-        }
+  typedef std::shared_ptr<signal>   signal_ptr_t;
+  typedef std::vector<signal_ptr_t> signal_list_t;
 
-        std::shared_ptr<BaseStream> get_stream()
-        {
-            return _stream.lock();
-        }
 
-        std::unique_ptr<BaseSample> allocate_sample() const;
+  class signal_set_t
+  {
+  public:
+    signal_ptr_t create(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream);
+    signal_ptr_t get(const std::string& name);
+    signal_list_t find(const std::string& regex);
 
-        uint32_t position() const { return _configuration->_position; }
+    signal_set_t()  { MEMCHECK_NEW(this, "signal_set_t"); }
+    ~signal_set_t() { MEMCHECK_DEL(this, "signal_set_t"); }
 
-    protected:
-        const xml::Signal* _configuration;
-        std::weak_ptr<BaseStream> _stream;
-
-    private:
-        void *_user_data;
-
-    public:
-        class Pool : public std::enable_shared_from_this<Pool>
-        {
-            public:
-                Pool(){}
-                ~Pool(){};
-
-                signal_ptr_t get(const xml::Signal* configuration, BaseStream & stream);
-
-                signal_list_t find(std::string str_regex);
-
-                signal_ptr_t get(std::string str_name);
-
-                signal_list_t & signals() { return _signals; }
-
-                uint32_t size() const;
-
-            private:
-                signal_list_t _signals;
-                SignalBuilder<
-                    ED247_SIGNAL_TYPE_DISCRETE,
-                    ED247_SIGNAL_TYPE_ANALOG,
-                    ED247_SIGNAL_TYPE_NAD,
-                    ED247_SIGNAL_TYPE_VNAD> _builder;
-                
-        };
-        class Builder
-        {
-            public:
-                signal_ptr_t build(std::shared_ptr<Pool> & pool, const xml::Signal* configuration, BaseStream & stream) const;
-        };
-};
-
-template<ed247_signal_type_t E>
-class Signal : public BaseSignal, private SignalTypeChecker<E>
-{
-    public:
-        const ed247_signal_type_t type {E};
-
-        using BaseSignal::BaseSignal;
-
-    public:
-        class Builder
-        {
-            public:
-                std::shared_ptr<Signal<E>> create(const xml::Signal* configuration, BaseStream & stream) const;
-        };
-};
-
+  protected:
+    ED247_FRIEND_TEST();
+    std::unordered_map<std::string, signal_ptr_t> _signals;
+  };
 }
 
 #endif

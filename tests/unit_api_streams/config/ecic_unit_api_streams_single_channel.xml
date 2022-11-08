@@ -44,65 +44,65 @@ DEALINGS IN THE SOFTWARE.
                 <SERIAL_Stream UID="1003" Name="StreamSerial" Direction="Out" SampleMaxSizeBytes="321"/>
                 <DIS_Stream UID="3" Name="Stream4" SampleMaxSizeBytes="4" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
-                        <Signal Name="Signal1" ByteOffset="0"/>
-                        <Signal Name="Signal2" ByteOffset="1"/>
-                        <Signal Name="Signal3" ByteOffset="2"/>
-                        <Signal Name="Signal4" ByteOffset="3"/>
+                        <Signal Name="Signal01" ByteOffset="0"/>
+                        <Signal Name="Signal02" ByteOffset="1"/>
+                        <Signal Name="Signal03" ByteOffset="2"/>
+                        <Signal Name="Signal04" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
                 <DIS_Stream UID="103" Name="Stream4full" SampleMaxSizeBytes="4" Direction="Out" SampleMaxNumber="14" Comment="Discrete input signals" ICD="ICD for DSI">
                     <Signals SamplingPeriodUs="15000">
-                        <Signal Name="Signal1" ByteOffset="0"/>
-                        <Signal Name="Signal2" ByteOffset="1"/>
-                        <Signal Name="Signal3" ByteOffset="2"/>
-                        <Signal Name="Signal4" ByteOffset="3"/>
+                        <Signal Name="Signal11" ByteOffset="0"/>
+                        <Signal Name="Signal12" ByteOffset="1"/>
+                        <Signal Name="Signal13" ByteOffset="2"/>
+                        <Signal Name="Signal14" ByteOffset="3"/>
                     </Signals>
                 </DIS_Stream>
                 <ANA_Stream UID="4" Name="Stream5" SampleMaxSizeBytes="16" Direction="Out">
                     <Signals SamplingPeriodUs="20000">
-                        <Signal Name="SignalAna1" ByteOffset="0"/>
-                        <Signal Name="SignalAna2" ByteOffset="4"/>
-                        <Signal Name="SignalAna3" ByteOffset="8"/>
-                        <Signal Name="SignalAna4" ByteOffset="12"/>
+                        <Signal Name="SignalAna01" ByteOffset="0"/>
+                        <Signal Name="SignalAna02" ByteOffset="4"/>
+                        <Signal Name="SignalAna03" ByteOffset="8"/>
+                        <Signal Name="SignalAna04" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
                 <ANA_Stream UID="104" Name="Stream5full" SampleMaxSizeBytes="16" Direction="Out" SampleMaxNumber="36" Comment="Analog input signals" ICD="ICD for ANA">
                     <Signals SamplingPeriodUs="25000">
-                        <Signal Name="SignalAna1" ByteOffset="0"/>
-                        <Signal Name="SignalAna2" ByteOffset="4"/>
-                        <Signal Name="SignalAna3" ByteOffset="8"/>
-                        <Signal Name="SignalAna4" ByteOffset="12"/>
+                        <Signal Name="SignalAna11" ByteOffset="0"/>
+                        <Signal Name="SignalAna12" ByteOffset="4"/>
+                        <Signal Name="SignalAna13" ByteOffset="8"/>
+                        <Signal Name="SignalAna14" ByteOffset="12"/>
                     </Signals>
                 </ANA_Stream>
                 <NAD_Stream UID="5" Name="Stream6" SampleMaxSizeBytes="6" Direction="Out">
                     <Signals SamplingPeriodUs="100000">
-                        <Signal Name="SignalNAD1" Type="int8" ByteOffset="0"/>
-                        <Signal Name="SignalNAD2" Type="int8" ByteOffset="1"/>
-                        <Signal Name="SignalNAD3" Type="int8" ByteOffset="2"/>
-                        <Signal Name="SignalNAD4" Type="int8" ByteOffset="3"/>
-                        <Signal Name="SignalNAD5" Type="int16" ByteOffset="4"/>
+                        <Signal Name="SignalNAD01" Type="int8" ByteOffset="0"/>
+                        <Signal Name="SignalNAD02" Type="int8" ByteOffset="1"/>
+                        <Signal Name="SignalNAD03" Type="int8" ByteOffset="2"/>
+                        <Signal Name="SignalNAD04" Type="int8" ByteOffset="3"/>
+                        <Signal Name="SignalNAD05" Type="int16" ByteOffset="4"/>
                     </Signals>
                 </NAD_Stream>
                 <NAD_Stream UID="105" Name="Stream6full" SampleMaxSizeBytes="15" Direction="Out" SampleMaxNumber="23" Comment="Non Avionic Data input signals" ICD="ICD for NAD">
                     <Signals SamplingPeriodUs="110000">
-                        <Signal Name="SignalNAD1" Type="int16" ByteOffset="0"/>
-                        <Signal Name="SignalNAD2" Type="int8" ByteOffset="2"/>
-                        <Signal Name="SignalNAD3" Type="int32" ByteOffset="3"/>
-                        <Signal Name="SignalNAD4" Type="int64" ByteOffset="7"/>
+                        <Signal Name="SignalNAD11" Type="int16" ByteOffset="0"/>
+                        <Signal Name="SignalNAD12" Type="int8" ByteOffset="2"/>
+                        <Signal Name="SignalNAD13" Type="int32" ByteOffset="3"/>
+                        <Signal Name="SignalNAD14" Type="int64" ByteOffset="7"/>
                     </Signals>
                 </NAD_Stream>
                 <VNAD_Stream UID="6" Name="Stream7" Direction="Out">
                     <Signals SamplingPeriodUs="500000">
-                        <Signal Name="SignalVNAD1" Type="int8" MaxNumber="1" Position="0"/>
-                        <Signal Name="SignalVNAD2" Type="int8" MaxNumber="1" Position="1"/>
-                        <Signal Name="SignalVNAD3" Type="int8" MaxNumber="1" Position="2"/>
-                        <Signal Name="SignalVNAD4" Type="int8" MaxNumber="1" Position="3"/>
+                        <Signal Name="SignalVNAD01" Type="int8" MaxNumber="1" Position="0"/>
+                        <Signal Name="SignalVNAD02" Type="int8" MaxNumber="1" Position="1"/>
+                        <Signal Name="SignalVNAD03" Type="int8" MaxNumber="1" Position="2"/>
+                        <Signal Name="SignalVNAD04" Type="int8" MaxNumber="1" Position="3"/>
                     </Signals>
                 </VNAD_Stream>
                 <VNAD_Stream UID="106" Name="Stream7full" Direction="Out" SampleMaxNumber="12" Comment="Variable Non Avionic Data input signals" ICD="ICD for VNAD">
                     <Signals SamplingPeriodUs="1000000">
-                        <Signal Name="SignalVNAD1" Type="float64" MaxNumber="1" Position="0"/>
-                        <Signal Name="SignalVNAD4" Type="int8" MaxNumber="1" Position="1"/>
+                        <Signal Name="SignalVNAD11" Type="float64" MaxNumber="1" Position="0"/>
+                        <Signal Name="SignalVNAD14" Type="int8" MaxNumber="1" Position="1"/>
                     </Signals>
                 </VNAD_Stream>
             </Streams>

@@ -51,7 +51,7 @@ class Context : public ed247_internal_context_t
 
         const xml::Component* getConfiguration() { return _configuration.get(); }
 
-        std::shared_ptr<BaseSignal::Pool> getPoolSignals() { return _pool_signals; }
+        std::shared_ptr<ed247::signal_set_t> getPoolSignals() { return _pool_signals; }
 
         std::shared_ptr<BaseStream::Pool> getPoolStreams() { return _pool_streams; }
 
@@ -102,7 +102,7 @@ class Context : public ed247_internal_context_t
 
         std::unique_ptr<xml::Component>    _configuration;
         udp::receiver_set_t                _receiver_set;
-        std::shared_ptr<BaseSignal::Pool>  _pool_signals;
+        std::shared_ptr<ed247::signal_set_t>      _pool_signals;
         std::shared_ptr<BaseStream::Pool>  _pool_streams;
         Channel::Pool                      _pool_channels;
         libed247_runtime_metrics_t         _runtime_metrics;

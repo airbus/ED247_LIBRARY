@@ -44,6 +44,7 @@ TEST(UtApiStreams, LoadStreams)
     ed247_stream_t stream;
 
     std::string filepath = config_path+"/ecic_unit_api_streams_single_channel.xml";
+    SAY("Load ECIC " << filepath);
     ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // Get the stream list using the getter, check the unvalid call configurations
@@ -270,6 +271,7 @@ TEST(UtApiStreams, CheckFindStreamMethod)
     ed247_stream_t stream, stream_test;
 
     std::string filepath = config_path+"/ecic_unit_api_streams_multiple_channels.xml";
+    SAY("Load ECIC " << filepath);
     ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel", &channel_list), ED247_STATUS_SUCCESS);
@@ -351,6 +353,7 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     ed247_stream_t stream;
 
     std::string filepath = config_path+"/ecic_unit_api_streams_multiple_channels.xml";
+    SAY("Load ECIC " << filepath);
     ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // Get the first channel and retrieve streams
@@ -399,6 +402,7 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     ed247_stream_t stream, stream_test;
 
     std::string filepath = config_path+"/ecic_unit_api_streams_multiple_channels.xml";
+    SAY("Load ECIC " << filepath);
     ASSERT_EQ(ed247_load_file(filepath.c_str(), &context), ED247_STATUS_SUCCESS);
 
     // Check channel list size
