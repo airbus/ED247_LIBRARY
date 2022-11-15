@@ -269,7 +269,11 @@ namespace ed247
       map_ptr.insert(map_ptr_t::value_type(ptr, title));
     }
     void remove(const void* ptr) {
-      map_ptr.erase(ptr);
+      if (map_ptr.find(ptr) == map_ptr.end()) {
+        MEMCHECK_SAY("*** ALREADY FREED ***", "- [" << ptr << "]");
+      } else {
+        map_ptr.erase(ptr);
+      }
     }
     void assert_freed() {
       if (map_ptr.empty()) {
