@@ -1567,17 +1567,20 @@ ed247_status_t ed247_stream_pop_sample(
   *sample_size = 0;
   try{
     auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    if(ed247_stream->recv_stack().size() == 0) {
+    if ((ed247_stream->get_configuration()->_direction & ED247_DIRECTION_IN) == 0) {
+      PRINT_ERROR("Stream '" << ed247_stream->get_name() << "': Cannot pop from a non-input stream");
+      return ED247_STATUS_FAILURE;
+    }
+    if (ed247_stream->recv_stack().size() == 0) {
       PRINT_CRAZY("Stream '" << ed247_stream->get_name() << "': no data received.");
       return ED247_STATUS_NODATA;
     }
-    auto sample = ed247_stream->pop_sample(empty);
-    if (!sample) return ED247_STATUS_FAILURE;
-    *sample_data = sample->data();
-    *sample_size = sample->size();
-    if(data_timestamp) *data_timestamp = &sample->data_timestamp();
-    if(recv_timestamp) *recv_timestamp = &sample->recv_timestamp();
-    if(sample_details) *sample_details = &sample->frame_infos();
+    ed247::StreamSample& sample = ed247_stream->pop_sample(empty);
+    *sample_data = sample.data();
+    *sample_size = sample.size();
+    if(data_timestamp) *data_timestamp = &sample.data_timestamp();
+    if(recv_timestamp) *recv_timestamp = &sample.recv_timestamp();
+    if(sample_details) *sample_details = &sample.frame_infos();
   }
   LIBED247_CATCH("Pop stream sample");
   return ED247_STATUS_SUCCESS;

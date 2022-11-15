@@ -180,20 +180,19 @@ TEST_P(ChannelContext, MultiPushPop)
         for(auto stream : channel1->streams()){
             for(uint32_t i = 0 ; i < stream.second.stream->get_configuration()->_sample_max_number ; i++){
                 malloc_count_start();
-                auto sample = stream.second.stream->pop_sample(&empty);
-                ASSERT_TRUE((bool)sample);
+                auto& sample = stream.second.stream->pop_sample(&empty);
                 ASSERT_EQ(malloc_count_stop(), 0);
                 std::string str_sample = strize() << std::setw(stream.second.stream->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-                auto str_sample_recv = std::string((char*)sample->data(), stream.second.stream->get_configuration()->_sample_max_size_bytes);
+                auto str_sample_recv = std::string((char*)sample.data(), stream.second.stream->get_configuration()->_sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
                 if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
-                    ASSERT_EQ(sample->frame_infos().component_identifier, channel0->get_header()._send_header.component_identifier);
-                    ASSERT_EQ(sample->frame_infos().sequence_number, i ? (channel0->get_header()._send_header.sequence_number-1) : 0);
+                    ASSERT_EQ(sample.frame_infos().component_identifier, channel0->get_header()._send_header.component_identifier);
+                    ASSERT_EQ(sample.frame_infos().sequence_number, i ? (channel0->get_header()._send_header.sequence_number-1) : 0);
                 }
                 if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
-                    ASSERT_EQ(sample->frame_infos().transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
-                    ASSERT_EQ(sample->frame_infos().transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
+                    ASSERT_EQ(sample.frame_infos().transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
+                    ASSERT_EQ(sample.frame_infos().transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
                 }
                 if(i < (stream.second.stream->get_configuration()->_sample_max_number-1))
                     ASSERT_FALSE(empty);

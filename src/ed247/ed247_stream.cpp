@@ -66,21 +66,18 @@ namespace ed247
       PRINT_ERROR("Stream '" << get_name() << "': Invalid sample size (" << sample_size << ")");
       return false;
     }
-    auto && sample = _send_stack.next_write();
-    sample->copy(sample_data, sample_size);
-    if(data_timestamp) sample->set_data_timestamp(*data_timestamp);
-    bool tmp_full = _send_stack.increment();
-    if(full) *full = tmp_full;
+    StreamSample& sample = _send_stack.push_back();
+    sample.copy(sample_data, sample_size);
+    if(data_timestamp) sample.set_data_timestamp(*data_timestamp);
+    if(full) *full = _send_stack.full();
     return true;
   }
 
-  std::shared_ptr<StreamSample> BaseStream::pop_sample(bool *empty)
+  StreamSample& BaseStream::pop_sample(bool *empty)
   {
-    if(!(_configuration->_direction & ED247_DIRECTION_IN)) {
-      PRINT_ERROR("Stream '" << get_name() << "': Cannot read sample on a stream which is not an input one");
-      return nullptr;
-    }
-    return _recv_stack.pop_front(empty);
+    StreamSample& result = _recv_stack.pop_front();
+    if (empty) *empty = _recv_stack.empty();
+    return result;
   }
 
   signal_list_t BaseStream::find_signals(std::string str_regex)
@@ -183,11 +180,11 @@ namespace ed247
   void Stream<E>::allocate_stacks()
   {
     PRINT_DEBUG("Allocate internal RECV buffer of type [" << ed247_stream_type_string(E) << "] with SampleMaxSizeBytes[" << _configuration->_sample_max_size_bytes << "] SampleMaxNumber[" << _configuration->_sample_max_number << "]");
-    _recv_stack.allocate(_configuration->_sample_max_size_bytes, _configuration->_sample_max_number);
+    _recv_stack.allocate(_configuration->_sample_max_number, _configuration->_sample_max_size_bytes);
     _recv_working_sample = std::make_shared<StreamSample>();
     _recv_working_sample->allocate(_configuration->_sample_max_size_bytes);
     PRINT_DEBUG("Allocate internal SEND buffer of type [" << ed247_stream_type_string(E) << "] with SampleMaxSizeBytes[" << _configuration->_sample_max_size_bytes << "] SampleMaxNumber[" << _configuration->_sample_max_number << "]");
-    _send_stack.allocate(_configuration->_sample_max_size_bytes, _configuration->_sample_max_number);
+    _send_stack.allocate(_configuration->_sample_max_number, _configuration->_sample_max_size_bytes);
     _send_working_sample = std::make_shared<StreamSample>();
     _send_working_sample->allocate(_configuration->_sample_max_size_bytes);
     if(_configuration->_direction <= ED247_DIRECTION__INVALID ||
@@ -228,20 +225,19 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      const StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
 
       // Write sample data
-      if((frame_index + sample->size()) > frame_size) {
+      if((frame_index + sample.size()) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -259,26 +255,25 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto && sample = _recv_stack.next_write();
-      sample->copy(frame+frame_index, _configuration->_sample_max_size_bytes);
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, _configuration->_sample_max_size_bytes);
+      frame_index += sample.size();
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -309,7 +304,7 @@ namespace ed247
     auto enable_message_size = ((const xml::A664Stream*)_configuration)->_enable_message_size == ED247_YESNO_YES;
     uint32_t frame_index = 0;
     while (_send_stack.size() > 0) {
-      const auto & sample = _send_stack.pop_front();
+      const StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -319,9 +314,9 @@ namespace ed247
         if((frame_index + sizeof(uint16_t)) > frame_size) {
           THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
         }
-        if(sample->size() != (uint16_t)sample->size())
-          THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample->size() << ")");
-        uint16_t size = htons((uint16_t)sample->size());
+        if(sample.size() != (uint16_t)sample.size())
+          THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample.size() << ")");
+        uint16_t size = htons((uint16_t)sample.size());
         memcpy(frame + frame_index, &size, sizeof(uint16_t));
         frame_index += sizeof(uint16_t);
       }
@@ -330,8 +325,8 @@ namespace ed247
       if((frame_index + sizeof(uint16_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
 
       // If message size is disabled, we cannot append more sample.
       // Remaining ones will be available for next encode() call.
@@ -371,30 +366,32 @@ namespace ed247
       }
 
       PRINT_CRAZY("AFDX stream '" << get_name() << "' decoded. Size: " << sample_size);
-      auto & sample = _recv_stack.next_write();
-      if (sample->copy(frame+frame_index, sample_size) == false) {
+      if (sample_size > _recv_stack.samples_capacity()) {
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      frame_index += sample->size();
+
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, sample_size);
+      frame_index += sample.size();
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
+
     // Callbacks
     return run_callbacks();
   }
@@ -426,9 +423,8 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      const StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -437,9 +433,9 @@ namespace ed247
       if((frame_index + sizeof(uint8_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      if(sample->size() != (uint8_t)sample->size())
-        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 8 bits number ! (" << sample->size() << ")");
-      uint8_t size = (uint8_t)sample->size();
+      if(sample.size() != (uint8_t)sample.size())
+        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 8 bits number ! (" << sample.size() << ")");
+      uint8_t size = (uint8_t)sample.size();
       memcpy(frame + frame_index, &size, sizeof(uint8_t));
       frame_index += sizeof(uint8_t);
 
@@ -447,9 +443,9 @@ namespace ed247
       if((frame_index + sizeof(uint16_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -475,29 +471,29 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto & sample = _recv_stack.next_write();
-      if (sample->copy(frame+frame_index, sample_size) == false) {
+      if (sample_size > _recv_stack.samples_capacity()) {
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, sample_size);
+      frame_index += sample.size();
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -529,9 +525,8 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      const StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -540,9 +535,9 @@ namespace ed247
       if((frame_index + sizeof(uint16_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      if(sample->size() != (uint16_t)sample->size())
-        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample->size() << ")");
-      uint16_t size = (uint16_t)sample->size();
+      if(sample.size() != (uint16_t)sample.size())
+        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample.size() << ")");
+      uint16_t size = (uint16_t)sample.size();
       memcpy(frame + frame_index, &size, sizeof(uint16_t));
       frame_index += sizeof(uint16_t);
 
@@ -550,9 +545,9 @@ namespace ed247
       if((frame_index + sizeof(uint16_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -578,29 +573,29 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto & sample = _recv_stack.next_write();
-      if (sample->copy(frame+frame_index, sample_size) == false) {
+      if (sample_size > _recv_stack.samples_capacity()) {
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, sample_size);
+      frame_index += sample.size();
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -632,9 +627,8 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      const StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -643,9 +637,9 @@ namespace ed247
       if((frame_index + sizeof(uint8_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      if(sample->size() != (uint8_t)sample->size())
-        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 8 bits number ! (" << sample->size() << ")");
-      uint8_t size = (uint8_t)sample->size();
+      if(sample.size() != (uint8_t)sample.size())
+        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 8 bits number ! (" << sample.size() << ")");
+      uint8_t size = (uint8_t)sample.size();
       memcpy(frame + frame_index, &size, sizeof(uint8_t));
       frame_index += sizeof(uint8_t);
 
@@ -653,9 +647,9 @@ namespace ed247
       if((frame_index + sizeof(uint16_t)) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -681,29 +675,29 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto & sample = _recv_stack.next_write();
-      if (sample->copy(frame+frame_index, sample_size) == false) {
+      if (sample_size > _recv_stack.samples_capacity()) {
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, sample_size);
+      frame_index += sample.size();
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -735,17 +729,16 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      const StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
 
       // Write sample data
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -763,26 +756,25 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto && sample = _recv_stack.next_write();
-      sample->copy(frame+frame_index, _configuration->_sample_max_size_bytes);
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, _configuration->_sample_max_size_bytes);
+      frame_index += sample.size();
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -812,9 +804,8 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -822,14 +813,14 @@ namespace ed247
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
       // SWAP
       for(auto signal : *_signals){
-        *(uint32_t*)(sample->data_rw()+signal->get_byte_offset()) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_byte_offset()));
+        *(uint32_t*)(sample.data_rw()+signal->get_byte_offset()) = bswap_32(*(uint32_t*)(sample.data_rw()+signal->get_byte_offset()));
       }
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
       // Write sample data
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -847,34 +838,33 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto & sample = _recv_stack.next_write();
-      sample->copy(frame+frame_index, _configuration->_sample_max_size_bytes);
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, _configuration->_sample_max_size_bytes);
+      frame_index += sample.size();
 
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
       // SWAP
       for(auto signal : *_signals){
-        *(uint32_t*)(sample->data_rw()+signal->get_byte_offset()) = bswap_32(*(uint32_t*)(sample->data_rw()+signal->get_byte_offset()));
+        *(uint32_t*)(sample.data_rw()+signal->get_byte_offset()) = bswap_32(*(uint32_t*)(sample.data_rw()+signal->get_byte_offset()));
       }
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -961,9 +951,8 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -971,16 +960,16 @@ namespace ed247
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
       // SWAP
       for(auto signal : *_signals){
-        void *sample_data = (void*)(sample->data_rw()+signal->get_byte_offset());
+        void *sample_data = (void*)(sample.data_rw()+signal->get_byte_offset());
         uint32_t sample_element_length = signal->get_sample_max_size_bytes() / signal->get_nad_type_size();
         swap_nad(sample_data, signal->get_nad_type(), sample_element_length);
       }
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
       // Write sample data
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -998,14 +987,14 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto & sample = _recv_stack.next_write();
-      sample->copy(frame+frame_index, _configuration->_sample_max_size_bytes);
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, _configuration->_sample_max_size_bytes);
+      frame_index += sample.size();
 
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
       // SWAP
       for(auto signal : *_signals){
-        void *sample_data = (void*)(sample->data_rw()+signal->get_byte_offset());
+        void *sample_data = (void*)(sample.data_rw()+signal->get_byte_offset());
         uint32_t sample_element_length = signal->get_sample_max_size_bytes() / signal->get_nad_type_size();
         swap_nad(sample_data, signal->get_nad_type(), sample_element_length);
       }
@@ -1013,21 +1002,20 @@ namespace ed247
 
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();
@@ -1057,9 +1045,8 @@ namespace ed247
   {
     if(_send_stack.size() == 0) return 0;
     uint32_t frame_index = 0;
-    bool empty;
     do{
-      const auto & sample = _send_stack.pop_front(&empty);
+      StreamSample& sample = _send_stack.pop_front();
 
       // Write Data Timestamp and Precise Data Timestamp
       encode_data_timestamp(sample, frame, frame_size, frame_index);
@@ -1070,29 +1057,29 @@ namespace ed247
       uint32_t cursor_step = 0;
       uint32_t isignal = 0;
       uint16_t sample_size_bytes = 0;
-      while(cursor < sample->size()){
-        sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
+      while(cursor < sample.size()){
+        sample_size_bytes = ntohs(*(uint16_t*)(sample.data()+cursor));
         cursor += sizeof(uint16_t);
         cursor_step = (*_signals)[isignal]->get_nad_type_size();
-        swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_nad_type(), sample_size_bytes/cursor_step);
+        swap_nad((void*)(sample.data_rw()+cursor), (*_signals)[isignal]->get_nad_type(), sample_size_bytes/cursor_step);
         cursor += sample_size_bytes;
         isignal++;
       }
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ... OK");
 
       // Write sample size
-      if((frame_index + sizeof(uint16_t) + sample->size()) > frame_size) {
+      if((frame_index + sizeof(uint16_t) + sample.size()) > frame_size) {
         THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
       }
-      if(sample->size() != (uint16_t)sample->size())
-        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample->size() << ")");
-      uint16_t size = htons((uint16_t)sample->size());
+      if(sample.size() != (uint16_t)sample.size())
+        THROW_ED247_ERROR("Stream '" << get_name() << "': Stream data size it too big for a 16 bits number ! (" << sample.size() << ")");
+      uint16_t size = htons((uint16_t)sample.size());
       memcpy(frame + frame_index, &size, sizeof(uint16_t));
       frame_index += sizeof(uint16_t);
       // Write sample data
-      memcpy(frame + frame_index, sample->data(), sample->size());
-      frame_index += sample->size();
-    }while(!empty);
+      memcpy(frame + frame_index, sample.data(), sample.size());
+      frame_index += sample.size();
+    }while(_send_stack.empty() == false);
     return frame_index;
   }
 
@@ -1118,12 +1105,13 @@ namespace ed247
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      auto & sample = _recv_stack.next_write();
-      if (sample->copy(frame+frame_index, sample_size) == false) {
+      if (sample_size > _recv_stack.samples_capacity()) {
         PRINT_ERROR("Stream '" << get_name() << "': Received frame size is invalid: " << frame_size);
         return false;
       }
-      frame_index += sample->size();
+      StreamSample& sample = _recv_stack.push_back();
+      sample.copy(frame+frame_index, sample_size);
+      frame_index += sample.size();
 
       PRINT_CRAZY("SWAP stream [" << _configuration->_name << "] ...");
       // SWAP
@@ -1131,11 +1119,11 @@ namespace ed247
       uint32_t cursor_step = 0;
       uint32_t isignal = 0;
       uint16_t sample_size_bytes = 0;
-      while(cursor < sample->size()){
-        sample_size_bytes = ntohs(*(uint16_t*)(sample->data()+cursor));
+      while(cursor < sample.size()){
+        sample_size_bytes = ntohs(*(uint16_t*)(sample.data()+cursor));
         cursor += sizeof(uint16_t);
         cursor_step = (*_signals)[isignal]->get_nad_type_size();
-        swap_nad((void*)(sample->data_rw()+cursor), (*_signals)[isignal]->get_nad_type(), sample_size_bytes/cursor_step);
+        swap_nad((void*)(sample.data_rw()+cursor), (*_signals)[isignal]->get_nad_type(), sample_size_bytes/cursor_step);
         cursor += sample_size_bytes;
         isignal++;
       }
@@ -1143,21 +1131,20 @@ namespace ed247
 
       // Update data timestamp
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
-        sample->set_data_timestamp(data_timestamp);
+        sample.set_data_timestamp(data_timestamp);
       }
       // Update simulation time
-      sample->update_recv_timestamp();
+      sample.update_recv_timestamp();
       // Attach header
       if(header) {
         if (header->_recv_headers_iter == header->_recv_headers.end()) {
-          sample->clear_frame_infos();
+          sample.clear_frame_infos();
         } else {
-          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                     header->_recv_headers_iter->sequence_number,
-                                     header->_recv_headers_iter->transport_timestamp);
+          sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                    header->_recv_headers_iter->sequence_number,
+                                    header->_recv_headers_iter->transport_timestamp);
         }
       }
-      _recv_stack.increment();
     }
     // Callbacks
     return run_callbacks();

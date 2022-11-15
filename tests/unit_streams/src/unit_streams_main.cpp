@@ -28,13 +28,11 @@
 
 std::string config_path = "../config";
 
-TEST(CircularStreamSampleBuffer, Main)
+TEST(StreamSampleRingBuffer, Main)
 {
-    ed247::CircularStreamSampleBuffer cbuffer;
-    cbuffer.allocate(sizeof(uint32_t), 4);
+    ed247::StreamSampleRingBuffer cbuffer;
+    cbuffer.allocate(4, sizeof(uint32_t));
     ASSERT_EQ(cbuffer.size(), (uint32_t)0);
-    ASSERT_EQ(cbuffer.front(), nullptr);
-    ASSERT_EQ(cbuffer.back(), nullptr);
 
     uint32_t i = 1;
     ed247::StreamSample sample;
@@ -42,44 +40,43 @@ TEST(CircularStreamSampleBuffer, Main)
     ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
     ASSERT_EQ(*(uint32_t*)sample.data(), 1);
 
-    ASSERT_TRUE(cbuffer.next_write()->copy(sample));
-    ASSERT_FALSE(cbuffer.increment());
+    ASSERT_TRUE(cbuffer.push_back().copy(sample));
+    ASSERT_FALSE(cbuffer.full());
     ASSERT_EQ(cbuffer.size(), (uint32_t)1);
-    ASSERT_EQ(*(uint32_t*)(cbuffer.front()->data()), (uint32_t)1);
-    ASSERT_EQ(*(uint32_t*)(cbuffer.back()->data()), (uint32_t)1);
+    ASSERT_EQ(*(uint32_t*)(cbuffer.front().data()), (uint32_t)1);
+    ASSERT_EQ(*(uint32_t*)(cbuffer.back().data()), (uint32_t)1);
 
-    bool empty;
-    cbuffer.pop_front(&empty);
-    ASSERT_TRUE(empty);
+    cbuffer.pop_front();
+    ASSERT_TRUE(cbuffer.empty());
     ASSERT_EQ(cbuffer.size(), (uint32_t)0);
-    cbuffer.pop_front(&empty);
-    ASSERT_TRUE(empty);
+    cbuffer.pop_front();
+    ASSERT_TRUE(cbuffer.empty());
 
     i = 1; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
-    ASSERT_TRUE(cbuffer.next_write()->copy(sample));
-    ASSERT_FALSE(cbuffer.increment());
+    ASSERT_TRUE(cbuffer.push_back().copy(sample));
+    ASSERT_FALSE(cbuffer.full());
     i = 2; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
-    ASSERT_TRUE(cbuffer.next_write()->copy(sample));
-    ASSERT_FALSE(cbuffer.increment());
+    ASSERT_TRUE(cbuffer.push_back().copy(sample));
+    ASSERT_FALSE(cbuffer.full());
     i = 3; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
-    ASSERT_TRUE(cbuffer.next_write()->copy(sample));
-    ASSERT_FALSE(cbuffer.increment());
+    ASSERT_TRUE(cbuffer.push_back().copy(sample));
+    ASSERT_FALSE(cbuffer.full());
     i = 4; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
-    ASSERT_TRUE(cbuffer.next_write()->copy(sample));
-    ASSERT_TRUE(cbuffer.increment());
+    ASSERT_TRUE(cbuffer.push_back().copy(sample));
+    ASSERT_TRUE(cbuffer.full());
     ASSERT_EQ(cbuffer.size(), (uint32_t)4);
-    ASSERT_EQ(*(uint32_t*)(cbuffer.front()->data()), (uint32_t)1);
-    ASSERT_EQ(*(uint32_t*)(cbuffer.back()->data()), (uint32_t)4);
+    ASSERT_EQ(*(uint32_t*)(cbuffer.front().data()), (uint32_t)1);
+    ASSERT_EQ(*(uint32_t*)(cbuffer.back().data()), (uint32_t)4);
 
     i = 5; ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
-    ASSERT_TRUE(cbuffer.next_write()->copy(sample));
-    ASSERT_TRUE(cbuffer.increment());
+    ASSERT_TRUE(cbuffer.push_back().copy(sample));
+    ASSERT_TRUE(cbuffer.full());
     ASSERT_EQ(cbuffer.size(), (uint32_t)4);
-    ASSERT_EQ(*(uint32_t*)(cbuffer.front()->data()), (uint32_t)2);
-    ASSERT_EQ(*(uint32_t*)(cbuffer.back()->data()), (uint32_t)5);
+    ASSERT_EQ(*(uint32_t*)(cbuffer.front().data()), (uint32_t)2);
+    ASSERT_EQ(*(uint32_t*)(cbuffer.back().data()), (uint32_t)5);
 
-    cbuffer.pop_front(&empty);
-    ASSERT_FALSE(empty);
+    cbuffer.pop_front();
+    ASSERT_FALSE(cbuffer.empty());
 }
 
 class StreamContext : public ::testing::TestWithParam<std::string>
@@ -160,8 +157,8 @@ TEST_P(StreamContext, SinglePushPop)
         malloc_count_start();
         ASSERT_TRUE(stream_1->push_sample(stream_1_sample->data(), stream_1_sample->size(), NULL, &full));
         ASSERT_EQ(malloc_count_stop(), 0);
-        std::string str_sample_recv = std::string(stream_1->send_stack().front()->data(), stream_1->get_configuration()->_sample_max_size_bytes);
-        ASSERT_TRUE(memcmp(stream_1_sample->data(),stream_1->send_stack().front()->data(),stream_1_sample->size()) == 0);
+        std::string str_sample_recv = std::string(stream_1->send_stack().front().data(), stream_1->get_configuration()->_sample_max_size_bytes);
+        ASSERT_TRUE(memcmp(stream_1_sample->data(),stream_1->send_stack().front().data(),stream_1_sample->size()) == 0);
         ASSERT_EQ(str_sample, str_sample_recv);
 
         // Encode sample
@@ -193,10 +190,9 @@ TEST_P(StreamContext, SinglePushPop)
             // Pop sample
             bool empty;
             malloc_count_start();
-            auto stream_1_recv_sample = stream_1->pop_sample(&empty);
-            ASSERT_TRUE((bool)stream_1_recv_sample);
+            auto& stream_1_recv_sample = stream_1->pop_sample(&empty);
             ASSERT_EQ(malloc_count_stop(), 0);
-            str_sample_recv = std::string((char *)stream_1_recv_sample->data(), stream_1->get_configuration()->_sample_max_size_bytes);
+            str_sample_recv = std::string((char *)stream_1_recv_sample.data(), stream_1->get_configuration()->_sample_max_size_bytes);
             ASSERT_EQ(str_sample, str_sample_recv);
         }
         delete context;
@@ -259,7 +255,7 @@ TEST_P(StreamContext, MultiPushPop)
         std::string str_sample_send;
         for(uint32_t i = 0 ; i < 10 ; i++){
             str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-            str_sample_send = std::string(stream_1->send_stack().at(i)->data(), stream_1->get_configuration()->_sample_max_size_bytes);
+            str_sample_send = std::string(stream_1->send_stack().at(i).data(), stream_1->get_configuration()->_sample_max_size_bytes);
             ASSERT_EQ(str_sample, str_sample_send);
         }
 
@@ -304,10 +300,9 @@ TEST_P(StreamContext, MultiPushPop)
             for(uint32_t i = 0; i < 10 ; i++){
                 str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
                 malloc_count_start();
-                auto sample = stream_1->pop_sample(&empty);
-                ASSERT_TRUE((bool)sample);
+                auto& sample = stream_1->pop_sample(&empty);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                str_sample_recv = std::string(sample->data(), stream_1->get_configuration()->_sample_max_size_bytes);
+                str_sample_recv = std::string(sample.data(), stream_1->get_configuration()->_sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
                 if(i < 9)
                     ASSERT_FALSE(empty);
@@ -379,12 +374,12 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         std::string str_sample_send;
         for(uint32_t i = 0 ; i < 10 ; i++){
             str_sample = strize() << std::setw(stream_out->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-            str_sample_send = std::string(stream_out->send_stack().at(i)->data(), stream_out->get_configuration()->_sample_max_size_bytes);
+            str_sample_send = std::string(stream_out->send_stack().at(i).data(), stream_out->get_configuration()->_sample_max_size_bytes);
             ASSERT_EQ(str_sample, str_sample_send);
             timestamp.epoch_s = 1234567+i%2;
             timestamp.offset_ns = 8910+i;
-            ASSERT_EQ(timestamp.epoch_s, stream_out->send_stack().at(i)->data_timestamp().epoch_s);
-            ASSERT_EQ(timestamp.offset_ns, stream_out->send_stack().at(i)->data_timestamp().offset_ns);
+            ASSERT_EQ(timestamp.epoch_s, stream_out->send_stack().at(i).data_timestamp().epoch_s);
+            ASSERT_EQ(timestamp.offset_ns, stream_out->send_stack().at(i).data_timestamp().offset_ns);
         }
 
         // Encode sample & check generated frame
@@ -460,13 +455,12 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                     timestamp.offset_ns = 8910;
                 }
                 malloc_count_start();
-                auto sample = stream_out->pop_sample(&empty);
-                ASSERT_TRUE((bool)sample);
+                auto& sample = stream_out->pop_sample(&empty);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                str_sample_recv = std::string(sample->data(), stream_out->get_configuration()->_sample_max_size_bytes);
+                str_sample_recv = std::string(sample.data(), stream_out->get_configuration()->_sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
-                ASSERT_EQ(sample->data_timestamp().epoch_s, timestamp.epoch_s);
-                ASSERT_EQ(sample->data_timestamp().offset_ns, timestamp.offset_ns);
+                ASSERT_EQ(sample.data_timestamp().epoch_s, timestamp.epoch_s);
+                ASSERT_EQ(sample.data_timestamp().offset_ns, timestamp.offset_ns);
                 if(i < 9)
                     ASSERT_FALSE(empty);
                 else

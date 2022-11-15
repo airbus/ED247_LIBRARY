@@ -1,6 +1,20 @@
 /* -*- mode: c++; c-basic-offset: 2 -*-  */
 #include "ed247_sample.h"
 
+//
+// Sample
+//
+
+ed247::Sample::Sample(Sample&& other)
+{
+  _data = other._data;
+  _size = other._size;
+  _capacity = other._capacity;
+  other._data = nullptr;
+  other._size = 0;
+  other._capacity = 0;
+}
+
 bool ed247::Sample::copy(const char* data, const uint32_t& size)
 {
   if (size > _capacity) {
@@ -24,6 +38,9 @@ void ed247::Sample::allocate(uint32_t capacity)
 }
 
 
+//
+// StreamSample
+//
 
 bool ed247::StreamSample::copy(const StreamSample & sample)
 {
@@ -50,4 +67,46 @@ void ed247::StreamSample::update_frame_infos(ed247_uid_t              component_
   _frame_infos.component_identifier = component_identifier;
   _frame_infos.sequence_number = sequence_number;
   _frame_infos.transport_timestamp = transport_timestamp;
+}
+
+
+//
+// StreamSampleRingBuffer
+//
+
+ed247::StreamSample& ed247::StreamSampleRingBuffer::push_back()
+{
+  uint32_t index_current = _index_write;
+  _index_write = (_index_write + 1) % _samples.size();
+  if (_index_size >= _samples.size()) {
+    _index_read = (_index_read + 1) % _samples.size();
+  } else {
+    _index_size++;
+  }
+  size();
+  return _samples[index_current];
+}
+
+ed247::StreamSample& ed247::StreamSampleRingBuffer::pop_front()
+{
+  if (_index_size == 0) {
+    return _samples[_index_read];
+  } else {
+    uint32_t index_current = _index_read;
+    _index_read = (_index_read+1) % _samples.size();
+    _index_size--;
+    return _samples[index_current];
+  }
+}
+
+void ed247::StreamSampleRingBuffer::allocate(uint32_t capacity, uint32_t samples_capacity)
+{
+  _samples_capacity = samples_capacity;
+  _samples.reserve(capacity);
+  for (uint32_t i = 0; i < capacity; i++) {
+    _samples.emplace_back(StreamSample(samples_capacity));
+  }
+  _index_read = 0;
+  _index_write = 0;
+  _index_size = 0;
 }

@@ -43,100 +43,6 @@ namespace ed247
   typedef std::shared_ptr<BaseStream> stream_ptr_t;
   typedef std::vector<stream_ptr_t>   stream_list_t;
 
-
-  class CircularStreamSampleBuffer {
-  public:
-    uint32_t size() const
-    {
-      return _index_size;
-    }
-
-    std::shared_ptr<StreamSample> & next_write()
-    {
-      return _samples[_index_write];
-    }
-
-    bool increment()
-    {
-      if(_index_size < _sample_max_number){
-        _index_write = (_index_write+1) % _samples.size();
-        update_size();
-        return _index_size == _sample_max_number;
-      }else{
-        _index_write = (_index_write+1) % _samples.size();
-        _index_read = (_index_read+1) % _samples.size();
-        update_size();
-        return true;
-      }
-    }
-
-    std::shared_ptr<StreamSample> & pop_front(bool * empty = nullptr) // True if empty after pop
-    {
-      if(size() == 0){
-        if(empty) *empty = true;
-        return _samples[_index_read];
-      }else{
-        uint32_t index_read = _index_read;
-        _index_read = (_index_read+1) % _samples.size();
-        update_size();
-        if(empty) *empty = (size() == 0);
-        return _samples[index_read];
-      }
-    }
-
-    std::shared_ptr<StreamSample> front()
-    {
-      return size() > 0 ? _samples[_index_read] : nullptr;
-    }
-
-    std::shared_ptr<StreamSample> at(uint32_t index)
-    {
-      return index < size() ? _samples[(_index_read+index)%_samples.size()] : nullptr;
-    }
-
-    std::shared_ptr<StreamSample> back()
-    {
-      return size() > 0 ? _samples[_index_write == 0 ? (_samples.size()-1) : (_index_write-1)] : nullptr;
-    }
-
-    void allocate(uint32_t sample_max_size_bytes, uint32_t sample_max_number)
-    {
-      _sample_max_size_bytes = sample_max_size_bytes;
-      _sample_max_number = sample_max_number;
-      _samples.resize(sample_max_number+1);
-      for(auto iter = _samples.begin() ; iter != _samples.end() ; iter++){
-        (*iter) = std::make_shared<StreamSample>();
-        (*iter)->allocate(_sample_max_size_bytes);
-      }
-      _index_read = 0;
-      _index_write = 0;
-      update_size();
-    }
-
-    std::vector<std::shared_ptr<StreamSample>> & samples()
-    {
-      return _samples;
-    }
-
-    bool full()
-    {
-      return size() >= _sample_max_number;
-    }
-
-  protected:
-    std::vector<std::shared_ptr<StreamSample>> _samples;
-    uint32_t _index_read{0};
-    uint32_t _index_write{0};
-    uint32_t _sample_max_size_bytes{0};
-    uint32_t _sample_max_number{0};
-    uint32_t _index_size{0};
-
-    void update_size()
-    {
-      _index_size = _index_write >= _index_read ? (_index_write - _index_read) : (_samples.size() + _index_write - _index_read);
-    }
-  };
-
   template<ed247_stream_type_t ... E>
   struct StreamBuilder {
     StreamBuilder() {}
@@ -197,14 +103,14 @@ namespace ed247
     bool push_sample(const void * sample_data, uint32_t sample_size, const ed247_timestamp_t * data_timestamp = nullptr, bool * full = nullptr);
 
     // Return an invalid shared_ptr on error (empty is not an error)
-    std::shared_ptr<StreamSample> pop_sample(bool *empty = nullptr);
+    StreamSample& pop_sample(bool *empty = nullptr);
 
-    CircularStreamSampleBuffer & recv_stack()
+    StreamSampleRingBuffer & recv_stack()
     {
       return _recv_stack;
     }
 
-    CircularStreamSampleBuffer & send_stack()
+    StreamSampleRingBuffer & send_stack()
     {
       return _send_stack;
     }
@@ -263,9 +169,9 @@ namespace ed247
 
     const xml::Stream* _configuration;
     std::weak_ptr<Channel> _channel;
-    CircularStreamSampleBuffer _recv_stack;
+    StreamSampleRingBuffer _recv_stack;
     std::shared_ptr<StreamSample> _recv_working_sample; // Pointer on a recv_stack element
-    CircularStreamSampleBuffer _send_stack;
+    StreamSampleRingBuffer _send_stack;
     std::shared_ptr<StreamSample> _send_working_sample; // New element, not pointer on a member of send_stack
     Sample _buffer;
     StreamSample _working_sample;
@@ -306,7 +212,7 @@ namespace ed247
       return true;
     }
 
-    void encode_data_timestamp(const std::shared_ptr<StreamSample> & sample, char * frame, uint32_t frame_size, uint32_t & frame_index)
+    void encode_data_timestamp(const StreamSample& sample, char * frame, uint32_t frame_size, uint32_t & frame_index)
     {
       if(_configuration->_data_timestamp._enable == ED247_YESNO_YES){
         if(frame_index == 0){
@@ -314,10 +220,10 @@ namespace ed247
           if((frame_index + sizeof(uint32_t) + sizeof(uint32_t)) > frame_size) {
             THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
           }
-          _data_timestamp = sample->data_timestamp();
-          *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp().epoch_s);
+          _data_timestamp = sample.data_timestamp();
+          *(uint32_t*)(frame+frame_index) = htonl(sample.data_timestamp().epoch_s);
           frame_index += sizeof(uint32_t);
-          *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp().offset_ns);
+          *(uint32_t*)(frame+frame_index) = htonl(sample.data_timestamp().offset_ns);
           frame_index += sizeof(uint32_t);
         }else if(_configuration->_data_timestamp._enable_sample_offset == ED247_YESNO_YES){
           // Precise Datatimestamp
@@ -325,8 +231,8 @@ namespace ed247
             THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
           }
           *(uint32_t*)(frame+frame_index) =
-            htonl((uint32_t)(((int32_t)sample->data_timestamp().epoch_s - (int32_t)_data_timestamp.epoch_s)*1000000000
-                             + ((int32_t)sample->data_timestamp().offset_ns - (int32_t)_data_timestamp.offset_ns)));
+            htonl((uint32_t)(((int32_t)sample.data_timestamp().epoch_s - (int32_t)_data_timestamp.epoch_s)*1000000000
+                             + ((int32_t)sample.data_timestamp().offset_ns - (int32_t)_data_timestamp.offset_ns)));
           frame_index += sizeof(int32_t);
         }
       }
@@ -493,16 +399,15 @@ namespace ed247
       bool pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr,
                const ed247_sample_details_t **frame_infos = nullptr, bool *empty = nullptr)
       {
-        if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_IN)) {
+        if((_stream->get_configuration()->_direction & ED247_DIRECTION_IN) == 0) {
           PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot pop from a non-input stream");
           return false;
         }
-        auto sample = _stream->pop_sample(empty);
-        if (!sample) return false;
-        if(data_timestamp) *data_timestamp = &sample->data_timestamp();
-        if(recv_timestamp) *recv_timestamp = &sample->recv_timestamp();
-        if(frame_infos) *frame_infos = &sample->frame_infos();
-        return decode(sample->data(), sample->size());
+        StreamSample& sample = _stream->pop_sample(empty);
+        if(data_timestamp) *data_timestamp = &sample.data_timestamp();
+        if(recv_timestamp) *recv_timestamp = &sample.recv_timestamp();
+        if(frame_infos) *frame_infos = &sample.frame_infos();
+        return decode(sample.data(), sample.size());
       };
 
       const Sample & buffer() { return _buffer; }
