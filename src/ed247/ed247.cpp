@@ -1431,9 +1431,8 @@ ed247_status_t ed247_stream_allocate_sample(
   *sample_size = 0;
   try{
     auto ed247_stream = (ed247::BaseStream*)(stream);
-    auto sample = ed247_stream->allocate_sample();
-    *sample_data = sample->data_rw();
-    *sample_size = sample->capacity();
+    *sample_size = ed247_stream->get_configuration()->_sample_max_size_bytes;
+    *sample_data = malloc(*sample_size);
   }
   LIBED247_CATCH("Allocate stream sample");
   return ED247_STATUS_SUCCESS;
@@ -1792,6 +1791,7 @@ ed247_status_t ed247_signal_get_stream(
   return ED247_STATUS_SUCCESS;
 }
 
+
 ed247_status_t ed247_signal_allocate_sample(
   ed247_signal_t signal,
   void **        sample_data,
@@ -1814,9 +1814,8 @@ ed247_status_t ed247_signal_allocate_sample(
   *sample_size = 0;
   try{
     auto ed247_signal = (ed247::signal*)(signal);
-    auto sample = ed247_signal->allocate_sample();
-    *sample_data = sample->data_rw();
-    *sample_size = sample->capacity();
+    *sample_size = ed247_signal->get_sample_max_size_bytes();
+    *sample_data = malloc(*sample_size);
   }
   LIBED247_CATCH("Allocate stream sample");
   return ED247_STATUS_SUCCESS;
