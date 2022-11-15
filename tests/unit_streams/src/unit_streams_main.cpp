@@ -367,7 +367,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
             stream_out_sample->copy(str_sample.c_str(), stream_out->get_configuration()->_sample_max_size_bytes);
             stream_out_sample->set_data_timestamp(timestamp);
             malloc_count_start();
-            ASSERT_TRUE(stream_out->push_sample(stream_out_sample->data(), stream_out_sample->size(), stream_out_sample->data_timestamp(), &full));
+            ASSERT_TRUE(stream_out->push_sample(stream_out_sample->data(), stream_out_sample->size(), &stream_out_sample->data_timestamp(), &full));
             ASSERT_EQ(malloc_count_stop(), 0);
             if(i < 9)
                 ASSERT_FALSE(full); // Should no be full as max sample number is 10
@@ -383,8 +383,8 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
             ASSERT_EQ(str_sample, str_sample_send);
             timestamp.epoch_s = 1234567+i%2;
             timestamp.offset_ns = 8910+i;
-            ASSERT_EQ(timestamp.epoch_s, stream_out->send_stack().at(i)->data_timestamp()->epoch_s);
-            ASSERT_EQ(timestamp.offset_ns, stream_out->send_stack().at(i)->data_timestamp()->offset_ns);
+            ASSERT_EQ(timestamp.epoch_s, stream_out->send_stack().at(i)->data_timestamp().epoch_s);
+            ASSERT_EQ(timestamp.offset_ns, stream_out->send_stack().at(i)->data_timestamp().offset_ns);
         }
 
         // Encode sample & check generated frame
@@ -465,8 +465,8 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                 ASSERT_EQ(malloc_count_stop(), 0);
                 str_sample_recv = std::string(sample->data(), stream_out->get_configuration()->_sample_max_size_bytes);
                 ASSERT_EQ(str_sample, str_sample_recv);
-                ASSERT_EQ(sample->data_timestamp()->epoch_s, timestamp.epoch_s);
-                ASSERT_EQ(sample->data_timestamp()->offset_ns, timestamp.offset_ns);
+                ASSERT_EQ(sample->data_timestamp().epoch_s, timestamp.epoch_s);
+                ASSERT_EQ(sample->data_timestamp().offset_ns, timestamp.offset_ns);
                 if(i < 9)
                     ASSERT_FALSE(empty);
                 else

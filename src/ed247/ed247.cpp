@@ -1575,9 +1575,9 @@ ed247_status_t ed247_stream_pop_sample(
     if (!sample) return ED247_STATUS_FAILURE;
     *sample_data = sample->data();
     *sample_size = sample->size();
-    if(data_timestamp) *data_timestamp = sample->data_timestamp();
-    if(recv_timestamp) *recv_timestamp = sample->recv_timestamp();
-    if(sample_details) *sample_details = sample->details();
+    if(data_timestamp) *data_timestamp = &sample->data_timestamp();
+    if(recv_timestamp) *recv_timestamp = &sample->recv_timestamp();
+    if(sample_details) *sample_details = &sample->frame_infos();
   }
   LIBED247_CATCH("Pop stream sample");
   return ED247_STATUS_SUCCESS;

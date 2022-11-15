@@ -32,22 +32,6 @@
 namespace ed247
 {
 
-// StreamSample
-
-  void StreamSample::update_details(const FrameHeader & header)
-  {
-    if(header._recv_headers_iter == header._recv_headers.end()){
-      _details.component_identifier = 0;
-      _details.sequence_number = 0;
-      _details.transport_timestamp.epoch_s = 0;
-      _details.transport_timestamp.offset_ns = 0;
-    }else{
-      _details.component_identifier = header._recv_headers_iter->component_identifier;
-      _details.sequence_number = header._recv_headers_iter->sequence_number;
-      _details.transport_timestamp = header._recv_headers_iter->transport_timestamp;
-    }
-  }
-
 // StreamBuilder<>
   template<ed247_stream_type_t T, ed247_stream_type_t ... E>
   stream_ptr_t StreamBuilder<T, E...>::create(const ed247_stream_type_t & type, const xml::Stream* configuration, std::shared_ptr<ed247::signal_set_t> & pool_signals)
@@ -285,8 +269,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -393,8 +384,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -490,8 +488,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -586,8 +591,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -682,8 +694,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -754,8 +773,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -839,8 +865,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -985,8 +1018,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks
@@ -1108,8 +1148,15 @@ namespace ed247
       // Update simulation time
       sample->update_recv_timestamp();
       // Attach header
-      if(header)
-        sample->update_details(*header);
+      if(header) {
+        if (header->_recv_headers_iter == header->_recv_headers.end()) {
+          sample->clear_frame_infos();
+        } else {
+          sample->update_frame_infos(header->_recv_headers_iter->component_identifier,
+                                     header->_recv_headers_iter->sequence_number,
+                                     header->_recv_headers_iter->transport_timestamp);
+        }
+      }
       _recv_stack.increment();
     }
     // Callbacks

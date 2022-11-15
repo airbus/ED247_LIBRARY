@@ -157,7 +157,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         void encode(const ed247_uid_t & component_identifier);
         bool decode(const char * frame, uint32_t frame_size);
 
-        BaseSample & buffer() { return _buffer; }
+        Sample & buffer() { return _buffer; }
 
         map_streams_t & streams() { return _streams; }
 
@@ -176,7 +176,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         std::shared_ptr<stream_list_t> _sstreams;
         FrameHeader _header;
         bool _updated{false};
-        BaseSample _buffer;
+        Sample _buffer;
 
         void allocate_buffer()
         {

@@ -69,7 +69,7 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_NE(assistant, nullptr);
 
   // Check write & encode
-  std::vector<std::unique_ptr<ed247::BaseSample>> samples;
+  std::vector<std::unique_ptr<ed247::Sample>> samples;
   auto stream_sample = stream->allocate_sample();
   for(auto & signal : *assistant->get_stream()->signals()){
     auto sample = signal->allocate_sample();

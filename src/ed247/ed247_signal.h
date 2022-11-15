@@ -38,7 +38,7 @@ struct ed247_internal_stream_t {};
 
 namespace ed247
 {
-  class BaseSample;
+  class Sample;
 
   class signal : public ed247_internal_signal_t
   {
@@ -87,7 +87,7 @@ namespace ed247
     void get_user_data(void **user_data) { *user_data = _user_data; }
 
 
-    std::unique_ptr<BaseSample> allocate_sample() const;
+    std::unique_ptr<Sample> allocate_sample() const;
 
   private:
     const xml::Signal*       _configuration;

@@ -44,82 +44,8 @@ namespace ed247
   typedef std::vector<stream_ptr_t>   stream_list_t;
 
 
-  class FrameHeader;
-  class StreamSample : public BaseSample
-  {
-  public:
-    explicit StreamSample():
-      BaseSample(),
-      _data_timestamp(LIBED247_TIMESTAMP_DEFAULT),
-      _recv_timestamp(LIBED247_TIMESTAMP_DEFAULT),
-      _details(LIBED247_SAMPLE_DETAILS_DEFAULT)
-    {}
-
-    StreamSample(const StreamSample & other) = delete;
-    StreamSample & operator = (const StreamSample & other) = delete;
-
-    using BaseSample::copy;  // Do not hide base class copy
-    bool copy(const StreamSample & sample)
-    {
-      if (BaseSample::copy(sample.data(), sample.size()) == false) return false;
-      set_data_timestamp(*sample.data_timestamp());
-      set_recv_timestamp(*sample.recv_timestamp());
-      set_details(*sample.details());
-      return true;
-    }
-
-    void set_data_timestamp(const ed247_timestamp_t & data_timestamp)
-    {
-      _data_timestamp = data_timestamp;
-    }
-
-    const ed247_timestamp_t * data_timestamp() const
-    {
-      return &_data_timestamp;
-    }
-
-    void set_recv_timestamp(const ed247_timestamp_t & recv_timestamp)
-    {
-      _recv_timestamp = recv_timestamp;
-    }
-
-    const ed247_timestamp_t * recv_timestamp() const
-    {
-      return &_recv_timestamp;
-    }
-
-    void update_recv_timestamp()
-    {
-      ed247_get_receive_timestamp(&_recv_timestamp);
-    }
-
-    void set_details(const ed247_sample_details_t & details)
-    {
-      _details = details;
-    }
-
-    const ed247_sample_details_t * details() const
-    {
-      return &_details;
-    }
-
-    void update_details(const FrameHeader & header);
-
-  protected:
-    ed247_timestamp_t      _data_timestamp;
-    ed247_timestamp_t      _recv_timestamp;
-    ed247_sample_details_t _details;
-  };
-
   class CircularStreamSampleBuffer {
   public:
-    ~CircularStreamSampleBuffer()
-    {
-      for(auto sp_sample : _samples)
-        if(sp_sample && sp_sample->allocated())
-          sp_sample->deallocate();
-    }
-
     uint32_t size() const
     {
       return _index_size;
@@ -291,7 +217,7 @@ namespace ed247
     // return false if the frame has not been successfully decoded
     virtual bool decode(const char * frame, uint32_t frame_size, const FrameHeader * header = nullptr) = 0;
 
-    BaseSample & buffer()
+    Sample & buffer()
     {
       return _buffer;
     }
@@ -341,7 +267,7 @@ namespace ed247
     std::shared_ptr<StreamSample> _recv_working_sample; // Pointer on a recv_stack element
     CircularStreamSampleBuffer _send_stack;
     std::shared_ptr<StreamSample> _send_working_sample; // New element, not pointer on a member of send_stack
-    BaseSample _buffer;
+    Sample _buffer;
     StreamSample _working_sample;
     std::shared_ptr<signal_list_t> _signals;
     std::vector<std::pair<ed247_context_t,ed247_stream_recv_callback_t>> _callbacks;
@@ -388,10 +314,10 @@ namespace ed247
           if((frame_index + sizeof(uint32_t) + sizeof(uint32_t)) > frame_size) {
             THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
           }
-          _data_timestamp = *sample->data_timestamp();
-          *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp()->epoch_s);
+          _data_timestamp = sample->data_timestamp();
+          *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp().epoch_s);
           frame_index += sizeof(uint32_t);
-          *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp()->offset_ns);
+          *(uint32_t*)(frame+frame_index) = htonl(sample->data_timestamp().offset_ns);
           frame_index += sizeof(uint32_t);
         }else if(_configuration->_data_timestamp._enable_sample_offset == ED247_YESNO_YES){
           // Precise Datatimestamp
@@ -399,8 +325,8 @@ namespace ed247
             THROW_ED247_ERROR("Stream '" << get_name() << "': Stream buffer is too small to encode a new frame. Size: " << frame_size);
           }
           *(uint32_t*)(frame+frame_index) =
-            htonl((uint32_t)(((int32_t)sample->data_timestamp()->epoch_s - (int32_t)_data_timestamp.epoch_s)*1000000000
-                             + ((int32_t)sample->data_timestamp()->offset_ns - (int32_t)_data_timestamp.offset_ns)));
+            htonl((uint32_t)(((int32_t)sample->data_timestamp().epoch_s - (int32_t)_data_timestamp.epoch_s)*1000000000
+                             + ((int32_t)sample->data_timestamp().offset_ns - (int32_t)_data_timestamp.offset_ns)));
           frame_index += sizeof(int32_t);
         }
       }
@@ -565,7 +491,7 @@ namespace ed247
 
       // return false if the signal has not been successfully decoded
       bool pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr,
-               const ed247_sample_details_t **details = nullptr, bool *empty = nullptr)
+               const ed247_sample_details_t **frame_infos = nullptr, bool *empty = nullptr)
       {
         if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_IN)) {
           PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot pop from a non-input stream");
@@ -573,13 +499,13 @@ namespace ed247
         }
         auto sample = _stream->pop_sample(empty);
         if (!sample) return false;
-        if(data_timestamp)*data_timestamp = sample->data_timestamp();
-        if(recv_timestamp)*recv_timestamp = sample->recv_timestamp();
-        if(details) *details = sample->details();
+        if(data_timestamp) *data_timestamp = &sample->data_timestamp();
+        if(recv_timestamp) *recv_timestamp = &sample->recv_timestamp();
+        if(frame_infos) *frame_infos = &sample->frame_infos();
         return decode(sample->data(), sample->size());
       };
 
-      const BaseSample & buffer() { return _buffer; }
+      const Sample & buffer() { return _buffer; }
 
     private:
       void encode()
@@ -656,9 +582,9 @@ namespace ed247
       }
 
       stream_ptr_t _stream;
-      std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _send_samples;
-      std::vector<std::pair<signal_ptr_t, std::unique_ptr<BaseSample>>> _recv_samples;
-      BaseSample _buffer;
+      std::vector<std::pair<signal_ptr_t, std::unique_ptr<Sample>>> _send_samples;
+      std::vector<std::pair<signal_ptr_t, std::unique_ptr<Sample>>> _recv_samples;
+      Sample _buffer;
 
       ED247_FRIEND_TEST();
     };
