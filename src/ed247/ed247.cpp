@@ -26,6 +26,7 @@
 #include "ed247_client_iterator.h"
 #include "ed247_logs.h"
 #include "ed247_context.h"
+#include "ed247_stream_assistant.h"
 #include <memory>
 
 
@@ -63,14 +64,14 @@ typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Chann
 
 
 struct ed247_internal_stream_list_t {};
-typedef ed247::client_list<ed247_internal_stream_list_t, ed247::BaseStream>           ed247_stream_clist_base_t;
-typedef ed247::client_list_container<ed247_internal_stream_list_t, ed247::BaseStream> ed247_stream_clist_vector_t;
+typedef ed247::client_list<ed247_internal_stream_list_t, ed247::Stream>           ed247_stream_clist_base_t;
+typedef ed247::client_list_container<ed247_internal_stream_list_t, ed247::Stream> ed247_stream_clist_vector_t;
 
 // stream list where get_next() filter out stream without data
 // Note: this shall be removed from the interface (wait_frame & wait_during)
 struct ed247_stream_clist_vector_with_data_t : public ed247_stream_clist_vector_t
 {
-  virtual ed247::BaseStream* get_next() override {
+  virtual ed247::Stream* get_next() override {
     ed247_stream_clist_vector_t::get_next();
     _iterator = std::find_if(_iterator,
                              _container->end(),
@@ -706,7 +707,7 @@ ed247_status_t ed247_stream_register_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     if(ed247_stream->register_callback(context, callback) == ED247_STATUS_FAILURE){
       status = ED247_STATUS_FAILURE;
       PRINT_WARNING("Cannot register callback in stream [" << ed247_stream->get_name() << "]");
@@ -736,7 +737,7 @@ ed247_status_t ed247_stream_unregister_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     if(ed247_stream->unregister_callback(context, callback) == ED247_STATUS_FAILURE){
       status = ED247_STATUS_FAILURE;
       PRINT_WARNING("Cannot unregister callback in stream [" << ed247_stream->get_name() << "]");
@@ -768,7 +769,7 @@ ed247_status_t ed247_streams_register_recv_callback(
   try{
     auto list = static_cast<ed247_stream_clist_base_t*>(streams);
     list->reset_iterator();
-    while (ed247::BaseStream* stream = list->get_next()) {
+    while (ed247::Stream* stream = list->get_next()) {
       if(stream->register_callback(context, callback) != ED247_STATUS_SUCCESS) {
         status = ED247_STATUS_FAILURE;
         PRINT_WARNING("Cannot register callback in stream [" << stream->get_name() << "]");
@@ -801,7 +802,7 @@ ed247_status_t ed247_streams_unregister_recv_callback(
   try{
     auto list = static_cast<ed247_stream_clist_base_t*>(streams);
     list->reset_iterator();
-    while (ed247::BaseStream* stream = list->get_next()) {
+    while (ed247::Stream* stream = list->get_next()) {
       if(stream->unregister_callback(context, callback) != ED247_STATUS_SUCCESS) {
         status = ED247_STATUS_FAILURE;
         PRINT_WARNING("Cannot unregister callback in stream [" << stream->get_name() << "]");
@@ -1108,55 +1109,55 @@ ed247_status_t ed247_channel_list_free(
  * ========================================================================= */
 const char* ed247_stream_get_name(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_name.c_str();
 }
 
 ed247_direction_t ed247_stream_get_direction(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_direction;
 }
 
 ed247_stream_type_t ed247_stream_get_type(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_type;
 }
 
 const char* ed247_stream_get_comment(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_comment.c_str();
 }
 
 const char* ed247_stream_get_icd(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_icd.c_str();
 }
 
 ed247_uid_t ed247_stream_get_uid(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_uid;
 }
 
 uint32_t ed247_stream_get_sample_max_number(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_sample_max_number;
 }
 
 uint32_t ed247_stream_get_sample_max_size_bytes(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   return ed247_stream->get_configuration()->_sample_max_size_bytes;
 }
 
 uint32_t ed247_stream_get_sampling_period_us(ed247_stream_t stream)
 {
-  auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+  auto ed247_stream = static_cast<ed247::Stream*>(stream);
   if (ed247_stream->is_signal_based() != 0) {
     return ((ed247::xml::StreamSignals*)ed247_stream->get_configuration())->_sampling_period_us;
   } else {
@@ -1179,7 +1180,7 @@ ed247_status_t ed247_stream_has_signals(
   }
   *yesno = 0;
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     *yesno = ed247_stream->is_signal_based();
   }
   LIBED247_CATCH("Stream contains signals");
@@ -1206,7 +1207,7 @@ ed247_status_t ed247_stream_get_signal_list(
   }
 
   try{
-    ed247::BaseStream* ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    ed247::Stream* ed247_stream = static_cast<ed247::Stream*>(stream);
     ed247_signal_list.wrap(*(ed247_stream->signals().get()));
     *signals = &ed247_signal_list;
   }
@@ -1235,7 +1236,7 @@ ed247_status_t ed247_stream_find_signals(
     return ED247_STATUS_FAILURE;
   }
   try{
-    ed247::BaseStream* ed247_stream = (ed247::BaseStream*)(stream);
+    ed247::Stream* ed247_stream = (ed247::Stream*)(stream);
     ed247_signal_list.copy(ed247_stream->find_signals(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *signals = &ed247_signal_list;
   }
@@ -1263,7 +1264,7 @@ ed247_status_t ed247_stream_get_signal(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_stream = (ed247::BaseStream*)(stream);
+    auto ed247_stream = (ed247::Stream*)(stream);
     auto && ed247_signal = ed247_stream->get_signal(std::string(name));
     *signal = ed247_signal ? ed247_signal.get() : nullptr;
     if(*signal == nullptr) {
@@ -1290,9 +1291,8 @@ ed247_status_t ed247_stream_get_channel(
   }
   *channel = nullptr;
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    auto && ed247_channel = ed247_stream->get_channel();
-    *channel = ed247_channel ? ed247_channel.get() : nullptr;
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
+    *channel = ed247_stream->get_api_channel();
   }
   LIBED247_CATCH("Get stream channel");
   return ED247_STATUS_SUCCESS;
@@ -1310,7 +1310,7 @@ ed247_status_t ed247_stream_set_user_data(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     ed247_stream->set_user_data(user_data);
   }
   LIBED247_CATCH("Set stream user data");
@@ -1332,7 +1332,7 @@ ed247_status_t ed247_stream_get_user_data(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     ed247_stream->get_user_data(user_data);
   }
   LIBED247_CATCH("Get stream user data");
@@ -1385,9 +1385,9 @@ ed247_status_t ed247_stream_get_assistant(
   }
   *assistant = nullptr;
   try{
-    auto ed247_stream = (ed247::BaseStream*)(stream);
-    *assistant = ed247_stream->get_assistant().get();
-    if(!*assistant || !ed247_stream->get_assistant()->is_valid()){
+    auto ed247_stream = (ed247::Stream*)(stream);
+    *assistant = ed247_stream->get_api_assistant();
+    if(*assistant == nullptr) {
       PRINT_WARNING("Stream '" << ed247_stream->get_name() << "' do not have a valid stream signal assistant.");
       return ED247_STATUS_FAILURE;
     }
@@ -1417,7 +1417,7 @@ ed247_status_t ed247_stream_allocate_sample(
   *sample_data = nullptr;
   *sample_size = 0;
   try{
-    auto ed247_stream = (ed247::BaseStream*)(stream);
+    auto ed247_stream = (ed247::Stream*)(stream);
     *sample_size = ed247_stream->get_configuration()->_sample_max_size_bytes;
     *sample_data = malloc(*sample_size);
   }
@@ -1461,7 +1461,7 @@ ed247_status_t ed247_stream_samples_number(
   }
   *size = 0;
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     *size = direction == ED247_DIRECTION_IN ? ed247_stream->recv_stack().size() : ed247_stream->send_stack().size();
   }
   LIBED247_CATCH("Stream samples number");
@@ -1485,7 +1485,7 @@ ed247_status_t ed247_stream_push_sample(
     return ED247_STATUS_FAILURE;
   }
   try{
-    if (static_cast<ed247::BaseStream*>(stream)->push_sample(sample_data, sample_size, timestamp, full) == false) {
+    if (static_cast<ed247::Stream*>(stream)->push_sample(sample_data, sample_size, timestamp, full) == false) {
       return ED247_STATUS_FAILURE;
     }
   }
@@ -1515,7 +1515,7 @@ ed247_status_t ed247_stream_push_samples(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     uint32_t sum_size = 0;
     for(uint32_t i = 0 ; i < samples_number ; i++){
       if (ed247_stream->push_sample((const char*)samples_data+sum_size, samples_size[i], timestamp, full) == false) {
@@ -1553,7 +1553,7 @@ ed247_status_t ed247_stream_pop_sample(
   *sample_data = nullptr;
   *sample_size = 0;
   try{
-    auto ed247_stream = static_cast<ed247::BaseStream*>(stream);
+    auto ed247_stream = static_cast<ed247::Stream*>(stream);
     if ((ed247_stream->get_configuration()->_direction & ED247_DIRECTION_IN) == 0) {
       PRINT_ERROR("Stream '" << ed247_stream->get_name() << "': Cannot pop from a non-input stream");
       return ED247_STATUS_FAILURE;
@@ -1905,8 +1905,8 @@ ed247_status_t ed247_stream_assistant_get_stream(
   }
   *stream = nullptr;
   try{
-    auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
-    *stream = ed247_assistant->get_stream().get();
+    auto ed247_assistant = static_cast<ed247::StreamAssistant*>(assistant);
+    *stream = ed247_assistant->get_api_stream();
   }
   LIBED247_CATCH("Get stream of assistant");
   return ED247_STATUS_SUCCESS;
@@ -1932,7 +1932,7 @@ ed247_status_t ed247_stream_assistant_write_signal(
     return ED247_STATUS_FAILURE;
   }
   try{
-    ed247::BaseStream::Assistant* ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
+    ed247::StreamAssistant* ed247_assistant = static_cast<ed247::StreamAssistant*>(assistant);
     ed247::signal* ed247_signal = static_cast<ed247::signal*>(signal);
     if (ed247_assistant->write(*ed247_signal, signal_sample_data, signal_sample_size) == false) {
       return ED247_STATUS_FAILURE;
@@ -1968,7 +1968,7 @@ ed247_status_t ed247_stream_assistant_read_signal(
   *signal_sample_data = nullptr;
   *signal_sample_size = 0;
   try{
-    ed247::BaseStream::Assistant* ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
+    ed247::StreamAssistant* ed247_assistant = static_cast<ed247::StreamAssistant*>(assistant);
     ed247::signal* ed247_signal = static_cast<ed247::signal*>(signal);
     if (ed247_assistant->read(*ed247_signal, signal_sample_data, signal_sample_size) == false) {
       return ED247_STATUS_FAILURE;
@@ -1989,7 +1989,7 @@ ed247_status_t ed247_stream_assistant_push_sample(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
+    auto ed247_assistant = static_cast<ed247::StreamAssistant*>(assistant);
     if (ed247_assistant->push(timestamp, full) == false) {
       return ED247_STATUS_FAILURE;
     }
@@ -2010,16 +2010,11 @@ ed247_status_t ed247_stream_assistant_pop_sample(
     PRINT_ERROR(__func__ << ": Invalid assistant");
     return ED247_STATUS_FAILURE;
   }
+  ed247_status_t result = ED247_STATUS_FAILURE;
   try{
-    auto ed247_assistant = static_cast<ed247::BaseStream::Assistant*>(assistant);
-    if(ed247_assistant->get_stream()->recv_stack().size() == 0) {
-      PRINT_CRAZY("Stream '" << ed247_assistant->get_stream()->get_name() << "': no data received.");
-      return ED247_STATUS_NODATA;
-    }
-    if (ed247_assistant->pop(data_timestamp, recv_timestamp, sample_details, empty) == false) {
-      return ED247_STATUS_FAILURE;
-    }
+    auto ed247_assistant = static_cast<ed247::StreamAssistant*>(assistant);
+    result = ed247_assistant->pop(data_timestamp, recv_timestamp, sample_details, empty);
   }
   LIBED247_CATCH("Pop stream sample with assistant");
-  return ED247_STATUS_SUCCESS;
+  return result;
 }

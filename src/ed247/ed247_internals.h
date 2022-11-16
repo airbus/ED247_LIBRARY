@@ -131,24 +131,6 @@ struct weak_equal_to : public std::unary_function<std::weak_ptr<T>, bool>
     }
 };
 
-
-template<ed247_stream_type_t E>
-struct StreamTypeChecker
-{
-    static_assert(E != ED247_STREAM_TYPE__INVALID && E != ED247_STREAM_TYPE__COUNT, "Invalid stream type");
-};
-
-template<ed247_stream_type_t E>
-struct StreamSignalTypeChecker
-{
-    static const bool value =
-        E == ED247_STREAM_TYPE_ANALOG ||
-        E == ED247_STREAM_TYPE_DISCRETE ||
-        E == ED247_STREAM_TYPE_NAD ||
-        E == ED247_STREAM_TYPE_VNAD
-        ;
-};
-
 /*********
  * Types *
  *********/
@@ -157,6 +139,5 @@ struct ed247_internal_context_t {};
 
 struct ed247_internal_channel_t {};
 
-struct ed247_internal_stream_assistant_t {};
 
 #endif

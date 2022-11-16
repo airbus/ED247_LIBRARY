@@ -29,6 +29,7 @@ class TEST_CLASS_NAME(SignalContext, SinglePushPop);
 
 #include "unitary_test.h"
 #include "ed247_context.h"
+#include "ed247_stream_assistant.h"
 
 class SignalContext : public ::testing::TestWithParam<std::string> {};
 
@@ -65,13 +66,14 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
 
   // Check BaseStream::Assistant creation
-  auto assistant = stream->get_assistant();
-  ASSERT_NE(assistant, nullptr);
+  ed247_stream_assistant_t api_assistant = stream->get_api_assistant();
+  ASSERT_NE(api_assistant, nullptr);
+  ed247::StreamAssistant* assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
 
   // Check write & encode
   std::vector<std::unique_ptr<ed247::Sample>> samples;
   auto stream_sample = stream->allocate_sample();
-  for(auto & signal : *assistant->get_stream()->signals()){
+  for(auto & signal : *stream->signals()){
     auto sample = signal->allocate_sample();
     ASSERT_EQ(sample->size(), (uint32_t)0);
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
@@ -99,7 +101,7 @@ TEST_P(SignalContext, SinglePushPop)
   }
 
   // Check push
-  for(auto & signal : *assistant->get_stream()->signals()){
+  for(auto & signal : *stream->signals()){
     auto sample = signal->allocate_sample();
     ASSERT_EQ(sample->size(), (uint32_t)0);
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
@@ -109,15 +111,16 @@ TEST_P(SignalContext, SinglePushPop)
     samples.push_back(std::move(sample));
   }
   assistant->push();
-  ASSERT_EQ(assistant->get_stream()->send_stack().size(), (uint32_t)1);
+  ASSERT_EQ(stream->send_stack().size(), (uint32_t)1);
 
   // Check decode & read
   stream = pool_streams->find("StreamInput").front();
   ASSERT_NE(stream, nullptr);
-  assistant = stream->get_assistant();
+  api_assistant = stream->get_api_assistant();
   ASSERT_NE(assistant, nullptr);
+  assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
   assistant->decode(stream_sample->data(), stream_sample->size());
-  for(auto & signal : *assistant->get_stream()->signals()){
+  for(auto & signal : *stream->signals()){
     auto sample = signal->allocate_sample();
     const void *data;
     uint32_t size;

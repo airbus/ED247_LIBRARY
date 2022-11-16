@@ -30,6 +30,7 @@ add_library(ed247_objects OBJECT
     ed247_cominterface.cpp
     ed247_sample.cpp
     ed247_signal.cpp
+    ed247_header.cpp
     ed247_stream.cpp
     ed247_channel.cpp
     ed247_context.cpp

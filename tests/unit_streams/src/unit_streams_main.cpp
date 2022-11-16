@@ -162,27 +162,28 @@ TEST_P(StreamContext, SinglePushPop)
         ASSERT_EQ(str_sample, str_sample_recv);
 
         // Encode sample
+        ed247::Sample buffer(stream_1->get_max_size());
         malloc_count_start();
-        uint32_t size = stream_1->encode(stream_1->buffer().data_rw(), stream_1->buffer().capacity());
-        stream_1->buffer().set_size(size);
+        uint32_t size = stream_1->encode(buffer.data_rw(), buffer.capacity());
+        buffer.set_size(size);
         ASSERT_EQ(malloc_count_stop(), 0);
         if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_VNAD)
-            ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
                 static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->_enable_message_size == ED247_YESNO_YES)
-            ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A825)
-            ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL)
-            ASSERT_TRUE(memcmp(stream_1->buffer().data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
         else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_ANALOG)
-            ASSERT_TRUE(memcmp(stream_1->buffer().data(), stream_1_sample->data(), stream_1_sample->size()) != 0); // SWAP
+            ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample->data(), stream_1_sample->size()) != 0); // SWAP
         else
-            ASSERT_TRUE(memcmp(stream_1->buffer().data(), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample->data(), stream_1_sample->size()) == 0);
 
         // Decode sample
         malloc_count_start();
-        stream_1->decode(stream_1->buffer().data(), stream_1->buffer().size());
+        stream_1->decode(buffer.data(), buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_1->get_configuration()->_direction & ED247_DIRECTION_IN) != 0)
@@ -260,8 +261,9 @@ TEST_P(StreamContext, MultiPushPop)
         }
 
         // Encode sample & check generated frame
-        uint32_t size = stream_1->encode(stream_1->buffer().data_rw(), stream_1->buffer().capacity());
-        stream_1->buffer().set_size(size);
+        ed247::Sample buffer(stream_1->get_max_size());
+        uint32_t size = stream_1->encode(buffer.data_rw(), buffer.capacity());
+        buffer.set_size(size);
         std::string str_sample_frame;
         uint32_t frame_index = 0;
         if(stream_1->get_configuration()->_type != ED247_STREAM_TYPE_VNAD){
@@ -270,16 +272,16 @@ TEST_P(StreamContext, MultiPushPop)
                 auto sample_size = stream_1->get_configuration()->_sample_max_size_bytes;
                 if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
                     static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->_enable_message_size == ED247_YESNO_YES){
-                    sample_size = ntohs(*(uint16_t*)(stream_1->buffer().data()+frame_index));
+                    sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A825){
-                    sample_size = *(uint8_t*)(stream_1->buffer().data()+frame_index);
+                    sample_size = *(uint8_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint8_t);
                 }else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL){
-                    sample_size = *(uint16_t*)(stream_1->buffer().data()+frame_index);
+                    sample_size = *(uint16_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint16_t);
                 }
-                str_sample_frame = std::string(stream_1->buffer().data()+frame_index, sample_size);
+                str_sample_frame = std::string(buffer.data()+frame_index, sample_size);
                 if(stream_1->get_configuration()->_type != ED247_STREAM_TYPE_ANALOG){
                     ASSERT_EQ(str_sample, str_sample_frame);
                 }
@@ -289,7 +291,7 @@ TEST_P(StreamContext, MultiPushPop)
 
         // Decode sample
         malloc_count_start();
-        stream_1->decode(stream_1->buffer().data(), stream_1->buffer().size());
+        stream_1->decode(buffer.data(), buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_1->get_configuration()->_direction & ED247_DIRECTION_IN) != 0)
@@ -383,8 +385,9 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         }
 
         // Encode sample & check generated frame
-        uint32_t size = stream_out->encode(stream_out->buffer().data_rw(), stream_out->buffer().capacity());
-        stream_out->buffer().set_size(size);
+        ed247::Sample buffer(stream_out->get_max_size());
+        uint32_t size = stream_out->encode(buffer.data_rw(), buffer.capacity());
+        buffer.set_size(size);
         std::string str_sample_frame;
         ed247_timestamp_t data_timestamp;
         ed247_timestamp_t timestamp_frame;
@@ -396,17 +399,17 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                 if(i == 0){
                     timestamp.epoch_s = 1234567;
                     timestamp.offset_ns = 8910;
-                    timestamp_frame.epoch_s = ntohl(*(uint32_t*)(stream_out->buffer().data()+frame_index));
+                    timestamp_frame.epoch_s = ntohl(*(uint32_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint32_t);
                     ASSERT_EQ(timestamp.epoch_s, timestamp_frame.epoch_s);
-                    timestamp_frame.offset_ns = ntohl(*(uint32_t*)(stream_out->buffer().data()+frame_index));
+                    timestamp_frame.offset_ns = ntohl(*(uint32_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint32_t);
                     ASSERT_EQ(timestamp.offset_ns, timestamp_frame.offset_ns);
                     data_timestamp = timestamp;
                 }else if(precise_timestamp){
                     timestamp.epoch_s = 1234567+i%2;
                     timestamp.offset_ns = 8910+i;
-                    int32_t offset_ns = (int32_t)ntohl(*(uint32_t*)(stream_out->buffer().data()+frame_index));
+                    int32_t offset_ns = (int32_t)ntohl(*(uint32_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(int32_t);
                     timestamp_frame = data_timestamp;
                     timestamp_frame.epoch_s += offset_ns / 1000000000;
@@ -417,16 +420,16 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                 auto sample_size = stream_out->get_configuration()->_sample_max_size_bytes;
                 if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
                     static_cast<const ed247::xml::A664Stream*>(stream_out->get_configuration())->_enable_message_size == ED247_YESNO_YES){
-                    sample_size = ntohs(*(uint16_t*)(stream_out->buffer().data()+frame_index));
+                    sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }else if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_A825){
-                    sample_size = *(uint8_t*)(stream_out->buffer().data()+frame_index);
+                    sample_size = *(uint8_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint8_t);
                 }else if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL){
-                    sample_size = *(uint16_t*)(stream_out->buffer().data()+frame_index);
+                    sample_size = *(uint16_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint16_t);
                 }
-                str_sample_frame = std::string(stream_out->buffer().data()+frame_index, sample_size);
+                str_sample_frame = std::string(buffer.data()+frame_index, sample_size);
                 if(stream_out->get_configuration()->_type != ED247_STREAM_TYPE_ANALOG){
                     ASSERT_EQ(str_sample, str_sample_frame);
                 }
@@ -436,7 +439,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
 
         // Decode sample
         malloc_count_start();
-        stream_out->decode(stream_out->buffer().data(), stream_out->buffer().size());
+        stream_out->decode(buffer.data(), buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_out->get_configuration()->_direction & ED247_DIRECTION_IN) != 0 &&

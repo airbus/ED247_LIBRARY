@@ -38,71 +38,6 @@ namespace ed247
   typedef std::shared_ptr<Channel>   channel_ptr_t;
   typedef std::vector<channel_ptr_t> channel_list_t;
 
-class FrameHeader
-{
-    public:
-        typedef struct {
-            uint16_t            component_identifier;
-            uint16_t            sequence_number;
-            ed247_timestamp_t   transport_timestamp;
-            uint32_t            missed_frames;
-        } header_element_t;
-
-        static const uint16_t MAX_PID_SN_TRACKER { 64 };
-
-  FrameHeader(const xml::Header & configuration, const std::string& channel_name):
-            _send_header({0, 0, {0, 0}, 0}),
-            _configuration(configuration),
-            _channel_name(channel_name)
-        {
-            _recv_headers.reserve(MAX_PID_SN_TRACKER);
-            _recv_headers_iter = _recv_headers.end();
-        }
-        FrameHeader(const FrameHeader & other):
-            _send_header(other._send_header),
-            _recv_headers(other._recv_headers),
-            _recv_headers_iter(other._recv_headers_iter),
-            _configuration(other._configuration)
-        {}
-
-        // Return false on error
-        void encode(char * frame, uint32_t frame_capacity, uint32_t & frame_index, ed247_uid_t component_identifier);
-        bool decode(const char * frame, uint32_t frame_size, uint32_t & frame_index);
-
-        uint32_t length();
-
-        bool operator == (const FrameHeader & other) const
-        {
-            return _send_header.component_identifier == other._send_header.component_identifier &&
-                _send_header.sequence_number == other._send_header.sequence_number &&
-                _send_header.transport_timestamp.epoch_s == other._send_header.transport_timestamp.epoch_s &&
-                _send_header.transport_timestamp.offset_ns == other._send_header.transport_timestamp.offset_ns &&
-                _send_header.missed_frames == other._send_header.missed_frames;
-        }
-
-        bool operator != (const FrameHeader & other) const
-        {
-            return !operator==(other);
-        }
-
-        uint32_t missed_frames()
-        {
-            uint32_t missed_frames = 0;
-            for(auto & recv_header : _recv_headers){
-                missed_frames += recv_header.missed_frames;
-            }
-            return missed_frames;
-        }
-
-        header_element_t _send_header;
-        std::vector<header_element_t> _recv_headers;
-        std::vector<header_element_t>::iterator _recv_headers_iter;
-
-    private:
-        xml::Header _configuration;
-        std::string _channel_name;
-};
-
 class Channel : public ed247_internal_channel_t, public std::enable_shared_from_this<Channel>
 {
     public:
@@ -138,7 +73,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         std::string get_name() const { return _configuration ? _configuration->_name : std::string(); }
 
-        void add_stream(BaseStream & stream, ed247_direction_t direction)
+        void add_stream(Stream & stream, ed247_direction_t direction)
         {
             PRINT_DEBUG("Channel [" << get_name() << "] append stream [" << stream.get_name() << "]");
             if(_streams.find(stream.get_configuration()->_uid) != _streams.end())
@@ -184,7 +119,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             capacity += _header.length();
             for(auto & p : _streams){
                 capacity += sizeof(ed247_uid_t) + sizeof(uint16_t);
-                capacity += p.second.stream->buffer().capacity();
+                capacity += p.second.stream->get_max_size();
             }
             PRINT_DEBUG("Allocate Channel internal buffer with [" << capacity << "] bytes");
             _buffer.allocate(capacity);
@@ -208,7 +143,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         class Pool {
             public:
                 explicit Pool(udp::receiver_set_t& context_receiver_set,
-                    std::shared_ptr<BaseStream::Pool> & pool_streams);
+                    std::shared_ptr<ed247::StreamSet> & pool_streams);
                 ~Pool();
 
                 channel_ptr_t get(const xml::Channel* configuration);
@@ -228,13 +163,13 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
             private:
                 std::shared_ptr<channel_list_t>    _channels;
                 udp::receiver_set_t&               _context_receiver_set;
-                std::shared_ptr<BaseStream::Pool>  _pool_streams;
+                std::shared_ptr<ed247::StreamSet>  _pool_streams;
         };
 
         class Builder{
             channel_ptr_t create(const xml::Channel* configuration,
                                  udp::receiver_set_t& context_receiver_set,
-                                 std::shared_ptr<BaseStream::Pool> & pool_streams) const;
+                                 std::shared_ptr<ed247::StreamSet> & pool_streams) const;
             friend class Pool;
         };
 };
