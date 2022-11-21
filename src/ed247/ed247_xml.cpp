@@ -1006,7 +1006,7 @@ void ed247::xml::VNADStream::load(const xmlNodePtr xml_node)
         if(node_name.compare(node::Signal) == 0){
           VNADSignal* signal = new VNADSignal();
           signal->load(xml_node_child_iter);
-          _sample_max_size_bytes += (signal->get_sample_max_size_bytes() + sizeof(uint16_t)) * signal->_vnad_max_number;
+          _sample_max_size_bytes += signal->get_sample_max_size_bytes() + sizeof(uint16_t);
           _signal_list.emplace_back(signal);
         }else{
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Signals << "]");

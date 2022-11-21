@@ -87,7 +87,7 @@ TEST_P(SignalContext, SinglePushPop)
     samples.push_back(std::move(sample));
   }
   if(stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
-    ASSERT_EQ(stream_sample->size(), stream_sample->capacity()/stream->get_configuration()->_sample_max_number);
+    ASSERT_EQ(stream_sample->size(), stream_sample->capacity());
     assistant->encode();
     ASSERT_EQ(stream_sample->size(), assistant->buffer().size());
     ASSERT_EQ(memcmp(stream_sample->data(), assistant->buffer().data(), assistant->buffer().size()), 0);
