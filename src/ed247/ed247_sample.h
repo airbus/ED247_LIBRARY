@@ -68,12 +68,6 @@ namespace ed247
   class StreamSample : public Sample
   {
   public:
-    StreamSample() :
-      _data_timestamp(LIBED247_TIMESTAMP_DEFAULT),
-      _recv_timestamp(LIBED247_TIMESTAMP_DEFAULT),
-      _frame_infos(LIBED247_SAMPLE_DETAILS_DEFAULT)
-    {}
-
     StreamSample(uint32_t capacity) :
       Sample(capacity),
       _data_timestamp(LIBED247_TIMESTAMP_DEFAULT),
@@ -119,6 +113,9 @@ namespace ed247
     ed247_timestamp_t      _data_timestamp;
     ed247_timestamp_t      _recv_timestamp;
     ed247_sample_details_t _frame_infos;
+
+  private:
+    using Sample::allocate; // Delete
   };
 
 
@@ -127,24 +124,7 @@ namespace ed247
   //
   class StreamSampleRingBuffer {
   public:
-
-    StreamSampleRingBuffer() :
-      _samples_capacity(0),
-      _index_read(0),
-      _index_write(0),
-      _index_size(0)
-    {}
-
-    StreamSampleRingBuffer(uint32_t capacity, uint32_t samples_capacity) :
-      _samples_capacity(0),
-      _index_read(0),
-      _index_write(0),
-      _index_size(0)
-    {
-      allocate(capacity, samples_capacity);
-    }
-
-    void allocate(uint32_t capacity, uint32_t samples_capacity);
+    StreamSampleRingBuffer(uint32_t capacity, uint32_t samples_capacity);
 
     uint32_t capacity() const         { return _samples.size();                }
     uint32_t samples_capacity() const { return _samples_capacity;              }

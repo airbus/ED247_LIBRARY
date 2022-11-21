@@ -74,6 +74,19 @@ void ed247::StreamSample::update_frame_infos(ed247_uid_t              component_
 // StreamSampleRingBuffer
 //
 
+ed247::StreamSampleRingBuffer::StreamSampleRingBuffer(uint32_t capacity, uint32_t samples_capacity) :
+  _samples_capacity(samples_capacity),
+  _index_read(0),
+  _index_write(0),
+  _index_size(0)
+{
+  _samples.reserve(capacity);
+  for (uint32_t i = 0; i < capacity; i++) {
+    _samples.emplace_back(StreamSample(samples_capacity));
+  }
+}
+
+
 ed247::StreamSample& ed247::StreamSampleRingBuffer::push_back()
 {
   uint32_t index_current = _index_write;
@@ -97,16 +110,4 @@ ed247::StreamSample& ed247::StreamSampleRingBuffer::pop_front()
     _index_size--;
     return _samples[index_current];
   }
-}
-
-void ed247::StreamSampleRingBuffer::allocate(uint32_t capacity, uint32_t samples_capacity)
-{
-  _samples_capacity = samples_capacity;
-  _samples.reserve(capacity);
-  for (uint32_t i = 0; i < capacity; i++) {
-    _samples.emplace_back(StreamSample(samples_capacity));
-  }
-  _index_read = 0;
-  _index_write = 0;
-  _index_size = 0;
 }

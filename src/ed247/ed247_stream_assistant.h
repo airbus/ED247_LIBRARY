@@ -12,17 +12,13 @@ namespace ed247
   {
   public:
 
-    StreamAssistant() {}
     StreamAssistant(Stream* stream):
-      _stream(stream)
+      _stream(stream),
+      _buffer(stream->get_configuration()->_sample_max_size_bytes)
     {
-      uint32_t capacity = 0;
       for(auto signal : stream->get_signals()){
         auto send_sample = signal->allocate_sample();
         auto recv_sample = signal->allocate_sample();
-        capacity += send_sample->capacity();
-        if(signal->get_type() == ED247_SIGNAL_TYPE_VNAD)
-          capacity += sizeof(uint16_t);
         if(_send_samples.size() <= signal->position())
           _send_samples.resize(signal->position()+1);
         _send_samples[signal->position()].first = signal;
@@ -32,7 +28,6 @@ namespace ed247
         _recv_samples[signal->position()].first = signal;
         _recv_samples[signal->position()].second = std::move(recv_sample);
       }
-      _buffer.allocate(capacity);
     }
 
     ed247_internal_stream_t* get_api_stream()

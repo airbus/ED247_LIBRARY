@@ -30,13 +30,11 @@ std::string config_path = "../config";
 
 TEST(StreamSampleRingBuffer, Main)
 {
-    ed247::StreamSampleRingBuffer cbuffer;
-    cbuffer.allocate(4, sizeof(uint32_t));
+    ed247::StreamSampleRingBuffer cbuffer(4, sizeof(uint32_t));
     ASSERT_EQ(cbuffer.size(), (uint32_t)0);
 
     uint32_t i = 1;
-    ed247::StreamSample sample;
-    sample.allocate(sizeof(uint32_t));
+    ed247::StreamSample sample(sizeof(uint32_t));
     ASSERT_EQ(sample.copy((void *)&i, sizeof(uint32_t)), true);
     ASSERT_EQ(*(uint32_t*)sample.data(), 1);
 
