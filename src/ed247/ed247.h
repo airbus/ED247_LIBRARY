@@ -631,6 +631,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_send_pushed_samples(
 
 /* =========================================================================
  * ED247 Context - Callbacks
+ * Using this API is not recomended and might be removed in future version
  * ========================================================================= */
 /**
  * @defgroup context_callback Receive and send callbacks
@@ -1120,13 +1121,13 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_samples_number(
 
 /**
  * @brief Write & push a single sample in the sample buffer of the stream.
- * <b>This function may lead to the emission of frames according to packetization strategies.</b>
+ * If internal stack is full, the oldest sample will be silently dropped. This is not an error.
  * @ingroup stream_io
  * @param[in] stream Stream identifier
  * @param[in] sample_data Sample data to write, copied internally
  * @param[in] sample_data_size Size of the sample data to write, in bytes
  * @param[in] data_timestamp Data timestamp associated to the sample. Set to NULL if not desired, otherwise see ::ed247_timestamp_t
- * @param[out] full Returns true if the internal stack is full. Set to NULL if not desired
+ * @param[out] full set to true if the internal stack is full after the push. Set to NULL if not desired.
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -1139,14 +1140,14 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_push_sample(
 
 /**
  * @brief Write several stream samples at once.
- * <b>This function may lead to the emission of frames according to packetization strategies.</b>
+ * If internal stack is full, the oldest samples will be silently dropped. This is not an error.
  * @ingroup stream_io
  * @param[in] stream Stream identifier
  * @param[in] samples_data Samples data to write, copied internally
  * @param[in] sample_size Size of the sample data to write, in bytes
  * @param[in] samples_number Number of samples to write. It must correspond to the number of elements in samples_data & samples_size
  * @param[in] data_timestamp Data timestamp associated to the sample. Set to NULL if not desired, otherwise see ::ed247_timestamp_t
- * @param[out] full Returns true if the internal stack is full. Set to NULL if not desired
+ * @param[out] full Set to true if the internal stack is full after the push. Set to NULL if not desired.
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -1169,9 +1170,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_push_samples(
  * The value is set according to ::libed247_set_simulation_time_ns() callback that has to be specified by the user.
  * If no callback is specified, the pointer is set to NULL
  * @param[out] sample_details Stream sample details
- * @param[out] empty Returns true if the internal stack is empty
+ * @param[out] empty set to true if the internal stack is empty after the pop.
  * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_NODATA Receive stack is empty
+ * @retval ED247_STATUS_NODATA Receive stack is empty before the pop.
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_pop_sample(
@@ -1455,11 +1456,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_read_signal(
 
 /**
  * @brief Push the stream sample to the stream
- * <b>This function may lead to the emission of frames according to packetization strategies.</b>
+ * If internal stack is full, the oldest sample will be silently dropped. This is not an error.
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
  * @param[in] data_timestamp Data timestamp associated to the sample. Set to NULL if not desired, otherwise see ::ed247_timestamp_t
- * @param[out] full Returns true if the internal stack is full. Set to NULL if not desired
+ * @param[out] full set to true if the internal stack is full after the push. Set to NULL if not desired
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
@@ -1477,9 +1478,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_push_sample(
  * The value is set according to ::libed247_set_simulation_time_ns() callback that has to be specified by the user.
  * If no callback is specified, the pointer is set to NULL
  * @param[out] sample_details Stream sample details
- * @param[out] empty Returns true if the internal stack is empty
+ * @param[out] empty set to true if the internal stack is empty after the pop.
  * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_NODATA Receive stack is empty
+ * @retval ED247_STATUS_NODATA Receive stack is empty before the pop.
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_pop_sample(

@@ -96,7 +96,6 @@ ed247::StreamSample& ed247::StreamSampleRingBuffer::push_back()
   } else {
     _index_size++;
   }
-  size();
   return _samples[index_current];
 }
 

@@ -267,49 +267,53 @@ TEST(UtApiSignals, DetectSignalsInStream)
 
     // Get the streams and request if it contains signals for each of them
     // The first checks verify invalid calls
+    std::set<std::string> stream_found;
     ASSERT_EQ(ed247_find_streams(context, NULL, &stream_list), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "StreamA429");
-    ASSERT_EQ(ed247_stream_has_signals(NULL, &yes_no), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_stream_has_signals(stream, NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)0);
+    while(true) {
+      ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
+      if (stream == nullptr) break;
+      std::string name = ed247_stream_get_name(stream);
+      stream_found.insert(name);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "StreamA825");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)0);
+      if (name == "StreamA429") {
+        ASSERT_EQ(ed247_stream_has_signals(NULL, &yes_no), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_stream_has_signals(stream, NULL), ED247_STATUS_FAILURE);
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)0);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "StreamA664");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)0);
+      } else if (name == "StreamA825") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)0);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "StreamSERIAL");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)0);
+      } else if (name == "StreamA664") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)0);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream1");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)1);
+      } else if (name == "StreamSERIAL") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)0);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream2");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)1);
+      } else if (name == "Stream1") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)1);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream3");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)1);
+      } else if (name == "Stream2") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)1);
 
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream4");
-    ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(yes_no, (uint8_t)1);
+      } else if (name == "Stream3") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)1);
 
+      } else if (name == "Stream4") {
+        ASSERT_EQ(ed247_stream_has_signals(stream, &yes_no), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(yes_no, (uint8_t)1);
+      } else {
+        SAY("Unkwonn stream " << name << "!");
+        ASSERT_TRUE(false);
+      }
+    }
+    ASSERT_EQ(stream_found.size(), 8);
 
     ASSERT_EQ(ed247_stream_list_free(stream_list), ED247_STATUS_SUCCESS);
 

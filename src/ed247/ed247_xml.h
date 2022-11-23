@@ -103,7 +103,7 @@ namespace ed247 {
       std::string           _icd;
       uint32_t              _byte_offset;                // All signals except VNAD
       std::string           _analogue_electrical_unit;
-      ed247_nad_type_t      _nad_type;
+      ed247_nad_type_t      _nad_type;                   // UINT8 for discrete and FLOAT32 for analogue
       std::string           _nad_unit;                   // NAD and VNAD
       std::vector<uint32_t> _nad_dimensions;
       uint32_t              _vnad_position;
@@ -154,18 +154,19 @@ namespace ed247 {
       ed247_uid_t         _uid;
       uint32_t            _sample_max_number;
       uint32_t            _sample_max_size_bytes;
+      bool                _sample_size_fixed;
       DataTimestamp       _data_timestamp;
 
       virtual bool is_signal_based() const = 0;
       virtual void validate(const xmlNodePtr closest_node) = 0;
-      Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
+      Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed);
     };
 
     struct StreamProtocoled : public Stream
     {
       Errors _errors;
       virtual bool is_signal_based() const override final { return false; }
-      StreamProtocoled(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
+      StreamProtocoled(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed = false);
     };
 
     struct StreamSignals : public Stream
@@ -173,7 +174,7 @@ namespace ed247 {
       std::vector<std::unique_ptr<Signal>> _signal_list;
       uint32_t                             _sampling_period_us;
       virtual bool is_signal_based() const override final { return true; }
-      StreamSignals(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
+      StreamSignals(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed = true);
     };
 
     struct A429Stream : public StreamProtocoled

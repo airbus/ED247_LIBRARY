@@ -1,6 +1,7 @@
 /* -*- mode: c++; c-basic-offset: 2 -*-  */
 #ifndef _ED247_STREAM_ASSISTANT_H_
 #define _ED247_STREAM_ASSISTANT_H_
+#include "ed247_bswap.h"
 
 // base structures for C API
 struct ed247_internal_stream_assistant_t {};
@@ -14,7 +15,7 @@ namespace ed247
 
     StreamAssistant(Stream* stream):
       _stream(stream),
-      _buffer(stream->get_configuration()->_sample_max_size_bytes)
+      _buffer(stream->get_sample_max_size_bytes())
     {
       for(auto signal : stream->get_signals()){
         auto send_sample = signal->allocate_sample();
@@ -37,7 +38,7 @@ namespace ed247
 
     bool write(const signal& signal, const void *data, uint32_t size)
     {
-      if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_OUT)) {
+      if(!(_stream->get_direction() & ED247_DIRECTION_OUT)) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal.get_name() << "] to an non-output stream");
         return false;
       }
@@ -59,7 +60,7 @@ namespace ed247
 
     bool read(const signal& signal, const void **data, uint32_t * size)
     {
-      if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_IN)) {
+      if(!(_stream->get_direction() & ED247_DIRECTION_IN)) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot read Signal [" << signal.get_name() << "] from a non-input stream");
         return false;
       }
@@ -71,7 +72,7 @@ namespace ed247
 
     bool push(const ed247_timestamp_t * data_timestamp = nullptr, bool * full = nullptr)
     {
-      if(!(_stream->get_configuration()->_direction & ED247_DIRECTION_OUT)) {
+      if(!(_stream->get_direction() & ED247_DIRECTION_OUT)) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot push to a non-output stream");
         return false;
       }
@@ -82,12 +83,12 @@ namespace ed247
     ed247_status_t pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr,
                        const ed247_sample_details_t **frame_infos = nullptr, bool *empty = nullptr)
     {
-      if((_stream->get_configuration()->_direction & ED247_DIRECTION_IN) == 0) {
+      if((_stream->get_direction() & ED247_DIRECTION_IN) == 0) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot pop from a non-input stream");
         return ED247_STATUS_FAILURE;
       }
 
-      if (_stream->recv_stack().size() == 0) {
+      if (_stream->get_incoming_sample_number() == 0) {
         PRINT_CRAZY("Stream '" << _stream->get_name() << "': no data received.");
         return ED247_STATUS_NODATA;
       }
@@ -106,6 +107,46 @@ namespace ed247
     const Sample & buffer() { return _buffer; }
 
   private:
+    void swap_copy(const char *source_data, char* dest_data, uint32_t size, const ed247_nad_type_t& nad_type)
+    {
+      uint32_t pos = 0;
+      while (pos < size) {
+        switch(nad_type) {
+        case ED247_NAD_TYPE_INT8:
+        case ED247_NAD_TYPE_UINT8:
+          memcpy(dest_data + pos, source_data + pos, 1);
+          break;
+        case ED247_NAD_TYPE_INT16:
+          *((uint16_t*)dest_data + pos) = bswap_16(*((uint16_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_INT32:
+          *((uint32_t*)dest_data + pos) = bswap_32(*((uint32_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_INT64:
+          *((uint64_t*)dest_data + pos) = bswap_64(*((uint64_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_UINT16:
+          *((uint16_t*)dest_data + pos) = bswap_16(*((uint16_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_UINT32:
+          *((uint32_t*)dest_data + pos) = bswap_32(*((uint32_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_UINT64:
+          *((uint64_t*)dest_data + pos) = bswap_64(*((uint64_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_FLOAT32:
+          *((uint32_t*)dest_data + pos) = bswap_32(*((uint32_t*)source_data + pos));
+          break;
+        case ED247_NAD_TYPE_FLOAT64:
+          *((uint64_t*)dest_data + pos) = bswap_64(*((uint64_t*)source_data + pos));
+          break;
+        default:
+          THROW_ED247_ERROR("Unexpected NAD type: " << nad_type);
+        }
+        pos += ed247::xml::Signal::get_nad_type_size(nad_type);
+      }
+    }
+
     void encode()
     {
       uint32_t buffer_index = 0;
@@ -128,7 +169,9 @@ namespace ed247
             THROW_ED247_ERROR("Signal [" << pair.first->get_name() << "] has not a valid type");
           }
         }
-        memcpy(_buffer.data_rw()+buffer_index, pair.second->data(), pair.second->size());
+
+        swap_copy(pair.second->data(), _buffer.data_rw() + buffer_index, pair.second->size(), pair.first->get_nad_type());
+
         if(vnad_behaviour)
           buffer_index += pair.second->size();
         pair.second->reset();
@@ -136,7 +179,7 @@ namespace ed247
       if(vnad_behaviour)
         _buffer.set_size(buffer_index);
       else
-        _buffer.set_size(_stream->get_configuration()->_sample_max_size_bytes);
+        _buffer.set_size(_stream->get_sample_max_size_bytes());
     }
 
     // return false if the data has not been successfully decoded
@@ -172,7 +215,10 @@ namespace ed247
             return false;
           }
         }
-        pair.second->copy((const char*)data+buffer_index, sample_size);
+
+        pair.second->set_size(sample_size);
+        swap_copy((const char*)data + buffer_index, pair.second->data_rw(), sample_size, pair.first->get_nad_type());
+
         if(vnad_behaviour)
           buffer_index += sample_size;
       }

@@ -48,7 +48,7 @@ void Channel::send()
 bool Channel::has_samples_to_send()
 {
     for(auto & stream_iterator : _streams) {
-        if (stream_iterator.second.stream->send_stack().size() != 0) return true;
+      if (stream_iterator.second.stream->get_outgoing_sample_number() != 0) return true;
     }
     return false;
 }
@@ -66,12 +66,12 @@ void Channel::encode(const ed247_uid_t & component_identifier)
             auto & s = p.second.stream;
             if(!(p.second.direction & ED247_DIRECTION_OUT))
                 continue;
-            if(s->send_stack().size()){
+            if(s->get_outgoing_sample_number()){
                 if(buffer_index + sizeof(ed247_uid_t) + sizeof(uint16_t) > _buffer.capacity()) {
                     THROW_ED247_ERROR("Channel '" << get_name() << "': buffer is too small ! (" << _buffer.capacity() << " bytes)");
                 }
                 // Write Stream UID
-                ed247_uid_t sid = htons(s->get_configuration()->_uid);
+                ed247_uid_t sid = htons(s->get_uid());
                 memcpy(_buffer.data_rw() + buffer_index, &sid, sizeof(ed247_uid_t));
                 buffer_index += sizeof(ed247_uid_t);
                 // Write Stream sample data
@@ -273,8 +273,8 @@ channel_ptr_t Channel::Builder::create(const xml::Channel* configuration,
     sp_channel->_com_interface.load(configuration->_com_interface, context_receiver_set, std::bind(&Channel::decode, sp_channel.get(), std::placeholders::_1, std::placeholders::_2));
 
     for(auto& stream_configuration : configuration->_stream_list) {
-      stream_ptr_t sp_stream = pool_streams->get(stream_configuration.get(), sp_channel.get());
-      sp_channel->add_stream(*sp_stream, stream_configuration.get()->_direction);
+      stream_ptr_t sp_stream = pool_streams->create(stream_configuration.get(), sp_channel.get());
+      sp_channel->add_stream(sp_stream, stream_configuration.get()->_direction);
     }
 
     sp_channel->allocate_buffer();

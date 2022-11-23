@@ -22,9 +22,20 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
+// Set ED247_FRIEND_TEST to have access to class private members
+#define TEST_CLASS_NAME(test_case_name, test_name) test_case_name##_##test_name##_Test
+class TEST_CLASS_NAME(StreamContext, SinglePushPop);
+class TEST_CLASS_NAME(StreamContext, MultiPushPop);
+class TEST_CLASS_NAME(StreamContext, MultiPushPopDataTimestamp);
+#define ED247_FRIEND_TEST() \
+  friend TEST_CLASS_NAME(StreamContext, SinglePushPop); \
+  friend TEST_CLASS_NAME(StreamContext, MultiPushPop);  \
+  friend TEST_CLASS_NAME(StreamContext, MultiPushPopDataTimestamp)
+
+
 #include "unitary_test.h"
+#include "ed247_stream.h"
 #include "ed247_context.h"
-#include "ed247_xml.h"
 
 std::string config_path = "../config";
 
@@ -143,20 +154,20 @@ TEST_P(StreamContext, SinglePushPop)
         auto stream_1 = streams_1[0];
 
         // Create a stream sample compatible with the stream
-        auto stream_1_sample = stream_1->allocate_sample();
-        ASSERT_EQ(stream_1_sample->size(), (uint32_t)0);
-        ASSERT_EQ(stream_1_sample->capacity(), stream_1->get_configuration()->_sample_max_size_bytes);
-        std::string str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << "H";
-        stream_1_sample->copy(str_sample.c_str(), stream_1->get_configuration()->_sample_max_size_bytes);
+        ed247::StreamSample stream_1_sample(stream_1->get_sample_max_size_bytes());
+        ASSERT_EQ(stream_1_sample.size(), (uint32_t)0);
+        ASSERT_EQ(stream_1_sample.capacity(), stream_1->get_sample_max_size_bytes());
+        std::string str_sample = strize() << std::setw(stream_1->get_sample_max_size_bytes()) << std::setfill('0') << "H";
+        stream_1_sample.copy(str_sample.c_str(), stream_1->get_sample_max_size_bytes());
 
 
         // Push sample (to send stack)
         bool full;
         malloc_count_start();
-        ASSERT_TRUE(stream_1->push_sample(stream_1_sample->data(), stream_1_sample->size(), NULL, &full));
+        ASSERT_TRUE(stream_1->push_sample(stream_1_sample.data(), stream_1_sample.size(), NULL, &full));
         ASSERT_EQ(malloc_count_stop(), 0);
-        std::string str_sample_recv = std::string(stream_1->send_stack().front().data(), stream_1->get_configuration()->_sample_max_size_bytes);
-        ASSERT_TRUE(memcmp(stream_1_sample->data(),stream_1->send_stack().front().data(),stream_1_sample->size()) == 0);
+        std::string str_sample_recv = std::string(stream_1->_send_stack.front().data(), stream_1->get_sample_max_size_bytes());
+        ASSERT_TRUE(memcmp(stream_1_sample.data(),stream_1->_send_stack.front().data(),stream_1_sample.size()) == 0);
         ASSERT_EQ(str_sample, str_sample_recv);
 
         // Encode sample
@@ -165,33 +176,33 @@ TEST_P(StreamContext, SinglePushPop)
         uint32_t size = stream_1->encode(buffer.data_rw(), buffer.capacity());
         buffer.set_size(size);
         ASSERT_EQ(malloc_count_stop(), 0);
-        if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_VNAD)
-            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
-        else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
-                static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->_enable_message_size == ED247_YESNO_YES)
-            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
-        else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A825)
-            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint8_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
-        else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL)
-            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample->data(), stream_1_sample->size()) == 0);
-        else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_ANALOG)
-            ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample->data(), stream_1_sample->size()) != 0); // SWAP
+        if(stream_1->get_type() == ED247_STREAM_TYPE_VNAD)
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
+        else if(stream_1->get_type() == ED247_STREAM_TYPE_A664 &&
+                static_cast<const ed247::xml::A664Stream*>(stream_1->_configuration)->_enable_message_size == ED247_YESNO_YES)
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
+        else if(stream_1->get_type() == ED247_STREAM_TYPE_A825)
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint8_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
+        else if(stream_1->get_type() == ED247_STREAM_TYPE_SERIAL)
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
+        else if(stream_1->get_type() == ED247_STREAM_TYPE_ANALOG)
+            ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample.data(), stream_1_sample.size()) == 0);
         else
-            ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample->data(), stream_1_sample->size()) == 0);
+            ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample.data(), stream_1_sample.size()) == 0);
 
         // Decode sample
         malloc_count_start();
         stream_1->decode(buffer.data(), buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        if ((stream_1->get_configuration()->_direction & ED247_DIRECTION_IN) != 0)
+        if ((stream_1->get_direction() & ED247_DIRECTION_IN) != 0)
         {
             // Pop sample
             bool empty;
             malloc_count_start();
             auto& stream_1_recv_sample = stream_1->pop_sample(&empty);
             ASSERT_EQ(malloc_count_stop(), 0);
-            str_sample_recv = std::string((char *)stream_1_recv_sample.data(), stream_1->get_configuration()->_sample_max_size_bytes);
+            str_sample_recv = std::string((char *)stream_1_recv_sample.data(), stream_1->get_sample_max_size_bytes());
             ASSERT_EQ(str_sample, str_sample_recv);
         }
         delete context;
@@ -231,18 +242,18 @@ TEST_P(StreamContext, MultiPushPop)
         auto stream_1 = streams_1[0];
 
         // Create a stream sample compatible with the stream
-        auto stream_1_sample = stream_1->allocate_sample();
-        ASSERT_EQ(stream_1_sample->size(), (uint32_t)0);
-        ASSERT_EQ(stream_1_sample->capacity(), stream_1->get_configuration()->_sample_max_size_bytes);
+        ed247::StreamSample stream_1_sample(stream_1->get_sample_max_size_bytes());
+        ASSERT_EQ(stream_1_sample.size(), (uint32_t)0);
+        ASSERT_EQ(stream_1_sample.capacity(), stream_1->get_sample_max_size_bytes());
 
         // Push sample (to send stack)
         bool full;
         std::string str_sample;
         for(uint32_t i = 0 ; i < 10 ; i++){
-            str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-            stream_1_sample->copy(str_sample.c_str(), stream_1->get_configuration()->_sample_max_size_bytes);
+            str_sample = strize() << std::setw(stream_1->get_sample_max_size_bytes()) << std::setfill('0') << i;
+            stream_1_sample.copy(str_sample.c_str(), stream_1->get_sample_max_size_bytes());
             malloc_count_start();
-            ASSERT_TRUE(stream_1->push_sample(stream_1_sample->data(), stream_1_sample->size(), NULL, &full));
+            ASSERT_TRUE(stream_1->push_sample(stream_1_sample.data(), stream_1_sample.size(), NULL, &full));
             ASSERT_EQ(malloc_count_stop(), 0);
             if(i < 9)
                 ASSERT_FALSE(full); // Should no be full as max sample number is 10
@@ -253,8 +264,8 @@ TEST_P(StreamContext, MultiPushPop)
         // Check send stack
         std::string str_sample_send;
         for(uint32_t i = 0 ; i < 10 ; i++){
-            str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-            str_sample_send = std::string(stream_1->send_stack().at(i).data(), stream_1->get_configuration()->_sample_max_size_bytes);
+            str_sample = strize() << std::setw(stream_1->get_sample_max_size_bytes()) << std::setfill('0') << i;
+            str_sample_send = std::string(stream_1->_send_stack.at(i).data(), stream_1->get_sample_max_size_bytes());
             ASSERT_EQ(str_sample, str_sample_send);
         }
 
@@ -264,23 +275,23 @@ TEST_P(StreamContext, MultiPushPop)
         buffer.set_size(size);
         std::string str_sample_frame;
         uint32_t frame_index = 0;
-        if(stream_1->get_configuration()->_type != ED247_STREAM_TYPE_VNAD){
+        if(stream_1->get_type() != ED247_STREAM_TYPE_VNAD){
             for(uint32_t i = 0 ; i < 10 ; i++){
-                str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-                auto sample_size = stream_1->get_configuration()->_sample_max_size_bytes;
-                if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
-                    static_cast<const ed247::xml::A664Stream*>(stream_1->get_configuration())->_enable_message_size == ED247_YESNO_YES){
+                str_sample = strize() << std::setw(stream_1->get_sample_max_size_bytes()) << std::setfill('0') << i;
+                auto sample_size = stream_1->get_sample_max_size_bytes();
+                if(stream_1->get_type() == ED247_STREAM_TYPE_A664 &&
+                    static_cast<const ed247::xml::A664Stream*>(stream_1->_configuration)->_enable_message_size == ED247_YESNO_YES){
                     sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
-                }else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_A825){
+                }else if(stream_1->get_type() == ED247_STREAM_TYPE_A825){
                     sample_size = *(uint8_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint8_t);
-                }else if(stream_1->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL){
-                    sample_size = *(uint16_t*)(buffer.data()+frame_index);
+                }else if(stream_1->get_type() == ED247_STREAM_TYPE_SERIAL){
+                    sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }
                 str_sample_frame = std::string(buffer.data()+frame_index, sample_size);
-                if(stream_1->get_configuration()->_type != ED247_STREAM_TYPE_ANALOG){
+                if(stream_1->get_type() != ED247_STREAM_TYPE_ANALOG){
                     ASSERT_EQ(str_sample, str_sample_frame);
                 }
                 frame_index += sample_size;
@@ -292,17 +303,17 @@ TEST_P(StreamContext, MultiPushPop)
         stream_1->decode(buffer.data(), buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        if ((stream_1->get_configuration()->_direction & ED247_DIRECTION_IN) != 0)
+        if ((stream_1->get_direction() & ED247_DIRECTION_IN) != 0)
         {
             // Pop sample & check samples
             bool empty;
             std::string str_sample_recv;
             for(uint32_t i = 0; i < 10 ; i++){
-                str_sample = strize() << std::setw(stream_1->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
+                str_sample = strize() << std::setw(stream_1->get_sample_max_size_bytes()) << std::setfill('0') << i;
                 malloc_count_start();
                 auto& sample = stream_1->pop_sample(&empty);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                str_sample_recv = std::string(sample.data(), stream_1->get_configuration()->_sample_max_size_bytes);
+                str_sample_recv = std::string(sample.data(), stream_1->get_sample_max_size_bytes());
                 ASSERT_EQ(str_sample, str_sample_recv);
                 if(i < 9)
                     ASSERT_FALSE(empty);
@@ -347,22 +358,22 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         auto stream_out = streams_out[0];
 
         // Create a stream sample compatible with the stream
-        auto stream_out_sample = stream_out->allocate_sample();
-        ASSERT_EQ(stream_out_sample->size(), (uint32_t)0);
-        ASSERT_EQ(stream_out_sample->capacity(), stream_out->get_configuration()->_sample_max_size_bytes);
+        ed247::StreamSample stream_out_sample(stream_out->get_sample_max_size_bytes());
+        ASSERT_EQ(stream_out_sample.size(), (uint32_t)0);
+        ASSERT_EQ(stream_out_sample.capacity(), stream_out->get_sample_max_size_bytes());
 
         // Push sample (to send stack)
         bool full;
         std::string str_sample;
         ed247_timestamp_t timestamp;
         for(uint32_t i = 0 ; i < 10 ; i++){
-            str_sample = strize() << std::setw(stream_out->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
+            str_sample = strize() << std::setw(stream_out->get_sample_max_size_bytes()) << std::setfill('0') << i;
             timestamp.epoch_s = 1234567+i%2;
             timestamp.offset_ns = 8910+i;
-            stream_out_sample->copy(str_sample.c_str(), stream_out->get_configuration()->_sample_max_size_bytes);
-            stream_out_sample->set_data_timestamp(timestamp);
+            stream_out_sample.copy(str_sample.c_str(), stream_out->get_sample_max_size_bytes());
+            stream_out_sample.set_data_timestamp(timestamp);
             malloc_count_start();
-            ASSERT_TRUE(stream_out->push_sample(stream_out_sample->data(), stream_out_sample->size(), &stream_out_sample->data_timestamp(), &full));
+            ASSERT_TRUE(stream_out->push_sample(stream_out_sample.data(), stream_out_sample.size(), &stream_out_sample.data_timestamp(), &full));
             ASSERT_EQ(malloc_count_stop(), 0);
             if(i < 9)
                 ASSERT_FALSE(full); // Should no be full as max sample number is 10
@@ -373,13 +384,13 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         // Check send stack
         std::string str_sample_send;
         for(uint32_t i = 0 ; i < 10 ; i++){
-            str_sample = strize() << std::setw(stream_out->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
-            str_sample_send = std::string(stream_out->send_stack().at(i).data(), stream_out->get_configuration()->_sample_max_size_bytes);
+            str_sample = strize() << std::setw(stream_out->get_sample_max_size_bytes()) << std::setfill('0') << i;
+            str_sample_send = std::string(stream_out->_send_stack.at(i).data(), stream_out->get_sample_max_size_bytes());
             ASSERT_EQ(str_sample, str_sample_send);
             timestamp.epoch_s = 1234567+i%2;
             timestamp.offset_ns = 8910+i;
-            ASSERT_EQ(timestamp.epoch_s, stream_out->send_stack().at(i).data_timestamp().epoch_s);
-            ASSERT_EQ(timestamp.offset_ns, stream_out->send_stack().at(i).data_timestamp().offset_ns);
+            ASSERT_EQ(timestamp.epoch_s, stream_out->_send_stack.at(i).data_timestamp().epoch_s);
+            ASSERT_EQ(timestamp.offset_ns, stream_out->_send_stack.at(i).data_timestamp().offset_ns);
         }
 
         // Encode sample & check generated frame
@@ -390,10 +401,10 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         ed247_timestamp_t data_timestamp;
         ed247_timestamp_t timestamp_frame;
         uint32_t frame_index = 0;
-        bool precise_timestamp = stream_out->get_configuration()->_data_timestamp._enable_sample_offset == ED247_YESNO_YES;
-        if(stream_out->get_configuration()->_type != ED247_STREAM_TYPE_VNAD){
+        bool precise_timestamp = stream_out->_configuration->_data_timestamp._enable_sample_offset == ED247_YESNO_YES;
+        if(stream_out->get_type() != ED247_STREAM_TYPE_VNAD){
             for(uint32_t i = 0 ; i < 10 ; i++){
-                str_sample = strize() << std::setw(stream_out->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
+                str_sample = strize() << std::setw(stream_out->get_sample_max_size_bytes()) << std::setfill('0') << i;
                 if(i == 0){
                     timestamp.epoch_s = 1234567;
                     timestamp.offset_ns = 8910;
@@ -415,20 +426,20 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                     timestamp_frame.offset_ns += (offset_ns - (offset_ns / 1000000000) * 1000000000);
                     ASSERT_EQ(timestamp.offset_ns, timestamp_frame.offset_ns);
                 }
-                auto sample_size = stream_out->get_configuration()->_sample_max_size_bytes;
-                if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_A664 &&
-                    static_cast<const ed247::xml::A664Stream*>(stream_out->get_configuration())->_enable_message_size == ED247_YESNO_YES){
+                auto sample_size = stream_out->get_sample_max_size_bytes();
+                if(stream_out->get_type() == ED247_STREAM_TYPE_A664 &&
+                    static_cast<const ed247::xml::A664Stream*>(stream_out->_configuration)->_enable_message_size == ED247_YESNO_YES){
                     sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
-                }else if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_A825){
+                }else if(stream_out->get_type() == ED247_STREAM_TYPE_A825){
                     sample_size = *(uint8_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint8_t);
-                }else if(stream_out->get_configuration()->_type == ED247_STREAM_TYPE_SERIAL){
-                    sample_size = *(uint16_t*)(buffer.data()+frame_index);
+                }else if(stream_out->get_type() == ED247_STREAM_TYPE_SERIAL){
+                    sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }
                 str_sample_frame = std::string(buffer.data()+frame_index, sample_size);
-                if(stream_out->get_configuration()->_type != ED247_STREAM_TYPE_ANALOG){
+                if(stream_out->get_type() != ED247_STREAM_TYPE_ANALOG){
                     ASSERT_EQ(str_sample, str_sample_frame);
                 }
                 frame_index += sample_size;
@@ -440,14 +451,14 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         stream_out->decode(buffer.data(), buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
-        if ((stream_out->get_configuration()->_direction & ED247_DIRECTION_IN) != 0 &&
-            std::string(stream_out->get_configuration()->_name) != "StreamDatatimestampOut")
+        if ((stream_out->get_direction() & ED247_DIRECTION_IN) != 0 &&
+            std::string(stream_out->get_name()) != "StreamDatatimestampOut")
         {
             // Pop sample & check samples
             bool empty;
             std::string str_sample_recv;
             for(uint32_t i = 0; i < 10 ; i++){
-                str_sample = strize() << std::setw(stream_out->get_configuration()->_sample_max_size_bytes) << std::setfill('0') << i;
+                str_sample = strize() << std::setw(stream_out->get_sample_max_size_bytes()) << std::setfill('0') << i;
                 if(precise_timestamp){
                     timestamp.epoch_s = 1234567+i%2;
                     timestamp.offset_ns = 8910+i;
@@ -458,7 +469,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                 malloc_count_start();
                 auto& sample = stream_out->pop_sample(&empty);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                str_sample_recv = std::string(sample.data(), stream_out->get_configuration()->_sample_max_size_bytes);
+                str_sample_recv = std::string(sample.data(), stream_out->get_sample_max_size_bytes());
                 ASSERT_EQ(str_sample, str_sample_recv);
                 ASSERT_EQ(sample.data_timestamp().epoch_s, timestamp.epoch_s);
                 ASSERT_EQ(sample.data_timestamp().offset_ns, timestamp.offset_ns);

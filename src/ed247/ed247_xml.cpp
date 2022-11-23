@@ -327,21 +327,22 @@ void ed247::xml::ComInterface::load(const xmlNodePtr xml_node)
 //
 // Stream base
 //
-ed247::xml::Stream::Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes) :
+ed247::xml::Stream::Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed) :
   _direction(ED247_DIRECTION__INVALID),
   _type(type),
   _uid(0),
   _sample_max_number(1),
-  _sample_max_size_bytes(sample_max_size_bytes)
+  _sample_max_size_bytes(sample_max_size_bytes),
+  _sample_size_fixed(sample_size_fixed)
 {
 }
 
-ed247::xml::StreamProtocoled::StreamProtocoled(ed247_stream_type_t type, uint32_t sample_max_size_bytes) :
-  Stream(type, sample_max_size_bytes)
+ed247::xml::StreamProtocoled::StreamProtocoled(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed) :
+  Stream(type, sample_max_size_bytes, sample_size_fixed)
 {}
 
-ed247::xml::StreamSignals::StreamSignals(ed247_stream_type_t type, uint32_t sample_max_size_bytes) :
-  Stream(type, sample_max_size_bytes),
+ed247::xml::StreamSignals::StreamSignals(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed) :
+  Stream(type, sample_max_size_bytes, sample_size_fixed),
   _sampling_period_us(0)
 {}
 
@@ -349,9 +350,8 @@ ed247::xml::StreamSignals::StreamSignals(ed247_stream_type_t type, uint32_t samp
 // A429Stream
 //
 ed247::xml::A429Stream::A429Stream() :
-  StreamProtocoled(ED247_STREAM_TYPE_A429, 4)
-{
-}
+  StreamProtocoled(ED247_STREAM_TYPE_A429, 4, true)
+{}
 
 void ed247::xml::A429Stream::load(const xmlNodePtr xml_node)
 {
@@ -631,6 +631,7 @@ uint32_t ed247::xml::Signal::get_nad_type_size(ed247_nad_type_t nad_type)
 ed247::xml::DISSignal::DISSignal() :
   Signal(ED247_SIGNAL_TYPE_DISCRETE)
 {
+  _nad_type = ED247_NAD_TYPE_UINT8;
 }
 
 void ed247::xml::DISSignal::load(const xmlNodePtr xml_node)
@@ -657,6 +658,7 @@ void ed247::xml::DISSignal::load(const xmlNodePtr xml_node)
 ed247::xml::ANASignal::ANASignal() :
   Signal(ED247_SIGNAL_TYPE_ANALOG)
 {
+  _nad_type = ED247_NAD_TYPE_FLOAT32;
 }
 
 void ed247::xml::ANASignal::load(const xmlNodePtr xml_node)
@@ -1018,7 +1020,7 @@ void ed247::xml::NADStream::validate(const xmlNodePtr closest_node)
 // VNADStream
 //
 ed247::xml::VNADStream::VNADStream() :
-  StreamSignals(ED247_STREAM_TYPE_VNAD, 0)
+  StreamSignals(ED247_STREAM_TYPE_VNAD, 0, false)
 {
 }
 

@@ -33,6 +33,53 @@ class TEST_CLASS_NAME(SignalContext, SinglePushPop);
 
 class SignalContext : public ::testing::TestWithParam<std::string> {};
 
+void swap_copy(const char *source_data, char* dest_data, const ed247_nad_type_t& nad_type)
+{
+  switch(nad_type) {
+  case ED247_NAD_TYPE_INT8:
+  case ED247_NAD_TYPE_UINT8:
+    memcpy(dest_data, source_data, 1);
+    break;
+  case ED247_NAD_TYPE_INT16:
+    *((uint16_t*)dest_data) = bswap_16(*((uint16_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_INT32:
+    *((uint32_t*)dest_data) = bswap_32(*((uint32_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_INT64:
+    *((uint64_t*)dest_data) = bswap_64(*((uint64_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_UINT16:
+    *((uint16_t*)dest_data) = bswap_16(*((uint16_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_UINT32:
+    *((uint32_t*)dest_data) = bswap_32(*((uint32_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_UINT64:
+    *((uint64_t*)dest_data) = bswap_64(*((uint64_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_FLOAT32:
+    *((uint32_t*)dest_data) = bswap_32(*((uint32_t*)source_data));
+    break;
+  case ED247_NAD_TYPE_FLOAT64:
+    *((uint64_t*)dest_data) = bswap_64(*((uint64_t*)source_data));
+    break;
+  default:
+    THROW_ED247_ERROR("Unexpected NAD type: " << nad_type);
+  }
+}
+
+void swap_payload(const char *source_data, char* dest_data, uint32_t payload_size, const ed247_nad_type_t& nad_type)
+{
+  uint32_t pos = 0;
+  while (pos <= payload_size) {
+    swap_copy(source_data + pos, dest_data + pos, nad_type);
+    pos += ed247::xml::Signal::get_nad_type_size(nad_type);
+  }
+
+}
+
+
 TEST_P(SignalContext, SinglePushPop)
 {
   std::string filepath = GetParam();
@@ -72,36 +119,32 @@ TEST_P(SignalContext, SinglePushPop)
 
   // Check write & encode
   std::vector<std::unique_ptr<ed247::Sample>> samples;
-  auto stream_sample = stream->allocate_sample();
-  for(auto & signal : *stream->signals()){
+  ed247::StreamSample stream_sample(stream->get_sample_max_size_bytes());
+  for(auto & signal : stream->get_signals()){
     auto sample = signal->allocate_sample();
     ASSERT_EQ(sample->size(), (uint32_t)0);
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
     sample->copy(msg.c_str(), sample->capacity());
     assistant->write(*signal, sample->data(), sample->size());
-    if(stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
-      *(uint16_t*)(stream_sample->data_rw()+(uint8_t)stream_sample->size()) = (uint16_t)htons((uint16_t)sample->size());
-      stream_sample->set_size(stream_sample->size()+sizeof(uint16_t));
+    if(stream->get_type() == ED247_STREAM_TYPE_VNAD){
+      *(uint16_t*)(stream_sample.data_rw()+(uint8_t)stream_sample.size()) = (uint16_t)htons((uint16_t)sample->size());
+      stream_sample.set_size(stream_sample.size()+sizeof(uint16_t));
     }
-    memcpy(stream_sample->data_rw()+stream_sample->size(), msg.c_str(), sample->size());
-    stream_sample->set_size(stream_sample->size()+sample->size());
+    memcpy(stream_sample.data_rw()+stream_sample.size(), msg.c_str(), sample->size());
+    stream_sample.set_size(stream_sample.size()+sample->size());
     samples.push_back(std::move(sample));
   }
-  if(stream->get_configuration()->_type == ED247_STREAM_TYPE_VNAD){
-    ASSERT_EQ(stream_sample->size(), stream_sample->capacity());
-    assistant->encode();
-    ASSERT_EQ(stream_sample->size(), assistant->buffer().size());
-    ASSERT_EQ(memcmp(stream_sample->data(), assistant->buffer().data(), assistant->buffer().size()), 0);
-  }else{
-    ASSERT_EQ(stream_sample->size(), stream_sample->capacity());
-    assistant->encode();
-    ASSERT_EQ(stream_sample->size(), assistant->buffer().size());
-    ASSERT_EQ(memcmp(stream_sample->data(), assistant->buffer().data(), stream_sample->size()), 0);
-  }
+  ASSERT_EQ(stream_sample.size(), stream_sample.capacity());
+  assistant->encode();
+  ASSERT_EQ(stream_sample.size(), assistant->buffer().size());
+
+  swap_payload(stream_sample.data(), stream_sample.data_rw(), stream_sample.size(), signal->get_nad_type());
+  ASSERT_EQ(memcmp(stream_sample.data(), assistant->buffer().data(), stream_sample.size()), 0);
+
 
   // Check push
-  for(auto & signal : *stream->signals()){
+  for(auto & signal : stream->get_signals()){
     auto sample = signal->allocate_sample();
     ASSERT_EQ(sample->size(), (uint32_t)0);
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
@@ -111,7 +154,7 @@ TEST_P(SignalContext, SinglePushPop)
     samples.push_back(std::move(sample));
   }
   assistant->push();
-  ASSERT_EQ(stream->send_stack().size(), (uint32_t)1);
+  ASSERT_EQ(stream->get_outgoing_sample_number(), (uint32_t)1);
 
   // Check decode & read
   stream = pool_streams->find("StreamInput").front();
@@ -119,8 +162,8 @@ TEST_P(SignalContext, SinglePushPop)
   api_assistant = stream->get_api_assistant();
   ASSERT_NE(assistant, nullptr);
   assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
-  assistant->decode(stream_sample->data(), stream_sample->size());
-  for(auto & signal : *stream->signals()){
+  assistant->decode(stream_sample.data(), stream_sample.size());
+  for(auto & signal : stream->get_signals()){
     auto sample = signal->allocate_sample();
     const void *data;
     uint32_t size;

@@ -44,7 +44,8 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
 {
   try{
     ed247::udp::receiver_set_t receiver_set;
-    auto pool_streams = std::make_shared<ed247::StreamSet>();
+    ed247::signal_set_t signal_set;
+    auto pool_streams = std::make_shared<ed247::StreamSet>(signal_set);
     ed247::Channel::Pool pool_channels(receiver_set, pool_streams);
 
     // Socket
@@ -153,7 +154,8 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 {
   try{
     ed247::udp::receiver_set_t receiver_set;
-    auto pool_streams = std::make_shared<ed247::StreamSet>();
+    ed247::signal_set_t signal_set;
+    auto pool_streams = std::make_shared<ed247::StreamSet>(signal_set);
     ed247::Channel::Pool pool_channels(receiver_set, pool_streams);
 
     // Socket
