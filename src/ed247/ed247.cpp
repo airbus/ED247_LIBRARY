@@ -55,46 +55,33 @@ const char* _ed247_name = "unnamed";
 
 
 /* =========================================================================
- * List iterators definition
+ * Client lists definition
  * ========================================================================= */
-struct ed247_internal_channel_list_t :
-  public ed247::client_iterator<ed247::channel_ptr_t>
-{
-  using ed247::client_iterator<value_t>::client_iterator;
-  virtual ~ed247_internal_channel_list_t() {}
-};
-typedef ed247_internal_channel_list_t ed247_channel_iterator_t;
+struct ed247_internal_channel_list_t {};
+typedef ed247::client_list<ed247_internal_channel_list_t, ed247::Channel>           ed247_channel_clist_base_t;
+typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Channel> ed247_channel_clist_vector_t;
 
-struct ed247_internal_stream_list_t :
-  public ed247::client_iterator<ed247::stream_ptr_t>
-{
-  using ed247::client_iterator<value_t>::client_iterator;
-  virtual ~ed247_internal_stream_list_t() {}
-};
-typedef ed247_internal_stream_list_t ed247_stream_iterator_t;
 
-// Iterator that filter out streams without data
+struct ed247_internal_stream_list_t {};
+typedef ed247::client_list<ed247_internal_stream_list_t, ed247::BaseStream>           ed247_stream_clist_base_t;
+typedef ed247::client_list_container<ed247_internal_stream_list_t, ed247::BaseStream> ed247_stream_clist_vector_t;
+
+// stream list where get_next() filter out stream without data
 // Note: this shall be removed from the interface (wait_frame & wait_during)
-struct ed247_stream_iterator_with_data_t : public ed247_stream_iterator_t
+struct ed247_stream_clist_vector_with_data_t : public ed247_stream_clist_vector_t
 {
-  using ed247_stream_iterator_t::ed247_stream_iterator_t;
-  virtual client_iterator& advance() override {
-    ed247_stream_iterator_t::advance();
+  virtual ed247::BaseStream* get_next() override {
+    ed247_stream_clist_vector_t::get_next();
     _iterator = std::find_if(_iterator,
                              _container->end(),
                              [](const ed247::stream_ptr_t& sp){ return sp->recv_stack().size() > 0; });
-    return *this;
+    return get_current();
   }
-  virtual ~ed247_stream_iterator_with_data_t() {}
 };
 
-struct ed247_internal_signal_list_t :
-  public ed247::client_iterator<ed247::signal_ptr_t>
-{
-  using ed247::client_iterator<value_t>::client_iterator;
-  virtual ~ed247_internal_signal_list_t() {}
-};
-typedef ed247_internal_signal_list_t ed247_signal_iterator_t;
+struct ed247_internal_signal_list_t {};
+typedef ed247::client_list<ed247_internal_signal_list_t, ed247::signal>           ed247_signal_clist_base_t;
+typedef ed247::client_list_container<ed247_internal_signal_list_t, ed247::signal> ed247_signal_clist_vector_t;
 
 
 
@@ -363,7 +350,7 @@ ed247_status_t ed247_get_channel_list(
   ed247_context_t        context,
   ed247_channel_list_t * channels)
 {
-  static ed247_channel_iterator_t channel_iterator;    // To prevent malloc(), this function will always return the same iterator
+  static ed247_channel_clist_vector_t ed247_channel_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -381,8 +368,8 @@ ed247_status_t ed247_get_channel_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    channel_iterator.wrap(*(ed247_context->getPoolChannels()->channels().get()));
-    *channels = &channel_iterator;
+    ed247_channel_list.wrap(*(ed247_context->getPoolChannels()->channels().get()));
+    *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Get channels info");
   return ED247_STATUS_SUCCESS;	
@@ -393,7 +380,7 @@ ed247_status_t ed247_find_channels(
   const char *           regex_name,
   ed247_channel_list_t * channels)
 {
-  static ed247_channel_iterator_t channel_iterator;    // iterator cannot be dynamic allocated since it will not be freed by list_free
+  static ed247_channel_clist_vector_t ed247_channel_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -411,8 +398,8 @@ ed247_status_t ed247_find_channels(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    channel_iterator.copy(ed247_context->getPoolChannels()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    *channels = &channel_iterator;
+    ed247_channel_list.copy(ed247_context->getPoolChannels()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Find channels");
   return ED247_STATUS_SUCCESS;
@@ -453,7 +440,7 @@ ed247_status_t ed247_get_stream_list(
   ed247_context_t       context,
   ed247_stream_list_t * streams)
 {
-  static ed247_stream_iterator_t stream_iterator;    // To prevent malloc(), this function will always return the same iterator
+  static ed247_stream_clist_vector_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -471,8 +458,8 @@ ed247_status_t ed247_get_stream_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    stream_iterator.wrap(*(ed247_context->getPoolStreams()->streams().get()));
-    *streams = &stream_iterator;
+    ed247_stream_list.wrap(*(ed247_context->getPoolStreams()->streams().get()));
+    *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Get streams info");
   return ED247_STATUS_SUCCESS;
@@ -484,7 +471,7 @@ ed247_status_t ed247_find_streams(
   const char *          regex_name,
   ed247_stream_list_t * streams)
 {
-  static ed247_stream_iterator_t stream_iterator;    // iterator cannot be dynamic allocated since it will not be freed by list_free
+  static ed247_stream_clist_vector_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
   if(!streams) {
@@ -500,8 +487,8 @@ ed247_status_t ed247_find_streams(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    stream_iterator.copy(ed247_context->getPoolStreams()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    *streams = &stream_iterator;
+    ed247_stream_list.copy(ed247_context->getPoolStreams()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Find streams");
   return ED247_STATUS_SUCCESS;
@@ -545,7 +532,7 @@ ed247_status_t ed247_find_signals(
   const char *          regex_name,
   ed247_signal_list_t * signals)
 {
-  static ed247_signal_iterator_t signal_iterator;    // iterator cannot be dynamic allocated since it will not be freed by list_free
+  static ed247_signal_clist_vector_t ed247_signal_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -562,8 +549,8 @@ ed247_status_t ed247_find_signals(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    signal_iterator.copy(ed247_context->getPoolSignals()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    *signals = &signal_iterator;
+    ed247_signal_list.copy(ed247_context->getPoolSignals()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    *signals = &ed247_signal_list;
   }
   LIBED247_CATCH("Find signals");
   return ED247_STATUS_SUCCESS;
@@ -622,7 +609,7 @@ ed247_status_t ed247_wait_frame(
   ed247_stream_list_t * streams,
   int32_t               timeout_us)
 {
-  static ed247_stream_iterator_with_data_t stream_iterator;    // To prevent malloc(), this function will always return the same iterator
+  static ed247_stream_clist_vector_with_data_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -637,8 +624,8 @@ ed247_status_t ed247_wait_frame(
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
     ed247_status_t ed247_status = ed247_context->wait_frame(timeout_us);
     if(streams != nullptr && ed247_status == ED247_STATUS_SUCCESS) {
-      stream_iterator.wrap(*(ed247_context->getPoolStreams()->streams().get()));
-      *streams = &stream_iterator;
+      ed247_stream_list.wrap(*(ed247_context->getPoolStreams()->streams().get()));
+      *streams = &ed247_stream_list;
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
     }
@@ -653,7 +640,7 @@ ed247_status_t ed247_wait_during(
   ed247_stream_list_t * streams,
   int32_t               duration_us)
 {
-  static ed247_stream_iterator_with_data_t stream_iterator;    // To prevent malloc(), this function will always return the same iterator
+  static ed247_stream_clist_vector_with_data_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -668,8 +655,8 @@ ed247_status_t ed247_wait_during(
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
     ed247_status_t ed247_status = ed247_context->wait_during(duration_us);
     if(streams != nullptr && ed247_status == ED247_STATUS_SUCCESS) {
-      stream_iterator.wrap(*(ed247_context->getPoolStreams()->streams().get()));
-      *streams = &stream_iterator;
+      ed247_stream_list.wrap(*(ed247_context->getPoolStreams()->streams().get()));
+      *streams = &ed247_stream_list;
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
     }
@@ -779,11 +766,12 @@ ed247_status_t ed247_streams_register_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    ed247_stream_iterator_t& iterator = *(static_cast<ed247_stream_iterator_t*>(streams));
-    for (auto istream = iterator.container().begin(); istream != iterator.container().end(); istream++) {
-      if((*istream)->register_callback(context, callback) != ED247_STATUS_SUCCESS){
+    auto list = static_cast<ed247_stream_clist_base_t*>(streams);
+    list->reset_iterator();
+    while (ed247::BaseStream* stream = list->get_next()) {
+      if(stream->register_callback(context, callback) != ED247_STATUS_SUCCESS) {
         status = ED247_STATUS_FAILURE;
-        PRINT_WARNING("Cannot register callback in stream [" << (*istream)->get_name() << "]");
+        PRINT_WARNING("Cannot register callback in stream [" << stream->get_name() << "]");
       }
     }
   }
@@ -811,11 +799,12 @@ ed247_status_t ed247_streams_unregister_recv_callback(
   }
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
-    ed247_stream_iterator_t& iterator = *(static_cast<ed247_stream_iterator_t*>(streams));
-    for (auto istream = iterator.container().begin(); istream != iterator.container().end(); istream++) {
-      if((*istream)->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
+    auto list = static_cast<ed247_stream_clist_base_t*>(streams);
+    list->reset_iterator();
+    while (ed247::BaseStream* stream = list->get_next()) {
+      if(stream->unregister_callback(context, callback) != ED247_STATUS_SUCCESS) {
         status = ED247_STATUS_FAILURE;
-        PRINT_WARNING("Cannot unregister callback in stream [" << (*istream)->get_name() << "]");
+        PRINT_WARNING("Cannot unregister callback in stream [" << stream->get_name() << "]");
       }
     }
   }
@@ -904,7 +893,7 @@ ed247_status_t ed247_channel_get_stream_list(
   ed247_channel_t       channel,
   ed247_stream_list_t * streams)
 {
-  static ed247_stream_iterator_t stream_iterator;    // To prevent malloc(), this function will always return the same iterator
+  static ed247_stream_clist_vector_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -922,8 +911,8 @@ ed247_status_t ed247_channel_get_stream_list(
 
   try{
     ed247::Channel* ed247_channel = static_cast<ed247::Channel*>(channel);
-    stream_iterator.wrap(*(ed247_channel->sstreams().get()));
-    *streams = &stream_iterator;
+    ed247_stream_list.wrap(*(ed247_channel->sstreams().get()));
+    *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Get streams info");
   return ED247_STATUS_SUCCESS;
@@ -934,7 +923,7 @@ ed247_status_t ed247_channel_find_streams(
   const char *          regex_name,
   ed247_stream_list_t * streams)
 {
-  static ed247_stream_iterator_t stream_iterator;    // iterator cannot be dynamic allocated since it will not be freed by list_free
+  static ed247_stream_clist_vector_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
   if(!streams) {
@@ -950,8 +939,8 @@ ed247_status_t ed247_channel_find_streams(
   }
   try{
     ed247::Channel* ed247_channel = (ed247::Channel*)(channel);
-    stream_iterator.copy(ed247_channel->find_streams(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    *streams = &stream_iterator;
+    ed247_stream_list.copy(ed247_channel->find_streams(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Find channel streams");
   return ED247_STATUS_SUCCESS;
@@ -1069,7 +1058,7 @@ ed247_status_t ed247_channel_list_size(
     return ED247_STATUS_FAILURE;
   }
   try{
-    *size = static_cast<ed247_channel_iterator_t*>(channels)->container_size();
+    *size = static_cast<ed247_channel_clist_base_t*>(channels)->size();
   }
   LIBED247_CATCH("Channel list size");
   return ED247_STATUS_SUCCESS;
@@ -1091,9 +1080,7 @@ ed247_status_t ed247_channel_list_next(
   }
   *channel = nullptr;
   try{
-    ed247_channel_iterator_t& iterator = *(static_cast<ed247_channel_iterator_t*>(channels));
-    iterator.advance();
-    *channel = iterator.valid() ? iterator.get_value().get() : nullptr;
+    *channel = static_cast<ed247_channel_clist_base_t*>(channels)->get_next();
   }
   LIBED247_CATCH("Channel list next");
   return ED247_STATUS_SUCCESS;
@@ -1109,7 +1096,7 @@ ed247_status_t ed247_channel_list_free(
     return ED247_STATUS_SUCCESS;
   }
   try{
-    static_cast<ed247_channel_iterator_t*>(channels)->free();
+    static_cast<ed247_channel_clist_base_t*>(channels)->free();
   }
   LIBED247_CATCH("Channel list free");
   return ED247_STATUS_SUCCESS;
@@ -1203,7 +1190,7 @@ ed247_status_t ed247_stream_get_signal_list(
   ed247_stream_t        stream,
   ed247_signal_list_t * signals)
 {
-  static ed247_signal_iterator_t signal_iterator;    // To prevent malloc(), this function will always return the same iterator
+  static ed247_signal_clist_vector_t ed247_signal_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
   if(!signals){
@@ -1220,8 +1207,8 @@ ed247_status_t ed247_stream_get_signal_list(
 
   try{
     ed247::BaseStream* ed247_stream = static_cast<ed247::BaseStream*>(stream);
-    signal_iterator.wrap(*(ed247_stream->signals().get()));
-    *signals = &signal_iterator;
+    ed247_signal_list.wrap(*(ed247_stream->signals().get()));
+    *signals = &ed247_signal_list;
   }
   LIBED247_CATCH("Stream get signals");
   return ED247_STATUS_SUCCESS;
@@ -1232,7 +1219,7 @@ ed247_status_t ed247_stream_find_signals(
   const char *          regex_name,
   ed247_signal_list_t * signals)
 {
-  static ed247_signal_iterator_t signal_iterator;    // iterator cannot be dynamic allocated since it will not be freed by list_free
+  static ed247_signal_clist_vector_t ed247_signal_list;    // To prevent malloc(), this function will always return the same list
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -1249,8 +1236,8 @@ ed247_status_t ed247_stream_find_signals(
   }
   try{
     ed247::BaseStream* ed247_stream = (ed247::BaseStream*)(stream);
-    signal_iterator.copy(ed247_stream->find_signals(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
-    *signals = &signal_iterator;
+    ed247_signal_list.copy(ed247_stream->find_signals(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    *signals = &ed247_signal_list;
   }
   LIBED247_CATCH("Find stream signals");
   return ED247_STATUS_SUCCESS;
@@ -1604,7 +1591,7 @@ ed247_status_t ed247_stream_list_size(
     return ED247_STATUS_FAILURE;
   }
   try{
-    *size = static_cast<ed247_stream_iterator_t*>(streams)->container_size();
+    *size = static_cast<ed247_stream_clist_base_t*>(streams)->size();
   }
   LIBED247_CATCH("Stream list size");
   return ED247_STATUS_SUCCESS;
@@ -1626,9 +1613,7 @@ ed247_status_t ed247_stream_list_next(
   }
   *stream = nullptr;
   try{
-    ed247_stream_iterator_t& iterator = *(static_cast<ed247_stream_iterator_t*>(streams));
-    iterator.advance();
-    *stream = iterator.valid() ? iterator.get_value().get() : nullptr;
+    *stream = static_cast<ed247_stream_clist_base_t*>(streams)->get_next();
   }
   LIBED247_CATCH("Stream list next");
   return ED247_STATUS_SUCCESS;
@@ -1644,7 +1629,7 @@ ed247_status_t ed247_stream_list_free(
     return ED247_STATUS_FAILURE;
   }
   try{
-    static_cast<ed247_stream_iterator_t*>(streams)->free();
+    static_cast<ed247_stream_clist_base_t*>(streams)->free();
   }
   LIBED247_CATCH("Stream list free");
   return ED247_STATUS_SUCCESS;
@@ -1858,7 +1843,7 @@ ed247_status_t ed247_signal_list_size(
     return ED247_STATUS_FAILURE;
   }
   try{
-    *size = static_cast<ed247_signal_iterator_t*>(signals)->container_size();
+    *size = static_cast<ed247_signal_clist_base_t*>(signals)->size();
   }
   LIBED247_CATCH("Signal list size");
   return ED247_STATUS_SUCCESS;
@@ -1880,9 +1865,7 @@ ed247_status_t ed247_signal_list_next(
   }
   *signal = nullptr;
   try{
-    ed247_signal_iterator_t& iterator = *(static_cast<ed247_signal_iterator_t*>(signals));
-    iterator.advance();
-    *signal = iterator.valid() ? iterator.get_value().get() : nullptr;
+    *signal = static_cast<ed247_signal_clist_base_t*>(signals)->get_next();
   }
   LIBED247_CATCH("Signal list next");
   return ED247_STATUS_SUCCESS;
@@ -1898,7 +1881,7 @@ ed247_status_t ed247_signal_list_free(
     return ED247_STATUS_SUCCESS;
   }
   try{
-    static_cast<ed247_signal_iterator_t*>(signals)->free();
+    static_cast<ed247_signal_clist_base_t*>(signals)->free();
   }
   LIBED247_CATCH("Signal list free");
   return ED247_STATUS_SUCCESS;

@@ -1,6 +1,10 @@
 //
-// Iterator to handle C-list (ed247.h)
-// Note: this is NOT a true C++ iterator
+// Handle C-list (ed247.h)
+// This class contain both the list and its 'iterator'
+//
+// * client_list<T> inherit from a C struct defined in C ed247 header (template class c_base_list)
+// * client_list<T> may have several implementation for different containers: templace class client_list_container
+// * The underlayed container shall hold std::shared_ptr<T>
 //
 #ifndef ED247_CLIENT_ITERATOR
 #define ED247_CLIENT_ITERATOR
@@ -8,16 +12,28 @@
 
 namespace ed247 {
 
-  template <typename T>
-  struct client_iterator {
-    typedef T                               value_t;
-    typedef typename std::vector<T>         container_t;
-    typedef typename container_t::iterator  iterator_t;
+  template <class c_base_list, typename T>
+  struct client_list : public c_base_list {
+    typedef T                  value_t;
+    typedef std::shared_ptr<T> container_value_t;
+
+    virtual uint32_t size() const = 0;
+
+    virtual T* get_current() = 0;
+    virtual T* get_next() = 0;
+    virtual void reset_iterator() = 0;
+
+    virtual void free() = 0;
+  };
+
+  template <class c_base_list, typename T, class container_t = std::vector<std::shared_ptr<T>>>
+  struct client_list_container : public client_list<c_base_list, T> {
+    typedef typename container_t::iterator iterator_t;
 
     // Invalid iterator Ctor
-    client_iterator() : _container(nullptr), _owner(false) { }
+    client_list_container() : _container(nullptr), _owner(false) { }
 
-    // Initialize iterator by wrapping provided container
+    // Initialize iterator by wrapping provided container (will not be freed)
     void wrap(container_t& container) {
       free();
       _container = &container;
@@ -25,7 +41,7 @@ namespace ed247 {
       _owner = false;
     }
 
-    // Initialize iterator by copying provided container
+    // Initialize iterator by copying provided container (the copy will be freed)
     void copy(const container_t& container) {
       free();
       _container = new container_t(container);
@@ -34,55 +50,37 @@ namespace ed247 {
 
     }
 
-    bool is_initialized() {
-      return _container != nullptr;
+    uint32_t size() const override {
+      return _container->size();
     }
 
-    virtual client_iterator& advance() {
+    // Delete container if we are the owner
+    virtual void free() override {
+      if (_container && _owner) delete _container;
+      _container = nullptr;
+    }
+
+    ~client_list_container() {
+      free();
+    }
+
+
+    void reset_iterator() override {
+      _iterator = _container->end();
+    }
+
+    T* get_current() override {
+      if (_iterator == _container->end()) return nullptr;
+      return _iterator->get();
+    }
+
+    T* get_next() override {
       if (_iterator == _container->end()) {
         _iterator = _container->begin();
       } else {
         _iterator++;
       }
-      return *this;
-    }
-
-    client_iterator& operator++() {
-      return advance();
-    }
-
-    T& get_value() {
-      return *_iterator;
-    }
-
-    T& operator*() {
-      return get_value();
-    }
-
-    bool valid() {
-      return _container && _iterator != _container->end();
-    }
-
-    operator bool() {
-      return valid();
-    }
-
-    uint32_t container_size() {
-      return _container->size();
-    }
-
-    container_t& container() {
-      return *_container;
-    }
-
-    // Delete container if we are the owner
-    void free() {
-      if (_container && _owner) delete _container;
-      _container = nullptr;
-    }
-
-    ~client_iterator() {
-      free();
+      return get_current();
     }
 
   protected:
