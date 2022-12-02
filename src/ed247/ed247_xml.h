@@ -157,6 +157,7 @@ namespace ed247 {
       DataTimestamp       _data_timestamp;
 
       virtual bool is_signal_based() const = 0;
+      virtual void validate(const xmlNodePtr closest_node) = 0;
       Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes);
     };
 
@@ -179,6 +180,7 @@ namespace ed247 {
     {
       A429Stream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct A664Stream : public StreamProtocoled
@@ -187,42 +189,49 @@ namespace ed247 {
 
       A664Stream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct A825Stream : public StreamProtocoled
     {
       A825Stream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct SERIALStream : public StreamProtocoled
     {
       SERIALStream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct DISStream : public StreamSignals
     {
       DISStream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct ANAStream : public StreamSignals
     {
       ANAStream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct NADStream : public StreamSignals
     {
       NADStream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     struct VNADStream : public StreamSignals
     {
       VNADStream();
       virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
     //

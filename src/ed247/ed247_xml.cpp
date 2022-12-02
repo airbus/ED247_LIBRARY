@@ -185,12 +185,12 @@ namespace ed247 {
 
 #define PARSER_WARNING(closest_node, msg)                                                                        \
   do {                                                                                                           \
-  std::string message = strize() << msg;                                                                         \
-  if (closest_node != nullptr) {                                                                                 \
-    message += std::string(". Near ") + ::xml::xmlNode_get_fileline(closest_node);                               \
-  }                                                                                                              \
-  PRINT_WARNING(message);                                                                                        \
-} while (0)
+    std::string message = strize() << msg;                                                                       \
+    if (closest_node != nullptr) {                                                                               \
+      message += std::string(". Near ") + ::xml::xmlNode_get_fileline(closest_node);                             \
+    }                                                                                                            \
+    PRINT_WARNING(message);                                                                                      \
+  } while (0)
 
 #define THROW_PARSER_ERROR(closest_node, msg)                                                                    \
   do {                                                                                                           \
@@ -388,6 +388,14 @@ void ed247::xml::A429Stream::load(const xmlNodePtr xml_node)
   }
 }
 
+void ed247::xml::A429Stream::validate(const xmlNodePtr closest_node)
+{
+  if (_sample_max_size_bytes != 4) {
+    THROW_PARSER_ERROR(closest_node, node::A429_Stream << ": SampleMaxSizeByte shall be 4.");
+  }
+}
+
+
 //
 // A664Stream
 //
@@ -447,6 +455,25 @@ void ed247::xml::A664Stream::load(const xmlNodePtr xml_node)
   }
 }
 
+void ed247::xml::A664Stream::validate(const xmlNodePtr closest_node)
+{
+  if (_enable_message_size == ED247_YESNO_NO) {
+    if (_sample_max_number > 1) {
+      // Hack ED247LIB-27
+      // THROW_PARSER_ERROR(closest_node, "A664: Cannot encode several samples (SampleMaxNumber=" << _sample_max_number << ") "
+      // "in a stream without sample size (MessageSize disabled)");
+      //
+      // Curently the library is able to handle this case by sending one packet by sample. But this is not part of the NORM.
+    }
+  }
+
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::A664_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                       " (A greather size cannot be encoded in an ED247 frame)");
+  }
+}
+
+
 //
 // A825Stream
 //
@@ -487,6 +514,14 @@ void ed247::xml::A825Stream::load(const xmlNodePtr xml_node)
     }else{
       THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::A825_Stream << "]");
     }
+  }
+}
+
+void ed247::xml::A825Stream::validate(const xmlNodePtr closest_node)
+{
+  if (_sample_max_size_bytes > std::numeric_limits<uint8_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::A825_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint8_t>::max() <<
+                       " (A greather size cannot be encoded in an ED247 frame)");
   }
 }
 
@@ -534,6 +569,15 @@ void ed247::xml::SERIALStream::load(const xmlNodePtr xml_node)
     }
   }
 }
+
+void ed247::xml::SERIALStream::validate(const xmlNodePtr closest_node)
+{
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::SERIAL_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                       " (A greather size cannot be encoded in an ED247 frame)");
+  }
+}
+
 
 ed247::xml::Signal::Signal(ed247_signal_type_t type) :
   _type(type),
@@ -801,6 +845,12 @@ void ed247::xml::DISStream::load(const xmlNodePtr xml_node)
   }
 }
 
+void ed247::xml::DISStream::validate(const xmlNodePtr closest_node)
+{
+  // Nothing to check
+}
+
+
 //
 // ANAStream
 //
@@ -878,6 +928,12 @@ void ed247::xml::ANAStream::load(const xmlNodePtr xml_node)
     s->_position = p++;
   }
 }
+
+void ed247::xml::ANAStream::validate(const xmlNodePtr closest_node)
+{
+  // Nothing to check
+}
+
 
 //
 // NADStream
@@ -957,6 +1013,11 @@ void ed247::xml::NADStream::load(const xmlNodePtr xml_node)
   }
 }
 
+void ed247::xml::NADStream::validate(const xmlNodePtr closest_node)
+{
+  // Nothing to check
+}
+
 //
 // VNADStream
 //
@@ -1031,6 +1092,15 @@ void ed247::xml::VNADStream::load(const xmlNodePtr xml_node)
     s->_position = p++;
   }
 }
+
+void ed247::xml::VNADStream::validate(const xmlNodePtr closest_node)
+{
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::VNAD_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                       " (A greather size cannot be encoded in an ED247 frame)");
+  }
+}
+
 
 //
 // Header
@@ -1148,6 +1218,7 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
           THROW_PARSER_ERROR(xml_node_child_iter, "Unknown node [" << node_name << "] in tag [" << node::Streams << "]");
         }
         streams_direction = (ed247_direction_t)(streams_direction | _stream_list.back()->_direction);
+        _stream_list.back()->validate(xml_node_child_iter);
       }
     }else{
       THROW_PARSER_ERROR(xml_node_iter, "Unexpected node [" << node_name << "]");

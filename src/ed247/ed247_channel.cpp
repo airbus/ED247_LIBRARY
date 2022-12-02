@@ -357,6 +357,7 @@ void Channel::Pool::send()
 void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 {
     for(auto & c : *_channels) {
+        // Hack ED247LIB-27
         // if send queue is greather than the number of samples allowed in one packet
         // we have to send several packets. So we loop until the queu is empty.
         while (c->has_samples_to_send()) {
