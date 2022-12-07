@@ -27,7 +27,6 @@
 #include "ed247_xml.h"
 #include "ed247_signal.h"
 #include "ed247_sample.h"
-#include "ed247_header.h"
 
 
 // base structures for C API
@@ -106,7 +105,7 @@ namespace ed247
 
     // Decode the given frame and fill internal samples.
     // Return false on error (the rest of the frame cannot be decoded)
-    bool decode(const char* frame, uint32_t frame_size, const FrameHeader* header = nullptr);
+    bool decode(const char* frame, uint32_t frame_size, const ed247_sample_details_t& frame_details);
 
     // Callback managment (Can we remove this ugly API ?)
     ed247_status_t register_callback(ed247_context_t context, ed247_stream_recv_callback_t callback);

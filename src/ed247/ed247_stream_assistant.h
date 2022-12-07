@@ -81,7 +81,7 @@ namespace ed247
     }
 
     ed247_status_t pop(const ed247_timestamp_t **data_timestamp = nullptr, const ed247_timestamp_t **recv_timestamp = nullptr,
-                       const ed247_sample_details_t **frame_infos = nullptr, bool *empty = nullptr)
+                       const ed247_sample_details_t **frame_details = nullptr, bool *empty = nullptr)
     {
       if((_stream->get_direction() & ED247_DIRECTION_IN) == 0) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot pop from a non-input stream");
@@ -96,7 +96,7 @@ namespace ed247
       StreamSample& sample = _stream->pop_sample(empty);
       if(data_timestamp) *data_timestamp = &sample.data_timestamp();
       if(recv_timestamp) *recv_timestamp = &sample.recv_timestamp();
-      if(frame_infos) *frame_infos = &sample.frame_infos();
+      if(frame_details) *frame_details = &sample.frame_details();
       if (decode(sample.data(), sample.size())) {
         return ED247_STATUS_SUCCESS;
       } else {

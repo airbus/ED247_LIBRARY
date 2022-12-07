@@ -243,27 +243,6 @@ ed247_status_t ed247_unload(
   return ED247_STATUS_SUCCESS;
 }
 
-ed247_status_t ed247_get_runtime_metrics(
-  ed247_context_t context,
-  const libed247_runtime_metrics_t ** metrics)
-{
-  if(!metrics) {
-    PRINT_ERROR(__func__ << ": Invalid metrics pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  if(!context) {
-    PRINT_ERROR(__func__ << ": Invalid context pointer");
-    return ED247_STATUS_FAILURE;
-  }
-  try{
-    *metrics = NULL;
-    auto ed247_context = static_cast<ed247::Context*>(context);
-    *metrics = ed247_context->get_runtime_metrics();
-  }
-  LIBED247_CATCH("Get metrics");
-  return ED247_STATUS_SUCCESS;
-}
-
 ed247_status_t ed247_component_set_user_data(
   ed247_context_t context,
   void *          user_data)
@@ -310,6 +289,15 @@ ed247_status_t ed247_load(
   ed247_context_t *context)
 {
   return ed247_load_file(ecic_file_path, context);
+}
+
+ed247_status_t ed247_get_runtime_metrics(
+  ed247_context_t context,
+  const libed247_runtime_metrics_t ** metrics)
+{
+  static libed247_runtime_metrics_t _metrics { 0, 0 };
+  *metrics = &_metrics;
+  return ED247_STATUS_SUCCESS;
 }
 
 /* =========================================================================
@@ -1581,7 +1569,7 @@ ed247_status_t ed247_stream_pop_sample(
     *sample_size = sample.size();
     if(data_timestamp) *data_timestamp = &sample.data_timestamp();
     if(recv_timestamp) *recv_timestamp = &sample.recv_timestamp();
-    if(sample_details) *sample_details = &sample.frame_infos();
+    if(sample_details) *sample_details = &sample.frame_details();
   }
   LIBED247_CATCH("Pop stream sample");
   return ED247_STATUS_SUCCESS;

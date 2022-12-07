@@ -29,6 +29,12 @@
 
 static const uint32_t SECOND_TO_NANO = 1000 * 1000 * 1000;
 
+typedef uint16_t A664_sample_size_t;
+typedef uint8_t  A825_sample_size_t;
+typedef uint16_t SERIAL_sample_size_t;
+typedef uint16_t AUDIO_sample_size_t;
+typedef uint16_t VNAD_sample_size_t;
+
 
 //
 // Stream initialization
@@ -197,7 +203,7 @@ uint32_t ed247::Stream::encode(char* frame, uint32_t frame_size)
 //
 // Encode stream from frame
 //
-bool ed247::Stream::decode(const char* frame, uint32_t frame_size, const FrameHeader* header)
+bool ed247::Stream::decode(const char* frame, uint32_t frame_size, const ed247_sample_details_t& frame_details)
 {
   uint32_t frame_index = 0;
   ed247_timestamp_t first_sample_dts = { 0, 0 };
@@ -302,15 +308,7 @@ bool ed247::Stream::decode(const char* frame, uint32_t frame_size, const FrameHe
     sample.copy(frame + frame_index, sample_size);
     frame_index += sample.size();
 
-    if(header) {
-      if (header->_recv_headers_iter == header->_recv_headers.end()) {
-        sample.clear_frame_infos();
-      } else {
-        sample.update_frame_infos(header->_recv_headers_iter->component_identifier,
-                                  header->_recv_headers_iter->sequence_number,
-                                  header->_recv_headers_iter->transport_timestamp);
-      }
-    }
+    sample.set_frame_details(frame_details);
   }
 
   return run_callbacks();

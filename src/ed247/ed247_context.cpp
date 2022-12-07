@@ -58,16 +58,6 @@ void Context::initialize()
     Context::Builder::initialize(*this);
 }
 
-const libed247_runtime_metrics_t* Context::get_runtime_metrics()
-{
-    _runtime_metrics.missed_frames = 0;
-    for (auto channel: *(_pool_channels.channels()))
-    {
-        _runtime_metrics.missed_frames += channel->missed_frames();
-    }
-    return &_runtime_metrics;
-}
-
 // Context::Builder
 
 Context * Context::Builder::create_filepath(std::string ecic_filepath)
@@ -112,7 +102,7 @@ void Context::Builder::initialize(Context & context)
 {
   for(const xml::Channel& sp_channel_configuration : context._configuration->_channel_list) {
     // The get() method create and append the channel. Refactoring needed...
-    context._pool_channels.get(&sp_channel_configuration);
+    context._pool_channels.get(&sp_channel_configuration, context._configuration->_identifier);
   }
 }
 

@@ -317,29 +317,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
  * The context is the main entry point to load and use an ECIC.
  */
 
-/**
- * @brief Library runtime metrics
- * @ingroup context
- */
-typedef struct {
-    uint32_t missed_frames;
-    uint32_t sample_timestamp_offset_overflows;
-} libed247_runtime_metrics_t;
-#define LIBED247_RUNTIME_METRICS_DEFAULT libed247_runtime_metrics_t{0, 0}
-
-/**
- * @brief Retrieve runtime metrics
- * @ingroup context
- * @param[in] context The context for which the runtime metrics are required
- * @param[out] metrics Pointer to the runtime metrics structure
- * @retval ED247_STATUS_SUCCESS
- * @retval ED247_STATUS_FAILURE
- */
-extern LIBED247_EXPORT ed247_status_t ed247_get_runtime_metrics(
-    ed247_context_t context,
-    const libed247_runtime_metrics_t ** metrics);
-
-
 /* =========================================================================
  * ED247 Context - Init
  * ========================================================================= */
@@ -1719,6 +1696,14 @@ extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_get_stream_signal(ed247_s
  * @ingroup deprecated
  */
 extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_free(void *data);
+
+
+typedef struct { uint32_t a; uint32_t b; } libed247_runtime_metrics_t;
+/**
+ * @brief Deprecated: Not working
+ * @ingroup deprecated
+ */
+extern DEPRECATED LIBED247_EXPORT ed247_status_t ed247_get_runtime_metrics(ed247_context_t context, const libed247_runtime_metrics_t ** metrics);
 
 
 

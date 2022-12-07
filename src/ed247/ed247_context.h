@@ -71,8 +71,6 @@ class Context : public ed247_internal_context_t
             return _receiver_set.wait_during(duration_us);
         }
 
-        const libed247_runtime_metrics_t* get_runtime_metrics();
-
         void set_user_data(void *user_data){
             _user_data = user_data;
         }
@@ -105,7 +103,6 @@ class Context : public ed247_internal_context_t
         std::shared_ptr<ed247::signal_set_t>      _pool_signals;
         std::shared_ptr<ed247::StreamSet>  _pool_streams;
         Channel::Pool                      _pool_channels;
-        libed247_runtime_metrics_t         _runtime_metrics;
         void*                              _user_data;
 
         void encode(ed247_uid_t component_identifier)

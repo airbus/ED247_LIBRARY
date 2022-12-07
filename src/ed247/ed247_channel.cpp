@@ -58,7 +58,7 @@ void Channel::encode(const ed247_uid_t & component_identifier)
     uint32_t buffer_index = 0;
     uint32_t stream_data_size = 0;
     // Encode header
-    _header.encode(_buffer.data_rw(), _buffer.capacity(), buffer_index, component_identifier);
+    _header.encode(_buffer.data_rw(), _buffer.capacity(), buffer_index);
     uint32_t header_index = buffer_index;
     // Encode channel payload
     if(!_configuration->_simple){
@@ -122,7 +122,7 @@ bool Channel::decode(const char * frame, uint32_t frame_size)
 
       map_streams_t::iterator istream = _streams.find(stream_uid);
       if (istream != _streams.end()) {
-        istream->second.stream->decode(frame + frame_index, stream_sample_size, &_header); // Ignore the decode error to process the next stream
+        istream->second.stream->decode(frame + frame_index, stream_sample_size, _header.get_recv_frame_details()); // Ignore the decode error to process the next stream
       } else {
         // We don't known this stream. This is not an error: it might be for another receiver. We process the next stream.
       }
@@ -132,7 +132,7 @@ bool Channel::decode(const char * frame, uint32_t frame_size)
   }
   else {
     // Simple channel
-    if (_streams.begin()->second.stream->decode(frame + frame_index, frame_size - frame_index, &_header) == false) {
+    if (_streams.begin()->second.stream->decode(frame + frame_index, frame_size - frame_index, _header.get_recv_frame_details()) == false) {
       return false;
     }
   }
@@ -167,11 +167,6 @@ stream_ptr_t Channel::get_stream(std::string str_name)
     return nullptr;
 }
 
-uint32_t Channel::missed_frames()
-{
-    return _header.missed_frames();
-}
-
 // Channel::Pool
 
 Channel::Pool::Pool(udp::receiver_set_t& context_receiver_set,
@@ -187,7 +182,7 @@ Channel::Pool::~Pool()
     _channels->clear();
 }
 
-channel_ptr_t Channel::Pool::get(const xml::Channel* configuration)
+channel_ptr_t Channel::Pool::get(const xml::Channel* configuration, ed247_uid_t component_identifier)
 {
     static Channel::Builder builder;
     channel_ptr_t sp_channel;
@@ -196,7 +191,7 @@ channel_ptr_t Channel::Pool::get(const xml::Channel* configuration)
     auto iter = std::find_if(_channels->begin(),_channels->end(),
         [&name](const channel_ptr_t & c){ return c->get_name() == name; });
     if(iter == _channels->end()){
-        sp_channel = builder.create(configuration, _context_receiver_set, _pool_streams);
+        sp_channel = builder.create(configuration, component_identifier, _context_receiver_set, _pool_streams);
         _channels->push_back(sp_channel);
     }else{
         // sp_channel = *iter;
@@ -266,10 +261,11 @@ void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 
 // Channel::Builder
 channel_ptr_t Channel::Builder::create(const xml::Channel* configuration,
-    udp::receiver_set_t& context_receiver_set,
-    std::shared_ptr<ed247::StreamSet> & pool_streams) const
+                                       ed247_uid_t component_identifier,
+                                       udp::receiver_set_t& context_receiver_set,
+                                       std::shared_ptr<ed247::StreamSet> & pool_streams) const
 {
-    auto sp_channel = std::make_shared<Channel>(configuration);
+  auto sp_channel = std::make_shared<Channel>(configuration, component_identifier);
     sp_channel->_com_interface.load(configuration->_com_interface, context_receiver_set, std::bind(&Channel::decode, sp_channel.get(), std::placeholders::_1, std::placeholders::_2));
 
     for(auto& stream_configuration : configuration->_stream_list) {

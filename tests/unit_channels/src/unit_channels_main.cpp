@@ -123,7 +123,7 @@ TEST_P(ChannelContext, MultiPushPop)
             ASSERT_EQ(pid, 0);
             uint16_t sn = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
             frame_index += sizeof(uint16_t);
-            ASSERT_EQ(sn, channel0->get_header()._send_header.sequence_number-1);
+            ASSERT_EQ(sn, channel0->get_header().get_next_serial_number()-1);
             if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
                 ed247_timestamp_t timestamp;
                 timestamp.epoch_s = ntohl(*(uint32_t*)((char*)channel0->buffer().data()+frame_index));
@@ -167,12 +167,7 @@ TEST_P(ChannelContext, MultiPushPop)
 
         // Check frame header
         if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
-            ASSERT_EQ(channel0->get_header()._send_header.component_identifier, channel1->get_header()._recv_headers_iter->component_identifier);
-            ASSERT_EQ(channel0->get_header()._send_header.sequence_number-1, channel1->get_header()._recv_headers_iter->sequence_number);
-        }
-        if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
-            ASSERT_EQ(channel0->get_header()._send_header.transport_timestamp.epoch_s, channel1->get_header()._recv_headers_iter->transport_timestamp.epoch_s);
-            ASSERT_EQ(channel0->get_header()._send_header.transport_timestamp.offset_ns, channel1->get_header()._recv_headers_iter->transport_timestamp.offset_ns);
+            ASSERT_EQ(channel0->get_header().get_next_serial_number()-1, channel1->get_header().get_recv_frame_details().sequence_number);
         }
 
         // Pop sample & check samples
@@ -187,12 +182,11 @@ TEST_P(ChannelContext, MultiPushPop)
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
                 if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
-                    ASSERT_EQ(sample.frame_infos().component_identifier, channel0->get_header()._send_header.component_identifier);
-                    ASSERT_EQ(sample.frame_infos().sequence_number, i ? (channel0->get_header()._send_header.sequence_number-1) : 0);
+                    ASSERT_EQ(sample.frame_details().sequence_number, i ? (channel0->get_header().get_next_serial_number()-1) : 0);
                 }
                 if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
-                    ASSERT_EQ(sample.frame_infos().transport_timestamp.epoch_s, channel0->get_header()._send_header.transport_timestamp.epoch_s);
-                    ASSERT_EQ(sample.frame_infos().transport_timestamp.offset_ns, channel0->get_header()._send_header.transport_timestamp.offset_ns);
+                    ASSERT_NE(sample.frame_details().transport_timestamp.epoch_s, 0);
+                    ASSERT_NE(sample.frame_details().transport_timestamp.offset_ns, 0);
                 }
                 if(i < (stream.second.stream->get_sample_max_number()-1))
                     ASSERT_FALSE(empty);

@@ -192,7 +192,7 @@ TEST_P(StreamContext, SinglePushPop)
 
         // Decode sample
         malloc_count_start();
-        stream_1->decode(buffer.data(), buffer.size());
+        stream_1->decode(buffer.data(), buffer.size(), LIBED247_SAMPLE_DETAILS_DEFAULT);
         ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_1->get_direction() & ED247_DIRECTION_IN) != 0)
@@ -300,7 +300,7 @@ TEST_P(StreamContext, MultiPushPop)
 
         // Decode sample
         malloc_count_start();
-        stream_1->decode(buffer.data(), buffer.size());
+        stream_1->decode(buffer.data(), buffer.size(), LIBED247_SAMPLE_DETAILS_DEFAULT);
         ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_1->get_direction() & ED247_DIRECTION_IN) != 0)
@@ -448,7 +448,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
 
         // Decode sample
         malloc_count_start();
-        stream_out->decode(buffer.data(), buffer.size());
+        stream_out->decode(buffer.data(), buffer.size(), LIBED247_SAMPLE_DETAILS_DEFAULT);
         ASSERT_EQ(malloc_count_stop(), 0);
 
         if ((stream_out->get_direction() & ED247_DIRECTION_IN) != 0 &&

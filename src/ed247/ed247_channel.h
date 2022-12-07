@@ -29,6 +29,7 @@
 #include "ed247_xml.h"
 #include "ed247_cominterface.h"
 #include "ed247_stream.h"
+#include "ed247_frame_header.h"
 
 #include <memory>
 #include <map>
@@ -48,10 +49,10 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         } stream_dir_t;
         using map_streams_t = std::map<ed247_uid_t,stream_dir_t>;
 
-        Channel(const xml::Channel* configuration):
+        Channel(const xml::Channel* configuration, ed247_uid_t component_identifier):
             _configuration(configuration),
             _sstreams(std::make_shared<stream_list_t>()),
-            _header(configuration->_header, get_name()),
+            _header(configuration->_header, component_identifier, get_name()),
             _user_data(NULL)
         {
           MEMCHECK_NEW(this, "Channel " << _configuration->_name);
@@ -103,8 +104,6 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         std::shared_ptr<stream_list_t> sstreams() { return _sstreams; }
 
-        uint32_t missed_frames();
-
     protected:
         const xml::Channel* _configuration;
         udp::ComInterface _com_interface;
@@ -117,7 +116,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
         void allocate_buffer()
         {
             uint32_t capacity = 0;
-            capacity += _header.length();
+            capacity += _header.get_size();
             for(auto & p : _streams){
                 capacity += sizeof(ed247_uid_t) + sizeof(uint16_t);
                 capacity += p.second.stream->get_max_size();
@@ -147,7 +146,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
                     std::shared_ptr<ed247::StreamSet> & pool_streams);
                 ~Pool();
 
-                channel_ptr_t get(const xml::Channel* configuration);
+          channel_ptr_t get(const xml::Channel* configuration, ed247_uid_t component_identifier);
 
                 std::vector<channel_ptr_t> find(std::string str_regex);
 
@@ -169,6 +168,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         class Builder{
             channel_ptr_t create(const xml::Channel* configuration,
+                                 ed247_uid_t component_identifier,
                                  udp::receiver_set_t& context_receiver_set,
                                  std::shared_ptr<ed247::StreamSet> & pool_streams) const;
             friend class Pool;
