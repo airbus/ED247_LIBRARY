@@ -169,7 +169,7 @@ stream_ptr_t Channel::get_stream(std::string str_name)
 
 // Channel::Pool
 
-Channel::Pool::Pool(udp::receiver_set_t& context_receiver_set,
+Channel::Pool::Pool(udp::ReceiverSet& context_receiver_set,
                     std::shared_ptr<ed247::StreamSet> & pool_streams):
                     _channels(std::make_shared<channel_list_t>()),
                     _context_receiver_set(context_receiver_set),
@@ -262,7 +262,7 @@ void Channel::Pool::encode_and_send(const ed247_uid_t & component_identifier)
 // Channel::Builder
 channel_ptr_t Channel::Builder::create(const xml::Channel* configuration,
                                        ed247_uid_t component_identifier,
-                                       udp::receiver_set_t& context_receiver_set,
+                                       udp::ReceiverSet& context_receiver_set,
                                        std::shared_ptr<ed247::StreamSet> & pool_streams) const
 {
   auto sp_channel = std::make_shared<Channel>(configuration, component_identifier);

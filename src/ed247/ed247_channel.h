@@ -142,7 +142,7 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
         class Pool {
             public:
-                explicit Pool(udp::receiver_set_t& context_receiver_set,
+                explicit Pool(udp::ReceiverSet& context_receiver_set,
                     std::shared_ptr<ed247::StreamSet> & pool_streams);
                 ~Pool();
 
@@ -162,14 +162,14 @@ class Channel : public ed247_internal_channel_t, public std::enable_shared_from_
 
             private:
                 std::shared_ptr<channel_list_t>    _channels;
-                udp::receiver_set_t&               _context_receiver_set;
+                udp::ReceiverSet&                  _context_receiver_set;
                 std::shared_ptr<ed247::StreamSet>  _pool_streams;
         };
 
         class Builder{
             channel_ptr_t create(const xml::Channel* configuration,
                                  ed247_uid_t component_identifier,
-                                 udp::receiver_set_t& context_receiver_set,
+                                 udp::ReceiverSet& context_receiver_set,
                                  std::shared_ptr<ed247::StreamSet> & pool_streams) const;
             friend class Pool;
         };

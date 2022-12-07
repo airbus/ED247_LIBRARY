@@ -65,17 +65,17 @@ namespace ed247 {
   namespace udp {
 
     //
-    // transceiver (aka ECIC UdpSocket)
+    // Transceiver (aka ECIC UdpSocket)
     // Hold a system socket and prepare it for transceiving.
     // base class for emitter and receiver.
     //
-    class transceiver {
+    class Transceiver {
     public:
-      transceiver(const socket_address_t& socket_address);
-      ~transceiver();
+      Transceiver(const socket_address_t& socket_address);
+      ~Transceiver();
 
-      transceiver(const transceiver&) = delete;
-      transceiver& operator=(const transceiver&) = delete;
+      Transceiver(const Transceiver&) = delete;
+      Transceiver& operator=(const Transceiver&) = delete;
 
       const ed247_socket_t& get_socket() const { return _socket; }
 
@@ -84,22 +84,22 @@ namespace ed247 {
       ed247_socket_t   _socket{INVALID_SOCKET};   // Where the packets come from (regardless direction)
     };
 
-    class emitter : public transceiver
+    class Emitter : public Transceiver
     {
     public:
-      emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl = 1);
+      Emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl = 1);
       void send_frame(const void* payload, const uint32_t payload_size);
 
     private:
       socket_address_t _destination_address;
     };
 
-    class receiver : public transceiver
+    class Receiver : public Transceiver
     {
     public:
       using receive_callback_t = std::function<void(const char* payload, uint32_t size)>;
 
-      receiver(socket_address_t from_address,
+      Receiver(socket_address_t from_address,
                socket_address_t multicast_interface,
                socket_address_t multicast_group_address,
                receive_callback_t callback);
@@ -120,18 +120,18 @@ namespace ed247 {
     };
 
     //
-    // receiver_set_t
+    // ReceiverSet
     // Store receiver and allows to receive data on all of them.
     // There is only one of this class per context.
     //
-    class receiver_set_t
+    class ReceiverSet
     {
     public:
-      receiver_set_t();
-      ~receiver_set_t();
+      ReceiverSet();
+      ~ReceiverSet();
 
       // Add receiver and take onership
-      void emplace(receiver* receiver);
+      void emplace(Receiver* receiver);
 
       // Receive frames from all registered receivers.
       // Call receive_callback(s) set by ComInterface::load()
@@ -139,7 +139,7 @@ namespace ed247 {
       ed247_status_t wait_during(int32_t duration_us);
 
     private:
-      std::vector<std::unique_ptr<receiver>> _receivers;
+      std::vector<std::unique_ptr<Receiver>> _receivers;
 
       struct select_options_s {
         fd_set fd;
@@ -164,8 +164,8 @@ namespace ed247 {
       // - store receivers in context_receiver_set,
       // - set receive_callback on each of them.
       void load(const xml::ComInterface& configuration,
-                receiver_set_t& context_receiver_set,
-                receiver::receive_callback_t receive_callback);
+                ReceiverSet& context_receiver_set,
+                Receiver::receive_callback_t receive_callback);
 
       // Send a frame to all ComInterface emitters
       void send_frame(const void* payload, const uint32_t payload_size);
@@ -174,7 +174,7 @@ namespace ed247 {
       ~ComInterface() { MEMCHECK_DEL(this, "ComInterface"); }
 
     private:
-      std::vector<std::unique_ptr<emitter>> _emitters;
+      std::vector<std::unique_ptr<Emitter>> _emitters;
     };
 
 

@@ -199,8 +199,8 @@ namespace ed247 {
 // ComInterface
 //
 void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
-                                    receiver_set_t& context_receiver_set,
-                                    receiver::receive_callback_t receive_callback)
+                                    ReceiverSet& context_receiver_set,
+                                    Receiver::receive_callback_t receive_callback)
 {
 #ifdef _WIN32
   static bool winsocks_initialized = false;
@@ -227,7 +227,7 @@ void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
       // For now, we bind to INADDR_ANY.
       if (destination_address.is_multicast()) from_address.set_ip_address(std::string());
 
-      context_receiver_set.emplace(new receiver(from_address,
+      context_receiver_set.emplace(new Receiver(from_address,
                                                 multicast_interface,
                                                 destination_address /*mcast group*/,
                                                 receive_callback));
@@ -245,7 +245,7 @@ void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
         if (from_address.is_any_addr()) from_address.set_ip_address(socket_configuration._mc_ip_address);
       }
 
-      _emitters.emplace_back(new emitter(from_address, destination_address, socket_configuration._mc_ttl));
+      _emitters.emplace_back(new Emitter(from_address, destination_address, socket_configuration._mc_ttl));
       break;
     }
 
@@ -264,25 +264,25 @@ void ed247::udp::ComInterface::send_frame(const void* payload, const uint32_t pa
 
 
 //
-// transceiver
+// Transceiver
 //
-ed247::udp::transceiver::transceiver(const socket_address_t& socket_address) :
+ed247::udp::Transceiver::Transceiver(const socket_address_t& socket_address) :
   _socket_address(socket_address)
 {
-  MEMCHECK_NEW(this, "transceiver " << _socket_address);
+  MEMCHECK_NEW(this, "Transceiver " << _socket_address);
   _socket = system_socket_map.create(_socket_address);
 }
 
-ed247::udp::transceiver::~transceiver() {
-  MEMCHECK_DEL(this, "transceiver " << _socket_address);
+ed247::udp::Transceiver::~Transceiver() {
+  MEMCHECK_DEL(this, "Transceiver " << _socket_address);
   system_socket_map.release(_socket_address);
 }
 
 //
-// emitter
+// Emitter
 //
-ed247::udp::emitter::emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl) :
-  transceiver(from_address),
+ed247::udp::Emitter::Emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl) :
+  Transceiver(from_address),
   _destination_address(destination_address)
 {
   if(_destination_address.is_multicast()) {
@@ -305,7 +305,7 @@ ed247::udp::emitter::emitter(socket_address_t from_address, socket_address_t des
 }
 
 
-void ed247::udp::emitter::send_frame(const void* payload, const uint32_t payload_size)
+void ed247::udp::Emitter::send_frame(const void* payload, const uint32_t payload_size)
 {
   PRINT_CRAZY("sendto() from (" << _socket_address << ") to (" << _destination_address << "), size " << payload_size << "b [" << hex_stream(payload, payload_size) << "]");
   int32_t sent_size = sendto(_socket, (const char *)payload, payload_size, 0, (struct sockaddr *)&_destination_address, sizeof(struct sockaddr_in));
@@ -315,15 +315,15 @@ void ed247::udp::emitter::send_frame(const void* payload, const uint32_t payload
 }
 
 //
-// receiver
+// Receiver
 //
-ed247::udp::receiver::frame_t ed247::udp::receiver::_receive_frame;
+ed247::udp::Receiver::frame_t ed247::udp::Receiver::_receive_frame;
 
-ed247::udp::receiver::receiver(socket_address_t from_address,
+ed247::udp::Receiver::Receiver(socket_address_t from_address,
                                socket_address_t multicast_interface,
                                socket_address_t multicast_group_address,
                                receive_callback_t callback) :
-  transceiver(from_address),
+  Transceiver(from_address),
   _receive_callback(callback)
 {
   if (multicast_group_address.is_multicast()) {
@@ -338,7 +338,7 @@ ed247::udp::receiver::receiver(socket_address_t from_address,
   }
 }
 
-void ed247::udp::receiver::receive()
+void ed247::udp::Receiver::receive()
 {
   int recv_result = 0;
   bool frame_received = false;
@@ -358,21 +358,21 @@ void ed247::udp::receiver::receive()
 }
 
 //
-// receiver_set_t
+// ReceiverSet
 //
-ed247::udp::receiver_set_t::receiver_set_t()
+ed247::udp::ReceiverSet::ReceiverSet()
 {
-  MEMCHECK_NEW(this, "udp::receiver_set_t");
+  MEMCHECK_NEW(this, "udp::ReceiverSet");
   FD_ZERO(&_select_options.fd);
   _select_options.nfds = 0;
 }
 
-ed247::udp::receiver_set_t::~receiver_set_t()
+ed247::udp::ReceiverSet::~ReceiverSet()
 {
-  MEMCHECK_DEL(this, "udp::receiver_set_t");
+  MEMCHECK_DEL(this, "udp::ReceiverSet");
 }
 
-void ed247::udp::receiver_set_t::emplace(receiver* receiver)
+void ed247::udp::ReceiverSet::emplace(Receiver* receiver)
 {
   ed247_socket_t socket = receiver->get_socket();
   _select_options.nfds = (std::max)((int)(socket+1), _select_options.nfds);
@@ -382,7 +382,7 @@ void ed247::udp::receiver_set_t::emplace(receiver* receiver)
 }
 
 
-ed247_status_t ed247::udp::receiver_set_t::wait_frame(int32_t timeout_us)
+ed247_status_t ed247::udp::ReceiverSet::wait_frame(int32_t timeout_us)
 {
   PRINT_CRAZY("UDP: Waiting for first frame to be received");
 
@@ -431,7 +431,7 @@ ed247_status_t ed247::udp::receiver_set_t::wait_frame(int32_t timeout_us)
   return status;
 }
 
-ed247_status_t ed247::udp::receiver_set_t::wait_during(int32_t duration_us)
+ed247_status_t ed247::udp::ReceiverSet::wait_during(int32_t duration_us)
 {
   PRINT_CRAZY("UDP: Waiting during [" << duration_us << "] us");
 

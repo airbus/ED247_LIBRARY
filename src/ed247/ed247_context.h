@@ -99,7 +99,7 @@ class Context : public ed247_internal_context_t
     private:
 
         std::unique_ptr<xml::Component>    _configuration;
-        udp::receiver_set_t                _receiver_set;
+        udp::ReceiverSet                   _receiver_set;
         std::shared_ptr<ed247::SignalSet>  _pool_signals;
         std::shared_ptr<ed247::StreamSet>  _pool_streams;
         Channel::Pool                      _pool_channels;
