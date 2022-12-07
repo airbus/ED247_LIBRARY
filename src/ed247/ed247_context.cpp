@@ -42,7 +42,7 @@ namespace ed247
 {
 
 Context::Context():
-    _pool_signals(std::make_shared<ed247::signal_set_t>()),
+    _pool_signals(std::make_shared<ed247::SignalSet>()),
     _pool_streams(std::make_shared<ed247::StreamSet>(*_pool_signals.get())),
     _pool_channels(_receiver_set, _pool_streams)
 {

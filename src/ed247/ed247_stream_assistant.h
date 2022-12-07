@@ -36,7 +36,7 @@ namespace ed247
       return _stream;
     }
 
-    bool write(const signal& signal, const void *data, uint32_t size)
+    bool write(const Signal& signal, const void *data, uint32_t size)
     {
       if(!(_stream->get_direction() & ED247_DIRECTION_OUT)) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot write Signal [" << signal.get_name() << "] to an non-output stream");
@@ -58,7 +58,7 @@ namespace ed247
       return true;
     }
 
-    bool read(const signal& signal, const void **data, uint32_t * size)
+    bool read(const Signal& signal, const void **data, uint32_t * size)
     {
       if(!(_stream->get_direction() & ED247_DIRECTION_IN)) {
         PRINT_ERROR("Stream '" << _stream->get_name() << "': Cannot read Signal [" << signal.get_name() << "] from a non-input stream");

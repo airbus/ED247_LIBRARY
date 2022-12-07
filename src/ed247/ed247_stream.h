@@ -144,7 +144,7 @@ namespace ed247
   //
   struct StreamSignals: public Stream {
     StreamSignals(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel,
-                  signal_set_t& context_signal_set, uint32_t sample_size_size);
+                  SignalSet& context_signal_set, uint32_t sample_size_size);
     uint32_t get_sampling_period_us() override { return ((xml::StreamSignals*)_configuration)->_sampling_period_us; }
 
   };
@@ -160,7 +160,7 @@ namespace ed247
   class StreamSet
   {
   public:
-    StreamSet(ed247::signal_set_t& pool_signals) : _pool_signals(pool_signals) {}
+    StreamSet(ed247::SignalSet& pool_signals) : _pool_signals(pool_signals) {}
     stream_ptr_t create(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel);
 
     stream_ptr_t get(std::string name);
@@ -170,8 +170,8 @@ namespace ed247
     uint32_t size()          { return _streams.size(); }
 
   private:
-    stream_map_t          _streams;
-    ed247::signal_set_t&  _pool_signals;
+    stream_map_t       _streams;
+    ed247::SignalSet&  _pool_signals;
   };
 }
 

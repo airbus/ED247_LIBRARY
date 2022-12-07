@@ -68,7 +68,7 @@ ed247::Stream::~Stream()
 //
 
 ed247::StreamSignals::StreamSignals(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel,
-                                    signal_set_t& context_signal_set, uint32_t sample_size_size) :
+                                    SignalSet& context_signal_set, uint32_t sample_size_size) :
   Stream(configuration, ed247_api_channel, sample_size_size)
 {
   const xml::StreamSignals* sconfiguration = (const xml::StreamSignals*)configuration;

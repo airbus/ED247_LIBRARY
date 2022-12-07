@@ -26,29 +26,29 @@
 #include "ed247_sample.h"
 #include <regex>
 
-std::unique_ptr<ed247::Sample> ed247::signal::allocate_sample() const
+std::unique_ptr<ed247::Sample> ed247::Signal::allocate_sample() const
 {
   return std::unique_ptr<ed247::Sample>(new ed247::Sample(get_sample_max_size_bytes()));
 }
 
-ed247::signal_ptr_t ed247::signal_set_t::create(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream)
+ed247::signal_ptr_t ed247::SignalSet::create(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream)
 {
   auto result = _signals.emplace(std::make_pair(configuration->_name,
-                                                signal_ptr_t(new signal(configuration, ed247_api_stream))));
+                                                signal_ptr_t(new Signal(configuration, ed247_api_stream))));
 
   if (result.second == false) THROW_ED247_ERROR("Signal [" << configuration->_name << "] already exist !");
 
   return result.first->second;
 }
 
-ed247::signal_ptr_t ed247::signal_set_t::get(const std::string& name)
+ed247::signal_ptr_t ed247::SignalSet::get(const std::string& name)
 {
   auto iterator = _signals.find(name);
   if (iterator != _signals.end()) return iterator->second;
   return nullptr;
 }
 
-ed247::signal_list_t ed247::signal_set_t::find(const std::string& str_regex)
+ed247::signal_list_t ed247::SignalSet::find(const std::string& str_regex)
 {
   std::regex reg(str_regex);
   signal_list_t founds;

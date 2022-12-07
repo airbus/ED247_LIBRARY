@@ -40,10 +40,10 @@ namespace ed247
 {
   class Sample;
 
-  class signal : public ed247_internal_signal_t
+  class Signal : public ed247_internal_signal_t
   {
   public:
-    signal(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream) :
+    Signal(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream) :
       _configuration(configuration),
       _ed247_api_stream(ed247_api_stream),
       _user_data(nullptr) {
@@ -51,14 +51,14 @@ namespace ed247
       // MEMCHECK_NEW(this, "Signal " << _configuration->_name);
     }
 
-    ~signal() {
+    ~Signal() {
       // TODO: validate free (curently streams are not freed, so neither signals)
       // MEMCHECK_DEL(this, "Signal " << _configuration->_name);
     }
 
     // No implicit copy
-    signal(const signal & other) = delete;
-    signal& operator = (const signal & other) = delete;
+    Signal(const Signal & other) = delete;
+    Signal& operator = (const Signal & other) = delete;
 
     // configuration accessors
     const std::string& get_name() const                      { return _configuration->_name;                        }
@@ -96,19 +96,19 @@ namespace ed247
   };
 
 
-  typedef std::shared_ptr<signal>   signal_ptr_t;
+  typedef std::shared_ptr<Signal>   signal_ptr_t;
   typedef std::vector<signal_ptr_t> signal_list_t;
 
 
-  class signal_set_t
+  class SignalSet
   {
   public:
     signal_ptr_t create(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream);
     signal_ptr_t get(const std::string& name);
     signal_list_t find(const std::string& regex);
 
-    signal_set_t()  { MEMCHECK_NEW(this, "signal_set_t"); }
-    ~signal_set_t() { MEMCHECK_DEL(this, "signal_set_t"); }
+    SignalSet()  { MEMCHECK_NEW(this, "SignalSet"); }
+    ~SignalSet() { MEMCHECK_DEL(this, "SignalSet"); }
 
   protected:
     ED247_FRIEND_TEST();
