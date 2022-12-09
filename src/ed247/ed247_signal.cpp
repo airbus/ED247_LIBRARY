@@ -23,13 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_signal.h"
-#include "ed247_sample.h"
 #include <regex>
-
-std::unique_ptr<ed247::Sample> ed247::Signal::allocate_sample() const
-{
-  return std::unique_ptr<ed247::Sample>(new ed247::Sample(get_sample_max_size_bytes()));
-}
 
 ed247::signal_ptr_t ed247::SignalSet::create(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream)
 {

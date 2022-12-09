@@ -108,7 +108,6 @@ namespace ed247 {
       std::vector<uint32_t> _nad_dimensions;
       uint32_t              _vnad_position;
       uint32_t              _vnad_max_number;
-      uint32_t              _position;                   // position in the stream vector
 
       uint32_t get_sample_max_size_bytes() const;
       inline uint32_t get_nad_type_size() const { return get_nad_type_size(_nad_type); }

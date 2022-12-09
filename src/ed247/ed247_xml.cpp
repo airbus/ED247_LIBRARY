@@ -836,11 +836,6 @@ void ed247::xml::DISStream::load(const xmlNodePtr xml_node)
             [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
               return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
             });
-  // Update position attribute
-  uint32_t p = 0;
-  for(auto & s : _signal_list){
-    s->_position = p++;
-  }
 }
 
 void ed247::xml::DISStream::validate(const xmlNodePtr closest_node)
@@ -920,11 +915,6 @@ void ed247::xml::ANAStream::load(const xmlNodePtr xml_node)
             [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
               return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
             });
-  // Update position attribute
-  uint32_t p = 0;
-  for(auto & s : _signal_list){
-    s->_position = p++;
-  }
 }
 
 void ed247::xml::ANAStream::validate(const xmlNodePtr closest_node)
@@ -1004,11 +994,6 @@ void ed247::xml::NADStream::load(const xmlNodePtr xml_node)
             [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
               return (a == nullptr || b == nullptr) ? false : (a->_byte_offset < b->_byte_offset);
             });
-  // Update position attribute
-  uint32_t p = 0;
-  for(auto & s : _signal_list){
-    s->_position = p++;
-  }
 }
 
 void ed247::xml::NADStream::validate(const xmlNodePtr closest_node)
@@ -1083,12 +1068,6 @@ void ed247::xml::VNADStream::load(const xmlNodePtr xml_node)
             [](const std::unique_ptr<Signal>& a, const std::unique_ptr<Signal>& b) {
               return (a == nullptr || b == nullptr) ? false : (a->_vnad_position < b->_vnad_position);
             });
-
-  // Update position attribute
-  uint32_t p = 0;
-  for(auto & s : _signal_list){
-    s->_position = p++;
-  }
 }
 
 void ed247::xml::VNADStream::validate(const xmlNodePtr closest_node)

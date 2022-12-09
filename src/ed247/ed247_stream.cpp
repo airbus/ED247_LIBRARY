@@ -24,6 +24,7 @@
  *****************************************************************************/
 #include "ed247_stream.h"
 #include "ed247_stream_assistant.h"
+#include "ed247_bswap.h"
 #include <regex>
 
 
@@ -76,7 +77,11 @@ ed247::StreamSignals::StreamSignals(const xml::Stream* configuration, ed247_inte
     signal_ptr_t signal = context_signal_set.create(signal_configuration.get(), this);
     _signals.push_back(signal);
   }
-  _assistant = std::unique_ptr<ed247_internal_stream_assistant_t>(new StreamAssistant(this));
+  if (get_type() == ED247_STREAM_TYPE_VNAD) {
+    _assistant = std::unique_ptr<ed247_internal_stream_assistant_t>(new VNADStreamAssistant(this));
+  } else {
+    _assistant = std::unique_ptr<ed247_internal_stream_assistant_t>(new FixedStreamAssistant(this));
+  }
 }
 
 ed247::signal_list_t ed247::Stream::Stream::find_signals(std::string str_regex)

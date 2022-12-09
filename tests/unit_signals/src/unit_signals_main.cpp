@@ -108,7 +108,7 @@ TEST_P(SignalContext, SinglePushPop)
 
   // Check signal sample allocation
   auto signal = pool_signals->find(".*").front();
-  auto signal_sample = signal->allocate_sample();
+  std::unique_ptr<ed247::Sample> signal_sample(new ed247::Sample(signal->get_sample_max_size_bytes()));
   ASSERT_EQ(signal_sample->size(), (uint32_t)0);
   ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
 
@@ -117,11 +117,11 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_NE(api_assistant, nullptr);
   ed247::StreamAssistant* assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
 
-  // Check write & encode
+  // Check write & push
   std::vector<std::unique_ptr<ed247::Sample>> samples;
   ed247::StreamSample stream_sample(stream->get_sample_max_size_bytes());
   for(auto & signal : stream->get_signals()){
-    auto sample = signal->allocate_sample();
+    std::unique_ptr<ed247::Sample> sample(new ed247::Sample(signal->get_sample_max_size_bytes()));
     ASSERT_EQ(sample->size(), (uint32_t)0);
     ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
@@ -136,40 +136,32 @@ TEST_P(SignalContext, SinglePushPop)
     samples.push_back(std::move(sample));
   }
   ASSERT_EQ(stream_sample.size(), stream_sample.capacity());
-  assistant->encode();
-  ASSERT_EQ(stream_sample.size(), assistant->buffer().size());
+  assistant->push(nullptr, nullptr);
+  ASSERT_EQ(stream->get_outgoing_sample_number(), (uint32_t)1);
+  ASSERT_EQ(stream_sample.size(), assistant->_buffer.size());
 
   swap_payload(stream_sample.data(), stream_sample.data_rw(), stream_sample.size(), signal->get_nad_type());
-  ASSERT_EQ(memcmp(stream_sample.data(), assistant->buffer().data(), stream_sample.size()), 0);
+  ASSERT_EQ(memcmp(stream_sample.data(), assistant->_buffer.data(), stream_sample.size()), 0);
 
-
-  // Check push
-  for(auto & signal : stream->get_signals()){
-    auto sample = signal->allocate_sample();
-    ASSERT_EQ(sample->size(), (uint32_t)0);
-    ASSERT_EQ(sample->capacity(), signal->get_sample_max_size_bytes());
-    std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
-    sample->copy(msg.c_str(), sample->capacity());
-    assistant->write(*signal, sample->data(), sample->size());
-    samples.push_back(std::move(sample));
-  }
-  assistant->push();
-  ASSERT_EQ(stream->get_outgoing_sample_number(), (uint32_t)1);
-
-  // Check decode & read
+  // Check pop & read
   stream = pool_streams->find("StreamInput").front();
   ASSERT_NE(stream, nullptr);
+  stream->_recv_stack.push_back().copy(stream_sample.data(), stream_sample.size());
+
   api_assistant = stream->get_api_assistant();
   ASSERT_NE(assistant, nullptr);
   assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
-  assistant->decode(stream_sample.data(), stream_sample.size());
+  assistant->pop(nullptr, nullptr, nullptr, nullptr);
   for(auto & signal : stream->get_signals()){
-    auto sample = signal->allocate_sample();
+    std::unique_ptr<ed247::Sample> sample(new ed247::Sample(signal->get_sample_max_size_bytes()));
     const void *data;
     uint32_t size;
     assistant->read(*signal, &data, &size);
     ASSERT_EQ(size, sample->capacity());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
+    SAY(size);
+    SAY("data: " << hex_stream(data, size));
+    SAY("msg: " << hex_stream(msg.c_str(), size));
     ASSERT_EQ(memcmp(data, msg.c_str(), size), 0);
   }
 

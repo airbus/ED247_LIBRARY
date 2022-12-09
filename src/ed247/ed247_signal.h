@@ -38,8 +38,6 @@ struct ed247_internal_stream_t;
 
 namespace ed247
 {
-  class Sample;
-
   class Signal : public ed247_internal_signal_t
   {
   public:
@@ -76,7 +74,6 @@ namespace ed247
     uint32_t get_vnad_position() const                       { return _configuration->_vnad_position;               }
     uint32_t get_vnad_max_number() const                     { return _configuration->_vnad_max_number;             }
     uint32_t get_sample_max_size_bytes() const               { return _configuration->get_sample_max_size_bytes();  }
-    uint32_t position() const                                { return _configuration->_position;                    }
 
 
     // implementation of ed247_signal_get_stream()
@@ -86,8 +83,6 @@ namespace ed247
     void set_user_data(void *user_data)  { _user_data = user_data;  }
     void get_user_data(void **user_data) { *user_data = _user_data; }
 
-
-    std::unique_ptr<Sample> allocate_sample() const;
 
   private:
     const xml::Signal*       _configuration;
