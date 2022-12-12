@@ -10,7 +10,25 @@
 #define ED247_CLIENT_ITERATOR
 #include <vector>
 
+
 namespace ed247 {
+
+  // Define iterator_shared_get() that call shared_ptr::get() eitheir on the iterator (vector) or iterator->second (map)
+  template <typename>
+  struct is_pair : std::false_type { };
+
+  template <typename T, typename U>
+  struct is_pair<std::pair<T, U>> : std::true_type { };
+
+  template<class Return, class Iterator, typename std::enable_if<!is_pair<typename Iterator::value_type>::value, bool>::type = true>
+  Return iterator_shared_get(Iterator& itr) {
+    return itr->get();
+  }
+  template<class Return, class Iterator, typename std::enable_if<is_pair<typename Iterator::value_type>::value, bool>::type = true>
+  Return iterator_shared_get(Iterator& itr) {
+    return itr->second.get();
+  }
+
 
   template <class c_base_list, typename T>
   struct client_list : public c_base_list {
@@ -71,7 +89,7 @@ namespace ed247 {
 
     T* get_current() override {
       if (_iterator == _container->end()) return nullptr;
-      return _iterator->get();
+      return iterator_shared_get<T*>(_iterator);
     }
 
     T* get_next() override {

@@ -59,28 +59,14 @@ const char* _ed247_name = "unnamed";
  * Client lists definition
  * ========================================================================= */
 struct ed247_internal_channel_list_t {};
-typedef ed247::client_list<ed247_internal_channel_list_t, ed247::Channel>           ed247_channel_clist_base_t;
-typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Channel> ed247_channel_clist_vector_t;
-
+typedef ed247::client_list<ed247_internal_channel_list_t, ed247::Channel>                                 ed247_channel_clist_base_t;
+typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Channel>                       ed247_channel_clist_vector_t;
+typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Channel, ed247::channel_map_t> ed247_channel_clist_map_t;
 
 struct ed247_internal_stream_list_t {};
-typedef ed247::client_list<ed247_internal_stream_list_t, ed247::Stream>           ed247_stream_clist_base_t;
-typedef ed247::client_list_container<ed247_internal_stream_list_t, ed247::Stream> ed247_stream_clist_vector_t;
-
-// ed247_stream_clist_map_t
-namespace ed247 {
-  template<>
-  ed247::Stream* ed247::client_list_container<ed247_internal_stream_list_t,
-                                              ed247::Stream,
-                                              ed247::stream_map_t>::get_current() {
-    if (_iterator == _container->end()) return nullptr;
-    return _iterator->second.get();
-  }
-}
-
-typedef ed247::client_list_container<ed247_internal_stream_list_t,
-                                     ed247::Stream,
-                                     ed247::stream_map_t> ed247_stream_clist_map_t;
+typedef ed247::client_list<ed247_internal_stream_list_t, ed247::Stream>                                ed247_stream_clist_base_t;
+typedef ed247::client_list_container<ed247_internal_stream_list_t, ed247::Stream>                      ed247_stream_clist_vector_t;
+typedef ed247::client_list_container<ed247_internal_stream_list_t, ed247::Stream, ed247::stream_map_t> ed247_stream_clist_map_t;
 
 
 // stream list where get_next() filter out stream without data
