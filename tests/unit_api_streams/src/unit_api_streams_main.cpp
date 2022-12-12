@@ -330,29 +330,24 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     ASSERT_EQ(ed247_channel_get_stream_list(NULL, &stream_list), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_stream_list(channel, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_stream_list(channel, &stream_list), ED247_STATUS_SUCCESS);
-
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream1");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream2");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream3");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream4");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream5");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream6");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream7");
-    ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream8");
+    std::map<std::string, int> stream_found;
+    for (int i = 1; i < 9; i++) {
+      ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
+      ASSERT_NE(stream, nullptr);
+      std::string name = ed247_stream_get_name(stream);
+      ASSERT_TRUE(name == "Stream1" || name == "Stream2" || name == "Stream3" || name == "Stream4" ||
+                  name == "Stream5" || name == "Stream6" || name == "Stream7" || name == "Stream8");
+      stream_found[name] += 1;
+    }
+    for (auto stream_pair: stream_found) {
+      ASSERT_EQ(stream_pair.second, 1);
+    }
 
     // Check the end of the list is reached and that on next request it will restart from the beginning
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(stream, (ed247_stream_t)NULL);
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
-    ASSERT_STREQ(ed247_stream_get_name(stream), "Stream1");
+    ASSERT_NE(stream, nullptr);
 
     // Remove this list
     ASSERT_EQ(ed247_stream_list_free(stream_list), ED247_STATUS_SUCCESS);

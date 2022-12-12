@@ -21,6 +21,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
+// Set ED247_FRIEND_TEST to have access to class private members
+#define TEST_CLASS_NAME(test_case_name, test_name) test_case_name##_##test_name##_Test
+class TEST_CLASS_NAME(ChannelContext, MultiPushPop);
+#define ED247_FRIEND_TEST() friend TEST_CLASS_NAME(ChannelContext, MultiPushPop);
 
 #include "unitary_test.h"
 #include "ed247_context.h"
@@ -97,15 +101,15 @@ TEST_P(ChannelContext, MultiPushPop)
 
         // Push stream samples
         for(auto stream : channel0->streams()){
-            ed247::StreamSample sample(stream.second.stream->get_sample_max_size_bytes());
+            ed247::StreamSample sample(stream.second->get_sample_max_size_bytes());
             bool full;
-            for(uint32_t i = 0 ; i < stream.second.stream->get_sample_max_number() ; i++){
-                std::string sample_str = strize() << std::setw(stream.second.stream->get_sample_max_size_bytes()) << std::setfill('0') << i;
-                sample.copy(sample_str.c_str(),stream.second.stream->get_sample_max_size_bytes());
+            for(uint32_t i = 0 ; i < stream.second->get_sample_max_number() ; i++){
+                std::string sample_str = strize() << std::setw(stream.second->get_sample_max_size_bytes()) << std::setfill('0') << i;
+                sample.copy(sample_str.c_str(),stream.second->get_sample_max_size_bytes());
                 malloc_count_start();
-                ASSERT_EQ(stream.second.stream->push_sample(sample.data(), sample.size(), NULL, &full), true);
+                ASSERT_EQ(stream.second->push_sample(sample.data(), sample.size(), NULL, &full), true);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                if(i < (stream.second.stream->get_sample_max_number()-1))
+                if(i < (stream.second->get_sample_max_number()-1))
                     ASSERT_FALSE(full);
                 else
                     ASSERT_TRUE(full);
@@ -114,21 +118,21 @@ TEST_P(ChannelContext, MultiPushPop)
 
         // Encode channel & check frame
         malloc_count_start();
-        channel0->encode(0);
+        channel0->encode_and_send();
         ASSERT_EQ(malloc_count_stop(), 0);
         uint32_t frame_index = 0;
-        if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
-            uint16_t pid = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
+        if(channel0->_configuration->_header._enable == ED247_YESNO_YES){
+            uint16_t pid = ntohs(*(uint16_t*)((char*)channel0->_buffer.data()+frame_index));
             frame_index += sizeof(uint16_t);
             ASSERT_EQ(pid, 0);
-            uint16_t sn = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
+            uint16_t sn = ntohs(*(uint16_t*)((char*)channel0->_buffer.data()+frame_index));
             frame_index += sizeof(uint16_t);
-            ASSERT_EQ(sn, channel0->get_header().get_next_serial_number()-1);
-            if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
+            ASSERT_EQ(sn, channel0->_header.get_next_serial_number()-1);
+            if(channel0->_configuration->_header._transport_timestamp == ED247_YESNO_YES){
                 ed247_timestamp_t timestamp;
-                timestamp.epoch_s = ntohl(*(uint32_t*)((char*)channel0->buffer().data()+frame_index));
+                timestamp.epoch_s = ntohl(*(uint32_t*)((char*)channel0->_buffer.data()+frame_index));
                 frame_index += sizeof(uint32_t);
-                timestamp.offset_ns = ntohl(*(uint32_t*)((char*)channel0->buffer().data()+frame_index));
+                timestamp.offset_ns = ntohl(*(uint32_t*)((char*)channel0->_buffer.data()+frame_index));
                 frame_index += sizeof(uint32_t);
                 static ed247_timestamp_t now;
                 ed247_get_time(&now);
@@ -141,54 +145,54 @@ TEST_P(ChannelContext, MultiPushPop)
             }
         }
         for(auto stream : channel0->streams()){
-            auto sid = ntohs(*(ed247_uid_t*)((char*)channel0->buffer().data()+frame_index));
+            auto sid = ntohs(*(ed247_uid_t*)((char*)channel0->_buffer.data()+frame_index));
             frame_index += sizeof(ed247_uid_t);
             ASSERT_EQ(sid, stream.first);
-            auto sample_size = ntohs(*(uint16_t*)((char*)channel0->buffer().data()+frame_index));
+            auto sample_size = ntohs(*(uint16_t*)((char*)channel0->_buffer.data()+frame_index));
             frame_index += sizeof(uint16_t);
-            if(stream.second.stream->get_type() == ED247_STREAM_TYPE_VNAD){
-                ASSERT_EQ(sample_size, (stream.second.stream->get_sample_max_size_bytes()+sizeof(uint16_t))*stream.second.stream->get_sample_max_number());
-            }else if(stream.second.stream->get_type() == ED247_STREAM_TYPE_A664){
-                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_sample_max_size_bytes())*stream.second.stream->get_sample_max_number());
-            }else if(stream.second.stream->get_type() == ED247_STREAM_TYPE_A825){
-                ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second.stream->get_sample_max_size_bytes())*stream.second.stream->get_sample_max_number());
-            }else if(stream.second.stream->get_type() == ED247_STREAM_TYPE_SERIAL){
-                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second.stream->get_sample_max_size_bytes())*stream.second.stream->get_sample_max_number());
+            if(stream.second->get_type() == ED247_STREAM_TYPE_VNAD){
+                ASSERT_EQ(sample_size, (stream.second->get_sample_max_size_bytes()+sizeof(uint16_t))*stream.second->get_sample_max_number());
+            }else if(stream.second->get_type() == ED247_STREAM_TYPE_A664){
+                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
+            }else if(stream.second->get_type() == ED247_STREAM_TYPE_A825){
+                ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
+            }else if(stream.second->get_type() == ED247_STREAM_TYPE_SERIAL){
+                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
             }else{
-                ASSERT_EQ(sample_size, (stream.second.stream->get_sample_max_size_bytes())*stream.second.stream->get_sample_max_number());
+                ASSERT_EQ(sample_size, (stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
             }
             frame_index += sample_size;
         }
 
         // Decode sample
         malloc_count_start();
-        channel1->decode((const char*)channel0->buffer().data(), channel0->buffer().size());
+        channel1->decode((const char*)channel0->_buffer.data(), channel0->_buffer.size());
         ASSERT_EQ(malloc_count_stop(), 0);
 
         // Check frame header
-        if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
-            ASSERT_EQ(channel0->get_header().get_next_serial_number()-1, channel1->get_header().get_recv_frame_details().sequence_number);
+        if(channel0->_configuration->_header._enable == ED247_YESNO_YES){
+            ASSERT_EQ(channel0->_header.get_next_serial_number()-1, channel1->_header.get_recv_frame_details().sequence_number);
         }
 
         // Pop sample & check samples
         bool empty;
         for(auto stream : channel1->streams()){
-            for(uint32_t i = 0 ; i < stream.second.stream->get_sample_max_number() ; i++){
+            for(uint32_t i = 0 ; i < stream.second->get_sample_max_number() ; i++){
                 malloc_count_start();
-                auto& sample = stream.second.stream->pop_sample(&empty);
+                auto& sample = stream.second->pop_sample(&empty);
                 ASSERT_EQ(malloc_count_stop(), 0);
-                std::string str_sample = strize() << std::setw(stream.second.stream->get_sample_max_size_bytes()) << std::setfill('0') << i;
-                auto str_sample_recv = std::string((char*)sample.data(), stream.second.stream->get_sample_max_size_bytes());
+                std::string str_sample = strize() << std::setw(stream.second->get_sample_max_size_bytes()) << std::setfill('0') << i;
+                auto str_sample_recv = std::string((char*)sample.data(), stream.second->get_sample_max_size_bytes());
                 ASSERT_EQ(str_sample, str_sample_recv);
                 // Check header
-                if(channel0->get_configuration()->_header._enable == ED247_YESNO_YES){
-                    ASSERT_EQ(sample.frame_details().sequence_number, i ? (channel0->get_header().get_next_serial_number()-1) : 0);
+                if(channel0->_configuration->_header._enable == ED247_YESNO_YES){
+                    ASSERT_EQ(sample.frame_details().sequence_number, i ? (channel0->_header.get_next_serial_number()-1) : 0);
                 }
-                if(channel0->get_configuration()->_header._transport_timestamp == ED247_YESNO_YES){
+                if(channel0->_configuration->_header._transport_timestamp == ED247_YESNO_YES){
                     ASSERT_NE(sample.frame_details().transport_timestamp.epoch_s, 0);
                     ASSERT_NE(sample.frame_details().transport_timestamp.offset_ns, 0);
                 }
-                if(i < (stream.second.stream->get_sample_max_number()-1))
+                if(i < (stream.second->get_sample_max_number()-1))
                     ASSERT_FALSE(empty);
                 else
                     ASSERT_TRUE(empty);

@@ -137,7 +137,5 @@ struct weak_equal_to : public std::unary_function<std::weak_ptr<T>, bool>
 
 struct ed247_internal_context_t {};
 
-struct ed247_internal_channel_t {};
-
 
 #endif

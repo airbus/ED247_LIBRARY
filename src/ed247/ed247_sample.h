@@ -14,6 +14,7 @@ namespace ed247
   class Sample
   {
   public:
+    // Empty Ctor. Call allocate() before any other functions.
     Sample() : _data(nullptr), _size(0), _capacity(0)
     {
       // TODO: validate free (curently streams are not freed, so neither their samples)
@@ -40,6 +41,7 @@ namespace ed247
     // Can be moved
     Sample(Sample&& other);
 
+    // Allocate data. Shall be called only once and only if Empty Ctor is used.
     void allocate(uint32_t capacity);
 
     const uint32_t& size() const     { return _size;      }

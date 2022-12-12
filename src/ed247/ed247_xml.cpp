@@ -1143,8 +1143,8 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
         }
       }
     }
-    else if((_simple == false && node_name.compare(node::Streams) == 0) ||
-            (_simple == true  && node_name.compare(node::Stream) == 0))
+    else if((_is_simple_channel == false && node_name.compare(node::Streams) == 0) ||
+            (_is_simple_channel == true  && node_name.compare(node::Stream) == 0))
     {
       for(auto xml_node_child_iter = xml_node_iter->children ; xml_node_child_iter != nullptr ; xml_node_child_iter = xml_node_child_iter->next){
         if(xml_node_child_iter->type != XML_ELEMENT_NODE)
@@ -1284,14 +1284,14 @@ void ed247::xml::Component::load(const xmlNodePtr xml_node)
         if(node_name.compare(node::MultiChannel) == 0) {
           _channel_list.emplace_back();
           Channel& channel = _channel_list.back();
-          channel._simple = false; // store if it is a simple channel (only one stream)
+          channel._is_simple_channel = false; // store if it is a simple channel (only one stream)
           channel.load(xml_node_channel);
           if(channel._frame_standard_revision != ED247_STANDARD_ED247A)
             THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");
         }else if(node_name.compare(node::Channel) == 0) {
           _channel_list.emplace_back();
           Channel& channel = _channel_list.back();
-          channel._simple = true; // store if it is a simple channel (only one stream)
+          channel._is_simple_channel = true; // store if it is a simple channel (only one stream)
           channel.load(xml_node_channel);
           if(channel._frame_standard_revision != ED247_STANDARD_ED247A)
             THROW_PARSER_ERROR(xml_node_channel, "This version do not support any other standard than [" << std::string(ed247_standard_string(ED247_STANDARD_ED247A)) << "]");

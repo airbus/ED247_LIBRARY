@@ -59,9 +59,7 @@ const char* _ed247_name = "unnamed";
  * Client lists definition
  * ========================================================================= */
 struct ed247_internal_channel_list_t {};
-typedef ed247::client_list<ed247_internal_channel_list_t, ed247::Channel>                                 ed247_channel_clist_base_t;
-typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Channel>                       ed247_channel_clist_vector_t;
-typedef ed247::client_list_container<ed247_internal_channel_list_t, ed247::Channel, ed247::channel_map_t> ed247_channel_clist_map_t;
+typedef ed247::client_list<ed247_internal_channel_list_t, ed247::Channel> ed247_channel_clist_base_t;
 
 struct ed247_internal_stream_list_t {};
 typedef ed247::client_list<ed247_internal_stream_list_t, ed247::Stream>                                ed247_stream_clist_base_t;
@@ -344,7 +342,10 @@ ed247_status_t ed247_get_channel_list(
   ed247_context_t        context,
   ed247_channel_list_t * channels)
 {
-  static ed247_channel_clist_vector_t ed247_channel_list;    // To prevent malloc(), this function will always return the same list
+  // To prevent malloc(), this function will always return the same list
+  static ed247::client_list_container<ed247_internal_channel_list_t,
+                                      ed247::Channel,
+                                      ed247::channel_map_t> ed247_channel_list;
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -362,7 +363,7 @@ ed247_status_t ed247_get_channel_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_channel_list.wrap(*(ed247_context->getPoolChannels()->channels().get()));
+    ed247_channel_list.wrap(ed247_context->getPoolChannels()->channels());
     *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Get channels info");
@@ -374,7 +375,9 @@ ed247_status_t ed247_find_channels(
   const char *           regex_name,
   ed247_channel_list_t * channels)
 {
-  static ed247_channel_clist_vector_t ed247_channel_list;    // To prevent malloc(), this function will always return the same list
+  // To prevent malloc(), this function will always return the same list
+  static ed247::client_list_container<ed247_internal_channel_list_t,
+                                      ed247::Channel> ed247_channel_list;
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -866,26 +869,29 @@ ed247_status_t ed247_unregister_recv_callback(
 const char* ed247_channel_get_name(ed247_channel_t channel)
 {
   auto ed247_channel = static_cast<ed247::Channel*>(channel);
-  return ed247_channel->get_configuration()->_name.c_str();
+  return ed247_channel->get_name().c_str();   // note: get_name() return a reference
 }
 
 const char* ed247_channel_get_comment(ed247_channel_t channel)
 {
   auto ed247_channel = static_cast<ed247::Channel*>(channel);
-  return ed247_channel->get_configuration()->_comment.c_str();
+  return ed247_channel->get_comment().c_str();   // note: get_comment() return a reference
 }
 
 ed247_standard_t ed247_channel_get_frame_standard_revision(ed247_channel_t channel)
 {
   auto ed247_channel = static_cast<ed247::Channel*>(channel);
-  return ed247_channel->get_configuration()->_frame_standard_revision;
+  return ed247_channel->get_frame_standard_revision();
 }
 
 ed247_status_t ed247_channel_get_stream_list(
   ed247_channel_t       channel,
   ed247_stream_list_t * streams)
 {
-  static ed247_stream_clist_vector_t ed247_stream_list;    // To prevent malloc(), this function will always return the same list
+  // To prevent malloc(), this function will always return the same list
+  static ed247::client_list_container<ed247_internal_stream_list_t,
+                                      ed247::Stream,
+                                      ed247::Channel::map_uid_stream_t> ed247_stream_list;
 
   PRINT_DEBUG("function " << __func__ << "()");
 
@@ -903,7 +909,7 @@ ed247_status_t ed247_channel_get_stream_list(
 
   try{
     ed247::Channel* ed247_channel = static_cast<ed247::Channel*>(channel);
-    ed247_stream_list.wrap(*(ed247_channel->sstreams().get()));
+    ed247_stream_list.wrap(ed247_channel->streams());
     *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Get streams info");

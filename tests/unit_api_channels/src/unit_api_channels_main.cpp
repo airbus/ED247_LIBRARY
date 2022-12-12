@@ -76,33 +76,31 @@ TEST(UtApiChannel, ChannelsManipulation)
     ASSERT_EQ(ed247_channel_get_user_data(channel, &user_data), ED247_STATUS_SUCCESS);
     ASSERT_EQ(user_data, nullptr);
     free(user_data_set);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
-    // Check the content of retrieved information, this channel shall use plenty of default values
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DefaultValues") == 0);
-    ASSERT_TRUE(strcmp(ed247_channel_get_comment(channel), "") == 0);
-    ASSERT_EQ(ed247_channel_get_frame_standard_revision(channel), ED247_STANDARD_ED247A);
-
-    // Get a single channel, check invalid calls
-    ASSERT_EQ(ed247_get_channel(NULL, "DefaultValues", &channel_test), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_channel(context, NULL, &channel_test), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_channel(context, "", &channel_test), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_channel(context, "DefaultValues", NULL), ED247_STATUS_FAILURE);
-    ASSERT_EQ(ed247_get_channel(context, "DefaultValues", &channel_test), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(channel, channel_test);
-
-    // Get the next channel, get information and and confirm the name and values of the header
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_FALSE(strcmp(ed247_channel_get_name(channel), "DummyChannel1"));
-
-    // Get the next channel, get information and and confirm the name and values of the header
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_FALSE(strcmp(ed247_channel_get_name(channel), "DummyChannel2"));
-
-    // Get the next channel, get information and check the provided content
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "FilledChannel") == 0);
-    ASSERT_TRUE(strcmp(ed247_channel_get_comment(channel), "This is a test") == 0);
-    ASSERT_EQ(ed247_channel_get_frame_standard_revision(channel), ED247_STANDARD_ED247A);
+    // Validate content
+    ASSERT_EQ(ed247_find_channels (context, NULL, &channel_list), ED247_STATUS_SUCCESS);
+    std::map<std::string, uint32_t> channel_found;
+    for(int i = 0; i < 4; i++) {
+      ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
+      ASSERT_NE(channel, nullptr);
+      std::string name = ed247_channel_get_name(channel);
+      if (name == "DefaultValues") {
+        // Check the content of retrieved information, this channel shall use plenty of default values
+        ASSERT_TRUE(strcmp(ed247_channel_get_comment(channel), "") == 0);
+        ASSERT_EQ(ed247_channel_get_frame_standard_revision(channel), ED247_STANDARD_ED247A);
+        ASSERT_EQ(ed247_get_channel(context, "DefaultValues", &channel_test), ED247_STATUS_SUCCESS);
+        ASSERT_EQ(channel, channel_test);
+      } else if (name == "DummyChannel1" || name == "DummyChannel2") {
+        // Ok
+      } else if (name == "FilledChannel") {
+        ASSERT_TRUE(strcmp(ed247_channel_get_comment(channel), "This is a test") == 0);
+        ASSERT_EQ(ed247_channel_get_frame_standard_revision(channel), ED247_STANDARD_ED247A);
+      } else {
+        ASSERT_TRUE(false);
+      }
+    }
+    for (auto& pair: channel_found) ASSERT_EQ(pair.second, 1);    // we found each channel once
 
     // Try to get the next channel while there is no other
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
@@ -110,7 +108,7 @@ TEST(UtApiChannel, ChannelsManipulation)
 
     // Check the list restarts from start
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_FALSE(strcmp(ed247_channel_get_name(channel), "DefaultValues"));
+    ASSERT_NE(channel, nullptr);
     ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
 
@@ -121,14 +119,19 @@ TEST(UtApiChannel, ChannelsManipulation)
 
     // Make a more selective selection
     ASSERT_EQ(ed247_find_channels (context, ".*Dummy.*", &channel_list), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DummyChannel1") == 0);
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DummyChannel2") == 0);
+    channel_found.clear();
+    for(int i = 0; i < 2; i++) {
+      ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
+      ASSERT_NE(channel, nullptr);
+      std::string name = ed247_channel_get_name(channel);
+      ASSERT_TRUE(name == "DummyChannel1" || name == "DummyChannel2");
+    }
+    for (auto& pair: channel_found) ASSERT_EQ(pair.second, 1);    // we found each channel once
+
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
     ASSERT_EQ(channel, (ed247_channel_t)NULL);
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DummyChannel1") == 0);
+    ASSERT_NE(channel, nullptr);
     ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
     // Select a single channel
@@ -174,16 +177,17 @@ TEST(UtApiChannel,GetChannelList)
     // Retrieve The channel information of the first channel, check invalid calls
     ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
-
     ASSERT_EQ(ed247_get_channel_list(context, &channel_list), ED247_STATUS_SUCCESS);
+    std::map<std::string, uint32_t> channel_found;
+    for(int i = 0; i < 4; i++) {
+      ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
+      ASSERT_NE(channel, nullptr);
+      std::string name = ed247_channel_get_name(channel);
+      ASSERT_TRUE(name == "DefaultValues" || name == "DummyChannel1" || name == "DummyChannel2" || name == "FilledChannel");
+    }
+    for (auto& pair: channel_found) ASSERT_EQ(pair.second, 1);    // we found each channel once
     ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DefaultValues") == 0);
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DummyChannel1") == 0);
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "DummyChannel2") == 0);
-    ASSERT_EQ(ed247_channel_list_next(channel_list, &channel), ED247_STATUS_SUCCESS);
-    ASSERT_TRUE(strcmp(ed247_channel_get_name(channel), "FilledChannel") == 0);
+    ASSERT_EQ(channel, nullptr);
     ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
     ASSERT_EQ(ed247_unload(context), ED247_STATUS_SUCCESS);

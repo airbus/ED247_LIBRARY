@@ -45,8 +45,8 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
   try{
     ed247::udp::ReceiverSet receiver_set;
     ed247::SignalSet signal_set;
-    auto pool_streams = std::make_shared<ed247::StreamSet>(signal_set);
-    ed247::Channel::Pool pool_channels(receiver_set, pool_streams);
+    ed247::StreamSet pool_streams(signal_set);
+    ed247::ChannelSet pool_channels(receiver_set, pool_streams);
 
     // Socket
     ed247::xml::UdpSocket sp_socket_conf = GetParam();
@@ -65,7 +65,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
     sp_socket_conf._direction = ED247_DIRECTION_OUT;
     sp_channel_emitter_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
     sp_channel_emitter_conf._stream_list.emplace_back(sp_stream_emitter_conf);
-    auto channel_emitter = pool_channels.get(&sp_channel_emitter_conf, 0);
+    auto channel_emitter = pool_channels.create(&sp_channel_emitter_conf, 0);
 
     // Stream (Receiver)
     ed247::xml::A429Stream* sp_stream_receiver_conf = new ed247::xml::A429Stream();
@@ -79,7 +79,7 @@ TEST_P(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1)
     sp_socket_conf._direction = ED247_DIRECTION_IN;
     sp_channel_receiver_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
     sp_channel_receiver_conf._stream_list.emplace_back(sp_stream_receiver_conf);
-    auto channel_receiver = pool_channels.get(&sp_channel_receiver_conf, 0);
+    auto channel_receiver = pool_channels.create(&sp_channel_receiver_conf, 0);
 
     // Prepare frame to send
     std::string send_msg{"Hell"};
@@ -155,8 +155,8 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
   try{
     ed247::udp::ReceiverSet receiver_set;
     ed247::SignalSet signal_set;
-    auto pool_streams = std::make_shared<ed247::StreamSet>(signal_set);
-    ed247::Channel::Pool pool_channels(receiver_set, pool_streams);
+    ed247::StreamSet pool_streams(signal_set);
+    ed247::ChannelSet pool_channels(receiver_set, pool_streams);
 
     // Socket
     ed247::xml::UdpSocket sp_socket_conf = GetParam();
@@ -175,7 +175,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
     sp_socket_conf._direction = ED247_DIRECTION_OUT;
     sp_channel_emitter_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
     sp_channel_emitter_conf._stream_list.emplace_back(sp_stream_emitter_conf);
-    auto channel_emitter = pool_channels.get(&sp_channel_emitter_conf, 0);
+    auto channel_emitter = pool_channels.create(&sp_channel_emitter_conf, 0);
 
     // Stream (Receiver)
     auto sp_stream_receiver_conf = new ed247::xml::A429Stream();
@@ -189,7 +189,7 @@ TEST_P(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
     sp_socket_conf._direction = ED247_DIRECTION_IN;
     sp_channel_receiver_conf._com_interface._udp_sockets.push_back(sp_socket_conf);
     sp_channel_receiver_conf._stream_list.emplace_back(sp_stream_receiver_conf);
-    auto channel_receiver = pool_channels.get(&sp_channel_receiver_conf, 0);
+    auto channel_receiver = pool_channels.create(&sp_channel_receiver_conf, 0);
 
       // Prepare frame to send
       uint32_t msg_size = sizeof(ed247_uid_t)+sizeof(uint16_t)+4;

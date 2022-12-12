@@ -245,7 +245,7 @@ namespace ed247 {
       ComInterface                          _com_interface;
       Header                                _header;
       std::vector<std::unique_ptr<Stream>>  _stream_list;
-      bool                                  _simple;
+      bool                                  _is_simple_channel;
 
       Channel();
       virtual void load(const xmlNodePtr xml_node) override final;

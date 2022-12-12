@@ -167,7 +167,7 @@ namespace ed247
     stream_list_t find(std::string regex);
 
     stream_map_t& streams()  { return _streams;        }
-    uint32_t size()          { return _streams.size(); }
+    uint32_t size() const    { return _streams.size(); }
 
   private:
     stream_map_t       _streams;

@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -21,159 +22,85 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #ifndef ED247_CHANNEL_H_
 #define ED247_CHANNEL_H_
-
-#include "ed247_internals.h"
+#include "ed247.h"
 #include "ed247_xml.h"
 #include "ed247_cominterface.h"
 #include "ed247_stream.h"
 #include "ed247_frame_header.h"
 
-#include <memory>
-#include <map>
+// base structures for C API
+struct ed247_internal_channel_t {};
+
 
 namespace ed247
 {
-  class Channel;
-  typedef std::shared_ptr<Channel>   channel_ptr_t;
-  typedef std::vector<channel_ptr_t> channel_list_t;
+  class Channel : public ed247_internal_channel_t
+  {
+  public:
+    using map_uid_stream_t = std::unordered_map<ed247_uid_t, stream_ptr_t>;
 
-class Channel : public ed247_internal_channel_t, public std::enable_shared_from_this<Channel>
-{
-    public:
-        typedef struct {
-            stream_ptr_t stream;
-            ed247_direction_t direction;
-        } stream_dir_t;
-        using map_streams_t = std::map<ed247_uid_t,stream_dir_t>;
+    Channel(const xml::Channel* configuration,
+            ed247_uid_t ec_id,
+            udp::ReceiverSet& context_receiver_set,
+            ed247::StreamSet& context_stream_set);
+    ~Channel();
 
-        Channel(const xml::Channel* configuration, ed247_uid_t component_identifier):
-            _configuration(configuration),
-            _sstreams(std::make_shared<stream_list_t>()),
-            _header(configuration->_header, component_identifier, get_name()),
-            _user_data(NULL)
-        {
-          MEMCHECK_NEW(this, "Channel " << _configuration->_name);
-        }
-        virtual ~Channel();
+    // Configuration accessors
+    const std::string& get_name() const                  { return _configuration->_name;                    }
+    const std::string& get_comment() const               { return _configuration->_comment;                 }
+    ed247_standard_t get_frame_standard_revision() const { return _configuration->_frame_standard_revision; }
 
-        void set_user_data(void *user_data)
-        {
-            _user_data = user_data;
-        }
+    // Handle user-data
+    void set_user_data(void *user_data)  { _user_data = user_data;  }
+    void get_user_data(void **user_data) { *user_data = _user_data; }
 
-        void get_user_data(void **user_data)
-        {
-            *user_data = _user_data;
-        }
+    // Stream access
+    stream_list_t find_streams(std::string strregex);
+    stream_ptr_t get_stream(std::string str_name);
+    map_uid_stream_t& streams() { return _streams; }
 
-        const xml::Channel * get_configuration() const { return _configuration; }
+    // Encode the channel and send it.
+    // Nothing is send if there are no data in streams.
+    // In some cases, this function may send severals packets.
+    void encode_and_send();
 
-        const FrameHeader & get_header() const { return _header; }
+    // Decode frame and fill streams data
+    // Return false if the frame cannot be decoded
+    bool decode(const char* frame, uint32_t frame_size);
 
-        std::string get_name() const { return _configuration ? _configuration->_name : std::string(); }
+  private:
+    const xml::Channel* _configuration;
+    udp::ComInterface   _com_interface;
+    map_uid_stream_t    _streams;
+    FrameHeader         _header;
+    Sample              _buffer;
+    void*               _user_data;
 
-        void add_stream(stream_ptr_t stream, ed247_direction_t direction)
-        {
-            PRINT_DEBUG("Channel [" << get_name() << "] append stream [" << stream->get_name() << "]");
-            if(_streams.find(stream->get_uid()) != _streams.end())
-                THROW_ED247_ERROR("Stream [" << stream->get_name() << "] uses an UID already registered in Channel [" << get_name() << "]");
-            stream_dir_t stream_dir= {stream, direction};
-            _streams.insert(std::make_pair(stream->get_uid(), stream_dir));
-            PRINT_DEBUG("Size [" << _streams.size() << "]");
-        }
+    ED247_FRIEND_TEST();
+  };
 
-        // Return true if at least one of the stream has samples in its send fifo
-        bool has_samples_to_send();
+  typedef std::shared_ptr<Channel>                       channel_ptr_t;
+  typedef std::vector<channel_ptr_t>                     channel_list_t;
+  typedef std::unordered_map<std::string, channel_ptr_t> channel_map_t;
 
-        void send();
+  class ChannelSet {
+  public:
+    ChannelSet(udp::ReceiverSet& context_receiver_set, ed247::StreamSet& pool_streams);
+    channel_ptr_t create(const xml::Channel* configuration, ed247_uid_t ec_id);
 
-        // Return false on error
-        void encode(const ed247_uid_t & component_identifier);
-        bool decode(const char * frame, uint32_t frame_size);
+    channel_ptr_t get(std::string str_name);
+    channel_list_t find(std::string str_regex);
 
-        Sample & buffer() { return _buffer; }
+    channel_map_t& channels()  { return _channels;        }
+    uint32_t size() const      { return _channels.size(); }
 
-        map_streams_t & streams() { return _streams; }
-
-        stream_list_t find_streams(std::string strregex);
-
-        stream_ptr_t get_stream(std::string str_name);
-
-        std::shared_ptr<stream_list_t> sstreams() { return _sstreams; }
-
-    protected:
-        const xml::Channel* _configuration;
-        udp::ComInterface _com_interface;
-        map_streams_t _streams;
-        std::shared_ptr<stream_list_t> _sstreams;
-        FrameHeader _header;
-        bool _updated{false};
-        Sample _buffer;
-
-        void allocate_buffer()
-        {
-            uint32_t capacity = 0;
-            capacity += _header.get_size();
-            for(auto & p : _streams){
-                capacity += sizeof(ed247_uid_t) + sizeof(uint16_t);
-                capacity += p.second.stream->get_max_size();
-            }
-            PRINT_DEBUG("Allocate Channel internal buffer with [" << capacity << "] bytes");
-            _buffer.allocate(capacity);
-        }
-
-        void populate_sstreams()
-        {
-            for(auto & p : _streams){
-                _sstreams->push_back(p.second.stream);
-            }
-            std::unique(_sstreams->begin(), _sstreams->end());
-        }
-
-        ED247_FRIEND_TEST();
-
-    private:
-        void *_user_data;
-
-    public:
-
-        class Pool {
-            public:
-                explicit Pool(udp::ReceiverSet& context_receiver_set,
-                    std::shared_ptr<ed247::StreamSet> & pool_streams);
-                ~Pool();
-
-          channel_ptr_t get(const xml::Channel* configuration, ed247_uid_t component_identifier);
-
-                std::vector<channel_ptr_t> find(std::string str_regex);
-
-                channel_ptr_t get(std::string str_name);
-
-                std::shared_ptr<channel_list_t> channels();
-
-                void send();
-                void encode(const ed247_uid_t & component_identifier);
-                void encode_and_send(const ed247_uid_t & component_identifier);
-
-                uint32_t size() const;
-
-            private:
-                std::shared_ptr<channel_list_t>    _channels;
-                udp::ReceiverSet&                  _context_receiver_set;
-                std::shared_ptr<ed247::StreamSet>  _pool_streams;
-        };
-
-        class Builder{
-            channel_ptr_t create(const xml::Channel* configuration,
-                                 ed247_uid_t component_identifier,
-                                 udp::ReceiverSet& context_receiver_set,
-                                 std::shared_ptr<ed247::StreamSet> & pool_streams) const;
-            friend class Pool;
-        };
-};
+  private:
+    channel_map_t      _channels;
+    udp::ReceiverSet&  _context_receiver_set;
+    ed247::StreamSet&  _pool_streams;
+  };
 
 }
 
