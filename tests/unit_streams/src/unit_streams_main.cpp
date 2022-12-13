@@ -140,16 +140,16 @@ TEST_P(StreamContext, SinglePushPop)
         ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
         ed247::Context::Builder::initialize(*context);
 
-        // Retrieve the pool of streams
-        auto pool_streams = context->getPoolStreams();
-        ASSERT_EQ(pool_streams->size(), (uint32_t)6);
+        // Retrieve the set of streams
+        auto stream_set = context->get_stream_set();
+        ASSERT_EQ(stream_set->size(), (uint32_t)6);
 
         // Check finder for find all
-        auto streams_0 = pool_streams->find(".*");
+        auto streams_0 = stream_set->find(".*");
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_1 = pool_streams->find("Stream1"); // UID=2
+        auto streams_1 = stream_set->find("Stream1"); // UID=2
         ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 
@@ -228,16 +228,16 @@ TEST_P(StreamContext, MultiPushPop)
         ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
         ed247::Context::Builder::initialize(*context);
 
-        // Retrieve the pool of streams
-        auto pool_streams = context->getPoolStreams();
-        ASSERT_EQ(pool_streams->size(), (uint32_t)6);
+        // Retrieve the set of streams
+        auto stream_set = context->get_stream_set();
+        ASSERT_EQ(stream_set->size(), (uint32_t)6);
 
         // Check finder for find all
-        auto streams_0 = pool_streams->find(".*");
+        auto streams_0 = stream_set->find(".*");
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_1 = pool_streams->find("Stream1");
+        auto streams_1 = stream_set->find("Stream1");
         ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 
@@ -344,16 +344,16 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
         ed247::Context::Builder::initialize(*context);
 
-        // Retrieve the pool of streams
-        auto pool_streams = context->getPoolStreams();
-        ASSERT_EQ(pool_streams->size(), (uint32_t)6);
+        // Retrieve the set of streams
+        auto stream_set = context->get_stream_set();
+        ASSERT_EQ(stream_set->size(), (uint32_t)6);
 
         // Check finder for find all
-        auto streams_0 = pool_streams->find(".*");
+        auto streams_0 = stream_set->find(".*");
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_out = pool_streams->find("StreamDatatimestampOut"); // UID=4
+        auto streams_out = stream_set->find("StreamDatatimestampOut"); // UID=4
         ASSERT_EQ(streams_out.size(), (uint32_t)1);
         auto stream_out = streams_out[0];
 

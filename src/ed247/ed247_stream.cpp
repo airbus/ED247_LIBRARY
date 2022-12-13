@@ -403,19 +403,19 @@ ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configura
     break;
 
   case ED247_STREAM_TYPE_DISCRETE:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _pool_signals, 0);
+    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, 0);
     break;
 
   case ED247_STREAM_TYPE_ANALOG:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _pool_signals, 0);
+    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, 0);
     break;
 
   case ED247_STREAM_TYPE_NAD:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _pool_signals, 0);
+    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, 0);
     break;
 
   case ED247_STREAM_TYPE_VNAD:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _pool_signals, sizeof(VNAD_sample_size_t));
+    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, sizeof(VNAD_sample_size_t));
     break;
 
   case ED247_STREAM_TYPE_ETHERNET:

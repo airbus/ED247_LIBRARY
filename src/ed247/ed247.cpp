@@ -363,7 +363,7 @@ ed247_status_t ed247_get_channel_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_channel_list.wrap(ed247_context->getPoolChannels()->channels());
+    ed247_channel_list.wrap(ed247_context->get_channel_set()->channels());
     *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Get channels info");
@@ -395,7 +395,7 @@ ed247_status_t ed247_find_channels(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_channel_list.copy(ed247_context->getPoolChannels()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    ed247_channel_list.copy(ed247_context->get_channel_set()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Find channels");
@@ -422,7 +422,7 @@ ed247_status_t ed247_get_channel(
   }
   try{
     auto ed247_context = static_cast<ed247::Context*>(context);
-    auto && ed247_channel = ed247_context->getPoolChannels()->get(std::string(name));
+    auto && ed247_channel = ed247_context->get_channel_set()->get(std::string(name));
     *channel = ed247_channel ? ed247_channel.get() : nullptr;
     if(*channel == nullptr) {
       PRINT_INFO("Cannot finnd channel '" << name << "'");
@@ -455,7 +455,7 @@ ed247_status_t ed247_get_stream_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_stream_list.wrap(ed247_context->getPoolStreams()->streams());
+    ed247_stream_list.wrap(ed247_context->get_stream_set()->streams());
     *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Get streams info");
@@ -484,7 +484,7 @@ ed247_status_t ed247_find_streams(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_stream_list.copy(ed247_context->getPoolStreams()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    ed247_stream_list.copy(ed247_context->get_stream_set()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Find streams");
@@ -512,7 +512,7 @@ ed247_status_t ed247_get_stream(
   }
   try{
     auto ed247_context = static_cast<ed247::Context*>(context);
-    auto && ed247_stream = ed247_context->getPoolStreams()->get(std::string(name));
+    auto && ed247_stream = ed247_context->get_stream_set()->get(std::string(name));
     *stream = ed247_stream ? ed247_stream.get() : nullptr;
     if(*stream == nullptr) {
       PRINT_INFO("Cannot find stream '" << name << "'");
@@ -546,7 +546,7 @@ ed247_status_t ed247_find_signals(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_signal_list.copy(ed247_context->getPoolSignals()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    ed247_signal_list.copy(ed247_context->get_signal_set()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *signals = &ed247_signal_list;
   }
   LIBED247_CATCH("Find signals");
@@ -574,7 +574,7 @@ ed247_status_t ed247_get_signal(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    *signal = ed247_context->getPoolSignals()->get(name).get();
+    *signal = ed247_context->get_signal_set()->get(name).get();
     if(*signal == nullptr) {
       PRINT_INFO("Cannot find signal '" << name << "'");
       return ED247_STATUS_FAILURE;
@@ -621,7 +621,7 @@ ed247_status_t ed247_wait_frame(
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
     ed247_status_t ed247_status = ed247_context->wait_frame(timeout_us);
     if(streams != nullptr && ed247_status == ED247_STATUS_SUCCESS) {
-      ed247_stream_list.wrap(ed247_context->getPoolStreams()->streams());
+      ed247_stream_list.wrap(ed247_context->get_stream_set()->streams());
       *streams = &ed247_stream_list;
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
@@ -652,7 +652,7 @@ ed247_status_t ed247_wait_during(
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
     ed247_status_t ed247_status = ed247_context->wait_during(duration_us);
     if(streams != nullptr && ed247_status == ED247_STATUS_SUCCESS) {
-      ed247_stream_list.wrap(ed247_context->getPoolStreams()->streams());
+      ed247_stream_list.wrap(ed247_context->get_stream_set()->streams());
       *streams = &ed247_stream_list;
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
@@ -825,7 +825,7 @@ ed247_status_t ed247_register_recv_callback(
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    for (auto& stream: ed247_context->getPoolStreams()->streams()) {
+    for (auto& stream: ed247_context->get_stream_set()->streams()) {
       if(stream.second->register_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
         PRINT_WARNING("Cannot register callback in stream [" << stream.second->get_name() << "]");
@@ -852,7 +852,7 @@ ed247_status_t ed247_unregister_recv_callback(
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    for (auto& stream: ed247_context->getPoolStreams()->streams()) {
+    for (auto& stream: ed247_context->get_stream_set()->streams()) {
       if(stream.second->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
         PRINT_WARNING("Cannot unregister callback in stream [" << stream.second->get_name() << "]");

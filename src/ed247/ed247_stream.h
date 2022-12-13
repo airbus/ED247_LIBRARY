@@ -160,7 +160,7 @@ namespace ed247
   class StreamSet
   {
   public:
-    StreamSet(ed247::SignalSet& pool_signals) : _pool_signals(pool_signals) {}
+    StreamSet(ed247::SignalSet& signal_set) : _signal_set(signal_set) {}
     stream_ptr_t create(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel);
 
     stream_ptr_t get(std::string name);
@@ -171,7 +171,7 @@ namespace ed247
 
   private:
     stream_map_t       _streams;
-    ed247::SignalSet&  _pool_signals;
+    ed247::SignalSet&  _signal_set;
   };
 }
 

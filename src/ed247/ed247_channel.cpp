@@ -234,15 +234,15 @@ bool ed247::Channel::decode(const char* frame, uint32_t frame_size)
 //
 
 ed247::ChannelSet::ChannelSet(udp::ReceiverSet& context_receiver_set,
-                              ed247::StreamSet& pool_streams):
+                              ed247::StreamSet& stream_set):
   _context_receiver_set(context_receiver_set),
-  _pool_streams(pool_streams)
+  _stream_set(stream_set)
 {
 }
 
 ed247::channel_ptr_t ed247::ChannelSet::create(const ed247::xml::Channel* configuration, ed247_uid_t ec_id)
 {
-  channel_ptr_t channel = std::make_shared<Channel>(configuration, ec_id, _context_receiver_set, _pool_streams);
+  channel_ptr_t channel = std::make_shared<Channel>(configuration, ec_id, _context_receiver_set, _stream_set);
   auto result = _channels.emplace(std::make_pair(configuration->_name, channel));
   if (result.second == false) THROW_ED247_ERROR("Channel [" << configuration->_name << "] already exist !");
   return result.first->second;

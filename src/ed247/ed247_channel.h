@@ -87,7 +87,7 @@ namespace ed247
 
   class ChannelSet {
   public:
-    ChannelSet(udp::ReceiverSet& context_receiver_set, ed247::StreamSet& pool_streams);
+    ChannelSet(udp::ReceiverSet& context_receiver_set, ed247::StreamSet& stream_set);
     channel_ptr_t create(const xml::Channel* configuration, ed247_uid_t ec_id);
 
     channel_ptr_t get(std::string str_name);
@@ -99,7 +99,7 @@ namespace ed247
   private:
     channel_map_t      _channels;
     udp::ReceiverSet&  _context_receiver_set;
-    ed247::StreamSet&  _pool_streams;
+    ed247::StreamSet&  _stream_set;
   };
 
 }

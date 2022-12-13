@@ -87,27 +87,27 @@ TEST_P(SignalContext, SinglePushPop)
   ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
   ed247::Context::Builder::initialize(*context);
 
-  // Retrieve the pool of signals
-  auto pool_signals = context->getPoolSignals();
+  // Retrieve the set of signals
+  auto signal_set = context->get_signal_set();
   if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
-    ASSERT_EQ(pool_signals->_signals.size(), (uint32_t)25);
+    ASSERT_EQ(signal_set->_signals.size(), (uint32_t)25);
   else
-    ASSERT_EQ(pool_signals->_signals.size(), (uint32_t)12);
+    ASSERT_EQ(signal_set->_signals.size(), (uint32_t)12);
 
   // Check finder for find all
-  auto signals = pool_signals->find(".*");
+  auto signals = signal_set->find(".*");
   if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
     ASSERT_EQ(signals.size(), (uint32_t)25);
   else
     ASSERT_EQ(signals.size(), (uint32_t)12);
 
   // Check stream finder
-  auto pool_streams = context->getPoolStreams();
-  auto stream = pool_streams->find("Stream1").front();
+  auto stream_set = context->get_stream_set();
+  auto stream = stream_set->find("Stream1").front();
   ASSERT_EQ(stream->find_signals(".*").size(), (uint32_t)2);
 
   // Check signal sample allocation
-  auto signal = pool_signals->find(".*").front();
+  auto signal = signal_set->find(".*").front();
   std::unique_ptr<ed247::Sample> signal_sample(new ed247::Sample(signal->get_sample_max_size_bytes()));
   ASSERT_EQ(signal_sample->size(), (uint32_t)0);
   ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
@@ -144,7 +144,7 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_EQ(memcmp(stream_sample.data(), assistant->_buffer.data(), stream_sample.size()), 0);
 
   // Check pop & read
-  stream = pool_streams->find("StreamInput").front();
+  stream = stream_set->find("StreamInput").front();
   ASSERT_NE(stream, nullptr);
   stream->_recv_stack.push_back().copy(stream_sample.data(), stream_sample.size());
 

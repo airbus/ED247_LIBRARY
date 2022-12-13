@@ -51,15 +51,15 @@ class Context : public ed247_internal_context_t
 
         const xml::Component* getConfiguration() { return _configuration.get(); }
 
-  ed247::SignalSet* getPoolSignals() { return &_pool_signals; }  // TODO: ref
+  ed247::SignalSet* get_signal_set() { return &_signal_set; }  // TODO: ref
 
-        ed247::StreamSet* getPoolStreams() { return &_pool_streams; }  // TODO: ref
+        ed247::StreamSet* get_stream_set() { return &_stream_set; }  // TODO: ref
 
-        ed247::ChannelSet* getPoolChannels() { return &_pool_channels; }  // TODO: ref
+        ed247::ChannelSet* get_channel_set() { return &_channel_set; }  // TODO: ref
 
         void send_pushed_samples()
         {
-          for(auto & c : _pool_channels.channels()) {
+          for(auto & c : _channel_set.channels()) {
             c.second->encode_and_send();
           }
         }
@@ -102,9 +102,9 @@ class Context : public ed247_internal_context_t
 
         std::unique_ptr<xml::Component>  _configuration;
         udp::ReceiverSet                 _receiver_set;
-        ed247::SignalSet                 _pool_signals;
-        ed247::StreamSet                 _pool_streams;
-        ed247::ChannelSet                _pool_channels;
+        ed247::SignalSet                 _signal_set;
+        ed247::StreamSet                 _stream_set;
+        ed247::ChannelSet                _channel_set;
         void*                            _user_data;
 };
 

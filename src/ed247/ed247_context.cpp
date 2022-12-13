@@ -42,8 +42,8 @@ namespace ed247
 {
 
 Context::Context():
-    _pool_streams(_pool_signals),
-    _pool_channels(_receiver_set, _pool_streams)
+    _stream_set(_signal_set),
+    _channel_set(_receiver_set, _stream_set)
 {
     PRINT_DEBUG("[Context] Ctor");
 }
@@ -100,7 +100,7 @@ Context * Context::Builder::create_content(std::string ecic_content)
 void Context::Builder::initialize(Context & context)
 {
   for(const xml::Channel& sp_channel_configuration : context._configuration->_channel_list) {
-    context._pool_channels.create(&sp_channel_configuration, context._configuration->_identifier);
+    context._channel_set.create(&sp_channel_configuration, context._configuration->_identifier);
   }
 }
 
