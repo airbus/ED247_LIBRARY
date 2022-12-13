@@ -13,7 +13,7 @@ namespace {
       switch(nad_type) {
       case ED247_NAD_TYPE_INT8:
       case ED247_NAD_TYPE_UINT8:
-        memcpy(dest_data + pos, source_data + pos, 1);
+        *((uint8_t*)dest_data + pos) = *((uint8_t*)source_data + pos);
         break;
       case ED247_NAD_TYPE_INT16:
         *((uint16_t*)dest_data + pos) = bswap_16(*((uint16_t*)source_data + pos));

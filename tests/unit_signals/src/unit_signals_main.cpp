@@ -39,7 +39,7 @@ void swap_copy(const char *source_data, char* dest_data, const ed247_nad_type_t&
   switch(nad_type) {
   case ED247_NAD_TYPE_INT8:
   case ED247_NAD_TYPE_UINT8:
-    memcpy(dest_data, source_data, 1);
+    *((uint8_t*)dest_data) = *((uint8_t*)source_data);
     break;
   case ED247_NAD_TYPE_INT16:
     *((uint16_t*)dest_data) = bswap_16(*((uint16_t*)source_data));
@@ -73,7 +73,7 @@ void swap_copy(const char *source_data, char* dest_data, const ed247_nad_type_t&
 void swap_payload(const char *source_data, char* dest_data, uint32_t payload_size, const ed247_nad_type_t& nad_type)
 {
   uint32_t pos = 0;
-  while (pos <= payload_size) {
+  while (pos < payload_size) {
     swap_copy(source_data + pos, dest_data + pos, nad_type);
     pos += ed247::xml::Signal::get_nad_type_size(nad_type);
   }
@@ -159,9 +159,6 @@ TEST_P(SignalContext, SinglePushPop)
     assistant->read(*signal, &data, &size);
     ASSERT_EQ(size, sample->capacity());
     std::string msg = strize() << std::setw(sample->capacity()) << std::setfill('0') << 1;
-    SAY(size);
-    SAY("data: " << hex_stream(data, size));
-    SAY("msg: " << hex_stream(msg.c_str(), size));
     ASSERT_EQ(memcmp(data, msg.c_str(), size), 0);
   }
 
