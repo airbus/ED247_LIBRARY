@@ -161,6 +161,10 @@ namespace ed247
   {
   public:
     StreamSet(ed247::SignalSet& signal_set) : _signal_set(signal_set) {}
+
+    StreamSet& operator=(const StreamSet &)  = delete;
+    StreamSet& operator=(StreamSet &&)       = delete;
+
     stream_ptr_t create(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel);
 
     stream_ptr_t get(std::string name);

@@ -105,6 +105,9 @@ namespace ed247
     SignalSet()  { MEMCHECK_NEW(this, "SignalSet"); }
     ~SignalSet() { MEMCHECK_DEL(this, "SignalSet"); }
 
+    SignalSet& operator=(const SignalSet &)  = delete;
+    SignalSet& operator=(SignalSet &&)       = delete;
+
   protected:
     ED247_FRIEND_TEST();
     std::unordered_map<std::string, signal_ptr_t> _signals;

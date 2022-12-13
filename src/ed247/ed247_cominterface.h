@@ -130,6 +130,9 @@ namespace ed247 {
       ReceiverSet();
       ~ReceiverSet();
 
+      ReceiverSet& operator=(const ReceiverSet &)  = delete;
+      ReceiverSet& operator=(ReceiverSet &&)       = delete;
+
       // Add receiver and take onership
       void emplace(Receiver* receiver);
 

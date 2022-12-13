@@ -47,6 +47,9 @@ namespace ed247
             ed247::StreamSet& context_stream_set);
     ~Channel();
 
+    Channel& operator=(const Channel &)  = delete;
+    Channel& operator=(Channel &&)       = delete;
+
     // Configuration accessors
     const std::string& get_name() const                  { return _configuration->_name;                    }
     const std::string& get_comment() const               { return _configuration->_comment;                 }
@@ -88,6 +91,10 @@ namespace ed247
   class ChannelSet {
   public:
     ChannelSet(udp::ReceiverSet& context_receiver_set, ed247::StreamSet& stream_set);
+
+    ChannelSet& operator=(const ChannelSet &)  = delete;
+    ChannelSet& operator=(ChannelSet &&)       = delete;
+
     channel_ptr_t create(const xml::Channel* configuration, ed247_uid_t ec_id);
 
     channel_ptr_t get(std::string str_name);

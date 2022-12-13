@@ -88,7 +88,7 @@ TEST_P(SignalContext, SinglePushPop)
   ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
   // Retrieve the set of signals
-  auto signal_set = context->get_signal_set();
+  auto& signal_set = context->get_signal_set();
   if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
     ASSERT_EQ(signal_set._signals.size(), (uint32_t)25);
   else
@@ -102,7 +102,7 @@ TEST_P(SignalContext, SinglePushPop)
     ASSERT_EQ(signals.size(), (uint32_t)12);
 
   // Check stream finder
-  auto stream_set = context->get_stream_set();
+  auto& stream_set = context->get_stream_set();
   auto stream = stream_set.find("Stream1").front();
   ASSERT_EQ(stream->find_signals(".*").size(), (uint32_t)2);
 

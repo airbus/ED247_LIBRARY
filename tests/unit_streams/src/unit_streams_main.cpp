@@ -140,7 +140,7 @@ TEST_P(StreamContext, SinglePushPop)
         ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of streams
-        auto stream_set = context->get_stream_set();
+        auto& stream_set = context->get_stream_set();
         ASSERT_EQ(stream_set.size(), (uint32_t)6);
 
         // Check finder for find all
@@ -227,7 +227,7 @@ TEST_P(StreamContext, MultiPushPop)
         ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of streams
-        auto stream_set = context->get_stream_set();
+        auto& stream_set = context->get_stream_set();
         ASSERT_EQ(stream_set.size(), (uint32_t)6);
 
         // Check finder for find all
@@ -342,7 +342,7 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of streams
-        auto stream_set = context->get_stream_set();
+        auto& stream_set = context->get_stream_set();
         ASSERT_EQ(stream_set.size(), (uint32_t)6);
 
         // Check finder for find all

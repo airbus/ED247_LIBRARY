@@ -39,10 +39,10 @@ namespace ed247
     static Context* create_from_filepath(std::string ecic_filepath);
     static Context* create_from_content(std::string ecic_content);
 
-    Context(const Context &)                = delete;
-    Context(Context &&)                     = delete;
-    Context & operator = (const Context &)  = delete;
-    Context & operator = (Context &&)       = delete;
+    Context(const Context &)             = delete;
+    Context(Context &&)                  = delete;
+    Context& operator=(const Context &)  = delete;
+    Context& operator=(Context &&)       = delete;
 
     // configuration accessors
     const std::string& get_file_producer_identifier() { return _configuration->_file_producer_identifier; }

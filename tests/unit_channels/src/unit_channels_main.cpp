@@ -83,7 +83,7 @@ TEST_P(ChannelContext, MultiPushPop)
         ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of channels
-        auto channel_set = context->get_channel_set();
+        auto& channel_set = context->get_channel_set();
         ASSERT_EQ(channel_set.size(), (uint32_t)2);
 
         // Check finder for find all
