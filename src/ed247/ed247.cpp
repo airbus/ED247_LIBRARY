@@ -22,12 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247.h"
-#include "ed247_internals.h"
 #include "ed247_client_iterator.h"
-#include "ed247_logs.h"
 #include "ed247_context.h"
 #include "ed247_stream_assistant.h"
-#include <memory>
 
 
 #ifdef _PRODUCT_VERSION
@@ -165,15 +162,8 @@ ed247_status_t ed247_load_file(
     PRINT_ERROR(__func__ << ": Empty file");
     return ED247_STATUS_FAILURE;
   }
-  try{
-    auto ed247_context = ed247::Context::Builder::create_filepath(ecic_file_path);
-    try {
-      ed247_context->initialize();
-      *context = ed247_context;
-    } catch(...) {
-      delete ed247_context;
-      throw;
-    }
+  try {
+    *context = ed247::Context::create_from_filepath(ecic_file_path);
   }
   LIBED247_CATCH("Load");
   return ED247_STATUS_SUCCESS;
@@ -195,14 +185,7 @@ ed247_status_t ed247_load_content(
     return ED247_STATUS_FAILURE;
   }
   try{
-    auto ed247_context = ed247::Context::Builder::create_content(ecic_file_content);
-    try {
-      ed247_context->initialize();
-      *context = ed247_context;
-    } catch(...) {
-      delete ed247_context;
-      throw;
-    }
+    *context = ed247::Context::create_from_content(ecic_file_content);
   }
   LIBED247_CATCH("Load content");
   return ED247_STATUS_SUCCESS;
@@ -260,7 +243,7 @@ ed247_status_t ed247_component_get_user_data(
   }
   try{
     auto ed247_context = static_cast<ed247::Context*>(context);
-    *user_data = ed247_context->get_user_data();
+    ed247_context->get_user_data(user_data);
   }
   LIBED247_CATCH("Get user data");
   return ED247_STATUS_SUCCESS;	
@@ -290,49 +273,49 @@ ed247_status_t ed247_get_runtime_metrics(
 const char* ed247_file_producer_get_identifier(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_file_producer_identifier.c_str();
+  return ed247_context->get_file_producer_identifier().c_str();   // note: get_file_producer_identifier() return a reference
 }
 
 const char* ed247_file_producer_get_comment(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_file_producer_comment.c_str();
+  return ed247_context->get_file_producer_comment().c_str();   // note: get_file_producer_comment return a reference
 }
 
 const char* ed247_component_get_version(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_version.c_str();
+  return ed247_context->get_version().c_str();   // note: get_version return a reference
 }
 
 ed247_component_type_t ed247_component_get_type(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_component_type;
+  return ed247_context->get_component_type();
 }
 
 const char* ed247_component_get_name(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_name.c_str();
+  return ed247_context->get_name().c_str();   // note: get_name return a reference
 }
 
 const char* ed247_component_get_comment(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_comment.c_str();
+  return ed247_context->get_comment().c_str();   // note: get_comment return a reference
 }
 
 ed247_uid_t ed247_component_get_identifier(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_identifier;
+  return ed247_context->get_identifier();
 }
 
 ed247_standard_t ed247_component_get_standard_revision(ed247_context_t context)
 {
   auto ed247_context = static_cast<ed247::Context*>(context);
-  return ed247_context->getConfiguration()->_standard_revision;
+  return ed247_context->get_standard_revision();
 }
 
 /* =========================================================================
@@ -363,7 +346,7 @@ ed247_status_t ed247_get_channel_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_channel_list.wrap(ed247_context->get_channel_set()->channels());
+    ed247_channel_list.wrap(ed247_context->get_channel_set().channels());
     *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Get channels info");
@@ -395,7 +378,7 @@ ed247_status_t ed247_find_channels(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_channel_list.copy(ed247_context->get_channel_set()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    ed247_channel_list.copy(ed247_context->get_channel_set().find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *channels = &ed247_channel_list;
   }
   LIBED247_CATCH("Find channels");
@@ -422,7 +405,7 @@ ed247_status_t ed247_get_channel(
   }
   try{
     auto ed247_context = static_cast<ed247::Context*>(context);
-    auto && ed247_channel = ed247_context->get_channel_set()->get(std::string(name));
+    auto && ed247_channel = ed247_context->get_channel_set().get(std::string(name));
     *channel = ed247_channel ? ed247_channel.get() : nullptr;
     if(*channel == nullptr) {
       PRINT_INFO("Cannot finnd channel '" << name << "'");
@@ -455,7 +438,7 @@ ed247_status_t ed247_get_stream_list(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_stream_list.wrap(ed247_context->get_stream_set()->streams());
+    ed247_stream_list.wrap(ed247_context->get_stream_set().streams());
     *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Get streams info");
@@ -484,7 +467,7 @@ ed247_status_t ed247_find_streams(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_stream_list.copy(ed247_context->get_stream_set()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    ed247_stream_list.copy(ed247_context->get_stream_set().find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *streams = &ed247_stream_list;
   }
   LIBED247_CATCH("Find streams");
@@ -512,7 +495,7 @@ ed247_status_t ed247_get_stream(
   }
   try{
     auto ed247_context = static_cast<ed247::Context*>(context);
-    auto && ed247_stream = ed247_context->get_stream_set()->get(std::string(name));
+    auto && ed247_stream = ed247_context->get_stream_set().get(std::string(name));
     *stream = ed247_stream ? ed247_stream.get() : nullptr;
     if(*stream == nullptr) {
       PRINT_INFO("Cannot find stream '" << name << "'");
@@ -546,7 +529,7 @@ ed247_status_t ed247_find_signals(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    ed247_signal_list.copy(ed247_context->get_signal_set()->find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
+    ed247_signal_list.copy(ed247_context->get_signal_set().find(regex_name != nullptr ? std::string(regex_name) : std::string(".*")));
     *signals = &ed247_signal_list;
   }
   LIBED247_CATCH("Find signals");
@@ -574,7 +557,7 @@ ed247_status_t ed247_get_signal(
   }
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    *signal = ed247_context->get_signal_set()->get(name).get();
+    *signal = ed247_context->get_signal_set().get(name).get();
     if(*signal == nullptr) {
       PRINT_INFO("Cannot find signal '" << name << "'");
       return ED247_STATUS_FAILURE;
@@ -621,7 +604,7 @@ ed247_status_t ed247_wait_frame(
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
     ed247_status_t ed247_status = ed247_context->wait_frame(timeout_us);
     if(streams != nullptr && ed247_status == ED247_STATUS_SUCCESS) {
-      ed247_stream_list.wrap(ed247_context->get_stream_set()->streams());
+      ed247_stream_list.wrap(ed247_context->get_stream_set().streams());
       *streams = &ed247_stream_list;
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
@@ -652,7 +635,7 @@ ed247_status_t ed247_wait_during(
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
     ed247_status_t ed247_status = ed247_context->wait_during(duration_us);
     if(streams != nullptr && ed247_status == ED247_STATUS_SUCCESS) {
-      ed247_stream_list.wrap(ed247_context->get_stream_set()->streams());
+      ed247_stream_list.wrap(ed247_context->get_stream_set().streams());
       *streams = &ed247_stream_list;
     } else {
       PRINT_DEBUG("ed247_wait_frame status: " << ed247_status);
@@ -825,7 +808,7 @@ ed247_status_t ed247_register_recv_callback(
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    for (auto& stream: ed247_context->get_stream_set()->streams()) {
+    for (auto& stream: ed247_context->get_stream_set().streams()) {
       if(stream.second->register_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
         PRINT_WARNING("Cannot register callback in stream [" << stream.second->get_name() << "]");
@@ -852,7 +835,7 @@ ed247_status_t ed247_unregister_recv_callback(
   ed247_status_t status = ED247_STATUS_SUCCESS;
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    for (auto& stream: ed247_context->get_stream_set()->streams()) {
+    for (auto& stream: ed247_context->get_stream_set().streams()) {
       if(stream.second->unregister_callback(context, callback) != ED247_STATUS_SUCCESS){
         status = ED247_STATUS_FAILURE;
         PRINT_WARNING("Cannot unregister callback in stream [" << stream.second->get_name() << "]");

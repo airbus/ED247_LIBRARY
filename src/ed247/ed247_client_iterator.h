@@ -9,6 +9,8 @@
 #ifndef ED247_CLIENT_ITERATOR
 #define ED247_CLIENT_ITERATOR
 #include <vector>
+#include <memory>
+#include <algorithm>
 
 
 namespace ed247 {

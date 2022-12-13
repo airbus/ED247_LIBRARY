@@ -30,6 +30,7 @@ class TEST_CLASS_NAME(SignalContext, SinglePushPop);
 #include "unitary_test.h"
 #include "ed247_context.h"
 #include "ed247_stream_assistant.h"
+#include "ed247_bswap.h"
 
 class SignalContext : public ::testing::TestWithParam<std::string> {};
 
@@ -84,18 +85,17 @@ TEST_P(SignalContext, SinglePushPop)
 {
   std::string filepath = GetParam();
 
-  ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
-  ed247::Context::Builder::initialize(*context);
+  ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
   // Retrieve the set of signals
   auto signal_set = context->get_signal_set();
   if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
-    ASSERT_EQ(signal_set->_signals.size(), (uint32_t)25);
+    ASSERT_EQ(signal_set._signals.size(), (uint32_t)25);
   else
-    ASSERT_EQ(signal_set->_signals.size(), (uint32_t)12);
+    ASSERT_EQ(signal_set._signals.size(), (uint32_t)12);
 
   // Check finder for find all
-  auto signals = signal_set->find(".*");
+  auto signals = signal_set.find(".*");
   if(std::string(GetParam()).find("_nad.xml") != std::string::npos)
     ASSERT_EQ(signals.size(), (uint32_t)25);
   else
@@ -103,11 +103,11 @@ TEST_P(SignalContext, SinglePushPop)
 
   // Check stream finder
   auto stream_set = context->get_stream_set();
-  auto stream = stream_set->find("Stream1").front();
+  auto stream = stream_set.find("Stream1").front();
   ASSERT_EQ(stream->find_signals(".*").size(), (uint32_t)2);
 
   // Check signal sample allocation
-  auto signal = signal_set->find(".*").front();
+  auto signal = signal_set.find(".*").front();
   std::unique_ptr<ed247::Sample> signal_sample(new ed247::Sample(signal->get_sample_max_size_bytes()));
   ASSERT_EQ(signal_sample->size(), (uint32_t)0);
   ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
@@ -144,7 +144,7 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_EQ(memcmp(stream_sample.data(), assistant->_buffer.data(), stream_sample.size()), 0);
 
   // Check pop & read
-  stream = stream_set->find("StreamInput").front();
+  stream = stream_set.find("StreamInput").front();
   ASSERT_NE(stream, nullptr);
   stream->_recv_stack.push_back().copy(stream_sample.data(), stream_sample.size());
 

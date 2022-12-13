@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -21,87 +22,45 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
-/************
- * Includes *
- ************/
-
 #include "ed247_context.h"
-#include "ed247_xml.h"
-#include "ed247_channel.h"
 
-#include <typeinfo>
-#include <iostream>
-#include <sstream>
-
-/***********
- * Methods *
- ***********/
-
-namespace ed247
+ed247::Context* ed247::Context::create_from_filepath(std::string ecic_filepath)
 {
-
-Context::Context():
-    _stream_set(_signal_set),
-    _channel_set(_receiver_set, _stream_set)
-{
-    PRINT_DEBUG("[Context] Ctor");
+  PRINT_DEBUG("ECIC filepath [" << ecic_filepath << "]");
+  Context* context = new Context(xml::load_filepath(ecic_filepath));
+  return context;
 }
 
-Context::~Context()
+ed247::Context* ed247::Context::create_from_content(std::string ecic_content)
 {
+  PRINT_DEBUG("ECIC content [" << ecic_content << "]");
+  Context* context = new Context(xml::load_content(ecic_content));
+  return context;
 }
 
-void Context::initialize()
+ed247::Context::Context(std::unique_ptr<ed247::xml::Component>&& configuration):
+  _configuration(std::move(configuration)),
+  _stream_set(_signal_set),
+  _channel_set(_receiver_set, _stream_set)
 {
-    Context::Builder::initialize(*this);
-}
-
-// Context::Builder
-
-Context * Context::Builder::create_filepath(std::string ecic_filepath)
-{
-    // Create context
-    Context * context = new Context();
-
-    PRINT_DEBUG("ECIC filepath [" << ecic_filepath << "]");
-
-    // Load
-    try{
-        context->_configuration = xml::load_filepath(ecic_filepath);
-    }catch(...){
-        delete context;
-        context = nullptr;
-        throw;
-    }
-
-    return context;
-}
-
-Context * Context::Builder::create_content(std::string ecic_content)
-{
-    // Create context
-    Context * context = new Context();
-
-    PRINT_DEBUG("ECIC content [" << ecic_content << "]");
-
-    // Load
-    try{
-        context->_configuration = xml::load_content(ecic_content);
-    }catch(...){
-        delete context;
-        context = nullptr;
-        throw;
-    }
-
-    return context;
-}
-
-void Context::Builder::initialize(Context & context)
-{
-  for(const xml::Channel& sp_channel_configuration : context._configuration->_channel_list) {
-    context._channel_set.create(&sp_channel_configuration, context._configuration->_identifier);
+  for(const xml::Channel& channel_configuration: _configuration->_channel_list) {
+    _channel_set.create(&channel_configuration, _configuration->_identifier);
   }
 }
 
+void ed247::Context::send_pushed_samples()
+{
+  for(auto& channel : _channel_set.channels()) {
+    channel.second->encode_and_send();
+  }
+}
+
+ed247_status_t ed247::Context::wait_frame(int32_t timeout_us)
+{
+  return _receiver_set.wait_frame(timeout_us);
+}
+
+ed247_status_t ed247::Context::wait_during(int32_t duration_us)
+{
+  return _receiver_set.wait_during(duration_us);
 }

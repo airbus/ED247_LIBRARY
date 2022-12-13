@@ -1,3 +1,4 @@
+/* -*- mode: c++; c-basic-offset: 2 -*-  */
 /******************************************************************************
  * The MIT Licence
  *
@@ -21,92 +22,68 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-
 #ifndef _ED247_CONTEXT_H_
 #define _ED247_CONTEXT_H_
-
-#include "ed247_internals.h"
 #include "ed247_xml.h"
 #include "ed247_channel.h"
 
-#include <vector>
+// base structures for C API
+struct ed247_internal_context_t {};
 
 namespace ed247
 {
 
-class Context : public ed247_internal_context_t
-{
-    public:
+  class Context : public ed247_internal_context_t
+  {
+  public:
+    static Context* create_from_filepath(std::string ecic_filepath);
+    static Context* create_from_content(std::string ecic_content);
 
-        explicit Context();
-        ~Context();
-        Context(const Context &)                = delete;
-        Context(Context &&)                     = delete;
-        Context & operator = (const Context &)  = delete;
-        Context & operator = (Context &&)       = delete;
-        template<typename T>
-        Context(std::initializer_list<T>)       = delete;
+    Context(const Context &)                = delete;
+    Context(Context &&)                     = delete;
+    Context & operator = (const Context &)  = delete;
+    Context & operator = (Context &&)       = delete;
 
-        void initialize();
+    // configuration accessors
+    const std::string& get_file_producer_identifier() { return _configuration->_file_producer_identifier; }
+    const std::string& get_file_producer_comment()    { return _configuration->_file_producer_comment;    }
+    const std::string& get_version()                  { return _configuration->_version;                  }
+    ed247_component_type_t get_component_type()       { return _configuration->_component_type;           }
+    const std::string& get_name()                     { return _configuration->_name;                     }
+    const std::string& get_comment()                  { return _configuration->_comment;                  }
+    ed247_uid_t get_identifier()                      { return _configuration->_identifier;               }
+    ed247_standard_t get_standard_revision()          { return _configuration->_standard_revision;        }
 
-        const xml::Component* getConfiguration() { return _configuration.get(); }
 
-  ed247::SignalSet* get_signal_set() { return &_signal_set; }  // TODO: ref
+    // Handle user-data
+    void set_user_data(void *user_data)  { _user_data = user_data;  }
+    void get_user_data(void **user_data) { *user_data = _user_data; }
 
-        ed247::StreamSet* get_stream_set() { return &_stream_set; }  // TODO: ref
 
-        ed247::ChannelSet* get_channel_set() { return &_channel_set; }  // TODO: ref
+    // Content access
+    udp::ReceiverSet& get_receiver_set() { return _receiver_set; }
+    SignalSet& get_signal_set()          { return _signal_set;   }
+    StreamSet& get_stream_set()          { return _stream_set;   }
+    ChannelSet& get_channel_set()        { return _channel_set;  }
 
-        void send_pushed_samples()
-        {
-          for(auto & c : _channel_set.channels()) {
-            c.second->encode_and_send();
-          }
-        }
 
-        ed247_status_t wait_frame(int32_t timeout_us)
-        {
-            return _receiver_set.wait_frame(timeout_us);
-        }
-        ed247_status_t wait_during(int32_t duration_us)
-        {
-            return _receiver_set.wait_during(duration_us);
-        }
+    // Send all pushed streams in their respective channels/CommInterface
+    void send_pushed_samples();
 
-        void set_user_data(void *user_data){
-            _user_data = user_data;
-        }
+    // Receive frames and fill associated streams
+    ed247_status_t wait_frame(int32_t timeout_us);
+    ed247_status_t wait_during(int32_t duration_us);
 
-        void *get_user_data(){
-            return _user_data;
-        }
+  private:
+    Context(std::unique_ptr<xml::Component>&& configuration);
 
-        class Builder
-        {
-            public:
-                static Context * create_filepath(std::string ecic_filepath);
-                static Context * create_content(std::string ecic_content);
-                static void initialize(Context & context);
-
-                Builder(const Builder &) = delete;
-                Builder(Builder &&) = delete;
-                Builder & operator = (const Builder &) = delete;
-                Builder & operator = (Builder &&) = delete;
-
-            private:
-                Builder(){}
-
-        };
-
-    private:
-
-        std::unique_ptr<xml::Component>  _configuration;
-        udp::ReceiverSet                 _receiver_set;
-        ed247::SignalSet                 _signal_set;
-        ed247::StreamSet                 _stream_set;
-        ed247::ChannelSet                _channel_set;
-        void*                            _user_data;
-};
+    std::unique_ptr<xml::Component>  _configuration;
+    udp::ReceiverSet                 _receiver_set;
+    SignalSet                        _signal_set;
+    StreamSet                        _stream_set;
+    ChannelSet                       _channel_set;
+    void*                            _user_data;
+  };
 
 }
 

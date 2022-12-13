@@ -137,19 +137,18 @@ TEST_P(StreamContext, SinglePushPop)
         RecordProperty("description", strize() << "Load content of [" << GetParam() << "]");
 
         std::string filepath = GetParam();
-        ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
-        ed247::Context::Builder::initialize(*context);
+        ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of streams
         auto stream_set = context->get_stream_set();
-        ASSERT_EQ(stream_set->size(), (uint32_t)6);
+        ASSERT_EQ(stream_set.size(), (uint32_t)6);
 
         // Check finder for find all
-        auto streams_0 = stream_set->find(".*");
+        auto streams_0 = stream_set.find(".*");
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_1 = stream_set->find("Stream1"); // UID=2
+        auto streams_1 = stream_set.find("Stream1"); // UID=2
         ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 
@@ -225,19 +224,18 @@ TEST_P(StreamContext, MultiPushPop)
         RecordProperty("description", strize() << "Load content of [" << GetParam() << "]");
 
         std::string filepath = GetParam();
-        ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
-        ed247::Context::Builder::initialize(*context);
+        ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of streams
         auto stream_set = context->get_stream_set();
-        ASSERT_EQ(stream_set->size(), (uint32_t)6);
+        ASSERT_EQ(stream_set.size(), (uint32_t)6);
 
         // Check finder for find all
-        auto streams_0 = stream_set->find(".*");
+        auto streams_0 = stream_set.find(".*");
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_1 = stream_set->find("Stream1");
+        auto streams_1 = stream_set.find("Stream1");
         ASSERT_EQ(streams_1.size(), (uint32_t)1);
         auto stream_1 = streams_1[0];
 
@@ -341,19 +339,18 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
         RecordProperty("description", strize() << "Load content of [" << GetParam() << "]");
 
         std::string filepath = GetParam();
-        ed247::Context * context = ed247::Context::Builder::create_filepath(filepath);
-        ed247::Context::Builder::initialize(*context);
+        ed247::Context* context = ed247::Context::create_from_filepath(filepath);
 
         // Retrieve the set of streams
         auto stream_set = context->get_stream_set();
-        ASSERT_EQ(stream_set->size(), (uint32_t)6);
+        ASSERT_EQ(stream_set.size(), (uint32_t)6);
 
         // Check finder for find all
-        auto streams_0 = stream_set->find(".*");
+        auto streams_0 = stream_set.find(".*");
         ASSERT_EQ(streams_0.size(), (uint32_t)6);
 
         // Check finder for a single stream
-        auto streams_out = stream_set->find("StreamDatatimestampOut"); // UID=4
+        auto streams_out = stream_set.find("StreamDatatimestampOut"); // UID=4
         ASSERT_EQ(streams_out.size(), (uint32_t)1);
         auto stream_out = streams_out[0];
 
