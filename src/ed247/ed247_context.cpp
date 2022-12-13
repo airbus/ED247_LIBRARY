@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_context.h"
+#include "ed247_logs.h"
 
 ed247::Context* ed247::Context::create_from_filepath(std::string ecic_filepath)
 {

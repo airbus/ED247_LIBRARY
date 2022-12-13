@@ -23,7 +23,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_signal.h"
+#include "ed247_logs.h"
 #include <regex>
+
+ed247::Signal::Signal(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream) :
+  _configuration(configuration),
+  _ed247_api_stream(ed247_api_stream),
+  _user_data(nullptr)
+{
+  MEMCHECK_NEW(this, "Signal " << _configuration->_name);
+}
+
+ed247::Signal::~Signal()
+{
+  MEMCHECK_DEL(this, "Signal " << _configuration->_name);
+}
+
+ed247::SignalSet::SignalSet()
+{
+  MEMCHECK_NEW(this, "SignalSet");
+}
+
+ed247::SignalSet::~SignalSet()
+{
+  MEMCHECK_DEL(this, "SignalSet");
+}
 
 ed247::signal_ptr_t ed247::SignalSet::create(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream)
 {

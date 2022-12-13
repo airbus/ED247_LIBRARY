@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_channel.h"
+#include "ed247_logs.h"
 #include <regex>
 
 typedef uint16_t stream_size_t;
@@ -38,8 +39,6 @@ ed247::Channel::Channel(const xml::Channel* configuration, ed247_uid_t ec_id,
   _header(configuration->_header, ec_id, get_name()),
   _user_data(NULL)
 {
-  MEMCHECK_NEW(this, "Channel " << _configuration->_name);
-
   uint32_t capacity = 0;
   capacity += _header.get_size();
 
@@ -64,6 +63,8 @@ ed247::Channel::Channel(const xml::Channel* configuration, ed247_uid_t ec_id,
                       std::bind(&Channel::decode, this, std::placeholders::_1, std::placeholders::_2));
 
   _buffer.allocate(capacity);
+
+  MEMCHECK_NEW(this, "Channel " << _configuration->_name);
 }
 
 ed247::Channel::~Channel()
@@ -238,6 +239,12 @@ ed247::ChannelSet::ChannelSet(udp::ReceiverSet& context_receiver_set,
   _context_receiver_set(context_receiver_set),
   _stream_set(stream_set)
 {
+  MEMCHECK_NEW(this, "ChannelSet");
+}
+
+ed247::ChannelSet::~ChannelSet()
+{
+  MEMCHECK_DEL(this, "ChannelSet");
 }
 
 ed247::channel_ptr_t ed247::ChannelSet::create(const ed247::xml::Channel* configuration, ed247_uid_t ec_id)

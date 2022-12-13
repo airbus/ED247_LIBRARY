@@ -160,7 +160,8 @@ namespace ed247
   class StreamSet
   {
   public:
-    StreamSet(ed247::SignalSet& signal_set) : _signal_set(signal_set) {}
+    StreamSet(ed247::SignalSet& signal_set);
+    ~StreamSet();
 
     StreamSet& operator=(const StreamSet &)  = delete;
     StreamSet& operator=(StreamSet &&)       = delete;

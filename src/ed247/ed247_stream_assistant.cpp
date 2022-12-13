@@ -2,6 +2,7 @@
 #include "ed247_stream_assistant.h"
 #include "ed247_bswap.h"
 #include "ed247_stream.h"
+#include "ed247_logs.h"
 
 namespace {
   // Swap a payload of signals

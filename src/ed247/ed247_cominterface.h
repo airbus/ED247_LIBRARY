@@ -25,7 +25,7 @@
 #ifndef _ED247_COMINTERFACE_H_
 #define _ED247_COMINTERFACE_H_
 #include "ed247_xml.h"
-#include "ed247_logs.h"
+#include "ed247_friend_test.h"
 #include <functional>
 
 // Networking
@@ -173,8 +173,8 @@ namespace ed247 {
       // Send a frame to all ComInterface emitters
       void send_frame(const void* payload, const uint32_t payload_size);
 
-      ComInterface()  { MEMCHECK_NEW(this, "ComInterface"); }
-      ~ComInterface() { MEMCHECK_DEL(this, "ComInterface"); }
+      ComInterface();
+      ~ComInterface();
 
     private:
       std::vector<std::unique_ptr<Emitter>> _emitters;

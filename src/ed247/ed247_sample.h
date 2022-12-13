@@ -2,7 +2,7 @@
 /* sample : store a payload in a preallocated memory */
 #ifndef _ED247_SAMPLE_H_
 #define _ED247_SAMPLE_H_
-#include "ed247_logs.h"
+#include "ed247.h"
 #include <vector>
 
 namespace ed247
@@ -14,25 +14,11 @@ namespace ed247
   class Sample
   {
   public:
-    // Empty Ctor. Call allocate() before any other functions.
-    Sample() : _data(nullptr), _size(0), _capacity(0)
-    {
-      // TODO: validate free (curently streams are not freed, so neither their samples)
-      // MEMCHECK_NEW(this, "Sample");
-    }
-    Sample(uint32_t capacity) : _data(nullptr), _size(0), _capacity(0)
-    {
-      // TODO: validate free (curently streams are not freed, so neither their samples)
-      // MEMCHECK_NEW(this, "Sample");
-      allocate(capacity);
-    }
+    Sample(uint32_t capacity);
+    ~Sample();
 
-    ~Sample()
-    {
-      // TODO: validate free (curently streams are not freed, so neither their samples)
-      // MEMCHECK_DEL(this, "Sample");
-      delete[] _data;
-    }
+    // Empty Ctor. Call allocate() before any other functions.
+    Sample();
 
     // No implicit copy. Use copy() methods.
     Sample(const Sample & other) = delete;
@@ -121,6 +107,7 @@ namespace ed247
   class StreamSampleRingBuffer {
   public:
     StreamSampleRingBuffer(uint32_t capacity, uint32_t samples_capacity);
+    ~StreamSampleRingBuffer();
 
     uint32_t capacity() const         { return _samples.size();                }
     uint32_t samples_capacity() const { return _samples_capacity;              }

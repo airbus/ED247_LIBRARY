@@ -25,6 +25,7 @@
 #include "ed247_client_iterator.h"
 #include "ed247_context.h"
 #include "ed247_stream_assistant.h"
+#include "ed247_logs.h"
 
 
 #ifdef _PRODUCT_VERSION

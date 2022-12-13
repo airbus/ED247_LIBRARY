@@ -25,6 +25,7 @@
 #include "ed247_stream.h"
 #include "ed247_stream_assistant.h"
 #include "ed247_bswap.h"
+#include "ed247_logs.h"
 #include <regex>
 
 
@@ -48,6 +49,8 @@ ed247::Stream::Stream(const ed247::xml::Stream* configuration, ed247_internal_ch
   _ed247_api_channel(ed247_api_channel),
   _user_data(NULL)
 {
+  MEMCHECK_NEW(this, "Stream " << configuration->_name);
+
   _sample_first_header_size = _sample_next_header_size = sample_size_size;
   if (_configuration->_data_timestamp._enable == ED247_YESNO_YES) {
     _sample_first_header_size += 2 * sizeof(uint32_t);
@@ -62,6 +65,7 @@ ed247::Stream::Stream(const ed247::xml::Stream* configuration, ed247_internal_ch
 
 ed247::Stream::~Stream()
 {
+  MEMCHECK_DEL(this, "Stream " << _configuration->_name);
 }
 
 //
@@ -370,6 +374,17 @@ bool ed247::Stream::run_callbacks()
 //
 // StreamSet
 //
+ed247::StreamSet::StreamSet(ed247::SignalSet& signal_set) :
+  _signal_set(signal_set)
+{
+  MEMCHECK_NEW(this, "StreamSet");
+}
+
+ed247::StreamSet::~StreamSet()
+{
+  MEMCHECK_DEL(this, "StreamSet");
+}
+
 ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel)
 {
   PRINT_DEBUG("Create stream [" << configuration->_name << "] ...");

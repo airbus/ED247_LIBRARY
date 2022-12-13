@@ -24,6 +24,7 @@
  *****************************************************************************/
 #include "ed247_cominterface.h"
 #include "ed247_time.h"
+#include "ed247_logs.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <unordered_map>
@@ -198,6 +199,16 @@ namespace ed247 {
 //
 // ComInterface
 //
+ed247::udp::ComInterface::ComInterface()
+{
+  MEMCHECK_NEW(this, "ComInterface");
+}
+
+ed247::udp::ComInterface::~ComInterface()
+{
+  MEMCHECK_DEL(this, "ComInterface");
+}
+
 void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
                                     ReceiverSet& context_receiver_set,
                                     Receiver::receive_callback_t receive_callback)

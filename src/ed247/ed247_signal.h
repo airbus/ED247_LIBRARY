@@ -24,12 +24,12 @@
  *****************************************************************************/
 #ifndef _ED247_SIGNAL_H_
 #define _ED247_SIGNAL_H_
+#include "ed247.h"
+#include "ed247_xml.h"
+#include "ed247_friend_test.h"
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include "ed247.h"
-#include "ed247_logs.h"
-#include "ed247_xml.h"
 
 
 // base structures for C API
@@ -41,18 +41,8 @@ namespace ed247
   class Signal : public ed247_internal_signal_t
   {
   public:
-    Signal(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream) :
-      _configuration(configuration),
-      _ed247_api_stream(ed247_api_stream),
-      _user_data(nullptr) {
-      // TODO: validate free (curently streams are not freed, so neither signals)
-      // MEMCHECK_NEW(this, "Signal " << _configuration->_name);
-    }
-
-    ~Signal() {
-      // TODO: validate free (curently streams are not freed, so neither signals)
-      // MEMCHECK_DEL(this, "Signal " << _configuration->_name);
-    }
+    Signal(const xml::Signal* configuration, ed247_internal_stream_t* ed247_api_stream);
+    ~Signal();
 
     // No implicit copy
     Signal(const Signal & other) = delete;
@@ -102,8 +92,8 @@ namespace ed247
     signal_ptr_t get(const std::string& name);
     signal_list_t find(const std::string& regex);
 
-    SignalSet()  { MEMCHECK_NEW(this, "SignalSet"); }
-    ~SignalSet() { MEMCHECK_DEL(this, "SignalSet"); }
+    SignalSet();
+    ~SignalSet();
 
     SignalSet& operator=(const SignalSet &)  = delete;
     SignalSet& operator=(SignalSet &&)       = delete;

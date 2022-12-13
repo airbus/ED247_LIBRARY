@@ -24,8 +24,8 @@
  *****************************************************************************/
 #ifndef _ED247_LOGS_H_
 #define _ED247_LOGS_H_
-
 #include "ed247.h"
+#include "ed247_friend_test.h"
 #include <string.h>
 #include <sstream>
 #include <iostream>
@@ -55,11 +55,6 @@
 
 #define ED247_LOG_ENABLED(level) ed247::log::get().enabled(level)
 #define SAY_STREAM(stream, m)    do { (stream) << LOG_STREAM_FILELINE << m << std::endl; } while (0)
-
-// ED247_FRIEND_TEST macro will be defined by tests only when building tests
-#ifndef ED247_FRIEND_TEST
-#define ED247_FRIEND_TEST(...)
-#endif
 
 // Logger internals
 namespace ed247 {

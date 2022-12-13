@@ -91,6 +91,7 @@ namespace ed247
   class ChannelSet {
   public:
     ChannelSet(udp::ReceiverSet& context_receiver_set, ed247::StreamSet& stream_set);
+    ~ChannelSet();
 
     ChannelSet& operator=(const ChannelSet &)  = delete;
     ChannelSet& operator=(ChannelSet &&)       = delete;

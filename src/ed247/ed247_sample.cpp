@@ -1,9 +1,32 @@
 /* -*- mode: c++; c-basic-offset: 2 -*-  */
 #include "ed247_sample.h"
+#include "ed247_logs.h"
 
 //
 // Sample
 //
+ed247::Sample::Sample() :
+  _data(nullptr),
+  _size(0),
+  _capacity(0)
+{
+}
+
+ed247::Sample::Sample(uint32_t capacity) :
+  _data(nullptr),
+  _size(0),
+  _capacity(0)
+{
+  allocate(capacity);
+}
+
+ed247::Sample::~Sample()
+{
+  if (_data) {
+    MEMCHECK_DEL((void*)_data, "Sample");
+    delete[] _data;
+  }
+}
 
 ed247::Sample::Sample(Sample&& other)
 {
@@ -35,6 +58,8 @@ void ed247::Sample::allocate(uint32_t capacity)
   if(!_data) THROW_ED247_ERROR("Failed to allocate sample [" << _capacity <<"] !");
   memset(_data, 0, _capacity);
   _size = 0;
+
+  MEMCHECK_NEW((void*)_data, "Sample");
 }
 
 
@@ -61,10 +86,16 @@ ed247::StreamSampleRingBuffer::StreamSampleRingBuffer(uint32_t capacity, uint32_
   _index_write(0),
   _index_size(0)
 {
+  MEMCHECK_NEW(this, "StreamSampleRingBuffer");
   _samples.reserve(capacity);
   for (uint32_t i = 0; i < capacity; i++) {
     _samples.emplace_back(StreamSample(samples_capacity));
   }
+}
+
+ed247::StreamSampleRingBuffer::~StreamSampleRingBuffer()
+{
+  MEMCHECK_DEL(this, "StreamSampleRingBuffer");
 }
 
 
