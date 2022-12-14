@@ -114,6 +114,7 @@ namespace ed247 {
       static uint32_t get_nad_type_size(ed247_nad_type_t nad_type);
 
       Signal(ed247_signal_type_t type);
+      virtual ~Signal() {}
     };
 
     struct DISSignal : public Signal
@@ -159,6 +160,7 @@ namespace ed247 {
       virtual bool is_signal_based() const = 0;
       virtual void validate(const xmlNodePtr closest_node) = 0;
       Stream(ed247_stream_type_t type, uint32_t sample_max_size_bytes, bool sample_size_fixed);
+      virtual ~Stream() {}
     };
 
     struct StreamProtocoled : public Stream

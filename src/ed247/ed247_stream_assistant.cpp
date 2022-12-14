@@ -53,6 +53,12 @@ ed247::StreamAssistant::StreamAssistant(ed247::Stream* stream):
   _stream(stream),
   _buffer(stream->get_sample_max_size_bytes())
 {
+  MEMCHECK_NEW(this, "StreamAssistant");
+}
+
+ed247::StreamAssistant::~StreamAssistant()
+{
+  MEMCHECK_DEL(this, "StreamAssistant");
 }
 
 //

@@ -8,7 +8,9 @@
 
 
 // base structures for C API
-struct ed247_internal_stream_assistant_t {};
+struct ed247_internal_stream_assistant_t {
+  virtual ~ed247_internal_stream_assistant_t() {}
+};
 
 
 namespace ed247
@@ -20,6 +22,7 @@ namespace ed247
   public:
 
     StreamAssistant(Stream* stream);
+    virtual ~StreamAssistant();
 
     Stream* get_api_stream() { return _stream; }
 
