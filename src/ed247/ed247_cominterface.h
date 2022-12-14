@@ -62,6 +62,9 @@ std::ostream& operator<<(std::ostream & os, const ed247::udp::socket_address_t& 
 
 
 namespace ed247 {
+
+  class Context;
+
   namespace udp {
 
     //
@@ -71,7 +74,7 @@ namespace ed247 {
     //
     class Transceiver {
     public:
-      Transceiver(const socket_address_t& socket_address);
+      Transceiver(Context* context, const socket_address_t& socket_address);
       ~Transceiver();
 
       Transceiver(const Transceiver&) = delete;
@@ -80,6 +83,7 @@ namespace ed247 {
       const ed247_socket_t& get_socket() const { return _socket; }
 
     protected:
+      Context*         _context;
       socket_address_t _socket_address;           // Where the packets come from (regardless direction)
       ed247_socket_t   _socket{INVALID_SOCKET};   // Where the packets come from (regardless direction)
     };
@@ -87,7 +91,7 @@ namespace ed247 {
     class Emitter : public Transceiver
     {
     public:
-      Emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl = 1);
+      Emitter(Context* context, socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl = 1);
       void send_frame(const void* payload, const uint32_t payload_size);
 
     private:
@@ -99,7 +103,8 @@ namespace ed247 {
     public:
       using receive_callback_t = std::function<void(const char* payload, uint32_t size)>;
 
-      Receiver(socket_address_t from_address,
+      Receiver(Context*         context,
+               socket_address_t from_address,
                socket_address_t multicast_interface,
                socket_address_t multicast_group_address,
                receive_callback_t callback);
@@ -167,16 +172,16 @@ namespace ed247 {
       // - store receivers in context_receiver_set,
       // - set receive_callback on each of them.
       void load(const xml::ComInterface& configuration,
-                ReceiverSet& context_receiver_set,
                 Receiver::receive_callback_t receive_callback);
 
       // Send a frame to all ComInterface emitters
       void send_frame(const void* payload, const uint32_t payload_size);
 
-      ComInterface();
+      ComInterface(Context* context);
       ~ComInterface();
 
     private:
+      Context*                              _context;
       std::vector<std::unique_ptr<Emitter>> _emitters;
     };
 

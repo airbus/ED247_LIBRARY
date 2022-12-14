@@ -41,11 +41,11 @@ ed247::Context* ed247::Context::create_from_content(std::string ecic_content)
 
 ed247::Context::Context(std::unique_ptr<ed247::xml::Component>&& configuration):
   _configuration(std::move(configuration)),
-  _stream_set(_signal_set),
-  _channel_set(_receiver_set, _stream_set)
+  _stream_set(this),
+  _channel_set(this)
 {
   for(const xml::Channel& channel_configuration: _configuration->_channel_list) {
-    _channel_set.create(&channel_configuration, _configuration->_identifier);
+    _channel_set.create(&channel_configuration);
   }
 }
 

@@ -36,15 +36,14 @@ struct ed247_internal_channel_t {};
 
 namespace ed247
 {
+  class Context;
+
   class Channel : public ed247_internal_channel_t
   {
   public:
     using map_uid_stream_t = std::unordered_map<ed247_uid_t, stream_ptr_t>;
 
-    Channel(const xml::Channel* configuration,
-            ed247_uid_t ec_id,
-            udp::ReceiverSet& context_receiver_set,
-            ed247::StreamSet& context_stream_set);
+    Channel(Context* context, const xml::Channel* configuration);
     ~Channel();
 
     Channel& operator=(const Channel &)  = delete;
@@ -74,6 +73,7 @@ namespace ed247
     bool decode(const char* frame, uint32_t frame_size);
 
   private:
+    Context*            _context;
     const xml::Channel* _configuration;
     udp::ComInterface   _com_interface;
     map_uid_stream_t    _streams;
@@ -90,13 +90,13 @@ namespace ed247
 
   class ChannelSet {
   public:
-    ChannelSet(udp::ReceiverSet& context_receiver_set, ed247::StreamSet& stream_set);
+    ChannelSet(Context* context);
     ~ChannelSet();
 
     ChannelSet& operator=(const ChannelSet &)  = delete;
     ChannelSet& operator=(ChannelSet &&)       = delete;
 
-    channel_ptr_t create(const xml::Channel* configuration, ed247_uid_t ec_id);
+    channel_ptr_t create(const xml::Channel* configuration);
 
     channel_ptr_t get(std::string str_name);
     channel_list_t find(std::string str_regex);
@@ -105,9 +105,8 @@ namespace ed247
     uint32_t size() const      { return _channels.size(); }
 
   private:
+    Context*            _context;
     channel_map_t      _channels;
-    udp::ReceiverSet&  _context_receiver_set;
-    ed247::StreamSet&  _stream_set;
   };
 
 }

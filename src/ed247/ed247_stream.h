@@ -36,11 +36,14 @@ struct ed247_internal_stream_assistant_t;
 
 namespace ed247
 {
+  class Context;
+
   class Stream : public ed247_internal_stream_t
   {
   public:
 
-    Stream(const xml::Stream*        configuration,
+    Stream(Context*                  context,
+           const xml::Stream*        configuration,
            ed247_internal_channel_t* ed247_api_channel,            // Parent for ed247_stream_get_channel()
            uint32_t                  sample_size_size);            // Size of the sample size header field (that depend on stream type)
 
@@ -114,6 +117,7 @@ namespace ed247
 
 
   protected:
+    Context*                                            _context;
     const xml::Stream*                                  _configuration;
     uint32_t                                            _sample_size_size;
     uint32_t                                            _sample_first_header_size;
@@ -143,8 +147,8 @@ namespace ed247
   // Streams with signals
   //
   struct StreamSignals: public Stream {
-    StreamSignals(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel,
-                  SignalSet& context_signal_set, uint32_t sample_size_size);
+    StreamSignals(Context* context, const xml::Stream* configuration,
+                  ed247_internal_channel_t* ed247_api_channel, uint32_t sample_size_size);
     uint32_t get_sampling_period_us() override { return ((xml::StreamSignals*)_configuration)->_sampling_period_us; }
 
   };
@@ -160,7 +164,7 @@ namespace ed247
   class StreamSet
   {
   public:
-    StreamSet(ed247::SignalSet& signal_set);
+    StreamSet(Context* context);
     ~StreamSet();
 
     StreamSet& operator=(const StreamSet &)  = delete;
@@ -175,8 +179,8 @@ namespace ed247
     uint32_t size() const    { return _streams.size(); }
 
   private:
-    stream_map_t       _streams;
-    ed247::SignalSet&  _signal_set;
+    stream_map_t _streams;
+    Context*     _context;
   };
 }
 

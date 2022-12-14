@@ -1132,7 +1132,8 @@ void ed247::xml::Header::load(const xmlNodePtr xml_node)
 // Channel
 //
 ed247::xml::Channel::Channel() :
-  _frame_standard_revision(ED247_STANDARD__INVALID)
+  _frame_standard_revision(ED247_STANDARD__INVALID),
+  _is_simple_channel(true)
 {
 }
 

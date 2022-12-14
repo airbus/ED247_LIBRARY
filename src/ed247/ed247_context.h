@@ -83,6 +83,8 @@ namespace ed247
     StreamSet                        _stream_set;
     ChannelSet                       _channel_set;
     void*                            _user_data;
+
+    ED247_FRIEND_TEST();
   };
 
 }

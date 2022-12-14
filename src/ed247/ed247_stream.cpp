@@ -24,6 +24,7 @@
  *****************************************************************************/
 #include "ed247_stream.h"
 #include "ed247_stream_assistant.h"
+#include "ed247_context.h"
 #include "ed247_bswap.h"
 #include "ed247_logs.h"
 #include <regex>
@@ -41,7 +42,8 @@ typedef uint16_t VNAD_sample_size_t;
 //
 // Stream initialization
 //
-ed247::Stream::Stream(const ed247::xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel, uint32_t sample_size_size):
+ed247::Stream::Stream(Context* context, const ed247::xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel, uint32_t sample_size_size):
+  _context(context),
   _configuration(configuration),
   _sample_size_size(sample_size_size),
   _recv_stack(_configuration->_sample_max_number, _configuration->_sample_max_size_bytes),
@@ -72,13 +74,13 @@ ed247::Stream::~Stream()
 // Stream Signals part
 //
 
-ed247::StreamSignals::StreamSignals(const xml::Stream* configuration, ed247_internal_channel_t* ed247_api_channel,
-                                    SignalSet& context_signal_set, uint32_t sample_size_size) :
-  Stream(configuration, ed247_api_channel, sample_size_size)
+ed247::StreamSignals::StreamSignals(Context* context, const xml::Stream* configuration,
+                                    ed247_internal_channel_t* ed247_api_channel, uint32_t sample_size_size) :
+  Stream(context, configuration, ed247_api_channel, sample_size_size)
 {
   const xml::StreamSignals* sconfiguration = (const xml::StreamSignals*)configuration;
   for(auto& signal_configuration : sconfiguration->_signal_list) {
-    signal_ptr_t signal = context_signal_set.create(signal_configuration.get(), this);
+    signal_ptr_t signal = _context->get_signal_set().create(signal_configuration.get(), this);
     _signals.push_back(signal);
   }
   if (get_type() == ED247_STREAM_TYPE_VNAD) {
@@ -374,8 +376,8 @@ bool ed247::Stream::run_callbacks()
 //
 // StreamSet
 //
-ed247::StreamSet::StreamSet(ed247::SignalSet& signal_set) :
-  _signal_set(signal_set)
+ed247::StreamSet::StreamSet(ed247::Context* context) :
+  _context(context)
 {
   MEMCHECK_NEW(this, "StreamSet");
 }
@@ -397,40 +399,40 @@ ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configura
 
   switch (configuration->_type) {
   case ED247_STREAM_TYPE_A429:
-    stream = std::make_shared<Stream>(configuration, ed247_api_channel, 0);
+    stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel, 0);
     break;
 
   case ED247_STREAM_TYPE_A664:
-    stream = std::make_shared<Stream>(configuration, ed247_api_channel,
+    stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel,
                                       (((const xml::A664Stream*)configuration)->_enable_message_size == ED247_YESNO_YES)? sizeof(A664_sample_size_t) : 0);
     break;
 
   case ED247_STREAM_TYPE_A825:
-    stream = std::make_shared<Stream>(configuration, ed247_api_channel, sizeof(A825_sample_size_t));
+    stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel, sizeof(A825_sample_size_t));
     break;
 
   case ED247_STREAM_TYPE_SERIAL:
-    stream = std::make_shared<Stream>(configuration, ed247_api_channel, sizeof(SERIAL_sample_size_t));
+    stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel, sizeof(SERIAL_sample_size_t));
     break;
 
   case ED247_STREAM_TYPE_AUDIO:
-    stream = std::make_shared<Stream>(configuration, ed247_api_channel, sizeof(AUDIO_sample_size_t));
+    stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel, sizeof(AUDIO_sample_size_t));
     break;
 
   case ED247_STREAM_TYPE_DISCRETE:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, 0);
+    stream = std::make_shared<StreamSignals>(_context, configuration, ed247_api_channel, 0);
     break;
 
   case ED247_STREAM_TYPE_ANALOG:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, 0);
+    stream = std::make_shared<StreamSignals>(_context, configuration, ed247_api_channel, 0);
     break;
 
   case ED247_STREAM_TYPE_NAD:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, 0);
+    stream = std::make_shared<StreamSignals>(_context, configuration, ed247_api_channel, 0);
     break;
 
   case ED247_STREAM_TYPE_VNAD:
-    stream = std::make_shared<StreamSignals>(configuration, ed247_api_channel, _signal_set, sizeof(VNAD_sample_size_t));
+    stream = std::make_shared<StreamSignals>(_context, configuration, ed247_api_channel, sizeof(VNAD_sample_size_t));
     break;
 
   case ED247_STREAM_TYPE_ETHERNET:

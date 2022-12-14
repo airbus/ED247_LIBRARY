@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_channel.h"
+#include "ed247_context.h"
 #include "ed247_logs.h"
 #include <regex>
 
@@ -32,11 +33,11 @@ typedef uint16_t stream_size_t;
 // Channel
 //
 
-ed247::Channel::Channel(const xml::Channel* configuration, ed247_uid_t ec_id,
-                        udp::ReceiverSet& context_receiver_set,
-                        ed247::StreamSet& context_stream_set) :
+ed247::Channel::Channel(Context* context, const xml::Channel* configuration) :
+  _context(context),
   _configuration(configuration),
-  _header(configuration->_header, ec_id, get_name()),
+  _com_interface(context),
+  _header(configuration->_header, context->get_identifier(), get_name()),
   _user_data(NULL)
 {
   uint32_t capacity = 0;
@@ -45,7 +46,7 @@ ed247::Channel::Channel(const xml::Channel* configuration, ed247_uid_t ec_id,
   for(auto& stream_configuration : configuration->_stream_list)
   {
     // Create and insert the new stream
-    stream_ptr_t stream = context_stream_set.create(stream_configuration.get(), this);
+    stream_ptr_t stream = _context->get_stream_set().create(stream_configuration.get(), this);
     auto result = _streams.insert(std::make_pair(stream->get_uid(), stream));
     if (result.second == false) {
       THROW_ED247_ERROR("Stream [" << stream->get_name() << "] uses an UID already registered in Channel [" << get_name() << "]");
@@ -59,7 +60,7 @@ ed247::Channel::Channel(const xml::Channel* configuration, ed247_uid_t ec_id,
   }
 
   // Load the ComInterface and connect decode()
-  _com_interface.load(configuration->_com_interface, context_receiver_set,
+  _com_interface.load(configuration->_com_interface,
                       std::bind(&Channel::decode, this, std::placeholders::_1, std::placeholders::_2));
 
   _buffer.allocate(capacity);
@@ -234,10 +235,8 @@ bool ed247::Channel::decode(const char* frame, uint32_t frame_size)
 // ChannelSet
 //
 
-ed247::ChannelSet::ChannelSet(udp::ReceiverSet& context_receiver_set,
-                              ed247::StreamSet& stream_set):
-  _context_receiver_set(context_receiver_set),
-  _stream_set(stream_set)
+ed247::ChannelSet::ChannelSet(Context* context) :
+  _context(context)
 {
   MEMCHECK_NEW(this, "ChannelSet");
 }
@@ -247,9 +246,9 @@ ed247::ChannelSet::~ChannelSet()
   MEMCHECK_DEL(this, "ChannelSet");
 }
 
-ed247::channel_ptr_t ed247::ChannelSet::create(const ed247::xml::Channel* configuration, ed247_uid_t ec_id)
+ed247::channel_ptr_t ed247::ChannelSet::create(const ed247::xml::Channel* configuration)
 {
-  channel_ptr_t channel = std::make_shared<Channel>(configuration, ec_id, _context_receiver_set, _stream_set);
+  channel_ptr_t channel = std::make_shared<Channel>(_context, configuration);
   auto result = _channels.emplace(std::make_pair(configuration->_name, channel));
   if (result.second == false) THROW_ED247_ERROR("Channel [" << configuration->_name << "] already exist !");
   return result.first->second;

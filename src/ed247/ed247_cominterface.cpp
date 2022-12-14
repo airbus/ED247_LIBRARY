@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_cominterface.h"
+#include "ed247_context.h"
 #include "ed247_time.h"
 #include "ed247_logs.h"
 #include <unistd.h>
@@ -199,7 +200,8 @@ namespace ed247 {
 //
 // ComInterface
 //
-ed247::udp::ComInterface::ComInterface()
+ed247::udp::ComInterface::ComInterface(Context* context) :
+  _context(context)
 {
   MEMCHECK_NEW(this, "ComInterface");
 }
@@ -210,7 +212,6 @@ ed247::udp::ComInterface::~ComInterface()
 }
 
 void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
-                                    ReceiverSet& context_receiver_set,
                                     Receiver::receive_callback_t receive_callback)
 {
 #ifdef _WIN32
@@ -238,10 +239,11 @@ void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
       // For now, we bind to INADDR_ANY.
       if (destination_address.is_multicast()) from_address.set_ip_address(std::string());
 
-      context_receiver_set.emplace(new Receiver(from_address,
-                                                multicast_interface,
-                                                destination_address /*mcast group*/,
-                                                receive_callback));
+      _context->get_receiver_set().emplace(new Receiver(_context,
+                                                        from_address,
+                                                        multicast_interface,
+                                                        destination_address /*mcast group*/,
+                                                        receive_callback));
       break;
     }
 
@@ -256,7 +258,7 @@ void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
         if (from_address.is_any_addr()) from_address.set_ip_address(socket_configuration._mc_ip_address);
       }
 
-      _emitters.emplace_back(new Emitter(from_address, destination_address, socket_configuration._mc_ttl));
+      _emitters.emplace_back(new Emitter(_context, from_address, destination_address, socket_configuration._mc_ttl));
       break;
     }
 
@@ -277,7 +279,8 @@ void ed247::udp::ComInterface::send_frame(const void* payload, const uint32_t pa
 //
 // Transceiver
 //
-ed247::udp::Transceiver::Transceiver(const socket_address_t& socket_address) :
+ed247::udp::Transceiver::Transceiver(Context* context, const socket_address_t& socket_address) :
+  _context(context),
   _socket_address(socket_address)
 {
   MEMCHECK_NEW(this, "Transceiver " << _socket_address);
@@ -292,8 +295,8 @@ ed247::udp::Transceiver::~Transceiver() {
 //
 // Emitter
 //
-ed247::udp::Emitter::Emitter(socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl) :
-  Transceiver(from_address),
+ed247::udp::Emitter::Emitter(Context* context, socket_address_t from_address, socket_address_t destination_address, uint16_t multicast_ttl) :
+  Transceiver(context, from_address),
   _destination_address(destination_address)
 {
   if(_destination_address.is_multicast()) {
@@ -330,11 +333,12 @@ void ed247::udp::Emitter::send_frame(const void* payload, const uint32_t payload
 //
 ed247::udp::Receiver::frame_t ed247::udp::Receiver::_receive_frame;
 
-ed247::udp::Receiver::Receiver(socket_address_t from_address,
+ed247::udp::Receiver::Receiver(Context* context,
+                               socket_address_t from_address,
                                socket_address_t multicast_interface,
                                socket_address_t multicast_group_address,
                                receive_callback_t callback) :
-  Transceiver(from_address),
+  Transceiver(context, from_address),
   _receive_callback(callback)
 {
   if (multicast_group_address.is_multicast()) {
