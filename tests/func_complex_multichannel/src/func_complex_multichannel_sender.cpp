@@ -13,10 +13,15 @@ TEST_P(complexMultichannelFixture, complexMultichannelMain)
   ed247_stream_t dis_stream;
   ASSERT_EQ(ed247_find_streams(_context, "AFDXNotReceived", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &afdx_stream_not_received), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
   ASSERT_EQ(ed247_find_streams(_context, "AFDXStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &afdx_stream), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
   ASSERT_EQ(ed247_find_streams(_context, "DisStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &dis_stream), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   ed247_signal_t dis01;
   ed247_signal_t dis02;

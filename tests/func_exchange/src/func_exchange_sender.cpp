@@ -70,10 +70,13 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &(stream[0])), ED247_STATUS_SUCCESS);
     sample_max_size_bytes[0] = ed247_stream_get_sample_max_size_bytes(stream[0]);
     sample_max_number[0] = ed247_stream_get_sample_max_number(stream[0]);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_streams(_context, "Stream1", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &(stream[1])), ED247_STATUS_SUCCESS);
     sample_max_size_bytes[1] = ed247_stream_get_sample_max_size_bytes(stream[1]);
     sample_max_number[1] = ed247_stream_get_sample_max_number(stream[1]);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream[0], &(sample[0]), &sample_size[0]), ED247_STATUS_SUCCESS);
@@ -234,6 +237,8 @@ TEST_P(StreamContext, SingleFrame)
         free(samples[j]);
         free(samples_size[j]);
     }
+    ASSERT_EQ(ed247_stream_free_sample(sample[0]), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_free_sample(sample[1]), ED247_STATUS_SUCCESS);
 
     // Unload
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -266,6 +271,7 @@ TEST_P(SimpleStreamContext, SingleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
     sample_max_number = ed247_stream_get_sample_max_number(stream);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
@@ -310,6 +316,8 @@ TEST_P(SimpleStreamContext, SingleFrame)
     }
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
+    ASSERT_EQ(ed247_stream_free_sample(sample), ED247_STATUS_SUCCESS);
+
     // Checkpoint n~4
     SAY_SELF("Checkpoint n~4");
     TEST_SYNC();
@@ -344,6 +352,7 @@ TEST_P(StreamContext, MultipleFrame)
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     sample_max_size_bytes = ed247_stream_get_sample_max_size_bytes(stream);
     sample_max_number = ed247_stream_get_sample_max_number(stream);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Sample
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
@@ -365,6 +374,8 @@ TEST_P(StreamContext, MultipleFrame)
           TEST_SYNC();
         }
     }
+
+    ASSERT_EQ(ed247_stream_free_sample(sample), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");
@@ -400,6 +411,7 @@ TEST_P(SignalContext, SingleFrame)
     // Stream
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Allocate samples
     uint32_t s = 0;
@@ -417,6 +429,7 @@ TEST_P(SignalContext, SingleFrame)
         ASSERT_EQ(ed247_signal_allocate_sample(signal, &tmp_sample, NULL), ED247_STATUS_FAILURE);
         s++;
     }
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~1
     // Fill the all signals in the sample before sending
@@ -446,6 +459,9 @@ TEST_P(SignalContext, SingleFrame)
     ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
+
+    ASSERT_EQ(ed247_signal_free_sample(samples[0]), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(samples[1]), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");

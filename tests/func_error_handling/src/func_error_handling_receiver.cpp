@@ -22,6 +22,7 @@ TEST_P(errorHandlingFixture, invalidHeader)
   ASSERT_EQ(ed247_find_streams(_context, "HeaderTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &afdx_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(afdx_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   // The sender shall have send 5 stream: 1 valid, 3 invalid and a last valid one.
   // We should receive the first and the last one: the 3 invalid ones shall have been dropped by wait_during(). See logs.
@@ -52,6 +53,7 @@ TEST_P(errorHandlingFixture, invalidMultichannel)
   ASSERT_EQ(ed247_find_streams(_context, "MultichannelTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &afdx_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(afdx_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   // The sender shall have send 5 stream: 1 valid, 3 invalid and a last valid one.
   // We should receive the first and the last one: the 3 invalid ones shall have been dropped by wait_during(). See logs.
@@ -82,6 +84,7 @@ TEST_P(errorHandlingFixture, invalidDataTimeStamp)
   ASSERT_EQ(ed247_find_streams(_context, "DataTSTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &afdx_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(afdx_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   // The sender shall have send 3 stream: 1 valid, 1 invalid and a last valid one.
   // We should receive the first and the last one: the invalid one shall have been dropped by wait_during(). See logs.
@@ -112,10 +115,13 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_find_streams(_context, "A429TestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &a429_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(a429_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
   ed247_stream_t afdx_stream;
   ASSERT_EQ(ed247_find_streams(_context, "AFDXTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &afdx_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(afdx_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   // The sender shall have send 3 stream: 1 valid, 1 invalid and a last valid one.
   // We should receive the first and the last one: the invalid one shall have been dropped by wait_during(). See logs.

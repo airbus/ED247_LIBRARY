@@ -96,6 +96,7 @@ TEST_P(errorHandlingFixture, invalidHeader)
   ASSERT_EQ(ed247_find_streams(_context, "HeaderTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &forge_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(forge_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   char payload[500];
   uint32_t payload_size = 0;
@@ -152,6 +153,7 @@ TEST_P(errorHandlingFixture, invalidMultichannel)
   ASSERT_EQ(ed247_find_streams(_context, "MultichannelTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &forge_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(forge_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   char payload[500];
   uint32_t payload_size = 0;
@@ -214,6 +216,7 @@ TEST_P(errorHandlingFixture, invalidDataTimeStamp)
   ASSERT_EQ(ed247_find_streams(_context, "DataTSTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &forge_stream), ED247_STATUS_SUCCESS);
   ASSERT_NE(forge_stream, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   char payload[500];
   uint32_t payload_size = 0;
@@ -260,10 +263,13 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_find_streams(_context, "A429TestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &forge_stream_a429), ED247_STATUS_SUCCESS);
   ASSERT_NE(forge_stream_a429, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
   ed247_stream_t forge_stream_afdx;
   ASSERT_EQ(ed247_find_streams(_context, "AFDXTestStream", &streams), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_stream_list_next(streams, &forge_stream_afdx), ED247_STATUS_SUCCESS);
   ASSERT_NE(forge_stream_afdx, nullptr) << "Stream has not been found in ECIC!";
+  ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
   char payload[500];
   uint32_t payload_size = 0;

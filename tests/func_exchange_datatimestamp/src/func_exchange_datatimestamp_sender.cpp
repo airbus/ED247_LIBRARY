@@ -85,6 +85,8 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(malloc_count_stop(), 0);
 
+    ASSERT_EQ(ed247_stream_free_sample(sample), ED247_STATUS_SUCCESS);
+
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");
     TEST_SYNC();

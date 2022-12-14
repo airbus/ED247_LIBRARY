@@ -210,8 +210,12 @@ TEST_P(StreamContext, SingleFrame)
     // Retrieve streams
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream0), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_streams(_context, "Stream1", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream1), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
+
     // Reset globals
     checkpoints = 0;
     stream_name = nullptr;
@@ -291,6 +295,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_streams_register_recv_callback(_context, streams, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_streams_register_recv_callback(_context, NULL, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_streams_register_recv_callback(NULL, streams, callback), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~6.2
     SAY_SELF("Checkpoint n~6.2");
@@ -312,6 +317,7 @@ TEST_P(StreamContext, SingleFrame)
     ASSERT_EQ(ed247_streams_unregister_recv_callback(NULL, streams, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_streams_unregister_recv_callback(_context, NULL, callback), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_streams_unregister_recv_callback(_context, streams, NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~7.1
     SAY_SELF("Checkpoint n~7.1");

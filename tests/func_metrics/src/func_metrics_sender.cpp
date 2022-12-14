@@ -59,7 +59,7 @@ TEST_P(Context, Metrics)
     ed247_signal_t data_signal = NULL;
     void *data_value;
     uint32_t data_size;
-    
+
     uint16_t header_values [] = {
         65000,
         65500,
@@ -67,7 +67,7 @@ TEST_P(Context, Metrics)
         10,
         65500};
     uint16_t header_values_size = 5;
-    
+
     ASSERT_EQ(ed247_find_streams(_context, "MyStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -100,16 +100,16 @@ TEST_P(Context, Metrics)
     ASSERT_EQ(ed247_signal_allocate_sample(data_signal, &data_value, &data_size), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
     // uint16_t data = 0x0000;
-    
+
     ASSERT_EQ(ed247_find_streams(_context, "MySecondStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &second_stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
-    
+
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
     TEST_SYNC();
-    
+
     // Check limit cases
     ASSERT_EQ(ed247_stream_assistant_write_signal(NULL, dummy_header_pid, pid_value, pid_size), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, NULL, pid_value, pid_size), ED247_STATUS_FAILURE);
@@ -131,34 +131,32 @@ TEST_P(Context, Metrics)
         ASSERT_EQ(ed247_stream_assistant_push_sample(NULL, NULL, NULL), ED247_STATUS_FAILURE);
         ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-        
+
         // Checkpoint n~2
         SAY_SELF("Checkpoint n~2");
         TEST_SYNC();
-        
+
         // Send the second stream to check the runtime metrics is not disturbed
         *(uint32_t*)second_stream_value = 0x12345678;
         ed247_stream_push_sample(second_stream, second_stream_value, second_stream_size, NULL, NULL);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-        
+
         // Checkpoint n~3
         SAY_SELF("Checkpoint n~3");
         TEST_SYNC();
     }
-    
+
     // Checkpoint n~4
     SAY_SELF("Checkpoint n~4");
     TEST_SYNC();
 
     // Unload
-    // ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
-    // ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
-    // free(pid_value);
-    // free(sn_value);
-    // free(tts1_value);
-    // free(tts2_value);
-    // free(data_value);
-    // free(second_stream_value);
+    ASSERT_EQ(ed247_signal_free_sample(pid_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(sn_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(tts1_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(tts2_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(data_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_free_sample(second_stream_value), ED247_STATUS_SUCCESS);
 }
 
 /******************************************************************************
@@ -193,7 +191,7 @@ TEST_P(Context, MetricsCross)
         {10, 15, 56, 413},
         {52, 86, 96, 555}
     };
-    
+
     ASSERT_EQ(ed247_find_streams(_context, "MyStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
@@ -226,20 +224,20 @@ TEST_P(Context, MetricsCross)
     ASSERT_EQ(ed247_signal_allocate_sample(data_signal, &data_value, &data_size), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
     // uint16_t data = 0x0000;
-    
+
     ASSERT_EQ(ed247_find_streams(_context, "MySecondStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &second_stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_allocate_sample(second_stream, &second_stream_value, &second_stream_size), ED247_STATUS_SUCCESS);
-    
+
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
     TEST_SYNC();
-    
+
     uint16_t counter = 0;
     for (uint16_t i = 0; i < 4; i++){
         for (uint16_t j = 0; j < 2; j++){
-            
+
             *(uint16_t*)pid_value = (uint16_t)j;
             *(uint16_t*)sn_value = (uint16_t)(header_values_cross[j][i]);
             *(uint32_t*)tts1_value = (uint32_t)10;
@@ -253,16 +251,16 @@ TEST_P(Context, MetricsCross)
             ASSERT_EQ(ed247_stream_assistant_write_signal(assistant, data_signal, data_value, data_size), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_stream_assistant_push_sample(assistant, NULL, NULL), ED247_STATUS_SUCCESS);
             ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-            
+
             // Checkpoint n~2
             SAY_SELF("Checkpoint n~2");
             TEST_SYNC();
-            
+
             // Send the second stream to check the runtime metrics is not disturbed
             *(uint32_t*)second_stream_value = 0x12345678;
             ed247_stream_push_sample(second_stream, second_stream_value, second_stream_size, NULL, NULL);
             ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-            
+
             // Checkpoint n~3
             SAY_SELF("Checkpoint n~3");
             TEST_SYNC();
@@ -270,20 +268,19 @@ TEST_P(Context, MetricsCross)
             counter++;
         }
     }
-    
+
     // Checkpoint n~4
     SAY_SELF("Checkpoint n~4");
     TEST_SYNC();
 
     // Unload
-    // ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
-    // ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
-    // free(pid_value);
-    // free(sn_value);
-    // free(tts1_value);
-    // free(tts2_value);
-    // free(data_value);
-    // free(second_stream_value);
+    ASSERT_EQ(ed247_stream_free_sample(second_stream_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(tts2_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(pid_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(sn_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(tts1_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(tts2_value), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_free_sample(data_value), ED247_STATUS_SUCCESS);
 }
 
 std::vector<TestParams> ecic_files;
@@ -306,7 +303,7 @@ int main(int argc, char **argv)
     SAY("Configuration path: " << config_path);
 
     ecic_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_metrics_send.xml"});
-    
+
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

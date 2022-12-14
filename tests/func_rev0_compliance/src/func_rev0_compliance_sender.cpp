@@ -62,13 +62,14 @@ TEST_P(StreamContext, BackupRecv)
 
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ed247_stream_list_free(streams);
 
     // Checkpoint
     SAY_SELF("Checkpoint");
     TEST_SYNC();
 
     for(unsigned i = 0 ; i < 10 ; i++){
-    
+
         ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
 
         str = strize() << std::setw(100) << std::setfill('0') << i;
@@ -84,7 +85,6 @@ TEST_P(StreamContext, BackupRecv)
     // Checkpoint
     SAY_SELF("Checkpoint");
     TEST_SYNC();
-
 }
 
 TEST_P(StreamContext, BackupSend)
@@ -98,6 +98,7 @@ TEST_P(StreamContext, BackupSend)
 
     ASSERT_EQ(ed247_find_streams(_context, "Stream1", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ed247_stream_list_free(streams);
 
     ASSERT_EQ(ed247_stream_allocate_sample(stream, &sample, &sample_size), ED247_STATUS_SUCCESS);
 
@@ -120,13 +121,14 @@ TEST_P(StreamContext, BackupSend)
         // Checkpoint
         SAY_SELF("Checkpoint n~" << i);
         TEST_SYNC();
-        
+
     }
+
+    ASSERT_EQ(ed247_stream_free_sample(sample), ED247_STATUS_SUCCESS);
 
     // Checkpoint
     SAY_SELF("Checkpoint");
     TEST_SYNC();
-
 }
 
 std::vector<TestParams> files;

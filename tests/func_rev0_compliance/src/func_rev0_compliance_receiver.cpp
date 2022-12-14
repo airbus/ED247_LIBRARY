@@ -53,6 +53,7 @@ TEST_P(StreamContext, BackupRecv)
 
     ASSERT_EQ(ed247_find_streams(_context, "Stream0", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ed247_stream_list_free(streams);
 
     sample_size = sizeof(uint16_t)+
         sizeof(uint16_t)+
@@ -60,7 +61,7 @@ TEST_P(StreamContext, BackupRecv)
         sizeof(uint32_t)+sizeof(uint32_t)+
         100;
     sample = malloc(sample_size);
-    
+
     // Checkpoint
     SAY_SELF("Checkpoint");
     TEST_SYNC();
@@ -94,7 +95,9 @@ TEST_P(StreamContext, BackupRecv)
         TEST_SYNC();
 
     }
-    
+
+    free(sample);
+
     // Checkpoint
     SAY_SELF("Checkpoint");
     TEST_SYNC();
@@ -112,13 +115,14 @@ TEST_P(StreamContext, BakcupSend)
 
     ASSERT_EQ(ed247_find_streams(_context, "Stream1", &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
+    ed247_stream_list_free(streams);
 
     // Checkpoint
     SAY_SELF("Checkpoint");
     TEST_SYNC();
 
     for(unsigned i = 0 ; i < 10 ; i++){
-    
+
         ASSERT_EQ(ed247_wait_frame(_context, &streams, 10000000), ED247_STATUS_SUCCESS);
 
         str = strize() << std::setw(100) << std::setfill('0') << i;

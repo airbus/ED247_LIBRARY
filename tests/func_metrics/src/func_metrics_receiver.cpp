@@ -64,6 +64,8 @@ TEST_P(Context, Metrics)
     ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signal_list, &data_signal), ED247_STATUS_SUCCESS);
     ASSERT_NE(data_signal, (ed247_signal_t)NULL);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Check limit cases
     ASSERT_EQ(ed247_stream_get_assistant(NULL, &assistant), ED247_STATUS_FAILURE);
@@ -79,6 +81,7 @@ TEST_P(Context, Metrics)
     ASSERT_EQ(ed247_stream_list_next(streams, &second_stream), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(second_stream, &assistant), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
@@ -171,6 +174,8 @@ TEST_P(Context, MetricsCross)
     ASSERT_NE(signal_list, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signal_list, &data_signal), ED247_STATUS_SUCCESS);
     ASSERT_NE(data_signal, (ed247_signal_t)NULL);
+    ASSERT_EQ(ed247_signal_list_free(signal_list), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Check limit cases
     ASSERT_EQ(ed247_stream_get_assistant(NULL, &assistant), ED247_STATUS_FAILURE);
@@ -184,6 +189,7 @@ TEST_P(Context, MetricsCross)
 
     ASSERT_EQ(ed247_find_streams(_context, "MySecondStream",&streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &second_stream), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 
     // Checkpoint n~1
     SAY_SELF("Checkpoint n~1");
