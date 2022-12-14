@@ -107,6 +107,14 @@ namespace xml {
     return std::string((const char *)str);
   }
 
+  std::string xml_get_prop(xmlNode* node, const xmlChar* name) {
+    xmlChar* value = xmlGetProp(node, name);
+    if (!value) return std::string();
+    std::string str_value((const char *)value);
+    xmlFree(value);
+    return str_value;
+  }
+
   std::string xmlNode_get_fileline(xmlNode* node) {
     std::string file_line;
     if (node != nullptr) {
@@ -123,38 +131,48 @@ namespace xml {
   template<typename T>
   void xmlAttr_get_value(const xmlAttrPtr attribute, T & variable)
   {
-    std::string value = ::xml::xmlChar_as_string(xmlGetProp(attribute->parent, attribute->name));
+    std::string value = ::xml::xml_get_prop(attribute->parent, attribute->name);
     std::stringstream(value) >> variable;
   }
   template<>
   void xmlAttr_get_value(const xmlAttrPtr attribute, std::string& variable)
   {
-    variable = ::xml::xmlChar_as_string(xmlGetProp(attribute->parent, attribute->name));
+    variable = ::xml::xml_get_prop(attribute->parent, attribute->name);
   }
   template<>
   void xmlAttr_get_value(const xmlAttrPtr attribute, ed247_component_type_t& variable)
   {
-    variable = ed247_component_type_from_string((const char*)xmlGetProp(attribute->parent, attribute->name));
+    xmlChar* value = xmlGetProp(attribute->parent, attribute->name);
+    variable = ed247_component_type_from_string((const char*)value);
+    xmlFree(value);
   }
   template<>
   void xmlAttr_get_value(const xmlAttrPtr attribute, ed247_standard_t& variable)
   {
-    variable = ed247_standard_from_string((const char*)xmlGetProp(attribute->parent, attribute->name));
+    xmlChar* value = xmlGetProp(attribute->parent, attribute->name);
+    variable = ed247_standard_from_string((const char*)value);
+    xmlFree(value);
   }
   template<>
   void xmlAttr_get_value(const xmlAttrPtr attribute, ed247_yesno_t& variable)
   {
-    variable = ed247_yesno_from_string((const char*)xmlGetProp(attribute->parent, attribute->name));
+    xmlChar* value = xmlGetProp(attribute->parent, attribute->name);
+    variable = ed247_yesno_from_string((const char*)value);
+    xmlFree(value);
   }
   template<>
   void xmlAttr_get_value(const xmlAttrPtr attribute, ed247_direction_t& variable)
   {
-    variable = ed247_direction_from_string((const char*)xmlGetProp(attribute->parent, attribute->name));
+    xmlChar* value = xmlGetProp(attribute->parent, attribute->name);
+    variable = ed247_direction_from_string((const char*)value);
+    xmlFree(value);
   }
   template<>
   void xmlAttr_get_value(const xmlAttrPtr attribute, ed247_nad_type_t& variable)
   {
-    variable = ed247_nad_type_from_string((const char*)xmlGetProp(attribute->parent, attribute->name));
+    xmlChar* value = xmlGetProp(attribute->parent, attribute->name);
+    variable = ed247_nad_type_from_string((const char*)value);
+    xmlFree(value);
   }
 
   template<> void xmlAttr_get_value(const xmlAttrPtr attribute, const char * & variable) = delete;
@@ -700,7 +718,7 @@ void ed247::xml::NADSignal::load(const xmlNodePtr xml_node)
     }else if(attr_name.compare(attr::ICD) == 0){
       ::xml::xmlAttr_get_value(xml_attr, _icd);
     }else if(attr_name.compare(attr::Dimensions) == 0){
-      std::string testee(::xml::xmlChar_as_string(xmlGetProp(xml_node,xml_attr->name)));
+      std::string testee(::xml::xml_get_prop(xml_node, xml_attr->name));
       size_t pos = 0;
       uint32_t dimension;
       std::istringstream iss;
@@ -1321,89 +1339,114 @@ void ed247::xml::Component::load(const xmlNodePtr xml_node)
 //
 static std::unique_ptr<ed247::xml::Component> ed247_ecic_load(xmlParserCtxtPtr & p_xml_context, xmlDocPtr & p_xml_doc)
 {
-  xmlDocPtr              p_xsd_doc;
-  xmlSchemaParserCtxtPtr p_xsd_schema_parser;
-  xmlSchemaPtr           p_xsd_schema;
-  xmlSchemaValidCtxtPtr  p_xsd_valid_context;
+  xmlDocPtr              p_xsd_doc = nullptr;
+  xmlSchemaParserCtxtPtr p_xsd_schema_parser = nullptr;
+  xmlSchemaPtr           p_xsd_schema = nullptr;
+  xmlSchemaValidCtxtPtr  p_xsd_valid_context = nullptr;
 
-  // Parse XSD
-  if((p_xsd_doc = xmlCtxtReadMemory(p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to load schema in memory");
+  try {
+    // Parse XSD
+    if((p_xsd_doc = xmlCtxtReadMemory(p_xml_context,xsd_schema,(int)strlen(xsd_schema),nullptr,nullptr,0)) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to load schema in memory");
 
-  // Validate XSD
-  if((p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(p_xsd_doc)) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to create schema parser");
-  if((p_xsd_schema = xmlSchemaParse(p_xsd_schema_parser)) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to create schema");
-  if((p_xsd_valid_context = xmlSchemaNewValidCtxt(p_xsd_schema)) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to validate schema context");
+    // Validate XSD
+    if((p_xsd_schema_parser = xmlSchemaNewDocParserCtxt(p_xsd_doc)) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to create schema parser");
+    if((p_xsd_schema = xmlSchemaParse(p_xsd_schema_parser)) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to create schema");
+    if((p_xsd_valid_context = xmlSchemaNewValidCtxt(p_xsd_schema)) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to validate schema context");
 
-  // Validate XML
-  if(xmlSchemaValidateDoc(p_xsd_valid_context, p_xml_doc) != 0)
-    THROW_PARSER_ERROR(nullptr, "Failed to validate XML document");
+    // Validate XML
+    if(xmlSchemaValidateDoc(p_xsd_valid_context, p_xml_doc) != 0)
+      THROW_PARSER_ERROR(nullptr, "Failed to validate XML document");
 
-  // Load Nodes
-  xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
+    // Load Nodes
+    xmlNodePtr xmlRootNode(xmlDocGetRootElement(p_xml_doc));
 
-  std::unique_ptr<ed247::xml::Component> root(new ed247::xml::Component());
-  root->load(xmlRootNode);
+    std::unique_ptr<ed247::xml::Component> root(new ed247::xml::Component());
+    root->load(xmlRootNode);
 
-  return root;
+    if (p_xsd_valid_context) xmlSchemaFreeValidCtxt(p_xsd_valid_context);
+    if (p_xsd_schema) xmlSchemaFree(p_xsd_schema);
+    if (p_xsd_schema_parser) xmlSchemaFreeParserCtxt(p_xsd_schema_parser);
+    if (p_xsd_doc) xmlFreeDoc(p_xsd_doc);
+
+    return root;
+  }
+  catch (...) {
+    if (p_xsd_valid_context) xmlSchemaFreeValidCtxt(p_xsd_valid_context);
+    if (p_xsd_schema) xmlSchemaFree(p_xsd_schema);
+    if (p_xsd_schema_parser) xmlSchemaFreeParserCtxt(p_xsd_schema_parser);
+    if (p_xsd_doc) xmlFreeDoc(p_xsd_doc);
+    throw;
+  }
 }
 
 std::unique_ptr<ed247::xml::Component> ed247::xml::load_filepath(const std::string & filepath)
 {
-  xmlParserCtxtPtr    p_xml_context;
-  xmlDocPtr           p_xml_doc;
+  xmlParserCtxtPtr    p_xml_context = nullptr;
+  xmlDocPtr           p_xml_doc = nullptr;
 
-  // Create context
-  if((p_xml_context = xmlNewParserCtxt()) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to create XML context pointer");
+  try {
+    // Create context
+    if((p_xml_context = xmlNewParserCtxt()) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to create XML context pointer");
 
-  // Setup error handler
-  xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
+    // Setup error handler
+    xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
-  // Parse XML
-  if((p_xml_doc = xmlCtxtReadFile(p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to read [" << filepath << "]");
+    // Parse XML
+    if((p_xml_doc = xmlCtxtReadFile(p_xml_context,filepath.c_str(),NULL,0)) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to read [" << filepath << "]");
 
-  // Store filename for debugging purpose
-  if (p_xml_doc->name == nullptr) {
-    p_xml_doc->name = strdup(filepath.c_str());
+    // Store filename for debugging purpose
+    if (p_xml_doc->name == nullptr) {
+      p_xml_doc->name = strdup(filepath.c_str());
+    }
+
+    std::unique_ptr<ed247::xml::Component> root = ed247_ecic_load(p_xml_context, p_xml_doc);
+
+    if(p_xml_doc) xmlFreeDoc(p_xml_doc);
+    if(p_xml_context) xmlFreeParserCtxt(p_xml_context);
+
+    return root;
   }
-
-  std::unique_ptr<ed247::xml::Component> root = ed247_ecic_load(p_xml_context, p_xml_doc);
-
-  if(p_xml_doc)
-    xmlFreeDoc(p_xml_doc);
-  if(p_xml_context)
-    xmlFreeParserCtxt(p_xml_context);
-
-  return root;
+  catch(...) {
+    if(p_xml_doc) xmlFreeDoc(p_xml_doc);
+    if(p_xml_context) xmlFreeParserCtxt(p_xml_context);
+    throw;
+  }
 }
 
 std::unique_ptr<ed247::xml::Component> ed247::xml::load_content(const std::string & content)
 {
-  xmlParserCtxtPtr    p_xml_context;
-  xmlDocPtr           p_xml_doc;
+  xmlParserCtxtPtr    p_xml_context = nullptr;
+  xmlDocPtr           p_xml_doc = nullptr;
 
-  // Create context
-  if((p_xml_context = xmlNewParserCtxt()) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to create XML context pointer");
+  try {
+    // Create context
+    if((p_xml_context = xmlNewParserCtxt()) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to create XML context pointer");
 
-  // Setup error handler
-  xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
+    // Setup error handler
+    xmlSetStructuredErrorFunc(nullptr,&libxml_structured_error);
 
-  // Parse XML
-  if((p_xml_doc = xmlCtxtReadMemory(p_xml_context,content.c_str(),(int)content.length(),nullptr,nullptr,0)) == nullptr)
-    THROW_PARSER_ERROR(nullptr, "Failed to read XML file content");
+    // Parse XML
+    if((p_xml_doc = xmlCtxtReadMemory(p_xml_context,content.c_str(),(int)content.length(),nullptr,nullptr,0)) == nullptr)
+      THROW_PARSER_ERROR(nullptr, "Failed to read XML file content");
 
-  std::unique_ptr<ed247::xml::Component> root = ed247_ecic_load(p_xml_context, p_xml_doc);
+    std::unique_ptr<ed247::xml::Component> root = ed247_ecic_load(p_xml_context, p_xml_doc);
 
-  if(p_xml_doc)
-    xmlFreeDoc(p_xml_doc);
-  if(p_xml_context)
-    xmlFreeParserCtxt(p_xml_context);
+    if(p_xml_doc) xmlFreeDoc(p_xml_doc);
+    if(p_xml_context) xmlFreeParserCtxt(p_xml_context);
 
-  return root;
+    return root;
+  }
+  catch(...) {
+    if(p_xml_doc) xmlFreeDoc(p_xml_doc);
+    if(p_xml_context) xmlFreeParserCtxt(p_xml_context);
+    throw;
+  }
 }
+
