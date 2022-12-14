@@ -97,6 +97,14 @@ namespace ed247 {
   }
 }
 
+
+// Some static builds of libXML2 with mingw has an issue with symbol xmlFree
+// In fact, xmlFree() only call free(), so we can use free() instead of xmlFree()
+#if _WIN32
+# define xmlFree(p) free(p)
+#endif
+
+
 /*
  * libXML2 C++ wrapping tools
  */
