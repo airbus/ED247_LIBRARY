@@ -78,7 +78,9 @@ enum test_actor_id_t {
 
 
 struct TestParams {
+  TestParams(test_actor_id_t id, std::string path) : actor_id(id), gtest_padding_bug_hack(0), filepath(path) {}
   test_actor_id_t actor_id;
+  uint32_t gtest_padding_bug_hack;   // Workaround GTEST #3805. TODO: update GTEST version.
   std::string filepath;
   uint32_t other_actor_id() const { return (actor_id == TEST_ACTOR1_ID)? TEST_ACTOR2_ID : TEST_ACTOR1_ID; }
 };
