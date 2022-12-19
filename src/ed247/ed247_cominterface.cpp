@@ -331,15 +331,14 @@ void ed247::udp::Emitter::send_frame(const void* payload, const uint32_t payload
 //
 // Receiver
 //
-ed247::udp::Receiver::frame_t ed247::udp::Receiver::_receive_frame;
-
 ed247::udp::Receiver::Receiver(Context* context,
                                socket_address_t from_address,
                                socket_address_t multicast_interface,
                                socket_address_t multicast_group_address,
                                receive_callback_t callback) :
   Transceiver(context, from_address),
-  _receive_callback(callback)
+  _receive_callback(callback),
+  _receive_frame(context->get_receiver_set().get_receive_frame())
 {
   if (multicast_group_address.is_multicast()) {
     // In multicast: join the group 'multicast_group_address' on interface 'multicast_interface'.

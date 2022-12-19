@@ -101,6 +101,13 @@ namespace ed247 {
     class Receiver : public Transceiver
     {
     public:
+      static const uint32_t MAX_FRAME_SIZE{65508};
+      struct frame_t
+      {
+        char     payload[MAX_FRAME_SIZE];
+        uint32_t size{MAX_FRAME_SIZE};
+      };
+
       using receive_callback_t = std::function<void(const char* payload, uint32_t size)>;
 
       Receiver(Context*         context,
@@ -111,15 +118,8 @@ namespace ed247 {
       void receive();
 
     private:
-      static const uint32_t MAX_FRAME_SIZE{65508};
-      struct frame_t
-      {
-        char     payload[MAX_FRAME_SIZE];
-        uint32_t size{MAX_FRAME_SIZE};
-      };
-
       receive_callback_t  _receive_callback;
-      static frame_t      _receive_frame;    // static: all receive will share the same memory to prevent 65k alloc per receiver
+      frame_t&            _receive_frame;     // Reference to ReceiverSet::_receive_frame
 
       ED247_FRIEND_TEST();
     };
@@ -146,8 +146,13 @@ namespace ed247 {
       ed247_status_t wait_frame(int32_t timeout_us);
       ed247_status_t wait_during(int32_t duration_us);
 
+      // Frame to be used by the receivers.
+      // All receivers of the same set will share the same memory to prevent 65k alloc per receiver
+      Receiver::frame_t& get_receive_frame() { return _receive_frame; }
+
     private:
       std::vector<std::unique_ptr<Receiver>> _receivers;
+      Receiver::frame_t                      _receive_frame;
 
       struct select_options_s {
         fd_set fd;
