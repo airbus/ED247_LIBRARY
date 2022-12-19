@@ -511,7 +511,7 @@ std::ostream & operator << (std::ostream & os, const ed247::udp::socket_address_
   std::string ipaddr;
 #ifdef _MSC_VER
   char straddr[INET_ADDRSTRLEN];
-  static struct in_addr sin_addr_temp = socket_address.sin_addr;
+  struct in_addr sin_addr_temp = socket_address.sin_addr;
   InetNtop(AF_INET, &sin_addr_temp, straddr, INET_ADDRSTRLEN);
   ipaddr = std::string(straddr);
 #elif __unix__

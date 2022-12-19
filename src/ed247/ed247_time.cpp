@@ -49,8 +49,8 @@ namespace ed247 {
     clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
     return ((uint64_t)tp.tv_sec) * 1000000LL + ((uint64_t)tp.tv_nsec) / 1000LL;
 #else
-    static LARGE_INTEGER s_frequency;
-    static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
+    LARGE_INTEGER s_frequency;
+    BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
     if (s_use_qpc) {
       LARGE_INTEGER now;
       QueryPerformanceCounter(&now);
