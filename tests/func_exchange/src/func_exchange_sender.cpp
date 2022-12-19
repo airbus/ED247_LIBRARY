@@ -239,9 +239,6 @@ TEST_P(StreamContext, SingleFrame)
     }
     ASSERT_EQ(ed247_stream_free_sample(sample[0]), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_free_sample(sample[1]), ED247_STATUS_SUCCESS);
-
-    // Unload
-    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 }
 
 /******************************************************************************
@@ -321,9 +318,6 @@ TEST_P(SimpleStreamContext, SingleFrame)
     // Checkpoint n~4
     SAY_SELF("Checkpoint n~4");
     TEST_SYNC();
-
-    // Unload
-    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 }
 
 /******************************************************************************
@@ -380,9 +374,6 @@ TEST_P(StreamContext, MultipleFrame)
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");
     TEST_SYNC();
-
-    // Unload
-    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 }
 
 /******************************************************************************
@@ -466,9 +457,6 @@ TEST_P(SignalContext, SingleFrame)
     // Checkpoint n~2
     SAY_SELF("Checkpoint n~2");
     TEST_SYNC();
-
-    // Unload
-    ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
 }
 
 std::vector<TestParams> stream_files;

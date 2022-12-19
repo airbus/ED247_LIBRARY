@@ -73,26 +73,35 @@ TEST_P(Context, Metrics)
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_NE(assistant, (ed247_stream_assistant_t)NULL);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderPID" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_pid), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_pid, (ed247_signal_t)NULL);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &pid_value, &pid_size), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderSN" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_sn), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_sn, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &sn_value, &sn_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderTTS1" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts1), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts1, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts1, &tts1_value, &tts1_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderTTS2" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts2), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts2, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts2, &tts2_value, &tts2_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "Data" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &data_signal), ED247_STATUS_SUCCESS);
@@ -197,26 +206,35 @@ TEST_P(Context, MetricsCross)
     ASSERT_EQ(ed247_stream_list_free(streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_get_assistant(stream, &assistant), ED247_STATUS_SUCCESS);
     ASSERT_NE(assistant, (ed247_stream_assistant_t)NULL);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderPID" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_pid), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_pid, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &pid_value, &pid_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderSN" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_sn), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_sn, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_pid, &sn_value, &sn_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderTTS1" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts1), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts1, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts1, &tts1_value, &tts1_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "DummyHeaderTTS2" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &dummy_header_tts2), ED247_STATUS_SUCCESS);
     ASSERT_NE(dummy_header_tts2, (ed247_signal_t)NULL);
     ASSERT_EQ(ed247_signal_allocate_sample(dummy_header_tts2, &tts2_value, &tts2_size), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_signal_list_free(signals), ED247_STATUS_SUCCESS);
+
     ASSERT_EQ(ed247_find_signals(_context, "Data" , &signals), ED247_STATUS_SUCCESS);
     ASSERT_NE(signals, (ed247_signal_list_t)NULL);
     ASSERT_EQ(ed247_signal_list_next(signals, &data_signal), ED247_STATUS_SUCCESS);
@@ -279,7 +297,6 @@ TEST_P(Context, MetricsCross)
     ASSERT_EQ(ed247_signal_free_sample(pid_value), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_free_sample(sn_value), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_free_sample(tts1_value), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(ed247_signal_free_sample(tts2_value), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_signal_free_sample(data_value), ED247_STATUS_SUCCESS);
 }
 

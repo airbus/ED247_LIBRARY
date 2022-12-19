@@ -373,6 +373,7 @@ TEST(UtApiStreams, CheckRegexStreamFromContext)
     uint32_t size;
     ASSERT_EQ(ed247_channel_list_size(channel_list, &size), ED247_STATUS_SUCCESS);
     ASSERT_EQ(size, (uint32_t)2);
+    ASSERT_EQ(ed247_channel_list_free(channel_list), ED247_STATUS_SUCCESS);
 
     // Get a single channel and retrieve streams
     ASSERT_EQ(ed247_find_channels(context, "MultipleStreamsChannel2", &channel_list), ED247_STATUS_SUCCESS);
