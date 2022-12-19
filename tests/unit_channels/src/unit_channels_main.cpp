@@ -99,7 +99,7 @@ TEST_P(ChannelContext, MultiPushPop)
         auto channel1 = channels1[0];
 
         // Push stream samples
-        for(auto stream : channel0->streams()){
+        for(auto stream : channel0->_streams){
             ed247::StreamSample sample(stream.second->get_sample_max_size_bytes());
             bool full;
             for(uint32_t i = 0 ; i < stream.second->get_sample_max_number() ; i++){
@@ -143,7 +143,7 @@ TEST_P(ChannelContext, MultiPushPop)
                 frame_index += sizeof(uint32_t);
             }
         }
-        for(auto stream : channel0->streams()){
+        for(auto stream : channel0->_streams){
             auto sid = ntohs(*(ed247_uid_t*)((char*)channel0->_buffer.data()+frame_index));
             frame_index += sizeof(ed247_uid_t);
             ASSERT_EQ(sid, stream.first);
@@ -175,7 +175,7 @@ TEST_P(ChannelContext, MultiPushPop)
 
         // Pop sample & check samples
         bool empty;
-        for(auto stream : channel1->streams()){
+        for(auto stream : channel1->_streams){
             for(uint32_t i = 0 ; i < stream.second->get_sample_max_number() ; i++){
                 malloc_count_start();
                 auto& sample = stream.second->pop_sample(&empty);

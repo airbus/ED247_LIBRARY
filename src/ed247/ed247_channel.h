@@ -32,7 +32,7 @@
 
 // base structures for C API
 struct ed247_internal_channel_t {};
-
+struct ed247_internal_channel_list_t { virtual ~ed247_internal_channel_list_t() {} };
 
 namespace ed247
 {
@@ -61,7 +61,7 @@ namespace ed247
     // Stream access
     stream_list_t find_streams(std::string strregex);
     stream_ptr_t get_stream(std::string str_name);
-    map_uid_stream_t& streams() { return _streams; }
+    ed247_internal_stream_list_t* get_client_streams() { return _client_streams.get(); }
 
     // Encode the channel and send it.
     // Nothing is send if there are no data in streams.
@@ -80,6 +80,8 @@ namespace ed247
     FrameHeader         _header;
     Sample              _buffer;
     void*               _user_data;
+
+    std::unique_ptr<ed247_internal_stream_list_t> _client_streams;
 
     ED247_FRIEND_TEST();
   };

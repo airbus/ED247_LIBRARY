@@ -31,6 +31,7 @@
 
 // base structures for C API
 struct ed247_internal_stream_t {};
+struct ed247_internal_stream_list_t { virtual ~ed247_internal_stream_list_t() {} };
 struct ed247_internal_channel_t;
 struct ed247_internal_stream_assistant_t;
 
@@ -80,6 +81,7 @@ namespace ed247
     virtual uint32_t get_sampling_period_us()              { return 0;                                 }
     ed247_internal_stream_assistant_t* get_api_assistant() { return _assistant.get();                  }
     signal_list_t& get_signals()                           { return _signals;                          }
+    ed247_internal_signal_list_t*  get_client_signals()    { return _client_signals.get();             }
     signal_list_t find_signals(std::string str_regex);
     signal_ptr_t get_signal(std::string str_name);
 
@@ -124,6 +126,7 @@ namespace ed247
     uint32_t                                            _sample_next_header_size;
     uint32_t                                            _max_size;
     signal_list_t                                       _signals;
+    std::unique_ptr<ed247_internal_signal_list_t>       _client_signals;
     std::unique_ptr<ed247_internal_stream_assistant_t>  _assistant;
     StreamSampleRingBuffer                              _recv_stack;
     StreamSampleRingBuffer                              _send_stack;

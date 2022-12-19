@@ -25,6 +25,7 @@
 #include "ed247_stream.h"
 #include "ed247_stream_assistant.h"
 #include "ed247_context.h"
+#include "ed247_client_list.h"
 #include "ed247_bswap.h"
 #include "ed247_logs.h"
 #include <regex>
@@ -38,6 +39,16 @@ typedef uint16_t SERIAL_sample_size_t;
 typedef uint16_t AUDIO_sample_size_t;
 typedef uint16_t VNAD_sample_size_t;
 
+//
+// Client lists (ed247.h interface)
+//
+namespace ed247 {
+  using ClientSignalList = ed247::client_list_container<ed247_internal_signal_list_t,
+                                                        ed247::Signal,
+                                                        ed247::signal_list_t,
+                                                        ed247::ContextOwned::True>;
+}
+
 
 //
 // Stream initialization
@@ -46,6 +57,7 @@ ed247::Stream::Stream(Context* context, const ed247::xml::Stream* configuration,
   _context(context),
   _configuration(configuration),
   _sample_size_size(sample_size_size),
+  _client_signals(ed247::ClientSignalList::wrap(_signals)),
   _recv_stack(_configuration->_sample_max_number, _configuration->_sample_max_size_bytes),
   _send_stack(_configuration->_sample_max_number, _configuration->_sample_max_size_bytes),
   _ed247_api_channel(ed247_api_channel),

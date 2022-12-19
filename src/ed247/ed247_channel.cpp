@@ -24,10 +24,22 @@
  *****************************************************************************/
 #include "ed247_channel.h"
 #include "ed247_context.h"
+#include "ed247_client_list.h"
 #include "ed247_logs.h"
 #include <regex>
 
 typedef uint16_t stream_size_t;
+
+
+//
+// Client lists (ed247.h interface)
+//
+namespace ed247 {
+  using ClientStreamList = ed247::client_list_container<ed247_internal_stream_list_t,
+                                                        ed247::Stream,
+                                                        ed247::Channel::map_uid_stream_t,
+                                                        ed247::ContextOwned::True>;
+}
 
 //
 // Channel
@@ -38,7 +50,8 @@ ed247::Channel::Channel(Context* context, const xml::Channel* configuration) :
   _configuration(configuration),
   _com_interface(context),
   _header(configuration->_header, context->get_identifier(), get_name()),
-  _user_data(NULL)
+  _user_data(NULL),
+  _client_streams(ed247::ClientStreamList::wrap(_streams))
 {
   uint32_t capacity = 0;
   capacity += _header.get_size();

@@ -66,6 +66,11 @@ namespace ed247
     StreamSet& get_stream_set()          { return _stream_set;   }
     ChannelSet& get_channel_set()        { return _channel_set;  }
 
+    // Client lists (ed247.h interface)
+    ed247_internal_stream_list_t*  get_client_streams()           { return _client_streams.get();           }
+    ed247_internal_stream_list_t*  get_client_streams_with_data() { return _client_streams_with_data.get(); }
+    ed247_internal_channel_list_t* get_client_channels()          { return _client_channels.get();          }
+
 
     // Send all pushed streams in their respective channels/CommInterface
     void send_pushed_samples();
@@ -78,11 +83,16 @@ namespace ed247
     Context(std::unique_ptr<xml::Component>&& configuration);
 
     std::unique_ptr<xml::Component>  _configuration;
+    void*                            _user_data;
+
     udp::ReceiverSet                 _receiver_set;
     SignalSet                        _signal_set;
     StreamSet                        _stream_set;
     ChannelSet                       _channel_set;
-    void*                            _user_data;
+
+    std::unique_ptr<ed247_internal_stream_list_t>  _client_streams;
+    std::unique_ptr<ed247_internal_stream_list_t>  _client_streams_with_data;
+    std::unique_ptr<ed247_internal_channel_list_t> _client_channels;
 
     ED247_FRIEND_TEST();
   };

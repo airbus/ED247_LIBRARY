@@ -23,7 +23,48 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #include "ed247_context.h"
+#include "ed247_client_list.h"
 #include "ed247_logs.h"
+
+//
+// Client lists (ed247.h interface)
+//
+namespace ed247 {
+  using ClientStreamList = ed247::client_list_container<ed247_internal_stream_list_t,
+                                                        ed247::Stream,
+                                                        ed247::stream_map_t,
+                                                        ed247::ContextOwned::True>;
+
+  using ClientChannelList = ed247::client_list_container<ed247_internal_channel_list_t,
+                                                         ed247::Channel,
+                                                         ed247::channel_map_t,
+                                                         ed247::ContextOwned::True>;
+
+
+  // A stream list where get_next() return the next stream which has received data
+  struct ClientStreamListWithData : public ClientStreamList
+  {
+    ClientStreamListWithData(ed247::stream_map_t& container) :
+      client_list_container(&container, false)
+    {
+    }
+
+    virtual ed247::Stream* get_next() override
+    {
+      ClientStreamList::get_next();
+      _iterator = std::find_if(_iterator,
+                               _container->end(),
+                               [](const ed247::stream_map_t::value_type& sp) {
+                                 return sp.second->get_incoming_sample_number() > 0;
+                               });
+      return get_current();
+    }
+  };
+}
+
+//
+// Context
+//
 
 ed247::Context* ed247::Context::create_from_filepath(std::string ecic_filepath)
 {
@@ -42,7 +83,10 @@ ed247::Context* ed247::Context::create_from_content(std::string ecic_content)
 ed247::Context::Context(std::unique_ptr<ed247::xml::Component>&& configuration):
   _configuration(std::move(configuration)),
   _stream_set(this),
-  _channel_set(this)
+  _channel_set(this),
+  _client_streams(ed247::ClientStreamList::wrap(_stream_set.streams())),
+  _client_streams_with_data(new ed247::ClientStreamListWithData(_stream_set.streams())),
+  _client_channels(ed247::ClientChannelList::wrap(_channel_set.channels()))
 {
   for(const xml::Channel& channel_configuration: _configuration->_channel_list) {
     _channel_set.create(&channel_configuration);
