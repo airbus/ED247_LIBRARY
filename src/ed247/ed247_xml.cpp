@@ -448,10 +448,6 @@ void ed247::xml::A664Stream::load(const xmlNodePtr xml_node)
     }else{
       THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::A664_Stream << "]");
     }
-    // Check message enable size & sample_max_number
-    if(_enable_message_size == ED247_YESNO_NO && _sample_max_number > 1) {
-      THROW_PARSER_ERROR(xml_node, "A664 Stream cannot have a SampleMaxNumber of [" << _sample_max_number << "] and not enabling Message Size encoding in frame");
-    }
   }
 }
 
