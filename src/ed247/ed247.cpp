@@ -28,17 +28,17 @@
 #include "ed247_logs.h"
 
 
-#ifdef _PRODUCT_VERSION
-const char* _ed247_version = _PRODUCT_VERSION;
-#else
-const char* _ed247_version = "unversioned";
+#ifndef _PRODUCT_VERSION
+# error _PRODUCT_VERSION macro not defined! Please compile with -D_PRODUCT_VERSION=<version>
+#endif
+#ifndef _PRODUCT_NAME
+# error _PRODUCT_NAME macro not defined! Please compile with -D_PRODUCT_NAME=<version>
 #endif
 
-#ifdef _PRODUCT_NAME
-const char* _ed247_name = _PRODUCT_NAME;
-#else
-const char* _ed247_name = "unnamed";
-#endif
+#define QUOTE(m) #m
+#define STRING_MACRO(m) QUOTE(m)
+const char* FULL_VERSION_TEXT = STRING_MACRO(_PRODUCT_NAME) " version " STRING_MACRO(_PRODUCT_VERSION);
+
 
 #define LIBED247_CATCH(topic)                                           \
   catch(std::exception &ex)                                             \
@@ -66,12 +66,12 @@ typedef ed247::client_list<ed247_internal_signal_list_t, ed247::Signal>   ed247_
  * ========================================================================= */
 const char * ed247_get_implementation_name()
 {
-  return _ed247_name;
+  return STRING_MACRO(_PRODUCT_NAME);
 }
 
 const char * ed247_get_implementation_version()
 {
-  return _ed247_version;
+  return STRING_MACRO(_PRODUCT_VERSION);
 }
 
 extern LIBED247_EXPORT ed247_status_t ed247_set_log(

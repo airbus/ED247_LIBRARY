@@ -57,8 +57,8 @@ target_include_directories(ed247_objects
 
 target_compile_definitions(ed247_objects
     PRIVATE
-        "_PRODUCT_VERSION=\"${VERSION}\""
-        "_PRODUCT_NAME=\"${CMAKE_PROJECT_NAME}\""
+        "_PRODUCT_VERSION=${VERSION}"
+        "_PRODUCT_NAME=${CMAKE_PROJECT_NAME}"
         $<$<PLATFORM_ID:Windows>:LIBED247_EXPORTS>
 )
 
