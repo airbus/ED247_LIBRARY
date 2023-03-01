@@ -109,7 +109,7 @@ namespace ed247 {
     struct system_socket_map_t {
 
       // Return an existing socket or create a new one
-      ed247_socket_t create(const socket_address_t& address) {
+      ed247_socket_t create(const socket_address_t& address, EnableReuseAddr enableReuseAddr) {
         socket_map_t::iterator isock = _map.find(address);
         if (isock != _map.end()) {
           isock->second.count++;
@@ -121,11 +121,12 @@ namespace ed247 {
           ed247_socket_t socket = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
           SYSTEM_SOCKET_ASSERT(socket != INVALID_SOCKET, address, INVALID_SOCKET, "Failed to create the socket!");
 
-          // Allow to reuse address
-          // In multicast, this is needed because several processes may bind to the same port
-          // In unicast, this shall not be done...
-          sockerr = setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
-          SYSTEM_SOCKET_ASSERT(sockerr == 0, address, socket, "Failed to set socket options SO_REUSEADDR.");
+          if (enableReuseAddr == EnableReuseAddr::True) {
+            // SO_REUSEADDR shall be enabled for multicast receivers local socket because
+            // it may have several receivers on the same host
+            sockerr = setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
+            SYSTEM_SOCKET_ASSERT(sockerr == 0, address, socket, "Failed to set socket options SO_REUSEADDR.");
+          }
 
           // Set to non blocking
 #ifdef _WIN32
@@ -252,7 +253,7 @@ void ed247::udp::ComInterface::load(const xml::ComInterface& configuration,
       socket_address_t from_address(socket_configuration._src_ip_address, socket_configuration._src_ip_port);
 
       if (destination_address.is_multicast()) {
-        // In multicast, we can specify the interface we want to send packets /to.
+        // In multicast, we can specify the interface we want to send packets to.
         // The ECIC may provide two interfaces: src_ip_address and mc_ip_address.
         // According to ED27 specification, the src_ip_address have priority.
         if (from_address.is_any_addr()) from_address.set_ip_address(socket_configuration._mc_ip_address);
@@ -279,12 +280,12 @@ void ed247::udp::ComInterface::send_frame(const void* payload, const uint32_t pa
 //
 // Transceiver
 //
-ed247::udp::Transceiver::Transceiver(Context* context, const socket_address_t& socket_address) :
+ed247::udp::Transceiver::Transceiver(Context* context, const socket_address_t& socket_address, EnableReuseAddr enableReuseAddr) :
   _context(context),
   _socket_address(socket_address)
 {
   MEMCHECK_NEW(this, "Transceiver " << _socket_address);
-  _socket = system_socket_map.create(_socket_address);
+  _socket = system_socket_map.create(_socket_address, enableReuseAddr);
 }
 
 ed247::udp::Transceiver::~Transceiver() {
@@ -336,7 +337,9 @@ ed247::udp::Receiver::Receiver(Context* context,
                                socket_address_t multicast_interface,
                                socket_address_t multicast_group_address,
                                receive_callback_t callback) :
-  Transceiver(context, from_address),
+  Transceiver(context,
+              from_address,
+              (multicast_group_address.is_multicast())? EnableReuseAddr::True : EnableReuseAddr::False),
   _receive_callback(callback),
   _receive_frame(context->get_receiver_set().get_receive_frame())
 {

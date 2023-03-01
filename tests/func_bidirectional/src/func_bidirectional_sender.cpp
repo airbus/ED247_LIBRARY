@@ -117,7 +117,7 @@ TEST_P(bidirectionalFixture, loopback_same_channels)
   ASSERT_EQ(ed247_stream_push_sample(bidir_stream, output_payload, 4, NULL, NULL), ED247_STATUS_SUCCESS);
 
   ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
-  TEST_SYNC("Unicast loopback on different channels");
+  TEST_SYNC("Unicast loopback on same channel");
 
   // Receive data we just have sent
   ASSERT_EQ(ed247_wait_frame(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
@@ -133,7 +133,7 @@ TEST_P(bidirectionalFixture, loopback_same_channels)
   ASSERT_EQ(ed247_stream_push_sample(bidir_stream_mc, output_payload, 4, NULL, NULL), ED247_STATUS_SUCCESS);
 
   ASSERT_EQ(ed247_send_pushed_samples(context), ED247_STATUS_SUCCESS);
-  TEST_SYNC("Multicast loopback on different channels");
+  TEST_SYNC("Multicast loopback on same channel");
 
   // Receive data we just have sent
   ASSERT_EQ(ed247_wait_frame(context, nullptr, ED247_ONE_SECOND), ED247_STATUS_SUCCESS);
