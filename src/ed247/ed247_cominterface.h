@@ -67,12 +67,6 @@ namespace ed247 {
 
   namespace udp {
 
-    // Define if the Transceiver socket will have the SO_REUSEADDR option
-    enum class EnableReuseAddr {
-      False = false,
-      True = true
-    };
-
     //
     // Transceiver (aka ECIC UdpSocket)
     // Hold a system socket and prepare it for transceiving.
@@ -80,7 +74,7 @@ namespace ed247 {
     //
     class Transceiver {
     public:
-      Transceiver(Context* context, const socket_address_t& socket_address, EnableReuseAddr enableReuseAddr = EnableReuseAddr::False);
+      Transceiver(Context* context, const socket_address_t& socket_address);
       ~Transceiver();
 
       Transceiver(const Transceiver&) = delete;
@@ -119,7 +113,6 @@ namespace ed247 {
       Receiver(Context*         context,
                socket_address_t from_address,
                socket_address_t multicast_interface,
-               socket_address_t multicast_group_address,
                receive_callback_t callback);
       void receive();
 
