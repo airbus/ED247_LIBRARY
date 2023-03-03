@@ -9,41 +9,30 @@ namespace {
   // Size is the length of the payload (so the number of signals is size/signal_size)
   void swap_copy(const char* source_data, char* dest_data, uint32_t size, const ed247_nad_type_t& nad_type)
   {
-    uint32_t pos = 0;
-    while (pos < size) {
-      switch(nad_type) {
-      case ED247_NAD_TYPE_INT8:
-      case ED247_NAD_TYPE_UINT8:
-        *((uint8_t*)dest_data + pos) = *((uint8_t*)source_data + pos);
-        break;
-      case ED247_NAD_TYPE_INT16:
-        *((uint16_t*)dest_data + pos) = bswap_16(*((uint16_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_INT32:
-        *((uint32_t*)dest_data + pos) = bswap_32(*((uint32_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_INT64:
-        *((uint64_t*)dest_data + pos) = bswap_64(*((uint64_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_UINT16:
-        *((uint16_t*)dest_data + pos) = bswap_16(*((uint16_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_UINT32:
-        *((uint32_t*)dest_data + pos) = bswap_32(*((uint32_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_UINT64:
-        *((uint64_t*)dest_data + pos) = bswap_64(*((uint64_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_FLOAT32:
-        *((uint32_t*)dest_data + pos) = bswap_32(*((uint32_t*)source_data + pos));
-        break;
-      case ED247_NAD_TYPE_FLOAT64:
-        *((uint64_t*)dest_data + pos) = bswap_64(*((uint64_t*)source_data + pos));
-        break;
-      default:
-        THROW_ED247_ERROR("Unexpected NAD type: " << nad_type);
+    uint32_t element_size = ed247::xml::Signal::get_nad_type_size(nad_type);
+
+    if (element_size == 1) {
+      memcpy(dest_data, source_data, size);
+    }
+    else
+    {
+      uint32_t pos = 0;
+      while (pos < size) {
+        switch(element_size) {
+        case 2:
+          *(uint16_t*)(dest_data + pos) = bswap_16(*(uint16_t*)(source_data + pos));
+          break;
+        case 4:
+          *(uint32_t*)(dest_data + pos) = bswap_32(*(uint32_t*)(source_data + pos));
+          break;
+        case 8:
+          *(uint64_t*)(dest_data + pos) = bswap_64(*(uint64_t*)(source_data + pos));
+          break;
+        default:
+          THROW_ED247_ERROR("Unexpected NAD size: " << element_size);
+        }
+        pos += element_size;
       }
-      pos += ed247::xml::Signal::get_nad_type_size(nad_type);
     }
   }
 }
