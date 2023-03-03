@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_2" Comment="" StandardRevision="A" Identifier="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+  <Channels>
+	<MultiChannel Name="Channel" Comment="">
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="25890" Direction="Out"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Streams>
+		<NAD_Stream UID="0" Name="NADStream" Direction="Out" SampleMaxSizeBytes="177" SampleMaxNumber="2">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="NAD_INT8"    Type="int8"    Dimensions="2x2" ByteOffset="0" />
+            <Signal Name="NAD_INT16"   Type="int16"   Dimensions="8"   ByteOffset="4" />
+            <Signal Name="NAD_INT32"   Type="int32"   Dimensions="4"   ByteOffset="20" />
+            <Signal Name="NAD_INT64"   Type="int64"   Dimensions="3"   ByteOffset="36" />
+            <Signal Name="NAD_UINT8"   Type="uint8"   Dimensions="1"   ByteOffset="60" />
+            <Signal Name="NAD_UINT16"  Type="uint16"  Dimensions="2x3" ByteOffset="61" />
+            <Signal Name="NAD_UINT32"  Type="uint32"  Dimensions="7"   ByteOffset="73" />
+            <Signal Name="NAD_UINT64"  Type="uint64"  Dimensions="4"   ByteOffset="101" />
+            <Signal Name="NAD_FLOAT32" Type="float32" Dimensions="5"   ByteOffset="133" />
+            <Signal Name="NAD_FLOAT64" Type="float64" Dimensions="3"   ByteOffset="153" />
+          </Signals>
+		</NAD_Stream>
+		<VNAD_Stream UID="1" Name="VNADStream" Direction="Out" SampleMaxNumber="2">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="VNAD_INT8"    Type="int8"    MaxNumber="10" Position="0" />
+            <Signal Name="VNAD_INT16"   Type="int16"   MaxNumber="10" Position="4" />
+            <Signal Name="VNAD_INT32"   Type="int32"   MaxNumber="10" Position="20" />
+            <Signal Name="VNAD_INT64"   Type="int64"   MaxNumber="10" Position="36" />
+            <Signal Name="VNAD_UINT8"   Type="uint8"   MaxNumber="10" Position="60" />
+            <Signal Name="VNAD_UINT16"  Type="uint16"  MaxNumber="10" Position="61" />
+            <Signal Name="VNAD_UINT32"  Type="uint32"  MaxNumber="10" Position="73" />
+            <Signal Name="VNAD_UINT64"  Type="uint64"  MaxNumber="10" Position="101" />
+            <Signal Name="VNAD_FLOAT32" Type="float32" MaxNumber="10" Position="133" />
+            <Signal Name="VNAD_FLOAT64" Type="float64" MaxNumber="10" Position="153" />
+          </Signals>
+		</VNAD_Stream>
+      </Streams>
+    </MultiChannel>
+  </Channels>
+</ED247ComponentInstanceConfiguration>
