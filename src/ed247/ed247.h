@@ -282,7 +282,8 @@ extern LIBED247_EXPORT const char * ed247_get_implementation_version();
  * @brief Setup the logging parameters
  * @details Environment variables have the priority: This function will be ignored if they are set.
  * @ingroup global
- * @param[in] Logging level
+ * @param[in] log_level Logging level
+ * @param[in] log_filepath Log file path
  * @retval ED247_STATUS_SUCCESS
  */
 extern LIBED247_EXPORT ed247_status_t ed247_set_log(
@@ -293,7 +294,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_set_log(
  * @brief Setup the logging level (see ::ed247_log_level_t)
  * @details Environment variables have the priority: This function will be ignored if they are set.
  * @ingroup global
- * @param[in] Logging level
+ * @param[in] log_level Logging level
  * @retval ED247_STATUS_SUCCESS
  */
 extern LIBED247_EXPORT ed247_status_t ed247_set_log_level(
@@ -302,7 +303,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_set_log_level(
 /**
  * @brief Get the logging level (see ::ed247_log_level_t)
  * @ingroup global
- * @param[out] Logging level
+ * @param[out] log_level Logging level
  * @retval ED247_STATUS_SUCCESS
  */
 extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
@@ -329,7 +330,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_get_log_level(
  * @brief Loading function: the entry point of the library
  * @ingroup context_init
  * @param[in] ecic_file_path The path to the ECIC configuration file
- * @param[in] configuration The configuration of the LIBED247
  * @param[out] context The loaded context identifier
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE An error occurred during the load phase (xml parsing or internal loading)
@@ -342,7 +342,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_file(
  * @brief Loading function: the entry point of the library
  * @ingroup context_init
  * @param[in] ecic_file_content The content of the ECIC configuration file
- * @param[in] configuration The configuration of the LIBED247
  * @param[out] context The loaded context identifier
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE An error occurred during the load phase (xml parsing or internal loading)
@@ -359,7 +358,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_load_content(
  * @retval ED247_STATUS_FAILURE
  */
 extern LIBED247_EXPORT ed247_status_t ed247_unload(
-    ed247_context_t ed247_context);
+    ed247_context_t context);
 
 /**
  * @brief Assign user data to the context
@@ -617,6 +616,7 @@ typedef ed247_status_t (*ed247_stream_recv_callback_t)(ed247_context_t context, 
 /**
  * @brief Register a callback (in a stream) which is called once a frame is received and decoded.
  * @ingroup context_callback
+ * @param[in] context
  * @param[in] stream Stream identifier
  * @param[in] callback The callback function
  * @retval ED247_STATUS_SUCCESS
@@ -630,6 +630,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_register_recv_callback(
 /**
  * @brief Unregister a callback (from a stream) which is called once a frame is received and decoded.
  * @ingroup context_callback
+ * @param[in] context
  * @param[in] stream Stream identifier
  * @param[in] callback The callback function
  * @retval ED247_STATUS_SUCCESS
@@ -643,6 +644,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_unregister_recv_callback(
 /**
  * @brief Register a callback (in several streams as once) which is called once a frame is received and decoded.
  * @ingroup context_callback
+ * @param[in] context
  * @param[in] streams Stream identifiers
  * @param[in] callback The callback function
  * @retval ED247_STATUS_SUCCESS
@@ -656,6 +658,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_streams_register_recv_callback(
 /**
  * @brief Unregister a callback (from several streams as once) which is called once a frame is received and decoded.
  * @ingroup context_callback
+ * @param[in] context
  * @param[in] streams Stream identifiers
  * @param[in] callback The callback function
  * @retval ED247_STATUS_SUCCESS
@@ -669,7 +672,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_streams_unregister_recv_callback(
 /**
  * @brief Register a callback (in all streams) which is called once a frame is received and decoded.
  * @ingroup context_callback
- * @param[in] streams Stream identifiers
+ * @param[in] context
  * @param[in] callback The callback function
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
@@ -681,7 +684,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_register_recv_callback(
 /**
  * @brief Unegister a callback (in all streams) which is called once a frame is received and decoded.
  * @ingroup context_callback
- * @param[in] streams Stream identifiers
+ * @param[in] context
  * @param[in] callback The callback function
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
@@ -942,7 +945,6 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_has_signals(
  * @ingroup stream
  * @details The lifespan of returned `signals` is the same as the `context`, but you can safely call ed247_signal_list_free().
  * @param[in] stream The stream identifier
- * @param[in] regex_name The regular expression for name matching
  * @param[out] signals The list of the signals. If no value, set to null.
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE The stream list is empty
@@ -1073,7 +1075,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_free_sample(
  * @brief Number of samples in the stream stack.
  * @ingroup stream_io
  * @param[in] stream Stream identifier
- * @param[in] direction Only ::ED247_DIRECTION_IN or ::ED247_DIRECTION_OUT accepted, reference the desired stack to write on
+ * @param[in] direction Only ED247_DIRECTION_IN or ED247_DIRECTION_OUT accepted, reference the desired stack to write on
  * @param[out] size Number of samples in the stack
  * @retval ED247_STATUS_SUCCESS
  */
@@ -1108,8 +1110,8 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_push_sample(
  * If internal stack is full, the oldest samples will be silently dropped. This is not an error.
  * @ingroup stream_io
  * @param[in] stream Stream identifier
- * @param[in] samples_data Samples data to write, copied internally
- * @param[in] sample_size Size of the sample data to write, in bytes
+ * @param[in] samples_data Array of samples to be pushed
+ * @param[in] samples_size Array of sample sizes (one size for each sample in samples_data)
  * @param[in] samples_number Number of samples to write. It must correspond to the number of elements in samples_data & samples_size
  * @param[in] data_timestamp either NULL or define the data timestamp associated with the samples.
  * @param[out] full Set to true if the internal stack is full after the push. Set to NULL if not desired.
