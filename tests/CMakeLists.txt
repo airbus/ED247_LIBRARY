@@ -128,20 +128,20 @@ test_create_for_one_actor(unit_signals                 unitary)
 test_create_for_one_actor(unit_sockets                 unitary)
 test_create_for_one_actor(unit_streams                 unitary)
 
-# Handle test reports
+# Handle test results
 if (PLATFORM_ID STREQUAL "")
-  set(TEST_REPORT_BASENAME tests_report)
+  set(TEST_RESULTS_BASENAME test_results)
 else()
-  set(TEST_REPORT_BASENAME tests_report_${PLATFORM_ID})
+  set(TEST_RESULTS_BASENAME test_results_${PLATFORM_ID})
 endif()
-set(TEST_REPORT_TXT ${CMAKE_BINARY_DIR}/tests/${TEST_REPORT_BASENAME}.txt)
-set(TEST_REPORT_XML ${CMAKE_BINARY_DIR}/tests/${TEST_REPORT_BASENAME}.xml)
+set(TEST_RESULTS_TXT ${CMAKE_BINARY_DIR}/tests/${TEST_RESULTS_BASENAME}.txt)
+set(TEST_RESULTS_XML ${CMAKE_BINARY_DIR}/tests/${TEST_RESULTS_BASENAME}.xml)
 
-if(NOT EXISTS ${TEST_REPORT_TXT})
-  file(WRITE ${TEST_REPORT_TXT} "No tests has been ran.\n")
+if(NOT EXISTS ${TEST_RESULTS_TXT})
+  file(WRITE ${TEST_RESULTS_TXT} "No tests has been ran.\n")
 endif()
 
-install(FILES ${TEST_REPORT_TXT} DESTINATION doc)
+install(FILES ${TEST_RESULTS_TXT} DESTINATION doc)
 
 # run_tests target
 add_custom_target(run_tests_functional ${CMAKE_CTEST_COMMAND} -R '^func_' --output-on-failure DEPENDS tests_functional)
@@ -150,5 +150,5 @@ add_custom_target(run_tests_unitary ${CMAKE_CTEST_COMMAND} -R '^unit_' --output-
 if(EXISTS ${CMAKE_SOURCE_DIR}/doc/airbus)
   include(${CMAKE_SOURCE_DIR}/doc/airbus/cmake/run_tests.cmake)
 else()
-  add_custom_target(run_tests ${CMAKE_CTEST_COMMAND} -O ${TEST_REPORT_TXT} --output-junit ${TEST_REPORT_XML} --output-on-failure DEPENDS tests)
+  add_custom_target(run_tests ${CMAKE_CTEST_COMMAND} -O ${TEST_RESULTS_TXT} --output-junit ${TEST_RESULTS_XML} --output-on-failure DEPENDS tests)
 endif()
