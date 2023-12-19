@@ -32,8 +32,8 @@ add_custom_target(${TEST_EXECUTABLE}
         ${TEST_EXECUTABLE}_recv
 )
 
-target_link_libraries(${TEST_EXECUTABLE}_send PRIVATE Ed247::ed247 sync_entity)
-target_link_libraries(${TEST_EXECUTABLE}_recv PRIVATE Ed247::ed247 sync_entity)
+target_link_libraries(${TEST_EXECUTABLE}_send PRIVATE Ed247::ed247 libsynchronizer)
+target_link_libraries(${TEST_EXECUTABLE}_recv PRIVATE Ed247::ed247 libsynchronizer)
 
 file(GLOB CONFIGS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR}/config/*)
 install(FILES ${CONFIGS} DESTINATION doc/samples/${TEST_EXECUTABLE}/config)

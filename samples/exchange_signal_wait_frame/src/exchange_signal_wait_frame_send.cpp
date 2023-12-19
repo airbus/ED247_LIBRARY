@@ -22,16 +22,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
+#include "ed247.h"
+#include "synchronizer.h"
 #include <stdio.h>
-
-#include <ed247.h>
+#include <stdlib.h>
 
 #define ECIC_FILEPATH "../config/examples/ECIC_EXAMPLE_SIGNAL_SEND_RECV_WAIT_FRAME_SEND.xml"
 
-#include "sync_entity.h"
+#define SYNCER_ID_SRC 1
+#define SYNCER_ID_DST 2
 
-#define SYNCER_ID_SRC SYNCER_ID_MASTER
-#define SYNCER_ID_DST SYNCER_ID_SLAVE
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
 
 int check_status(ed247_context_t context, ed247_status_t status);
 
@@ -45,9 +47,9 @@ int main(int argc, char *argv[])
     ed247_signal_t              signal;
     ed247_stream_assistant_t    assistant;
 
-    sync_init(SYNCER_ID_SRC);
+    synchro_init(SYNCER_ID_SRC);
 
-    sync_sync(SYNCER_ID_DST);
+    synchro_signal(SYNCER_ID_DST);
 
     // Library information
     fprintf(stdout,"# Implementation name:    %s\n",ed247_get_implementation_name());
@@ -97,7 +99,7 @@ int main(int argc, char *argv[])
 
     free(signal_sample);
 
-    sync_wait(SYNCER_ID_DST);
+    synchro_signal(SYNCER_ID_DST);
 
     // Send them
     status = ed247_send_pushed_samples(context);
@@ -110,8 +112,6 @@ int main(int argc, char *argv[])
     if(check_status(context, status)) return EXIT_FAILURE;
     status = ed247_unload(context);
     if(check_status(context,status)) return EXIT_FAILURE;
-
-    sync_stop();
 
     return EXIT_SUCCESS;
 }

@@ -23,15 +23,17 @@
  *****************************************************************************/
 
 #include <stdio.h>
-
 #include "ed247.h"
+#include "synchronizer.h"
+
 
 #define ECIC_FILEPATH "../config/ecic_exchange_signal_wait_frame_recv.xml"
 
-#include "sync_entity.h"
+#define SYNCER_ID_SRC 2
+#define SYNCER_ID_DST 1
 
-#define SYNCER_ID_SRC SYNCER_ID_SLAVE
-#define SYNCER_ID_DST SYNCER_ID_MASTER
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
 
 int check_status(ed247_context_t context, ed247_status_t status);
 int process_streams(ed247_context_t context, ed247_stream_list_t streams);
@@ -44,9 +46,9 @@ int main(int argc, char *argv[])
     ed247_context_t         context;
     ed247_stream_list_t     streams;
 
-    sync_init(SYNCER_ID_SRC);
+    synchro_init(SYNCER_ID_SRC);
 
-    sync_sync(SYNCER_ID_DST);
+    synchro_wait(SYNCER_ID_DST);
 
     // Library information
     fprintf(stdout, "# Implementation name:    %s\n", ed247_get_implementation_name());
@@ -66,7 +68,7 @@ int main(int argc, char *argv[])
     // status = ed247_register_recv_callback(context, &stream_receive_callback);
     // if(check_status(context, status)) return EXIT_FAILURE;
 
-    sync_send(SYNCER_ID_DST);
+    synchro_wait(SYNCER_ID_DST);
 
     // Mode 1 : Wait for the first frame to be received
     status = ed247_wait_frame(context, &streams, 10000000);
@@ -89,8 +91,6 @@ int main(int argc, char *argv[])
 
     status = ed247_unload(context);
     if(check_status(context,status)) return EXIT_FAILURE;
-
-    sync_stop();
 
     return EXIT_SUCCESS;
 }
