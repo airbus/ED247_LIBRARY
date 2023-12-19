@@ -23,3 +23,4 @@
 ###############################################################################
 
 add_subdirectory(sync_entity)
+add_subdirectory(libsynchronizer)
