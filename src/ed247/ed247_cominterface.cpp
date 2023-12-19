@@ -147,6 +147,19 @@ namespace ed247 {
           sockerr = bind(socket, (struct sockaddr *)&address, sizeof(struct sockaddr_in));
           SYSTEM_SOCKET_ASSERT(sockerr == 0, address, socket, "Failed to bind socket");
 
+#ifdef _WIN32
+          {
+            // On windows, if the target of a sendto is not bounded, we will receive an ICMP error
+            // 10054 - "Connection reset by peer". This error will be saved by the system and
+            // raised on the next recvfrom() or select() on the same socket.
+            // https://copyprogramming.com/howto/windows-udp-sockets-recvfrom-fails-with-error-10054
+            // We disable this behavior.
+            BOOL bNewBehavior = FALSE;
+            DWORD dwBytesReturned = 0;
+            WSAIoctl(socket, _WSAIOW(IOC_VENDOR, 12), &bNewBehavior, sizeof bNewBehavior, NULL, 0, &dwBytesReturned, NULL, NULL);
+          }
+#endif
+
           _map.insert(socket_map_t::value_type(address, socket_container_t(socket)));
           return socket;
         }
