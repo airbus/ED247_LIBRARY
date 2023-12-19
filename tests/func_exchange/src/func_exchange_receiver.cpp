@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-#include "functional_test.h"
+#include "two_actors_test.h"
 #define TEST_ACTOR_ID TEST_ACTOR2_ID
 
 

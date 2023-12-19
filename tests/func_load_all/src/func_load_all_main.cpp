@@ -22,7 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-#include "functional_test.h"
+#include "two_actors_test.h"
 
 std::string config_path = "../config";
 

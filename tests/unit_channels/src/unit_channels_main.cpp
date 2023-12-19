@@ -26,7 +26,7 @@
 class TEST_CLASS_NAME(ChannelContext, MultiPushPop);
 #define ED247_FRIEND_TEST() friend TEST_CLASS_NAME(ChannelContext, MultiPushPop);
 
-#include "unitary_test.h"
+#include "single_actor_test.h"
 #include "ed247_context.h"
 
 std::string config_path = "../config";

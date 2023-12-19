@@ -30,7 +30,7 @@ class TEST_CLASS_NAME(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1);
   friend TEST_CLASS_NAME(SocketContext, TEST_EMITTER_1_1_1_RECEPTION_1_1_1); \
   friend TEST_CLASS_NAME(SocketContext, TEST_EMITTER_2_1_1_RECEPTION_2_1_1)
 
-#include "unitary_test.h"
+#include "single_actor_test.h"
 #include "ed247_context.h"
 
 

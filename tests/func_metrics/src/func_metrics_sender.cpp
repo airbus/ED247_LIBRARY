@@ -22,7 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 #define TEST_ACTOR_ID TEST_ACTOR1_ID
-#include "functional_test.h"
+#include "two_actors_test.h"
 
 std::string config_path = "../config";
 

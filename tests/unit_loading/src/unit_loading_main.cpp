@@ -22,7 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-#include "unitary_test.h"
+#include "single_actor_test.h"
 #include "ed247_xml.h"
 
 std::string config_path = "../config";

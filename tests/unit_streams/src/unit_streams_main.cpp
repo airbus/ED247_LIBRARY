@@ -33,7 +33,7 @@ class TEST_CLASS_NAME(StreamContext, MultiPushPopDataTimestamp);
   friend TEST_CLASS_NAME(StreamContext, MultiPushPopDataTimestamp)
 
 
-#include "unitary_test.h"
+#include "single_actor_test.h"
 #include "ed247_stream.h"
 #include "ed247_context.h"
 

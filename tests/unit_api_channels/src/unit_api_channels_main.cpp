@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
-#include "unitary_test.h"
+#include "single_actor_test.h"
 
 std::string config_path = "../config";
 

@@ -1,7 +1,7 @@
 #define TEST_ACTOR1_NAME "sender"
 #define TEST_ACTOR2_NAME "receiver"
 #define TEST_ACTOR_ID TEST_ACTOR1_ID
-#include "functional_test.h"
+#include "two_actors_test.h"
 
 //
 // In this test, sender and receiver ECIC are not symmetrical:

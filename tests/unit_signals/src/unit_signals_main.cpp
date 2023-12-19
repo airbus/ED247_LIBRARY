@@ -27,7 +27,7 @@
 class TEST_CLASS_NAME(SignalContext, SinglePushPop);
 #define ED247_FRIEND_TEST() friend TEST_CLASS_NAME(SignalContext, SinglePushPop)
 
-#include "unitary_test.h"
+#include "single_actor_test.h"
 #include "ed247_context.h"
 #include "ed247_stream_assistant.h"
 #include "ed247_bswap.h"

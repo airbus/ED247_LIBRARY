@@ -22,7 +22,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
-#include "unitary_test.h"
+#include "single_actor_test.h"
 
 /******************************************************************************
 This test aims to explicitly test the conversion functions provided by the API

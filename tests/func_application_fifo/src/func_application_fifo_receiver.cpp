@@ -1,5 +1,5 @@
 #define TEST_ACTOR_ID TEST_ACTOR2_ID
-#include "functional_test.h"
+#include "two_actors_test.h"
 
 class applicationFifoFixture : public TestContext {};
 

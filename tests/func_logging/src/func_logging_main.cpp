@@ -30,7 +30,7 @@ class TEST_CLASS_NAME(LogConfigurationTest, LoggingByArgs);
   friend TEST_CLASS_NAME(LogConfigurationTest, LoggingByEnv);   \
   friend TEST_CLASS_NAME(LogConfigurationTest, LoggingByArgs)
 
-#include "functional_test.h"
+#include "two_actors_test.h"
 
 std::string config_path = "../config";
 
