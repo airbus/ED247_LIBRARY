@@ -7,6 +7,8 @@
 
 #ifdef __linux__
 #include <arpa/inet.h>
+#elif _WIN32
+# include <winsock2.h>
 #endif
 
 #define ED247_ONE_MILI   1000
@@ -42,6 +44,8 @@ namespace tests_tools {
                                        << "  " << hex_stream(payload2, size);
   }
 
+  // Return a monotonic time
+  uint64_t get_monotonic_time_us();
 }
 
 #define ASSERT_PAYLOAD_EQ(payload1, payload2, size) ASSERT_PRED_FORMAT3(::tests_tools::AssertPayloadEq, payload1, payload2, size)

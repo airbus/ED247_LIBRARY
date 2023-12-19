@@ -108,7 +108,8 @@ TEST_P(errorHandlingFixture, invalidHeader)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #1");
+  TEST_SIGNAL("sent #1");
+  TEST_WAIT("sent #1");
 
   // Forge a stream without component Id
   payload_size = 0;
@@ -131,7 +132,8 @@ TEST_P(errorHandlingFixture, invalidHeader)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #2");
+  TEST_SIGNAL("sent #2");
+  TEST_WAIT("sent #2");
 
   // Forge another valid stream
   payload_size = 0;
@@ -140,7 +142,8 @@ TEST_P(errorHandlingFixture, invalidHeader)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #3");
+  TEST_SIGNAL("sent #3");
+  TEST_WAIT("sent #3");
 }
 
 // ============================================================================
@@ -167,7 +170,8 @@ TEST_P(errorHandlingFixture, invalidMultichannel)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #1");
+  TEST_SIGNAL("sent #1");
+  TEST_WAIT("sent #1");
 
   // Forge a stream without UID
   payload_size = 0;
@@ -193,7 +197,8 @@ TEST_P(errorHandlingFixture, invalidMultichannel)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #2");
+  TEST_SIGNAL("sent #2");
+  TEST_WAIT("sent #2");
 
   // Forge another valid stream
   payload_size = 0;
@@ -203,7 +208,8 @@ TEST_P(errorHandlingFixture, invalidMultichannel)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #3");
+  TEST_SIGNAL("sent #3");
+  TEST_WAIT("sent #3");
 }
 
 // ============================================================================
@@ -230,7 +236,8 @@ TEST_P(errorHandlingFixture, invalidDataTimeStamp)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #1");
+  TEST_SIGNAL("sent #1");
+  TEST_WAIT("sent #1");
 
   // Forge a stream without DTS
   payload_size = 0;
@@ -240,7 +247,8 @@ TEST_P(errorHandlingFixture, invalidDataTimeStamp)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #2");
+  TEST_SIGNAL("sent #2");
+  TEST_WAIT("sent #2");
 
   // Forge another valid stream with DTS
   payload_size = 0;
@@ -250,7 +258,8 @@ TEST_P(errorHandlingFixture, invalidDataTimeStamp)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #3");
+  TEST_SIGNAL("sent #3");
+  TEST_WAIT("sent #3");
 }
 
 // ============================================================================
@@ -282,7 +291,8 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream_a429, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #1");
+  TEST_SIGNAL("sent #1");
+  TEST_WAIT("sent #1");
 
   // Forge a too small A429 stream
   payload_size = 0;
@@ -291,7 +301,8 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream_a429, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #2");
+  TEST_SIGNAL("sent #2");
+  TEST_WAIT("sent #2");
 
   // Forge another valid A429 stream
   payload_size = 0;
@@ -300,7 +311,8 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream_a429, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #3");
+  TEST_SIGNAL("sent #3");
+  TEST_WAIT("sent #3");
 
   // Forge a valid AFDX stream
   payload_size = 0;
@@ -309,7 +321,8 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream_afdx, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #4");
+  TEST_SIGNAL("sent #4");
+  TEST_WAIT("sent #4");
 
   // Forge an AFDX without MessageSize
   payload_size = 0;
@@ -331,7 +344,8 @@ TEST_P(errorHandlingFixture, invalidStream)
   payload_size += write_AFDX_stream(payload + payload_size, data_size, 0x44, data_size);
   ASSERT_EQ(ed247_stream_push_sample(forge_stream_afdx, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-  TEST_SYNC("sent #5");
+  TEST_SIGNAL("sent #5");
+  TEST_WAIT("sent #5");
 
   // Forge another valid AFDX stream
   payload_size = 0;
@@ -340,7 +354,8 @@ TEST_P(errorHandlingFixture, invalidStream)
   ASSERT_EQ(ed247_stream_push_sample(forge_stream_afdx, payload, payload_size, NULL, NULL), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
 
-  TEST_SYNC("sent #6");
+  TEST_SIGNAL("sent #6");
+  TEST_WAIT("sent #6");
 }
 
 

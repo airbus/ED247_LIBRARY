@@ -24,7 +24,7 @@
 
 #ifndef _ED247_TEST_H_
 #define _ED247_TEST_H_
-#include "sync_entity.h"
+#include "synchronizer.h"
 #include "tests_tools.h"
 
 // This framework is desing for two actors: one sending data an the other to receive them
@@ -49,26 +49,21 @@ enum test_actor_id_t {
 #define SAY_SELF(m) do { SAY(TEST_ACTOR_NAME() << " " << m); } while (0)
 
 // Use TEST_SYNC(<title?>) to synchronize both actors
-#define TEST_SYNC_MSG(title, m) do { SAY("[SYNC:" << title << " " << TEST_ACTOR_NAME() << "=>" << TEST_OTHER_NAME() << "] " << m);} while (0)
-#define TEST_SIGNAL(title) do { TEST_SYNC_MSG(title, "Send signal."); test_signal(); } while(0)
-#define TEST_WAIT(title) do { TEST_SYNC_MSG(title, "Wait for signal."); test_wait(); TEST_SYNC_MSG(title, "Signal received."); } while(0)
-
-
+#define TEST_SIGNAL(title) synchro_signal(GetParam().other_actor_id(), title, LOG_SHORTFILE, __LINE__)
+#define TEST_WAIT(title) synchro_wait(GetParam().other_actor_id(), title, LOG_SHORTFILE, __LINE__)
 #define TEST_SYNC_TITLE(title)                  \
   do {                                          \
     switch (GetParam().actor_id) {              \
     case TEST_ACTOR1_ID:                        \
       TEST_SIGNAL(title);                       \
-      TEST_WAIT(title);                         \
       break;                                    \
     case TEST_ACTOR2_ID:                        \
       TEST_WAIT(title);                         \
-      TEST_SIGNAL(title);                       \
       break;                                    \
     }                                           \
   } while (0)
 
-#define TEST_SYNC_NO_TITLE() TEST_SYNC_TITLE(std::string())
+#define TEST_SYNC_NO_TITLE() TEST_SYNC_TITLE(nullptr)
 
 // Note 1: Ugly macros so TEST_SYNC(<title?>) works with or without <title> argument
 // Note 2: All these are macros only to make SAY() correctly display __FILE__, __LINE__
@@ -88,19 +83,11 @@ struct TestParams {
 class TestContext : public ::testing::TestWithParam<TestParams>
 {
 protected:
-  TestContext() : _context(nullptr), _actor(nullptr) {
-    synchro::Entity::init();
-  }
-
-  ~TestContext() {
-    delete _actor;
-  }
+  TestContext() : _context(nullptr) { }
+  ~TestContext() { }
 
   void SetUp() override {
-    if(!_actor) {
-      _actor = new synchro::Entity(GetParam().actor_id);
-    }
-    ASSERT_NE(_actor, nullptr);
+    synchro_init(GetParam().actor_id);
 
     if (GetParam().filepath.empty() == false) {
       SAY_SELF("Load ECIC: " << GetParam().filepath);
@@ -115,18 +102,7 @@ protected:
     }
   }
 
-  void test_signal() {
-    ASSERT_NE(_actor, nullptr);
-    _actor->send(GetParam().other_actor_id());
-  }
-
-  void test_wait() {
-    ASSERT_NE(_actor, nullptr);
-    ASSERT_TRUE(_actor->wait(GetParam().other_actor_id()));
-  }
-
-  ed247_context_t   _context;
-  synchro::Entity * _actor;
+  ed247_context_t _context;
 };
 
 #endif

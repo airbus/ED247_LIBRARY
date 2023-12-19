@@ -42,28 +42,28 @@ TEST_P(StreamContext, LimitOneByOne)
     ed247_stream_list_t streams;
     ed247_stream_t stream;
     uint32_t size;
-    
+
     // Synchro at startup
     SAY_SELF("Startup");
     TEST_SYNC();
-    
+
     ASSERT_EQ(ed247_get_stream_list(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     SAY_SELF("Stream number [" << size << "]");
-    
-    uint64_t start = synchro::get_time_us();
+
+    uint64_t start = tests_tools::get_monotonic_time_us();
     for (uint32_t i = 0; i < size; i++)
     {
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
         uint32_t content = (uint32_t)ed247_stream_get_uid(stream);
         ASSERT_EQ(ed247_stream_push_sample(stream, &content, sizeof(content), NULL, NULL), ED247_STATUS_SUCCESS);
         ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
-        
+
         TEST_SYNC();
     }
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    
-    uint64_t end = synchro::get_time_us();
+
+    uint64_t end = tests_tools::get_monotonic_time_us();
     SAY_SELF("Sending time (1 stream by 1 call) [" << (end-start)/1000 << "] ms");
 
     TEST_SYNC();
@@ -78,16 +78,16 @@ TEST_P(StreamContext, LimitAllInOne)
     ed247_stream_list_t streams;
     ed247_stream_t stream;
     uint32_t size;
-    
+
     // Synchro at startup
     SAY_SELF("Startup");
     TEST_SYNC();
-    
+
     ASSERT_EQ(ed247_get_stream_list(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     SAY_SELF("Stream number [" << size << "]");
-    
-    uint64_t start = synchro::get_time_us();
+
+    uint64_t start = tests_tools::get_monotonic_time_us();
     for (uint32_t i = 0; i < size; i++)
     {
         ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
@@ -96,8 +96,8 @@ TEST_P(StreamContext, LimitAllInOne)
     }
     ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    
-    uint64_t end = synchro::get_time_us();
+
+    uint64_t end = tests_tools::get_monotonic_time_us();
     SAY_SELF("Sending time (all streams by 1 call) [" << (end-start)/1000 << "] ms");
     TEST_SYNC();
 

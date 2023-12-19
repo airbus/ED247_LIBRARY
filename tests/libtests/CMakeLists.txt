@@ -30,7 +30,6 @@ target_link_libraries(libtests_functional
   PUBLIC
     Ed247::ed247
     libtests_objects
-    sync_entity
     libsynchronizer
     $<$<PLATFORM_ID:Linux>:dl>
 )

@@ -42,19 +42,19 @@ TEST_P(StreamContext, LimitOneByOne)
     ed247_stream_list_t temp_list;
     ed247_stream_t stream, tmp_stream;
     uint32_t size;
-    
+
     // Synchro at startup
     SAY_SELF("Startup");
     TEST_SYNC();
-    
+
     ASSERT_EQ(ed247_get_stream_list(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     // Cornercases
     ASSERT_EQ(ed247_stream_list_size(NULL, &size), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_stream_list_size(streams, NULL), ED247_STATUS_FAILURE);
     SAY_SELF("Stream number [" << size << "]");
-    
-    uint64_t start = synchro::get_time_us();
+
+    uint64_t start = tests_tools::get_monotonic_time_us();
     for (uint32_t i = 0; i < size; i++)
     {
         SAY_SELF("Loop [" << i << "/" << size << "]");
@@ -77,8 +77,8 @@ TEST_P(StreamContext, LimitOneByOne)
         TEST_SYNC();
     }
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    
-    uint64_t end = synchro::get_time_us();
+
+    uint64_t end = tests_tools::get_monotonic_time_us();
     SAY_SELF("Receive & processing time (1 stream by 1 call) [" << (end-start)/1000 << "] ms");
     TEST_SYNC();
 
@@ -93,16 +93,16 @@ TEST_P(StreamContext, LimitAllInOne)
     ed247_stream_list_t temp_list;
     ed247_stream_t stream, tmp_stream;
     uint32_t size;
-    
+
     // Synchro at startup
     SAY_SELF("Startup");
     TEST_SYNC();
-    
+
     ASSERT_EQ(ed247_get_stream_list(_context, &streams), ED247_STATUS_SUCCESS);
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     SAY_SELF("Stream number [" << size << "]");
-    
-    uint64_t start = synchro::get_time_us();
+
+    uint64_t start = tests_tools::get_monotonic_time_us();
     ASSERT_EQ(ed247_wait_during(_context, &temp_list, 1000*1000*1), ED247_STATUS_SUCCESS);
     for (uint32_t i = 0; i < size; i++)
     {
@@ -122,8 +122,8 @@ TEST_P(StreamContext, LimitAllInOne)
     }
 
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
-    
-    uint64_t end = synchro::get_time_us();
+
+    uint64_t end = tests_tools::get_monotonic_time_us();
     SAY_SELF("Receive & processing time (all streams by 1 call) [" << (end-start)/1000 << "] ms");
     TEST_SYNC();
 
