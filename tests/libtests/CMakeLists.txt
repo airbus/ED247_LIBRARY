@@ -19,6 +19,7 @@ target_link_libraries(libtests_unitary
   PUBLIC
     ed247_objects
     libtests_objects
+    libsynchronizer
     $<$<PLATFORM_ID:Linux>:dl>
 )
 
@@ -30,5 +31,6 @@ target_link_libraries(libtests_functional
     Ed247::ed247
     libtests_objects
     sync_entity
+    libsynchronizer
     $<$<PLATFORM_ID:Linux>:dl>
 )
