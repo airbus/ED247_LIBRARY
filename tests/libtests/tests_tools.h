@@ -4,6 +4,7 @@
 #include "memhooks.h"
 #include "gtest/gtest.h"
 #include "ed247_logs.h"
+#include "time_tools.h"
 
 #ifdef __linux__
 #include <arpa/inet.h>
@@ -43,9 +44,6 @@ namespace tests_tools {
                                        << "  " << hex_stream(payload1, size) << std::endl
                                        << "  " << hex_stream(payload2, size);
   }
-
-  // Return a monotonic time
-  uint64_t get_monotonic_time_us();
 }
 
 #define ASSERT_PAYLOAD_EQ(payload1, payload2, size) ASSERT_PRED_FORMAT3(::tests_tools::AssertPayloadEq, payload1, payload2, size)

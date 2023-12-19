@@ -54,7 +54,7 @@ TEST_P(StreamContext, LimitOneByOne)
     ASSERT_EQ(ed247_stream_list_size(streams, NULL), ED247_STATUS_FAILURE);
     SAY_SELF("Stream number [" << size << "]");
 
-    uint64_t start = tests_tools::get_monotonic_time_us();
+    uint64_t start = time_tools::get_monotonic_time_us();
     for (uint32_t i = 0; i < size; i++)
     {
         SAY_SELF("Loop [" << i << "/" << size << "]");
@@ -78,7 +78,7 @@ TEST_P(StreamContext, LimitOneByOne)
     }
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
 
-    uint64_t end = tests_tools::get_monotonic_time_us();
+    uint64_t end = time_tools::get_monotonic_time_us();
     SAY_SELF("Receive & processing time (1 stream by 1 call) [" << (end-start)/1000 << "] ms");
     TEST_SYNC();
 
@@ -102,7 +102,7 @@ TEST_P(StreamContext, LimitAllInOne)
     ASSERT_EQ(ed247_stream_list_size(streams, &size), ED247_STATUS_SUCCESS);
     SAY_SELF("Stream number [" << size << "]");
 
-    uint64_t start = tests_tools::get_monotonic_time_us();
+    uint64_t start = time_tools::get_monotonic_time_us();
     ASSERT_EQ(ed247_wait_during(_context, &temp_list, 1000*1000*1), ED247_STATUS_SUCCESS);
     for (uint32_t i = 0; i < size; i++)
     {
@@ -123,7 +123,7 @@ TEST_P(StreamContext, LimitAllInOne)
 
     ASSERT_EQ(ed247_stream_list_next(streams, &stream), ED247_STATUS_SUCCESS);
 
-    uint64_t end = tests_tools::get_monotonic_time_us();
+    uint64_t end = time_tools::get_monotonic_time_us();
     SAY_SELF("Receive & processing time (all streams by 1 call) [" << (end-start)/1000 << "] ms");
     TEST_SYNC();
 

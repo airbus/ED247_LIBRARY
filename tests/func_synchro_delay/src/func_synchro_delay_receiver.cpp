@@ -13,7 +13,7 @@ TEST(syncroDelayFixture, syncroDelay)
 {
   // Let first actor perform test without a second actor
   SAY("Sleep a little before start...");
-  usleep(1 * 1000 * 1000);
+  time_tools::sleep_us(1 * 1000 * 1000);
   SAY("Sleep done.");
 
   // Sync with actor1
