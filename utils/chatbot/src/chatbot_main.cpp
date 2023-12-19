@@ -25,8 +25,8 @@
 
 #include <ed247.h>
 #include "ed247_logs.h"
-#include "sync_entity.h"
 #include "string.h"
+#include "time_tools.h"
 
 struct Stream;
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     ed247_signal_t              signal = nullptr;
     ed247_stream_assistant_t    assistant = nullptr;
     std::list<Stream*>          list;
-    
+
     std::string filepath = "";
     uint32_t timestep_ms = 0;
     uint64_t loop_count = 0;
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     std::list<Stream*>::iterator it;
     std::list<Signal*>::iterator itsig;
     for(uint64_t loop = 0 ; loop < loop_count ; loop++){
-        start = synchro::get_time_us();
+        start = time_tools::get_monotonic_time_us();
         timestamp.epoch_s += (timestamp.offset_ns+1) >= 1000*1000 ? 1 : 0;
         timestamp.offset_ns = (timestamp.offset_ns+1) >= 1000*1000 ? timestamp.offset_ns + 1 : 0;
         for(it = list.begin() ; it != list.end() ; it++){
@@ -178,9 +178,9 @@ int main(int argc, char *argv[])
         }
         status = ed247_send_pushed_samples(context);
         if(check_status(context,status)) return EXIT_FAILURE;
-        stop = synchro::get_time_us();
+        stop = time_tools::get_monotonic_time_us();
         PRINT_INFO("Elapsed [" << stop-start << "] us / Timestep [" << timestep_ms*1000 << "] us");
-        if((uint32_t)(stop-start) < timestep_ms*1000) synchro::sleep_us(timestep_ms*1000-(stop-start));
+        if((uint32_t)(stop-start) < timestep_ms*1000) time_tools::sleep_us(timestep_ms*1000-(stop-start));
     }
 
     // Unload

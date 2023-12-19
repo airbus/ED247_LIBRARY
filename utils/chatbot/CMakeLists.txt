@@ -27,8 +27,6 @@ string(TOLOWER ${CURRENT_DIR_NAME} TEST_EXECUTABLE)
 
 add_executable(${TEST_EXECUTABLE} src/${CURRENT_DIR_NAME}_main.cpp)
 
-target_link_libraries(${TEST_EXECUTABLE} PRIVATE Ed247::ed247 sync_entity)
+target_link_libraries(${TEST_EXECUTABLE} PRIVATE Ed247::ed247 libtime_tools)
 
 install(TARGETS ${TEST_EXECUTABLE} RUNTIME DESTINATION ${PLATFORM_INSTALL_SUBDIR}bin)
-
-

@@ -26,7 +26,7 @@
 
 #include <ed247.h>
 #include "ed247_logs.h"
-#include "sync_entity.h"
+#include "time_tools.h"
 
 int check_status(ed247_context_t context, ed247_status_t status);
 
@@ -100,10 +100,10 @@ int main(int argc, char *argv[])
         << std::endl;
 
     uint64_t start, stop;
-    start = synchro::get_time_us();
+    start = time_tools::get_monotonic_time_us();
     int32_t timeout_us = timeout_ms*1000;
     do {
-        stop = synchro::get_time_us();
+        stop = time_tools::get_monotonic_time_us();
         PRINT_DEBUG("Timeout: " << timeout_us << " " << timeout_us - (stop-start));
         status = ed247_wait_frame(context, &streams, timeout_us - (stop-start));
         if(status == ED247_STATUS_SUCCESS){
