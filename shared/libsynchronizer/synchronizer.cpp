@@ -67,10 +67,11 @@ std::ostream & operator<<(std::ostream& os, const socket_address_t& socket_addre
 #define LOG_SHORTFILE       ((caller_file)? caller_file : (strrchr("/" __FILE__, '/') + 1))
 #define LOG_LINE            ((caller_line)? caller_line : __LINE__)
 #define LOG_STREAM_FILELINE LOG_SHORTFILE << ":" << LOG_LINE << " "
+#define DEBUG_SHORTFILE     (strrchr("/" __FILE__, '/') + 1)
 
 #define LOG(m) std::cerr << LOG_STREAM_FILELINE << ": " << m << std::endl
 #ifdef SYNCHRO_DEBUG
-# define DEBUG(m) LOG(m)
+# define DEBUG(m) std::cerr << DEBUG_SHORTFILE << ":" << __LINE__ << " " << m << std::endl
 #else
 # define DEBUG(m)
 #endif
@@ -109,7 +110,7 @@ std::string synchro_get_system_error()
 #endif
 }
 
-// methods synchro_signal and synchro_wait will override these
+// methods synchro_signal and synchro_wait will override these (yes, this is quite ugly)
 const char* caller_file = nullptr;
 const uint32_t caller_line = 0;
 
@@ -147,21 +148,34 @@ namespace {
   // Map actor_id => next signal id to send to this actor
   using map_actor_signal_id_t = std::unordered_map<uint32_t, uint32_t>;
 
-  uint32_t              _actor_id  = 0;
-  synchro_socket_t      _socket    = INVALID_SOCKET;  // src of sendto and dest of recvfrom
-  const char*           _host_ip   = nullptr;
-  uint16_t              _base_port = 0;               // actor port = _base_port + _actor_id
-  fd_set                _fd_set;                      // Will only contain _socket
-  int                   _nfds;
-  map_actor_signal_id_t _actor_send_signal_id;
-  map_actor_signal_id_t _actor_recv_signal_id;
+  // Define if the message is a signal or its acknowledgement
+  enum class message_kind_t { signal, ack };
 
+  // Payload of one pessage
   struct __attribute__((__packed__)) payload_t
   {
-    uint32_t from_actor_id;
-    uint32_t signal_id;
+    message_kind_t message_kind;
+    uint32_t       from_actor_id;
+    uint32_t       signal_id;
   };
 
+  std::ostream& operator<<(std::ostream& ostream, const payload_t& payload) {
+    ostream << '[' <<
+      "kind: " << ((payload.message_kind == message_kind_t::signal)? "signal" : "ack") << ", "
+      "from actor " << payload.from_actor_id << ", "
+      "id " << payload.signal_id << "]";
+    return ostream;
+  }
+
+
+  uint32_t               _actor_id  = 0;
+  synchro_socket_t       _socket    = INVALID_SOCKET;  // src of sendto and dest of recvfrom
+  const char*            _host_ip   = nullptr;
+  uint16_t               _base_port = 0;               // actor port = _base_port + _actor_id
+  fd_set                 _fd_set;                      // Will only contain _socket
+  int                    _nfds;
+  map_actor_signal_id_t  _actor_send_signal_id;        // Next signal id to send to the target actor
+  map_actor_signal_id_t  _actor_recv_signal_id;        // Next signal id to wait from the target actor
 }
 
 
@@ -229,7 +243,7 @@ void synchro_signal(uint32_t target_actor_id, const char* user_message, const ch
 
   // Signal data
   uint32_t signal_id = _actor_send_signal_id[target_actor_id]++;
-  payload_t sig_payload = { _actor_id, signal_id };
+  payload_t sig_payload = { message_kind_t::signal, _actor_id, signal_id };
 
   // Acknowledge wait data
   int select_status = -1;
@@ -247,6 +261,7 @@ void synchro_signal(uint32_t target_actor_id, const char* user_message, const ch
   uint64_t begin = get_monotonic_time_us();
 
   // Send signal periodically until timeout reached or acknowledge received
+  DEBUG("Send signal " << sig_payload);
   do {
     int32_t sent_size = sendto(_socket, (const char *)&sig_payload, sizeof(payload_t), 0,
                                (struct sockaddr *)&destination_address, sizeof(struct sockaddr_in));
@@ -261,10 +276,25 @@ void synchro_signal(uint32_t target_actor_id, const char* user_message, const ch
 
   // Read and check acknowledge
   payload_t ack_payload;
-  int size = ::recvfrom(_socket, (char*) &ack_payload, sizeof(payload_t), 0, nullptr, 0);
-  ASSERT(size == sizeof(payload_t), "Synchro signal failed! Invalid acknowledge size received!");
-  ASSERT(ack_payload.from_actor_id == target_actor_id, "Synchro signal failed! Acknowledge received from actor " <<
-         ack_payload.from_actor_id << " where " << target_actor_id << " was expected.");
+  do {
+    int size = ::recvfrom(_socket, (char*) &ack_payload, sizeof(payload_t), 0, nullptr, 0);
+    DEBUG("Receive signal " << ack_payload);
+    ASSERT(size == sizeof(payload_t), "Synchro signal failed! Invalid acknowledge size received!");
+
+    // We receive a signal form an unexpected actor. This API doesn't support cross-actors signals.
+    ASSERT(ack_payload.from_actor_id == target_actor_id, "Synchro signal failed! Acknowledge received from actor " <<
+           ack_payload.from_actor_id << " where " << target_actor_id << " was expected.");
+
+    // If the received message is not an acknolegement but an old signal message, drop it
+    if (ack_payload.message_kind == message_kind_t::signal) {
+      if (ack_payload.signal_id < _actor_recv_signal_id[ack_payload.from_actor_id]) {
+        DEBUG("Dropping signal id " << sig_payload.signal_id << " received from a previous sync");
+        continue;
+      }
+      ASSERT(false, "Unexpected new signal " << ack_payload << " received while waiting for an acknowledgement!");
+    }
+  } while (ack_payload.message_kind == message_kind_t::signal);
+
   ASSERT(ack_payload.signal_id == signal_id, "Synchro signal failed! Acknowledge received with signal id " <<
          ack_payload.signal_id << " where " << signal_id << " was expected.");
 
@@ -302,11 +332,16 @@ void synchro_wait(uint32_t from_actor_id, const char* user_message, const char* 
     ASSERT(select_status > 0, "Synchro wait failed! No message received!");
 
     size = ::recvfrom(_socket, (char*) &sig_payload, sizeof(payload_t), 0, nullptr, 0);
+    DEBUG("Receive signal " << sig_payload);
     ASSERT(size == sizeof(payload_t), "Synchro wait failed! Invalid message size received!");
 
+    ASSERT(sig_payload.message_kind == message_kind_t::signal, "Synchro signal failed! We receive an unexprected acknowledgement!");
+
     if (sig_payload.from_actor_id != from_actor_id) {
-      // Here we expect to drop old messages from a sync with another actor but this API mail
-      // fail with more than two actors
+      // TODO. We receive a message from another actor.
+      // It may be an old signal that has to be droped, and in this case, all is fine.
+      // But it also may be a new signal from this other actor that has to be kept for a futur synchro_wait() call.
+      // Curently, this code mail fail in some cases with more than two actors.
       DEBUG("Dropping signal received from an unexpected actor id " << sig_payload.from_actor_id);
       continue;
     }
@@ -324,7 +359,8 @@ void synchro_wait(uint32_t from_actor_id, const char* user_message, const char* 
 
   // Send acknowledge
   socket_address_t destination_address(_host_ip, _base_port + from_actor_id);
-  payload_t ack_payload = { _actor_id, signal_id };
+  payload_t ack_payload = { message_kind_t::ack, _actor_id, signal_id };
+  DEBUG("Send signal " << ack_payload);
   int32_t sent_size = sendto(_socket, (const char *)&ack_payload, sizeof(payload_t), 0,
                              (struct sockaddr *)&destination_address, sizeof(struct sockaddr_in));
   ASSERT_SOCKET(sent_size > 0 && (uint32_t)sent_size == sizeof(payload_t), destination_address, _socket, "sendto failed !");
