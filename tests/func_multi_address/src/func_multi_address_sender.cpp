@@ -15,6 +15,7 @@ TEST_P(multiAddressFixture, main)
   char output_payload[500];
 
   ASSERT_EQ(ed247_load_file((config_path + "/ecic_func_multi_address_sender.xml").c_str(), &context), ED247_STATUS_SUCCESS);
+  TEST_SYNC("ECIC Loaded");
 
   ed247_stream_t stream_out;
   ASSERT_EQ(ed247_find_streams(context, "StreamOut", &stream_list), ED247_STATUS_SUCCESS);

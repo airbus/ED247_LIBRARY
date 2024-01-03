@@ -16,6 +16,7 @@ TEST_P(multiAddressFixture, main)
   uint32_t payload_size;
 
   ASSERT_EQ(ed247_load_file((config_path + "/ecic_func_multi_address_receiver.xml").c_str(), &context), ED247_STATUS_SUCCESS);
+  TEST_SYNC("ECIC Loaded");
 
   ed247_stream_t stream1, stream2, stream3;
   ASSERT_EQ(ed247_find_streams(context, "Stream1In", &stream_list), ED247_STATUS_SUCCESS);
