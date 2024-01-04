@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent_1" Comment="" StandardRevision="A" Identifier="0"
+                                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+  <Channels>
+    <MultiChannel Name="MultipleStreamsChannel">
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="5000" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+	  <Streams>
+
+        <DIS_Stream UID="1" Name="DisStream1" SampleMaxSizeBytes="4" Direction="In">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="DisSignal01" ByteOffset="0"/>
+            <Signal Name="DisSignal02" ByteOffset="1"/>
+            <Signal Name="DisSignal03" ByteOffset="2"/>
+          </Signals>
+        </DIS_Stream>
+        <DIS_Stream UID="2" Name="DisStream2" SampleMaxSizeBytes="4" Direction="In">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="DisSignal04" ByteOffset="0"/>
+            <Signal Name="DisSignal05" ByteOffset="1"/>
+          </Signals>
+        </DIS_Stream>
+        <DIS_Stream UID="3" Name="DisStream3" SampleMaxSizeBytes="4" Direction="In">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="DisSignal06" ByteOffset="0"/>
+          </Signals>
+        </DIS_Stream>
+
+
+      </Streams>
+    </MultiChannel>
+  </Channels>
+</ED247ComponentInstanceConfiguration>

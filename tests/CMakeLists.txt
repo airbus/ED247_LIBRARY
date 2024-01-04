@@ -115,6 +115,7 @@ test_create_for_two_actors(func_complex_multichannel     functional)
 test_create_for_two_actors(func_bidirectional            functional)
 test_create_for_two_actors(func_multi_address            functional)
 test_create_for_two_actors(func_synchro_delay            functional)
+test_create_for_two_actors(func_signals_autopush         functional)
 
 # Unitary tests
 test_create_for_one_actor(unit_api_channels            unitary)

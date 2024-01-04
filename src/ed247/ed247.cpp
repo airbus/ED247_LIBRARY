@@ -199,7 +199,7 @@ ed247_status_t ed247_component_set_user_data(
     ed247_context->set_user_data(user_data);
   }
   LIBED247_CATCH("Set user data");
-  return ED247_STATUS_SUCCESS;	
+  return ED247_STATUS_SUCCESS;
 }
 
 ed247_status_t ed247_component_get_user_data(
@@ -220,7 +220,7 @@ ed247_status_t ed247_component_get_user_data(
     ed247_context->get_user_data(user_data);
   }
   LIBED247_CATCH("Get user data");
-  return ED247_STATUS_SUCCESS;	
+  return ED247_STATUS_SUCCESS;
 }
 
 // Deprecated
@@ -319,7 +319,7 @@ ed247_status_t ed247_get_channel_list(
     ((ed247_channel_clist_base_t*)*channels)->reset_iterator();
   }
   LIBED247_CATCH("Get channels info");
-  return ED247_STATUS_SUCCESS;	
+  return ED247_STATUS_SUCCESS;
 }
 
 ed247_status_t ed247_find_channels(
@@ -1724,6 +1724,20 @@ ed247_status_t ed247_signal_get_stream(
   }
   LIBED247_CATCH("Get signal stream");
   return ED247_STATUS_SUCCESS;
+}
+
+
+ed247_status_t ed247_signal_get_assistant(
+    ed247_signal_t             signal,
+    ed247_stream_assistant_t * assistant)
+{
+  PRINT_DEBUG("function " << __func__ << "()");
+  ed247_stream_t stream;
+  ed247_status_t status = ed247_signal_get_stream(signal, &stream);
+  if (status != ED247_STATUS_SUCCESS) {
+    return status;
+  }
+  return ed247_stream_get_assistant(stream, assistant);
 }
 
 

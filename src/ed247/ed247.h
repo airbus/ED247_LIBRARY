@@ -1273,6 +1273,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_signal_get_stream(
     ed247_stream_t * stream);
 
 /**
+ * @brief Get the stream assistant associated with this signal.
+ * @details Calling this method is the same as calling
+ * ed247_signal_get_stream() then ed247_stream_get_assistant()
+ * @ingroup signal
+ * @param[in] signal
+ * @param[out] assistant
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_signal_get_assistant(
+    ed247_signal_t             signal,
+    ed247_stream_assistant_t * assistant);
+
+
+/**
  * @brief Allocate a sample to store one signal.
  * @details For VNAD, the allcated size is the max signal size. <br/>
  * Memory has to be released with ed247_signal_free_sample(). <br/>
