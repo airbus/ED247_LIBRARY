@@ -1909,6 +1909,18 @@ ed247_status_t ed247_stream_assistant_write_signal(
   return ED247_STATUS_SUCCESS;
 }
 
+bool ed247_stream_assistant_was_written(ed247_stream_assistant_t assistant)
+{
+  PRINT_DEBUG("function " << __func__ << "()");
+  if(!assistant){
+    PRINT_ERROR(__func__ << ": Invalid assistant");
+    return false;
+  }
+  ed247::StreamAssistant* ed247_assistant = static_cast<ed247::StreamAssistant*>(assistant);
+  return ed247_assistant->was_written();
+}
+
+
 ed247_status_t ed247_stream_assistant_read_signal(
   ed247_stream_assistant_t assistant,
   ed247_signal_t           signal,

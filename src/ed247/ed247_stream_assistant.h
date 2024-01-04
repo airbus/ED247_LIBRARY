@@ -33,9 +33,12 @@ namespace ed247
     virtual ed247_status_t pop(const ed247_timestamp_t** data_timestamp, const ed247_timestamp_t** recv_timestamp,
                                const ed247_sample_details_t** frame_details, bool* empty) = 0;
 
+    bool was_written() { return _was_written; }
+
   protected:
     Stream* _stream;
-    Sample  _buffer;  // WARN: buffer content depend on stream type and direction for performances reasons
+    Sample  _buffer;          // WARN: buffer content depend on stream type and direction for performances reasons
+    bool    _was_written;     // true if some signals has been written since last push
 
     ED247_FRIEND_TEST();
   };

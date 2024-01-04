@@ -30,6 +30,62 @@
           </Signals>
         </DIS_Stream>
 
+        <ANA_Stream UID="4" Name="AnaStream1" SampleMaxSizeBytes="12" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="AnaSignal01" ByteOffset="0"/>
+            <Signal Name="AnaSignal02" ByteOffset="4"/>
+            <Signal Name="AnaSignal03" ByteOffset="8"/>
+          </Signals>
+        </ANA_Stream>
+        <ANA_Stream UID="5" Name="AnaStream2" SampleMaxSizeBytes="12" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="AnaSignal04" ByteOffset="0"/>
+            <Signal Name="AnaSignal05" ByteOffset="4"/>
+          </Signals>
+        </ANA_Stream>
+        <ANA_Stream UID="6" Name="AnaStream3" SampleMaxSizeBytes="12" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="AnaSignal06" ByteOffset="0"/>
+          </Signals>
+        </ANA_Stream>
+
+        <NAD_Stream UID="7" Name="NadStream1" SampleMaxSizeBytes="4" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="NadSignal01" Type="int8" ByteOffset="0"/>
+            <Signal Name="NadSignal02" Type="int8" ByteOffset="1"/>
+            <Signal Name="NadSignal03" Type="int8" ByteOffset="2"/>
+          </Signals>
+        </NAD_Stream>
+        <NAD_Stream UID="8" Name="NadStream2" SampleMaxSizeBytes="4" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="NadSignal04" Type="int8" ByteOffset="0"/>
+            <Signal Name="NadSignal05" Type="int8" ByteOffset="1"/>
+          </Signals>
+        </NAD_Stream>
+        <NAD_Stream UID="9" Name="NadStream3" SampleMaxSizeBytes="4" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="NadSignal06" Type="int8" ByteOffset="0"/>
+          </Signals>
+        </NAD_Stream>
+
+        <VNAD_Stream UID="10" Name="VnadStream1" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="VnadSignal01" Type="int8" MaxNumber="1" Position="0"/>
+            <Signal Name="VnadSignal02" Type="int8" MaxNumber="1" Position="1"/>
+            <Signal Name="VnadSignal03" Type="int8" MaxNumber="1" Position="2"/>
+          </Signals>
+        </VNAD_Stream>
+        <VNAD_Stream UID="11" Name="VnadStream2" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="VnadSignal04" Type="int8" MaxNumber="1" Position="0"/>
+            <Signal Name="VnadSignal05" Type="int8" MaxNumber="1" Position="1"/>
+          </Signals>
+        </VNAD_Stream>
+        <VNAD_Stream UID="12" Name="VnadStream3" Direction="Out">
+          <Signals SamplingPeriodUs="10000">
+            <Signal Name="VnadSignal06" Type="int8" MaxNumber="1" Position="0"/>
+          </Signals>
+        </VNAD_Stream>
 
       </Streams>
     </MultiChannel>

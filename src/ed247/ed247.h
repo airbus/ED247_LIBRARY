@@ -1409,6 +1409,11 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_write_signal(
     const void *             signal_sample_data,
     uint32_t                 signal_sample_size);
 
+/**
+ * @brief Return true if a signal has been written since last ed247_stream_assistant_push_sample().
+ * @ingroup stream_assistant
+ */
+extern LIBED247_EXPORT bool ed247_stream_assistant_was_written(ed247_stream_assistant_t assistant);
 
 /**
  * @brief Read a signal sample from the assistant sample buffer.
