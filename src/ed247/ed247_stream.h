@@ -38,6 +38,7 @@ struct ed247_internal_stream_assistant_t;
 namespace ed247
 {
   class Context;
+  class StreamAssistant;
 
   class Stream : public ed247_internal_stream_t
   {
@@ -79,7 +80,7 @@ namespace ed247
     // Signals specific part
     bool is_signal_based() const                           { return _configuration->is_signal_based(); }
     virtual uint32_t get_sampling_period_us()              { return 0;                                 }
-    ed247_internal_stream_assistant_t* get_api_assistant() { return _assistant.get();                  }
+    StreamAssistant* get_assistant()                       { return _assistant.get();                  }
     signal_list_t& get_signals()                           { return _signals;                          }
     ed247_internal_signal_list_t*  get_client_signals()    { return _client_signals.get();             }
     signal_list_t find_signals(std::string str_regex);
@@ -127,7 +128,7 @@ namespace ed247
     uint32_t                                            _max_size;
     signal_list_t                                       _signals;
     std::unique_ptr<ed247_internal_signal_list_t>       _client_signals;
-    std::unique_ptr<ed247_internal_stream_assistant_t>  _assistant;
+    std::unique_ptr<StreamAssistant>                    _assistant;
     StreamSampleRingBuffer                              _recv_stack;
     StreamSampleRingBuffer                              _send_stack;
 
@@ -181,9 +182,12 @@ namespace ed247
     stream_map_t& streams()  { return _streams;        }
     uint32_t size() const    { return _streams.size(); }
 
+    stream_list_t& get_streams_signals_output() { return _streams_signals_output; }
+
   private:
-    stream_map_t _streams;
-    Context*     _context;
+    stream_map_t   _streams;
+    stream_list_t  _streams_signals_output;
+    Context*       _context;
   };
 }
 

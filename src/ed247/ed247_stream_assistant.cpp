@@ -51,6 +51,17 @@ ed247::StreamAssistant::~StreamAssistant()
   MEMCHECK_DEL(this, "StreamAssistant");
 }
 
+bool ed247::StreamAssistant::push_if_was_written(const ed247_timestamp_t* data_timestamp, bool* full)
+{
+  if (was_written()) {
+    return push(data_timestamp, full);
+  }
+
+  return true; // nothing to do => success
+}
+
+
+
 //
 // Fixed StreamAssistant
 //

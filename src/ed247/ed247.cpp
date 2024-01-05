@@ -552,6 +552,29 @@ ed247_status_t ed247_component_get_streams(
 /* =========================================================================
  * ED247 Context - Receive and send
  * ========================================================================= */
+ed247_status_t ed247_stream_assistants_written_push_sample(
+   ed247_context_t          context,
+   const ed247_timestamp_t* data_timestamp)
+{
+  PRINT_DEBUG("function " << __func__ << "()");
+
+  if(!context) {
+    PRINT_ERROR(__func__ << ": Invalid context");
+    return ED247_STATUS_FAILURE;
+  }
+
+  try{
+    ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
+    if (ed247_context->stream_assistants_written_push_sample(data_timestamp)) {
+      return ED247_STATUS_SUCCESS;
+    } else {
+      return ED247_STATUS_FAILURE;
+    }
+  }
+  LIBED247_CATCH("ed247_stream_assistants_written_push_sample");
+}
+
+
 ed247_status_t ed247_wait_frame(
   ed247_context_t       context,
   ed247_stream_list_t * streams,
@@ -1326,7 +1349,7 @@ ed247_status_t ed247_stream_get_assistant(
   *assistant = nullptr;
   try{
     auto ed247_stream = (ed247::Stream*)(stream);
-    *assistant = ed247_stream->get_api_assistant();
+    *assistant = ed247_stream->get_assistant();
     if(*assistant == nullptr) {
       PRINT_WARNING("Stream '" << ed247_stream->get_name() << "' do not have a valid stream signal assistant.");
       return ED247_STATUS_FAILURE;

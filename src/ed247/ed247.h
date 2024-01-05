@@ -585,6 +585,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_wait_during(
  * @brief Send the samples that were written and pushed.
  * @details See also :
  *       - ed247_stream_assistant_write_signal(), ed247_stream_assistant_push_sample()
+ *       - ed247_stream_assistants_written_push_sample(),
  *       - ed247_stream_push_sample(), ed247_stream_push_samples()
  *
  * <b>This function clear send stacks.</b>
@@ -1391,9 +1392,10 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_get_stream(
  *   - nad_type_size * dimensions for NAD,
  *   - a multiple of nad_type_size for VNAD.
  *
- * Once signals are wrotten, call ed247_stream_assistant_push_sample() to push the sample on the stream stack. <br/>
- * if a non-VNAD signal is not wrotten before the push, the previous value will be sent (0 if no write at all). <br/>
+ * Once signals are written, call ed247_stream_assistant_push_sample() to push the sample on the stream stack. <br/>
+ * if a non-VNAD signal is not wrotten before the push, the previous value will be sent (0 if never wrote). <br/>
  * if a VNAD signal is not wrotten before the push, it will not be part of the payload. <br/>
+ * See also ed247_stream_assistants_written_push_sample().
  *
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
@@ -1449,8 +1451,9 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_read_signal(
  * If internal stack is full, the oldest sample will be silently dropped. This is not an error.
  *
  * Signals shall have been wrotten by ed247_stream_assistant_write_signal(). <br/>
- * if a non-VNAD signal is not wrotten before the push, the previous value will be sent (0 if no write at all). <br/>
+ * if a non-VNAD signal is not wrotten before the push, the previous value will be sent (0 if never wrote). <br/>
  * if a VNAD signal is not wrotten before the push, it will not be part of the payload. <br/>
+ * See also ed247_stream_assistants_written_push_sample().
  *
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
@@ -1464,6 +1467,21 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_push_sample(
     const ed247_timestamp_t * data_timestamp,
     bool *                    full);
 
+/**
+ * @brief Push all stream assistants whose signals have been written since last push_sample()
+ * @ingroup stream_assistant
+ * @details This function will check, for each output stream assistant, if some signals have
+ * been written (call to ed247_stream_assistant_was_written()). It will push all the assistants
+ * that match. (call to ed247_stream_assistant_push_sample()).
+ * The stream will be effectively send by calling ed247_send_pushed_samples().
+ * @param[in] context Context
+ * @param[in] data_timestamp either NULL or define the data timestamp associated with the sample.
+ * @retval ED247_STATUS_SUCCESS
+ * @retval ED247_STATUS_FAILURE
+ */
+extern LIBED247_EXPORT ed247_status_t ed247_stream_assistants_written_push_sample(
+   ed247_context_t          context,
+   const ed247_timestamp_t* data_timestamp);
 
 /**
  * @brief Pop a sample from stream samples stack.

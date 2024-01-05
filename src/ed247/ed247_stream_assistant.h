@@ -26,14 +26,22 @@ namespace ed247
 
     Stream* get_api_stream() { return _stream; }
 
+    // Write a signal to the stream
     virtual bool write(const Signal& signal, const void* data, uint32_t size) = 0;
+    // Read a signal from the stream
     virtual bool read(const Signal& signal, const void** data, uint32_t* size) = 0;
 
+    // See stream::push_sample() for details
     virtual bool push(const ed247_timestamp_t* data_timestamp, bool* full) = 0;
+    // See stream::pop_sample() for details
     virtual ed247_status_t pop(const ed247_timestamp_t** data_timestamp, const ed247_timestamp_t** recv_timestamp,
                                const ed247_sample_details_t** frame_details, bool* empty) = 0;
 
+    // Check is some signals han been written since last push
     bool was_written() { return _was_written; }
+
+    // Push data only if was_written(). See stream::push_sample() for details
+    bool push_if_was_written(const ed247_timestamp_t* data_timestamp, bool* full);
 
   protected:
     Stream* _stream;

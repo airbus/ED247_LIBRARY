@@ -113,9 +113,8 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_EQ(signal_sample->capacity(), signal->get_sample_max_size_bytes());
 
   // Check BaseStream::Assistant creation
-  ed247_stream_assistant_t api_assistant = stream->get_api_assistant();
-  ASSERT_NE(api_assistant, nullptr);
-  ed247::StreamAssistant* assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
+  ed247::StreamAssistant* assistant = stream->get_assistant();
+  ASSERT_NE(assistant, nullptr);
 
   // Check write & push
   std::vector<std::unique_ptr<ed247::Sample>> samples;
@@ -148,9 +147,8 @@ TEST_P(SignalContext, SinglePushPop)
   ASSERT_NE(stream, nullptr);
   stream->_recv_stack.push_back().copy(stream_sample.data(), stream_sample.size());
 
-  api_assistant = stream->get_api_assistant();
+  assistant = stream->get_assistant();
   ASSERT_NE(assistant, nullptr);
-  assistant = static_cast<ed247::StreamAssistant*>(api_assistant);
   assistant->pop(nullptr, nullptr, nullptr, nullptr);
   for(auto & signal : stream->get_signals()){
     std::unique_ptr<ed247::Sample> sample(new ed247::Sample(signal->get_sample_max_size_bytes()));

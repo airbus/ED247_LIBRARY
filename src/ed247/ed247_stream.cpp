@@ -96,9 +96,9 @@ ed247::StreamSignals::StreamSignals(Context* context, const xml::Stream* configu
     _signals.push_back(signal);
   }
   if (get_type() == ED247_STREAM_TYPE_VNAD) {
-    _assistant = std::unique_ptr<ed247_internal_stream_assistant_t>(new VNADStreamAssistant(this));
+    _assistant = std::unique_ptr<StreamAssistant>(new VNADStreamAssistant(this));
   } else {
-    _assistant = std::unique_ptr<ed247_internal_stream_assistant_t>(new FixedStreamAssistant(this));
+    _assistant = std::unique_ptr<StreamAssistant>(new FixedStreamAssistant(this));
   }
 }
 
@@ -459,6 +459,12 @@ ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configura
     break;
   }
 
+  // Store output signal based streams for fast access
+  if (stream->is_signal_based() && stream->get_direction() == ED247_DIRECTION_OUT) {
+    _streams_signals_output.push_back(stream);
+  }
+
+  // Store all streams
   auto result = _streams.emplace(std::make_pair(configuration->_name, stream));
   if (result.second == false) THROW_ED247_ERROR("Stream [" << configuration->_name << "] already exist !");
   return result.first->second;
