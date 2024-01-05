@@ -1,9 +1,12 @@
 #define TEST_ACTOR_ID TEST_ACTOR1_ID
 #include "two_actors_test.h"
 
-class signalsAutoPushFixture : public TestContext {};
+class assistantHelpersFixture : public TestContext {};
 
-TEST_P(signalsAutoPushFixture, signalsAutoPushMain)
+//
+// Validate ed247_signal_get_assistant & ed247_stream_assistant_was_written for all kind of signals
+//
+TEST_P(assistantHelpersFixture, assistantHelpersWritten)
 {
   //
   // DIS test
@@ -129,7 +132,7 @@ TEST_P(signalsAutoPushFixture, signalsAutoPushMain)
 
 
 std::vector<TestParams> ecic_files;
-INSTANTIATE_TEST_CASE_P(signalsAutoPush, signalsAutoPushFixture,
+INSTANTIATE_TEST_CASE_P(assistantHelpers, assistantHelpersFixture,
                         ::testing::ValuesIn(ecic_files));
 
 int main(int argc, char **argv)
@@ -139,7 +142,7 @@ int main(int argc, char **argv)
   tests_tools::display_ed247_lib_infos();
   SAY("Configuration path: " << config_path);
 
-  ecic_files.push_back({TEST_ACTOR_ID, config_path + "/ecic_func_signals_autopush_sender.xml"});
+  ecic_files.push_back({TEST_ACTOR_ID, config_path + "/ecic_func_streamassistant_helpers_sender.xml"});
 
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
