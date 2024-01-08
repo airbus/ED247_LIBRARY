@@ -94,7 +94,7 @@ ed247::Context::Context(std::unique_ptr<ed247::xml::Component>&& configuration):
   }
 }
 
-bool ed247::Context::stream_assistants_written_push_sample(const ed247_timestamp_t* data_timestamp)
+bool ed247::Context::stream_assistants_written_push_samples(const ed247_timestamp_t* data_timestamp)
 {
   for(auto& stream : _stream_set.get_streams_signals_output()) {
     if (stream->get_assistant()->push_if_was_written(data_timestamp, nullptr) == false) {

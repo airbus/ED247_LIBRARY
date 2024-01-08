@@ -552,7 +552,7 @@ ed247_status_t ed247_component_get_streams(
 /* =========================================================================
  * ED247 Context - Receive and send
  * ========================================================================= */
-ed247_status_t ed247_stream_assistants_written_push_sample(
+ed247_status_t ed247_stream_assistants_written_push_samples(
    ed247_context_t          context,
    const ed247_timestamp_t* data_timestamp)
 {
@@ -565,13 +565,13 @@ ed247_status_t ed247_stream_assistants_written_push_sample(
 
   try{
     ed247::Context* ed247_context = static_cast<ed247::Context*>(context);
-    if (ed247_context->stream_assistants_written_push_sample(data_timestamp)) {
+    if (ed247_context->stream_assistants_written_push_samples(data_timestamp)) {
       return ED247_STATUS_SUCCESS;
     } else {
       return ED247_STATUS_FAILURE;
     }
   }
-  LIBED247_CATCH("ed247_stream_assistants_written_push_sample");
+  LIBED247_CATCH("ed247_stream_assistants_written_push_samples");
 }
 
 

@@ -131,7 +131,7 @@ TEST_P(assistantHelpersFixture, assistantHelpersWritten)
 }
 
 //
-// Validate ed247_stream_assistants_written_push_sample for all kind of signals
+// Validate ed247_stream_assistants_written_push_samples for all kind of signals
 //
 TEST_P(assistantHelpersFixture, assistantHelpersPushWritten)
 {
@@ -245,7 +245,7 @@ TEST_P(assistantHelpersFixture, assistantHelpersPushWritten)
   ASSERT_EQ(ed247_stream_assistant_write_signal(VnadSignal06_assistant, VnadSignal06, &vnad_data, 1), ED247_STATUS_SUCCESS);
 
   // Push all stream assistants that has been written then send all data
-  ASSERT_EQ(ed247_stream_assistants_written_push_sample(_context, nullptr), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_stream_assistants_written_push_samples(_context, nullptr), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
   TEST_SYNC("PushWritten send #1");
   TEST_SYNC("PushWritten read #1");
@@ -256,7 +256,7 @@ TEST_P(assistantHelpersFixture, assistantHelpersPushWritten)
   // ============================================================
 
   // Push and send without any new writes
-  ASSERT_EQ(ed247_stream_assistants_written_push_sample(_context, nullptr), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_stream_assistants_written_push_samples(_context, nullptr), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
   TEST_SYNC("PushWritten send #2");
   TEST_SYNC("PushWritten read #2");
@@ -279,7 +279,7 @@ TEST_P(assistantHelpersFixture, assistantHelpersPushWritten)
   ASSERT_EQ(ed247_stream_assistant_write_signal(VnadSignal04_assistant, VnadSignal04, &vnad_data, 1), ED247_STATUS_SUCCESS);
 
   // Push all stream assistants that has been written then send all data
-  ASSERT_EQ(ed247_stream_assistants_written_push_sample(_context, nullptr), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_stream_assistants_written_push_samples(_context, nullptr), ED247_STATUS_SUCCESS);
   ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
   TEST_SYNC("PushWritten send #3");
   TEST_SYNC("PushWritten read #3");

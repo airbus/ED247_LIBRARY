@@ -585,7 +585,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_wait_during(
  * @brief Send the samples that were written and pushed.
  * @details See also :
  *       - ed247_stream_assistant_write_signal(), ed247_stream_assistant_push_sample()
- *       - ed247_stream_assistants_written_push_sample(),
+ *       - ed247_stream_assistants_written_push_samples(),
  *       - ed247_stream_push_sample(), ed247_stream_push_samples()
  *
  * <b>This function clear send stacks.</b>
@@ -1395,7 +1395,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_get_stream(
  * Once signals are written, call ed247_stream_assistant_push_sample() to push the sample on the stream stack. <br/>
  * if a non-VNAD signal is not wrotten before the push, the previous value will be sent (0 if never wrote). <br/>
  * if a VNAD signal is not wrotten before the push, it will not be part of the payload. <br/>
- * See also ed247_stream_assistants_written_push_sample().
+ * See also ed247_stream_assistants_written_push_samples().
  *
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
@@ -1453,7 +1453,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_read_signal(
  * Signals shall have been wrotten by ed247_stream_assistant_write_signal(). <br/>
  * if a non-VNAD signal is not wrotten before the push, the previous value will be sent (0 if never wrote). <br/>
  * if a VNAD signal is not wrotten before the push, it will not be part of the payload. <br/>
- * See also ed247_stream_assistants_written_push_sample().
+ * See also ed247_stream_assistants_written_push_samples().
  *
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
@@ -1479,7 +1479,7 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_push_sample(
  * @retval ED247_STATUS_SUCCESS
  * @retval ED247_STATUS_FAILURE
  */
-extern LIBED247_EXPORT ed247_status_t ed247_stream_assistants_written_push_sample(
+extern LIBED247_EXPORT ed247_status_t ed247_stream_assistants_written_push_samples(
    ed247_context_t          context,
    const ed247_timestamp_t* data_timestamp);
 

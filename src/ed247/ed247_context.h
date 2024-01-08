@@ -74,7 +74,7 @@ namespace ed247
     // Push all stream assistants whose signals have been written since last push_sample()
     // This function will only call StreamAssistant::push_if_was_written() for all output stream assistants
     // Return false only for fatal error (see stream::push_sample() for details)
-    bool stream_assistants_written_push_sample(const ed247_timestamp_t* data_timestamp);
+    bool stream_assistants_written_push_samples(const ed247_timestamp_t* data_timestamp);
 
     // Send all pushed streams in their respective channels/CommInterface
     void send_pushed_samples();
