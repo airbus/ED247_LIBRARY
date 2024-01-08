@@ -76,6 +76,13 @@ namespace ed247
     // Return false only for fatal error (see stream::push_sample() for details)
     bool stream_assistants_written_push_samples(const ed247_timestamp_t* data_timestamp);
 
+    // Pop all samples of all input signal based streams.
+    // After this call, all stream assistants will provide the last received signals value throught the read() method.
+    // If a singal has never been received, its value will be 0.
+    // This function is equivalent to call pop() on all stream assistants until all fifos are empties.
+    // Return false only for fatal error (see stream::push_sample() for details)
+    bool stream_assistants_pop_samples();
+
     // Send all pushed streams in their respective channels/CommInterface
     void send_pushed_samples();
 

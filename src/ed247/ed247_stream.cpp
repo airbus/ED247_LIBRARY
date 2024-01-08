@@ -459,9 +459,13 @@ ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configura
     break;
   }
 
-  // Store output signal based streams for fast access
-  if (stream->is_signal_based() && stream->get_direction() == ED247_DIRECTION_OUT) {
-    _streams_signals_output.push_back(stream);
+  // Store signal based streams for fast access
+  if (stream->is_signal_based()) {
+    if (stream->get_direction() == ED247_DIRECTION_OUT) {
+      _streams_signals_output.push_back(stream);
+    } else {
+      _streams_signals_input.push_back(stream);
+    }
   }
 
   // Store all streams

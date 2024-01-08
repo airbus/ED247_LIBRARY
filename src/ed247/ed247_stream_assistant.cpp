@@ -114,6 +114,7 @@ ed247_status_t ed247::FixedStreamAssistant::pop(const ed247_timestamp_t** data_t
 
   if (_stream->get_incoming_sample_number() == 0) {
     PRINT_CRAZY("Stream '" << _stream->get_name() << "': no data received.");
+    if (empty) *empty = true;
     return ED247_STATUS_NODATA;
   }
 
@@ -200,6 +201,7 @@ ed247_status_t ed247::VNADStreamAssistant::pop(const ed247_timestamp_t** data_ti
 
   if (_stream->get_incoming_sample_number() == 0) {
     PRINT_CRAZY("Stream '" << _stream->get_name() << "': no data received.");
+    if (empty) *empty = true;
     return ED247_STATUS_NODATA;
   }
 

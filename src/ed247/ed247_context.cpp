@@ -104,6 +104,20 @@ bool ed247::Context::stream_assistants_written_push_samples(const ed247_timestam
   return true;
 }
 
+bool ed247::Context::stream_assistants_pop_samples()
+{
+  for(auto& stream : _stream_set.get_streams_signals_input()) {
+    bool empty = false;
+    while (empty == false) {
+      if (stream->get_assistant()->pop(nullptr, nullptr, nullptr, &empty) == ED247_STATUS_FAILURE) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
 void ed247::Context::send_pushed_samples()
 {
   for(auto& channel : _channel_set.channels()) {

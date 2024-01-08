@@ -183,10 +183,12 @@ namespace ed247
     uint32_t size() const    { return _streams.size(); }
 
     stream_list_t& get_streams_signals_output() { return _streams_signals_output; }
+    stream_list_t& get_streams_signals_input() { return _streams_signals_input; }
 
   private:
     stream_map_t   _streams;
     stream_list_t  _streams_signals_output;
+    stream_list_t  _streams_signals_input;
     Context*       _context;
   };
 }

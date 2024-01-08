@@ -1420,6 +1420,8 @@ extern LIBED247_EXPORT bool ed247_stream_assistant_was_written(ed247_stream_assi
 /**
  * @brief Read a signal sample from the assistant sample buffer.
  * @details
+ * /!\ The assistant sample buffer is updated by ed247_stream_assistant_pop_sample() or stream_assistants_pop_samples().
+ *
  * This function manage endianness (analogue, NAD, VNAD). <br/>
  *
  * The `signal_sample_size` will be be set to:
@@ -1428,7 +1430,6 @@ extern LIBED247_EXPORT bool ed247_stream_assistant_was_written(ed247_stream_assi
  *   - nad_type_size * dimensions for NAD,
  *   - a multiple of nad_type_size for VNAD (including 0).
  *
- * The assistant sample buffer is updated by ed247_stream_assistant_pop_sample(). It shall be called before readings.
  * @ingroup stream_assistant
  * @param[in] assistant Assistant identifier
  * @param[in] signal Signal identifier
@@ -1507,6 +1508,18 @@ extern LIBED247_EXPORT ed247_status_t ed247_stream_assistant_pop_sample(
     const ed247_timestamp_t **      recv_timestamp,
     const ed247_sample_details_t ** sample_details,
     bool *                          empty);
+
+/**
+ * @brief Pop all samples of all input stream assistants. aka 'update all signals'.
+ * @ingroup stream_assistant
+ * @details
+ * After this call, all stream assistants will provide the last received signals value throught ed247_stream_assistant_read_signal().
+ * If a singal has never been received, its value will be 0.
+ * This function is equivalent to call ed247_stream_assistant_pop_sample() on all stream assistants until all fifos are empties.
+ * @param[in] context Context
+ * @return ED247_STATUS_FAILURE on fatal error, else ED247_STATUS_SUCCESS.
+ */
+extern LIBED247_EXPORT ed247_status_t stream_assistants_pop_samples(ed247_context_t context);
 
 /* =========================================================================
  * Strings conversion

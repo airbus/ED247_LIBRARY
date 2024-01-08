@@ -286,6 +286,163 @@ TEST_P(assistantHelpersFixture, assistantHelpersPushWritten)
 }
 
 
+//
+// stream_assistants_pop_samples for all kind of signals
+//
+TEST_P(assistantHelpersFixture, assistantHelpersPopAll)
+{
+  //  ed247_set_log_level(ED247_LOG_LEVEL_CRAZY);
+
+  // Load signal and their assistants
+  // Signals that are in the same stream will have the same assistant, but we needn't to know that.
+  uint8_t dis_data = 0;
+  ed247_signal_t           DisSignal01;
+  ed247_stream_assistant_t DisSignal01_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "DisSignal01", &DisSignal01), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(DisSignal01, &DisSignal01_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           DisSignal03;
+  ed247_stream_assistant_t DisSignal03_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "DisSignal03", &DisSignal03), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(DisSignal03, &DisSignal03_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           DisSignal04;
+  ed247_stream_assistant_t DisSignal04_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "DisSignal04", &DisSignal04), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(DisSignal04, &DisSignal04_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           DisSignal06;
+  ed247_stream_assistant_t DisSignal06_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "DisSignal06", &DisSignal06), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(DisSignal06, &DisSignal06_assistant), ED247_STATUS_SUCCESS);
+
+  float ana_data = 0.0;
+  ed247_signal_t           AnaSignal01;
+  ed247_stream_assistant_t AnaSignal01_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "AnaSignal01", &AnaSignal01), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(AnaSignal01, &AnaSignal01_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           AnaSignal03;
+  ed247_stream_assistant_t AnaSignal03_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "AnaSignal03", &AnaSignal03), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(AnaSignal03, &AnaSignal03_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           AnaSignal04;
+  ed247_stream_assistant_t AnaSignal04_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "AnaSignal04", &AnaSignal04), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(AnaSignal04, &AnaSignal04_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           AnaSignal06;
+  ed247_stream_assistant_t AnaSignal06_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "AnaSignal06", &AnaSignal06), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(AnaSignal06, &AnaSignal06_assistant), ED247_STATUS_SUCCESS);
+
+  uint8_t nad_data = 0;
+  ed247_signal_t           NadSignal01;
+  ed247_stream_assistant_t NadSignal01_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "NadSignal01", &NadSignal01), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(NadSignal01, &NadSignal01_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           NadSignal03;
+  ed247_stream_assistant_t NadSignal03_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "NadSignal03", &NadSignal03), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(NadSignal03, &NadSignal03_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           NadSignal04;
+  ed247_stream_assistant_t NadSignal04_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "NadSignal04", &NadSignal04), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(NadSignal04, &NadSignal04_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           NadSignal06;
+  ed247_stream_assistant_t NadSignal06_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "NadSignal06", &NadSignal06), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(NadSignal06, &NadSignal06_assistant), ED247_STATUS_SUCCESS);
+
+  uint8_t vnad_data = 0;
+  ed247_signal_t           VnadSignal01;
+  ed247_stream_assistant_t VnadSignal01_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "VnadSignal01", &VnadSignal01), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(VnadSignal01, &VnadSignal01_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           VnadSignal03;
+  ed247_stream_assistant_t VnadSignal03_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "VnadSignal03", &VnadSignal03), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(VnadSignal03, &VnadSignal03_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           VnadSignal04;
+  ed247_stream_assistant_t VnadSignal04_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "VnadSignal04", &VnadSignal04), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(VnadSignal04, &VnadSignal04_assistant), ED247_STATUS_SUCCESS);
+  ed247_signal_t           VnadSignal06;
+  ed247_stream_assistant_t VnadSignal06_assistant;
+  ASSERT_EQ(ed247_get_signal(_context, "VnadSignal06", &VnadSignal06), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_signal_get_assistant(VnadSignal06, &VnadSignal06_assistant), ED247_STATUS_SUCCESS);
+
+  // ============================================================
+  // Test1: write/push/send some signal but not all the streams
+  // ============================================================
+
+  // Write some signals (but not alls)
+  dis_data = 101;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(DisSignal01_assistant, DisSignal01, &dis_data, 1), ED247_STATUS_SUCCESS);
+  dis_data = 103;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(DisSignal03_assistant, DisSignal03, &dis_data, 1), ED247_STATUS_SUCCESS);
+  dis_data = 106;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(DisSignal06_assistant, DisSignal06, &dis_data, 1), ED247_STATUS_SUCCESS);
+
+  ana_data = 101;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(AnaSignal01_assistant, AnaSignal01, &ana_data, 4), ED247_STATUS_SUCCESS);
+  ana_data = 103;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(AnaSignal03_assistant, AnaSignal03, &ana_data, 4), ED247_STATUS_SUCCESS);
+  ana_data = 106;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(AnaSignal06_assistant, AnaSignal06, &ana_data, 4), ED247_STATUS_SUCCESS);
+
+  nad_data = 101;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(NadSignal01_assistant, NadSignal01, &nad_data, 1), ED247_STATUS_SUCCESS);
+  nad_data = 103;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(NadSignal03_assistant, NadSignal03, &nad_data, 1), ED247_STATUS_SUCCESS);
+  nad_data = 106;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(NadSignal06_assistant, NadSignal06, &nad_data, 1), ED247_STATUS_SUCCESS);
+
+  vnad_data = 101;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(VnadSignal01_assistant, VnadSignal01, &vnad_data, 1), ED247_STATUS_SUCCESS);
+  vnad_data = 103;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(VnadSignal03_assistant, VnadSignal03, &vnad_data, 1), ED247_STATUS_SUCCESS);
+  vnad_data = 106;
+  ASSERT_EQ(ed247_stream_assistant_write_signal(VnadSignal06_assistant, VnadSignal06, &vnad_data, 1), ED247_STATUS_SUCCESS);
+
+  // Push all stream assistants that has been written then send all data
+  ASSERT_EQ(ed247_stream_assistants_written_push_samples(_context, nullptr), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
+  TEST_SYNC("PopAll send #1");
+  TEST_SYNC("PopAll read #1");
+
+
+  // ============================================================
+  // Test2: push/send nothing
+  // ============================================================
+
+  // Push and send without any new writes
+  ASSERT_EQ(ed247_stream_assistants_written_push_samples(_context, nullptr), ED247_STATUS_SUCCESS);
+  ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
+  TEST_SYNC("PopAll send #2");
+  TEST_SYNC("PopAll read #2");
+
+
+  // ============================================================
+  // Test3: write/push/send other signals than in test1 and
+  // several times.
+  // ============================================================
+  for (int i : {1, 2, 3}) {
+    dis_data = 104 + 10 * i;
+    ASSERT_EQ(ed247_stream_assistant_write_signal(DisSignal04_assistant, DisSignal04, &dis_data, 1), ED247_STATUS_SUCCESS);
+    ana_data = 104 + 10 * i;
+    ASSERT_EQ(ed247_stream_assistant_write_signal(AnaSignal04_assistant, AnaSignal04, &ana_data, 4), ED247_STATUS_SUCCESS);
+    nad_data = 104 + 10 * i;
+    ASSERT_EQ(ed247_stream_assistant_write_signal(NadSignal04_assistant, NadSignal04, &nad_data, 1), ED247_STATUS_SUCCESS);
+    vnad_data = 104 + 10 * i;
+    ASSERT_EQ(ed247_stream_assistant_write_signal(VnadSignal04_assistant, VnadSignal04, &vnad_data, 1), ED247_STATUS_SUCCESS);
+
+    SAY("Send/Push number " << i);
+    ASSERT_EQ(ed247_stream_assistants_written_push_samples(_context, nullptr), ED247_STATUS_SUCCESS);
+    ASSERT_EQ(ed247_send_pushed_samples(_context), ED247_STATUS_SUCCESS);
+  }
+
+  TEST_SYNC("PopAll send #3");
+  TEST_SYNC("PopAll read #3");
+
+}
+
+
 std::vector<TestParams> ecic_files;
 INSTANTIATE_TEST_CASE_P(assistantHelpers, assistantHelpersFixture,
                         ::testing::ValuesIn(ecic_files));
