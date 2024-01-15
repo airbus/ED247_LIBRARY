@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd"
+                                     StandardRevision="A" ComponentType="Virtual" Name="Component1" Identifier="1">
+  <Channels>
+    <MultiChannel Name="Channel1">
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="51248" Direction="In"/>
+        </UDP_Sockets>
+      </ComInterface>
+
+      <!-- In ED247 A, frame header and TTS are disabled by default -->
+      <Header Enable="Yes" TransportTimestamp="Yes" />
+
+      <Streams>
+        <!--
+            A stream of signals is specialized. It is either a Discrete, an Analogue, a NAD or a VNAD stream.
+            A stream of signals cannot be partially sent or received. Only the whole stream can be exchanged.
+            That mean all its signals will be sent and received.
+
+            The resolving process is in charge of generating the streams of signal, that includes the stream
+            SampleMaxSizeBytes and the signals ByteOffset. This will be demonstrated in a further example.
+
+            DataTimestamp is disabled by default. Be sure of the need before enabling it: depending on stream
+            type, this option may have performances impacts.
+
+            The ED247 protocol allows queuing of signals. That mean you can define a SampleMaxNumber on stream
+            of signals. This use case is not addressed here.
+        -->
+        <DIS_Stream UID="0" Name="DIS_STREAM1" SampleMaxSizeBytes="2" Direction="In">
+          <DataTimestamp Enable="Yes"  SampleDataTimestampOffset="Yes" />
+          <Signals>
+            <Signal Name="DIS_SIGNAL1" ByteOffset="0" />
+            <Signal Name="DIS_SIGNAL2" ByteOffset="1" />
+          </Signals>
+        </DIS_Stream>
+        <DIS_Stream UID="1" Name="DIS_STREAM2" SampleMaxSizeBytes="1" Direction="In">
+          <DataTimestamp Enable="Yes"  SampleDataTimestampOffset="Yes" />
+          <Signals>
+            <Signal Name="DIS_SIGNAL3" ByteOffset="0" />
+          </Signals>
+        </DIS_Stream>
+      </Streams>
+    </MultiChannel>
+
+    <!-- This channel is used to synchronize sender and receiver in the example (not part of the example) -->
+    <Channel Name="SYNC">
+      <FrameFormat StandardRevision="A"/>
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="51240" Direction="Out"/>
+        </UDP_Sockets>
+      </ComInterface>
+      <Stream>
+        <A664_Stream Name="SYNC" SampleMaxSizeBytes="4" SampleMaxNumber="1" Direction="Out" />
+      </Stream>
+    </Channel>
+  </Channels>
+</ED247ComponentInstanceConfiguration>

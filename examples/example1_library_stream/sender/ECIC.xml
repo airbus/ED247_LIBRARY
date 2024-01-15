@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ED247ComponentInstanceConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd"
+                                     StandardRevision="A" ComponentType="Virtual" Name="Component1" Identifier="1">
+  <Channels>
+    <!--
+        A channel make the link between a Communication Interface and one or more streams.
+        MutiChannels are channels with several streams. That only mean all the streams of one
+        channel share the same Communication Interface. They need NOT to be sent together nor
+        at the same time/frequency.
+    -->
+    <MultiChannel Name="Channel1">
+      <FrameFormat StandardRevision="A"/>
+      <!--
+          The Communication interface define the sockets to be used to send/receive data.
+          A producer shall have one unicast socket per consumer.
+          The producer write to DstIP/DstPort.
+          The consumer ALSO read from DstIP/DstPort.
+          SrcIP/SrcPort are used for optional UDP tricks that are not used in these examples.
+      -->
+      <ComInterface>
+        <UDP_Sockets>
+          <UDP_Socket DstIP="127.0.0.1" DstPort="51248" Direction="Out"/>
+        </UDP_Sockets>
+      </ComInterface>
+      <Streams>
+        <!--
+            All ED247 stream - not only AFDX - have the following properties:
+            - Name: Identify the stream within the EC. It has to be unique for one ECIC.
+            This name is not used for the transport. Producer and consumers may use different
+            names for the same stream. Moreover, two ECs can use the same name for different streams.
+            - SampleMaxSizeBytes: Maximum size of one sample, in bytes.
+              * The same attribute is used for fixed-size sample like AFDX sampling.
+              * Fixed to 4 for A429 buses, the size of one A429 word (attribute cannot be set)
+            - SampleMaxNumber: Maximum number of samples that can be sent or received
+             in one ED247 stream (in samples count, not bytes).
+              * With the library, if you push or receive more than SampleMaxNumber samples,
+                older ones are lost. If you only need the last value, like for AFDX sampling, this
+                attribute can be set to 1. This is more complex for buses, see next example.
+            - Direction
+
+            The UID is a transport information that identify the stream within the channel.
+            For revision A, It has to be unique for this channel.
+        -->
+        <A664_Stream Name="AFDX_MESSAGE1" UID="1" SampleMaxSizeBytes="500" SampleMaxNumber="1" Direction="Out"/>
+      </Streams>
+    </MultiChannel>
+  </Channels>
+</ED247ComponentInstanceConfiguration>
