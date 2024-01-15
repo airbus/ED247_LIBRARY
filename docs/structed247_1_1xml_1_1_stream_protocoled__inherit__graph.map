@@ -1,0 +1,8 @@
+<map id="ed247::xml::StreamProtocoled" name="ed247::xml::StreamProtocoled">
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_a429_stream.html" title="{ed247::xml::A429Stream\n||+ A429Stream()\l+ load()\l+ validate()\l}" alt="" coords="5,573,171,680"/>
+<area shape="rect" id="node5" href="$structed247_1_1xml_1_1_a664_stream.html" title="{ed247::xml::A664Stream\n|+ _enable_message_size\l|+ A664Stream()\l+ load()\l+ validate()\l}" alt="" coords="196,573,367,680"/>
+<area shape="rect" id="node6" href="$structed247_1_1xml_1_1_a825_stream.html" title="{ed247::xml::A825Stream\n||+ A825Stream()\l+ load()\l+ validate()\l}" alt="" coords="391,573,557,680"/>
+<area shape="rect" id="node7" href="$structed247_1_1xml_1_1_s_e_r_i_a_l_stream.html" title="{ed247::xml::SERIALStream\n||+ SERIALStream()\l+ load()\l+ validate()\l}" alt="" coords="583,573,767,680"/>
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_stream.html" title="{ed247::xml::Stream\n|+ _name\l+ _direction\l+ _type\l+ _comment\l+ _icd\l+ _uid\l+ _sample_max_number\l+ _sample_max_size_bytes\l+ _sample_size_fixed\l+ _data_timestamp\l|+ is_signal_based()\l+ validate()\l+ Stream()\l+ ~Stream()\l}" alt="" coords="285,131,469,384"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="315,5,440,83"/>
+</map>

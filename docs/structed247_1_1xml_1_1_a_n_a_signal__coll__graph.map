@@ -1,0 +1,4 @@
+<map id="ed247::xml::ANASignal" name="ed247::xml::ANASignal">
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_signal.html" title="{ed247::xml::Signal\n||+ get_sample_max_size\l_bytes()\l+ get_nad_type_size()\l+ Signal()\l+ ~Signal()\l+ get_nad_type_size()\l}" alt="" coords="337,219,500,370"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="5,5,131,83"/>
+</map>

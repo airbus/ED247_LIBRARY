@@ -1,0 +1,13 @@
+<map id="ed247::xml::Stream" name="ed247::xml::Stream">
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_stream_protocoled.html" title="{ed247::xml::StreamProtocoled\n|+ _errors\l|+ is_signal_based()\l+ StreamProtocoled()\l}" alt="" coords="375,439,573,531"/>
+<area shape="rect" id="node8" href="$structed247_1_1xml_1_1_stream_signals.html" title="{ed247::xml::StreamSignals\n|+ _signal_list\l+ _sampling_period_us\l|+ is_signal_based()\l+ StreamSignals()\l}" alt="" coords="969,432,1148,539"/>
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="704,5,829,83"/>
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_a429_stream.html" title="{ed247::xml::A429Stream\n||+ A429Stream()\l+ load()\l+ validate()\l}" alt="" coords="5,587,171,693"/>
+<area shape="rect" id="node5" href="$structed247_1_1xml_1_1_a664_stream.html" title="{ed247::xml::A664Stream\n|+ _enable_message_size\l|+ A664Stream()\l+ load()\l+ validate()\l}" alt="" coords="196,587,367,693"/>
+<area shape="rect" id="node6" href="$structed247_1_1xml_1_1_a825_stream.html" title="{ed247::xml::A825Stream\n||+ A825Stream()\l+ load()\l+ validate()\l}" alt="" coords="391,587,557,693"/>
+<area shape="rect" id="node7" href="$structed247_1_1xml_1_1_s_e_r_i_a_l_stream.html" title="{ed247::xml::SERIALStream\n||+ SERIALStream()\l+ load()\l+ validate()\l}" alt="" coords="583,587,767,693"/>
+<area shape="rect" id="node9" href="$structed247_1_1xml_1_1_a_n_a_stream.html" title="{ed247::xml::ANAStream\n||+ ANAStream()\l+ load()\l+ validate()\l}" alt="" coords="791,587,955,693"/>
+<area shape="rect" id="node10" href="$structed247_1_1xml_1_1_d_i_s_stream.html" title="{ed247::xml::DISStream\n||+ DISStream()\l+ load()\l+ validate()\l}" alt="" coords="979,587,1137,693"/>
+<area shape="rect" id="node11" href="$structed247_1_1xml_1_1_n_a_d_stream.html" title="{ed247::xml::NADStream\n||+ NADStream()\l+ load()\l+ validate()\l}" alt="" coords="1163,587,1328,693"/>
+<area shape="rect" id="node12" href="$structed247_1_1xml_1_1_v_n_a_d_stream.html" title="{ed247::xml::VNADStream\n||+ VNADStream()\l+ load()\l+ validate()\l}" alt="" coords="1353,587,1527,693"/>
+</map>

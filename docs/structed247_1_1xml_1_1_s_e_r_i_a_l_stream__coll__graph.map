@@ -1,0 +1,7 @@
+<map id="ed247::xml::SERIALStream" name="ed247::xml::SERIALStream">
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_stream_protocoled.html" title="{ed247::xml::StreamProtocoled\n||+ is_signal_based()\l+ StreamProtocoled()\l}" alt="" coords="821,537,1019,629"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_stream.html" title="{ed247::xml::Stream\n||+ is_signal_based()\l+ validate()\l+ Stream()\l+ ~Stream()\l}" alt="" coords="445,363,581,485"/>
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="847,5,972,83"/>
+<area shape="rect" id="node9" href="$structed247_1_1xml_1_1_data_timestamp.html" title="{ed247::xml::DataTimestamp\n||+ DataTimestamp()\l+ load()\l}" alt="" coords="844,177,1031,269"/>
+<area shape="rect" id="node13" href="$structed247_1_1xml_1_1_errors.html" title="{ed247::xml::Errors\n||+ Errors()\l+ load()\l}" alt="" coords="1055,177,1184,269"/>
+</map>
