@@ -81,8 +81,6 @@ add_subdirectory(src)
 
 add_subdirectory(shared)
 
-add_subdirectory(samples)
-
 add_subdirectory(utils)
 
 add_subdirectory(doc)
@@ -93,7 +91,7 @@ add_subdirectory(doc)
 find_package(GTest 1.8.1 CONFIG)
 
 if (GTest_FOUND)
-    # We set enable testing here instead of in tests cmake file 
+    # We set enable testing here instead of in tests cmake file
     # because CTest need it in root directory.
     enable_testing()
     add_subdirectory(tests)
@@ -101,7 +99,7 @@ else()
     message(WARNING "GTest not found. The tests will not be available!")
 endif()
 
-# Install 
+# Install
 set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 

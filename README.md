@@ -8,6 +8,7 @@ Doxygen documnetation is available here: https://airbus.github.io/ED247_LIBRARY/
 
 Refer to [LICENCE](./LICENSE.md) file.
 
+
 # Limitations
 
 -   ED247 Packetization strategy mechanism is not implemented.
@@ -36,7 +37,7 @@ The ED247 LIBRARY / LIBED247 can be built for the following operating systems an
 |     Tool     |         Purpose          | Release  |
 | :----------: | :----------------------: | :------: |
 |  [CMAKE][4]  |  Compilation framework   | 3.22.0   |
-|  [GTEST][2]  |       Tests only         | 1.8.1    |
+|  [GTEST][2]  |       Tests only         | 1.10.0   |
 | [DOXYGEN][6] | Documentation generation | 1.8.11   |
 
 ## Logging
@@ -57,7 +58,6 @@ The logging strategy can be controlled through the API with `ed247_set_log_level
 | all | Build everything. This is the default target. |
 | ed247 | Only build the library. |
 | utils | Build utils and their dependencies. |
-| samples | Build samples and their dependencies. |
 | tests | Build all tests and theirs dependencies. |
 | run_tests | Build all tests and excute them. |
 | <test_name> | Build only test <test_name>. See tests section below.|
@@ -117,7 +117,7 @@ Cmake options can be provided with the syntax `-D<option>=<value>`
 |   CMake option  |         Purpose        |
 | :-------------- | :--------------------- |
 | CMAKE_BUILD_TYPE | The default is RelWithDebInfo. You may want to use Debug to disable optimization. |
-| CMAKE_TOOLCHAIN_FILE | Needed to build in 32-bits or cross-compile. See samples in `cmake/toolchains`. |
+| CMAKE_TOOLCHAIN_FILE | Needed to build in 32-bits or cross-compile. See examples in `cmake/toolchains`. |
 | CMAKE_PREFIX_PATH | List of paths to search for dependencies. |
 | GTest_ROOT | Path to GTest. |
 | Doxygen_ROOT | Path to Doxygen. |
