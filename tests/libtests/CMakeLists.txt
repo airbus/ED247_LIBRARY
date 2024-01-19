@@ -9,25 +9,25 @@ target_link_libraries(libtests_objects
   GTest::gtest
 )
 
-# Unitary tests lib statically linked to ED247
-add_library(libtests_unitary STATIC tests_tools.cpp)
-target_compile_definitions(libtests_unitary
+# Test library statically linked to ED247
+add_library(libtests_static STATIC tests_tools.cpp)
+target_compile_definitions(libtests_static
   PUBLIC
     $<$<PLATFORM_ID:Windows>:LIBED247_STATIC>
 )
-target_link_libraries(libtests_unitary
+target_link_libraries(libtests_static
   PUBLIC
-    ed247_objects
+    Ed247::static
     libtests_objects
     libsynchronizer
     libtime_tools
     $<$<PLATFORM_ID:Linux>:dl>
 )
 
-# Functionnal tests lib dynamically linked to ED247
-add_library(libtests_functional STATIC tests_tools.cpp)
+# Test library dynamically linked to ED247
+add_library(libtests_dynamic STATIC tests_tools.cpp)
 
-target_link_libraries(libtests_functional
+target_link_libraries(libtests_dynamic
   PUBLIC
     Ed247::ed247
     libtests_objects

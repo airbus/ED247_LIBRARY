@@ -4,11 +4,11 @@ add_custom_target(tests_unitary)
 add_custom_target(tests DEPENDS tests_functional tests_unitary)
 
 #
-# Add a target to generate ECIC files for a test
+# Add a target ${_test_basename}_config to generate ECIC files for a test
 #
-function (test_add_config _test_name)
+function (test_add_config _test_basename)
   set(config_target_list "")
-  file(GLOB config_template_list LIST_DIRECTORIES false ${_test_name}/config/*)
+  file(GLOB config_template_list LIST_DIRECTORIES false ${_test_basename}/config/*)
   foreach(config_template ${config_template_list})
     get_filename_component(config_filename ${config_template} NAME)
     set(config_target ${CMAKE_CURRENT_BINARY_DIR}/config/${config_filename})
@@ -23,23 +23,22 @@ function (test_add_config _test_name)
       )
     list(APPEND config_target_list ${config_target})
   endforeach()
-  add_custom_target(${_test_name}_config DEPENDS ${config_target_list})
-  add_dependencies(${_test_name} ${_test_name}_config)
+  add_custom_target(${_test_basename}_config DEPENDS ${config_target_list})
 endfunction()
 
 #
 # Add an executable to a test
-# ${_test_name}
-# ${_kind} : either functional or unitary
+# ${_test_basename}
+# ${_link_type} : either static or dynamic
 # ${_exe_suffix} : main, sender, receiver, ...
 #
-function (test_add_executable _test_name _kind _exe_suffix)
-  set(exe_name ${_test_name}_${_exe_suffix})
-  add_executable(${exe_name} EXCLUDE_FROM_ALL ${_test_name}/src/${exe_name}.cpp)
+function (test_add_executable _test_basename _link_type _exe_suffix)
+  set(exe_name ${_test_basename}_${_link_type}_${_exe_suffix})
+  add_executable(${exe_name} EXCLUDE_FROM_ALL ${_test_basename}/src/${_test_basename}_${_exe_suffix}.cpp)
   set_target_properties(${exe_name} PROPERTIES SKIP_BUILD_RPATH TRUE)
   target_compile_definitions(${exe_name} PRIVATE "TEST_PRODUCT_VERSION=\"${VERSION}\"")
-  target_link_libraries(${exe_name} libtests_${_kind})
-  add_dependencies(${_test_name} ${exe_name})
+  target_link_libraries(${exe_name} libtests_${_link_type})
+  add_dependencies(${_test_basename}_${_link_type} ${exe_name})
 endfunction()
 
 
@@ -64,38 +63,75 @@ endfunction()
 
 
 #
-# Add a test with a single actor
-# ${_test_name}
-# ${_kind} : either functional or unitary
-# Actor source file shall be ${_test_name}/src/${_test_name}_main.cpp
+# Add a test
+# ${_test_basename}
+# ${_nb_actors} : 1 or 2
+# ${_link_type} : either static or dynamic
 #
-function(test_create_for_one_actor _test_name _kind)
-  add_custom_target(${_test_name})
-  add_dependencies(tests_${_kind} ${_test_name})
+function(test_create _test_basename _nb_actors _link_type)
+  add_custom_target(${_test_basename}_${_link_type})
+  add_dependencies(${_test_basename}_${_link_type} ${_test_basename}_config)
 
-  test_add_config(${_test_name})
-  test_add_executable(${_test_name} ${_kind} main)
+  if(_nb_actors EQUAL 1)
+    test_add_executable(${_test_basename} ${_link_type} main)
+  else()
+    test_add_executable(${_test_basename} ${_link_type} sender)
+    test_add_executable(${_test_basename} ${_link_type} receiver)
+  endif()
 
-  test_declare_ctest(${_test_name} 1)
+  test_declare_ctest(${_test_basename}_${_link_type} ${_nb_actors})
+endfunction()
+
+
+#
+# Add all tests for _test_basename
+# ${_test_basename}
+# ${_nb_actors} : 1 or 2
+# ${_kind} : either functional or unitary
+#
+function(test_create_all _test_basename _nb_actors _kind)
+  test_add_config(${_test_basename})
+  add_custom_target(${_test_basename})
+
+  test_create(${_test_basename} ${_nb_actors} static)
+  add_dependencies(tests_${_kind} ${_test_basename}_static)
+
+  if(_kind STREQUAL "functional")
+    test_create(${_test_basename} ${_nb_actors} dynamic)
+    add_dependencies(tests_${_kind} ${_test_basename}_dynamic)
+  endif()
+
+  # Run dynamic test by default
+  if(_kind STREQUAL "functional")
+    add_dependencies(${_test_basename} ${_test_basename}_dynamic)
+    add_custom_target(run_tests_${_test_basename} ${CMAKE_CTEST_COMMAND} -R "${_test_basename}_dynamic$$" --output-on-failure DEPENDS ${_test_basename}_dynamic)
+  else()
+    add_dependencies(${_test_basename} ${_test_basename}_static)
+    add_custom_target(run_tests_${_test_basename} ${CMAKE_CTEST_COMMAND} -R "${_test_basename}_static$$" --output-on-failure DEPENDS ${_test_basename}_static)
+  endif()
+
+endfunction()
+
+#
+# Add a test with a single actor
+# ${_test_basename}
+# ${_kind} : either functional or unitary
+# Actor source file shall be ${_test_basename}/src/${_test_basename}_main.cpp
+#
+function(test_create_for_one_actor _test_basename _kind)
+  test_create_all(${_test_basename} 1 ${_kind})
 endfunction()
 
 #
 # Add a test with two actors
-# ${_test_name}
+# ${_test_basename}
 # ${_kind} : either functional or unitary
 # Actor source files shall be :
-#  * ${_test_name}/src/${_test_name}_sender.cpp
-#  * ${_test_name}/src/${_test_name}_receiver.cpp
+#  * ${_test_basename}/src/${_test_basename}_sender.cpp
+#  * ${_test_basename}/src/${_test_basename}_receiver.cpp
 #
-function(test_create_for_two_actors _test_name _kind)
-  add_custom_target(${_test_name})
-  add_dependencies(tests_${_kind} ${_test_name})
-
-  test_add_config(${_test_name})
-  test_add_executable(${_test_name} ${_kind} sender)
-  test_add_executable(${_test_name} ${_kind} receiver)
-
-  test_declare_ctest(${_test_name} 2)
+function(test_create_for_two_actors _test_basename _kind)
+  test_create_all(${_test_basename} 2 ${_kind})
 endfunction()
 
 # Functional tests
