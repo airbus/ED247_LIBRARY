@@ -208,6 +208,16 @@ namespace ed247 {
       virtual void validate(const xmlNodePtr closest_node) override final;
     };
 
+    struct ETHStream : public StreamProtocoled
+    {
+      ed247_yesno_t _enable_message_size;
+      std::string   _layer;
+
+      ETHStream();
+      virtual void load(const xmlNodePtr xml_node) override final;
+      virtual void validate(const xmlNodePtr closest_node) override final;
+    };
+
     struct DISStream : public StreamSignals
     {
       DISStream();

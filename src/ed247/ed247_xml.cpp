@@ -39,6 +39,8 @@ namespace ed247 {
       static const std::string UdpSockets { "UDP_Sockets" };
       static const std::string UdpSocket { "UDP_Socket" };
       static const std::string FrameFormat { "FrameFormat" };
+      static const std::string Frame { "Frame" };
+      static const std::string FrameSize { "FrameSize" };
       static const std::string ComInterface { "ComInterface" };
       static const std::string Header { "Header" };
       static const std::string SampleTimestampOffset { "SampleTimestampOffset" };
@@ -50,6 +52,7 @@ namespace ed247 {
       static const std::string MessageSize { "MessageSize" };
       static const std::string A825_Stream { "A825_Stream" };
       static const std::string SERIAL_Stream { "SERIAL_Stream" };
+      static const std::string ETH_Stream { "ETH_Stream" };
       static const std::string DIS_Stream { "DIS_Stream" };
       static const std::string ANA_Stream { "ANA_Stream" };
       static const std::string NAD_Stream { "NAD_Stream" };
@@ -93,6 +96,7 @@ namespace ed247 {
       static const std::string SampleDataTimestampOffset { "SampleDataTimestampOffset" };
       static const std::string ElectricalUnit { "ElectricalUnit" };
       static const std::string Dimensions { "Dimensions" };
+      static const std::string Layer { "Layer" };
     }
   }
 }
@@ -604,6 +608,89 @@ void ed247::xml::SERIALStream::validate(const xmlNodePtr closest_node)
   }
 }
 
+//
+// ETHStream
+//
+ed247::xml::ETHStream::ETHStream() :
+StreamProtocoled(ED247_STREAM_TYPE_ETHERNET, 1),
+_enable_message_size(ED247_YESNO_YES),
+_layer("Network")
+{}
+
+void ed247::xml::ETHStream::load(const xmlNodePtr xml_node)
+{
+  //Finish adding all possible attibutes
+  for(auto xml_attr = xml_node->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next){
+    auto attr_name = ::xml::xmlChar_as_string(xml_attr->name);
+    if(attr_name.compare(attr::Name) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _name);
+    }else if(attr_name.compare(attr::Direction) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _direction);
+    }else if(attr_name.compare(attr::Comment) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _comment);
+    }else if(attr_name.compare(attr::ICD) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _icd);
+    }else if(attr_name.compare(attr::SampleMaxNumber) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _sample_max_number);
+    }else if(attr_name.compare(attr::SampleMaxSizeBytes) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _sample_max_size_bytes);
+    }else if(attr_name.compare(attr::UID) == 0){
+      ::xml::xmlAttr_get_value(xml_attr, _uid);
+    }else{
+      THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::ETH_Stream << "]");
+    }
+  }
+
+  //check all possible children
+  for(auto xml_node_iter = xml_node->children ; xml_node_iter != nullptr ; xml_node_iter = xml_node_iter->next){
+    if(xml_node_iter->type != XML_ELEMENT_NODE){
+      continue;
+    }
+    auto node_name = ::xml::xmlChar_as_string(xml_node_iter->name);
+
+    if(node_name.compare(node::Frame) == 0){
+      //search for Layer attribute
+      for (auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next) {
+        auto attr_name = ::xml::xmlChar_as_string(xml_attr->name);
+        if (attr_name.compare(attr::Layer) == 0){
+          ::xml::xmlAttr_get_value(xml_attr, _layer);
+        } else {
+          THROW_PARSER_ERROR(xml_node_iter, "Unknown attribute [" << attr_name << "] in tag [" << node::Frame << "] of node [" << node::ETH_Stream << "]");
+        }
+      }
+    }else if(node_name.compare(node::FrameSize) == 0){
+      for (auto xml_attr = xml_node_iter->properties ; xml_attr != nullptr ; xml_attr = xml_attr->next) {
+        auto attr_name = ::xml::xmlChar_as_string(xml_attr->name);
+        if (attr_name.compare(attr::Enable) == 0) {
+          ::xml::xmlAttr_get_value(xml_attr, _enable_message_size);
+        } else {
+          THROW_PARSER_ERROR(xml_node, "Unknown attribute [" << attr_name << "] in tag [" << node::FrameSize << "] of node [" << node::ETH_Stream << "]");
+        }
+      }
+    }else if(node_name.compare(node::DataTimestamp) == 0){
+      _data_timestamp.load(xml_node_iter);
+    }else if(node_name.compare(node::Errors) == 0){
+      _errors.load(xml_node_iter);
+    }else{
+      THROW_PARSER_ERROR(xml_node_iter, "Unknown node [" << node_name << "] in tag [" << node::ETH_Stream << "]");
+    }
+  }
+}
+
+void ed247::xml::ETHStream::validate(const xmlNodePtr closest_node)
+{
+  if (_enable_message_size == ED247_YESNO_NO) {
+    if (_sample_max_number > 1) {
+      THROW_PARSER_ERROR(closest_node, "ETH: Cannot encode several samples (SampleMaxNumber=" << _sample_max_number << ") "
+      "in a stream without sample size (FrameSize disabled)");
+      // Curently the library is able to handle this case by sending one packet by sample. But this is not part of the NORM.
+    }
+  }
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::ETH_Stream << ": SampleMaxSizeBytes shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                      " (A greater size cannot be encoded in an ED247 frame)");
+  }
+}
 
 ed247::xml::Signal::Signal(ed247_signal_type_t type) :
   _type(type),
@@ -1219,6 +1306,11 @@ void ed247::xml::Channel::load(const xmlNodePtr xml_node)
           // VNAD
         }else if(node_name.compare(node::VNAD_Stream) == 0){
           VNADStream* stream = new VNADStream();
+          stream->load(xml_node_child_iter);
+          _stream_list.emplace_back(stream);
+          //ETH
+        }else if(node_name.compare(node::ETH_Stream) == 0){
+          ETHStream* stream = new ETHStream();
           stream->load(xml_node_child_iter);
           _stream_list.emplace_back(stream);
           // Otherwise
