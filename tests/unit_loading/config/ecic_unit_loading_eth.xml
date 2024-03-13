@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent" Comment="Comment" StandardRevision="A" Identifier="0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
+    <Channels>
+        <MultiChannel Name="Channel0" Comment="Comment">
+            <FrameFormat StandardRevision="A"/>
+            <ComInterface>
+                <UDP_Sockets>
+                    <UDP_Socket DstIP="127.0.0.1" DstPort="2589"/>
+                </UDP_Sockets>
+            </ComInterface>
+            <Streams>
+                <!-- ETH -->
+                <ETH_Stream UID="0" Name="ETHStreamOutput" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
+                    <Frame Layer="Network" />
+                    <FrameSize Enable="Yes" />
+                    <Errors Enable="No"/>
+                </ETH_Stream>
+                <ETH_Stream UID="2" Name="ETHStreamOutput2" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
+                    <Frame Layer="Network" />
+                    <Errors Enable="No"/>
+                </ETH_Stream>
+                <ETH_Stream UID="3" Name="ETHStreamOutput3" Direction="Out" Comment="Comment" ICD="File.xml:BUS45" SampleMaxSizeBytes="123">
+                    <Frame Layer="Network" />
+                    <FrameSize Enable="No" />
+                    <Errors Enable="No"/>
+                </ETH_Stream>
+            </Streams>
+            <!-- ... -->
+        </MultiChannel>
+    </Channels>
+</ED247ComponentInstanceConfiguration>

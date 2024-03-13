@@ -96,6 +96,9 @@ TEST(RobustnessLoad, Loading)
 
     // Check load by content fails if wrong ECIC content is provided
     ASSERT_EQ(ed247_load_content("I am a wrong configuration file content !", &context), ED247_STATUS_FAILURE);
+
+    // ECIC ETH file FrameSize disabled but sample max number is > 1, unload after error checked
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_eth.xml").c_str(), NULL), ED247_STATUS_FAILURE);
 }
 
 TEST(NoInputs, Wait)

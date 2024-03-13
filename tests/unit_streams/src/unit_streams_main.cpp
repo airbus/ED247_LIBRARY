@@ -175,24 +175,28 @@ TEST_P(StreamContext, SinglePushPop)
         uint32_t size = stream_1->encode(buffer.data_rw(), buffer.capacity());
         buffer.set_size(size);
         ASSERT_EQ(malloc_count_stop(), 0);
-        if(stream_1->get_type() == ED247_STREAM_TYPE_VNAD)
+        if(stream_1->get_type() == ED247_STREAM_TYPE_VNAD){
             ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
-        else if(stream_1->get_type() == ED247_STREAM_TYPE_A664 &&
-                static_cast<const ed247::xml::A664Stream*>(stream_1->_configuration)->_enable_message_size == ED247_YESNO_YES)
+        }else if(stream_1->get_type() == ED247_STREAM_TYPE_A664 &&
+                static_cast<const ed247::xml::A664Stream*>(stream_1->_configuration)->_enable_message_size == ED247_YESNO_YES){
             ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
-        else if(stream_1->get_type() == ED247_STREAM_TYPE_A825)
+        }else if(stream_1->get_type() == ED247_STREAM_TYPE_A825){
             ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint8_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
-        else if(stream_1->get_type() == ED247_STREAM_TYPE_SERIAL)
+        }else if(stream_1->get_type() == ED247_STREAM_TYPE_SERIAL){
             ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
-        else if(stream_1->get_type() == ED247_STREAM_TYPE_ANALOG)
+        }else if(stream_1->get_type() == ED247_STREAM_TYPE_ANALOG){
             ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample.data(), stream_1_sample.size()) == 0);
-        else
+        }else if(stream_1->get_type() == ED247_STREAM_TYPE_ETHERNET &&
+                static_cast<const ed247::xml::ETHStream*>(stream_1->_configuration)->_enable_message_size == ED247_YESNO_YES){
+            ASSERT_TRUE(memcmp(buffer.data() + sizeof(uint16_t), stream_1_sample.data(), stream_1_sample.size()) == 0);
+        }else{
             ASSERT_TRUE(memcmp(buffer.data(), stream_1_sample.data(), stream_1_sample.size()) == 0);
 
         // Decode sample
         malloc_count_start();
         stream_1->decode(buffer.data(), buffer.size(), LIBED247_SAMPLE_DETAILS_DEFAULT);
         ASSERT_EQ(malloc_count_stop(), 0);
+        }
 
         if ((stream_1->get_direction() & ED247_DIRECTION_IN) != 0)
         {
@@ -285,6 +289,10 @@ TEST_P(StreamContext, MultiPushPop)
                     sample_size = *(uint8_t*)(buffer.data()+frame_index);
                     frame_index += sizeof(uint8_t);
                 }else if(stream_1->get_type() == ED247_STREAM_TYPE_SERIAL){
+                    sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
+                    frame_index += sizeof(uint16_t);
+                }else if(stream_1->get_type() == ED247_STREAM_TYPE_ETHERNET &&
+                    static_cast<const ed247::xml::ETHStream*>(stream_1->_configuration)->_enable_message_size == ED247_YESNO_YES) {
                     sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
                 }
@@ -434,6 +442,10 @@ TEST_P(StreamContext, MultiPushPopDataTimestamp)
                 }else if(stream_out->get_type() == ED247_STREAM_TYPE_SERIAL){
                     sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
                     frame_index += sizeof(uint16_t);
+                }else if(stream_out->get_type() == ED247_STREAM_TYPE_ETHERNET &&
+                    static_cast<const ed247::xml::ETHStream*>(stream_out->_configuration)->_enable_message_size == ED247_YESNO_YES){
+                    sample_size = ntohs(*(uint16_t*)(buffer.data()+frame_index));
+                    frame_index += sizeof(uint16_t);
                 }
                 str_sample_frame = std::string(buffer.data()+frame_index, sample_size);
                 if(stream_out->get_type() != ED247_STREAM_TYPE_ANALOG){
@@ -517,6 +529,7 @@ int main(int argc, char **argv)
     configuration_files.push_back(config_path+"/ecic_unit_streams_ana.xml");
     configuration_files.push_back(config_path+"/ecic_unit_streams_nad.xml");
     configuration_files.push_back(config_path+"/ecic_unit_streams_vnad.xml");
+    configuration_files.push_back(config_path+"/ecic_unit_streams_eth.xml");
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

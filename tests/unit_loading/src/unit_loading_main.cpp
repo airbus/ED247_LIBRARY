@@ -73,6 +73,7 @@ int main(int argc, char **argv)
     configuration_files.push_back(config_path+"/ecic_unit_loading_ana.xml");
     configuration_files.push_back(config_path+"/ecic_unit_loading_nad.xml");
     configuration_files.push_back(config_path+"/ecic_unit_loading_vnad.xml");
+    configuration_files.push_back(config_path+"/ecic_unit_loading_eth.xml");
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 -->
 
-<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent" Comment="Comment" StandardRevision="A" Identifier="0" 
+<ED247ComponentInstanceConfiguration ComponentType="Virtual" Name="VirtualComponent" Comment="Comment" StandardRevision="A" Identifier="0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ED247A_ECIC.xsd">
     <Channels>
         <MultiChannel Name="Channel0">
@@ -40,6 +40,9 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="5" Name="Stream5" SampleMaxNumber="10"/>
                 <A664_Stream UID="4" Name="Stream4" Direction="Out" SampleMaxNumber="10"/>
                 <SERIAL_Stream UID="12" Name="Stream12" Direction="Out" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
+                <ETH_Stream UID="14" Name="Stream14" Direction="Out" SampleMaxNumber="10" SampleMaxSizeBytes="123">
+                    <Frame Layer="Network" />
+                </ETH_Stream>
                 <DIS_Stream UID="6" Name="Stream6" SampleMaxSizeBytes="2" Direction="Out" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal00" ByteOffset="0"/>
@@ -103,6 +106,9 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="5" Name="InStream5" SampleMaxNumber="10"/>
                 <A664_Stream UID="4" Name="InStream4" Direction="In" SampleMaxNumber="10"/>
                 <SERIAL_Stream UID="12" Name="InStream12" Direction="In" SampleMaxNumber="10" SampleMaxSizeBytes="123"/>
+                <ETH_Stream UID="14" Name="InStream14" Direction="In" SampleMaxNumber="10" SampleMaxSizeBytes="123">
+                    <Frame Layer="Network" />
+                </ETH_Stream>
                 <DIS_Stream UID="6" Name="InStream6" SampleMaxSizeBytes="2" Direction="In" SampleMaxNumber="2">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal000" ByteOffset="0"/>

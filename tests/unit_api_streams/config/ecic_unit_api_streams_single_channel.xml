@@ -42,6 +42,9 @@ DEALINGS IN THE SOFTWARE.
                 <A664_Stream UID="100" Name="Stream1full" Direction="Out" SampleMaxNumber="42" ICD="Test for A664" Comment="Optional for A664"/>
                 <SERIAL_Stream UID="1002" Name="StreamSerialFull" Direction="Out" SampleMaxSizeBytes="123" SampleMaxNumber="27" Comment="SERIAL line" ICD="ICD for SERIAL"/>
                 <SERIAL_Stream UID="1003" Name="StreamSerial" Direction="Out" SampleMaxSizeBytes="321"/>
+                <ETH_Stream UID="9" Name="StreamETH" Direction="Out" SampleMaxNumber="10" SampleMaxSizeBytes="1234" >
+                    <Frame Layer="Network" />
+                </ETH_Stream>
                 <DIS_Stream UID="3" Name="Stream4" SampleMaxSizeBytes="4" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal01" ByteOffset="0"/>

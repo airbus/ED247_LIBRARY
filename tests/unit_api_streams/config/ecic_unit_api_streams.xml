@@ -42,6 +42,9 @@ DEALINGS IN THE SOFTWARE.
                 <A825_Stream UID="102" Name="Stream3full" SampleMaxNumber="17" Comment="A825 designates CAN" ICD="ICD for A825"/>
                 <SERIAL_Stream UID="1003" Name="StreamSerial" Direction="Out"/>
                 <SERIAL_Stream UID="1002" Name="StreamSerialFull" Direction="Out" SampleMaxSizeBytes="67" SampleMaxNumber="17" Comment="A825 designates CAN" ICD="ICD for A825"/>
+                <ETH_Stream UID="9" Name="StreamETH" Direction="Out" SampleMaxSizeBytes="1234" >
+                    <Frame Layer="Network" />
+                </ETH_Stream>
                 <DIS_Stream UID="3" Name="Stream4" SampleMaxSizeBytes="4" Direction="Out">
                     <Signals SamplingPeriodUs="10000">
                         <Signal Name="Signal01" ByteOffset="0"/>

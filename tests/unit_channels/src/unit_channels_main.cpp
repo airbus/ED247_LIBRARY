@@ -157,6 +157,8 @@ TEST_P(ChannelContext, MultiPushPop)
                 ASSERT_EQ(sample_size, (sizeof(uint8_t)+stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
             }else if(stream.second->get_type() == ED247_STREAM_TYPE_SERIAL){
                 ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
+            }else if(stream.second->get_type() == ED247_STREAM_TYPE_ETHERNET){
+                ASSERT_EQ(sample_size, (sizeof(uint16_t)+stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
             }else{
                 ASSERT_EQ(sample_size, (stream.second->get_sample_max_size_bytes())*stream.second->get_sample_max_number());
             }

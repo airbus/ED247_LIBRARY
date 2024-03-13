@@ -36,7 +36,7 @@ class UtApiStreams : public ::testing::Test{};
 This first test case checks loading of the streams is correctly performed.
 The basic getter for streams is partially validated as well as stream list
 manipulation function.
-******************************************************************************/	
+******************************************************************************/
 TEST(UtApiStreams, LoadStreams)
 {
     ed247_context_t context;
@@ -74,7 +74,7 @@ TEST(UtApiStreams, LoadStreams)
     // Check stream list size
     uint32_t size;
     ASSERT_EQ(ed247_stream_list_size(stream_list, &size), ED247_STATUS_SUCCESS);
-    ASSERT_EQ(size, (uint32_t)16);
+    ASSERT_EQ(size, (uint32_t)17);
 
     // Check the retrieved content, perform unvalid calls to verify robustness
     ASSERT_EQ(ed247_stream_list_next(stream_list, NULL), ED247_STATUS_FAILURE);
@@ -238,12 +238,18 @@ TEST(UtApiStreams, LoadStreams)
         ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)12);
         ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)13);
         ASSERT_EQ(ed247_stream_get_sampling_period_us(stream), (uint32_t)1000000);
+      } else if (name == "StreamETH") {
+        ASSERT_EQ(ed247_stream_get_direction(stream), ED247_DIRECTION_OUT);
+        ASSERT_EQ(ed247_stream_get_type(stream), ED247_STREAM_TYPE_ETHERNET);
+        ASSERT_EQ(ed247_stream_get_uid(stream), (ed247_uid_t)9);
+        ASSERT_EQ(ed247_stream_get_sample_max_number(stream), (uint32_t)10);
+        ASSERT_EQ(ed247_stream_get_sample_max_size_bytes(stream), (uint32_t)1234);
       } else {
-        SAY("Unkwonn stream " << name << "!");
+        SAY("Unknown stream " << name << "!");
         ASSERT_TRUE(false);
       }
     }
-    ASSERT_EQ(stream_found.size(), 16);
+    ASSERT_EQ(stream_found.size(), 17);
 
     // Check the end of the list is reached and that on next request it will restart from the beginning
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -291,15 +297,15 @@ TEST(UtApiStreams, CheckFindStreamMethod)
       std::string name = ed247_stream_get_name(stream);
       stream_found.insert(name);
 
-      if (name != "Stream2" && name != "Stream3" && name != "Stream1" && name != "Stream8" && name != "Stream4" && name != "Stream5" &&
+      if (name != "Stream2" && name != "Stream3" && name != "Stream1" && name != "Stream8" && name != "Stream9" && name != "Stream4" && name != "Stream5" &&
           name != "Stream6" && name != "Stream7" && name != "Stream12" && name != "Stream13" && name != "Stream11" && name != "Stream18" &&
-          name != "Stream14" && name != "Stream15" && name != "Stream16" && name != "Stream17")
+          name != "Stream14" && name != "Stream15" && name != "Stream16" && name != "Stream17" && name != "Stream19")
       {
         SAY("Unexpected stream " << name << "!");
         ASSERT_TRUE(false);
       }
     }
-    ASSERT_EQ(stream_found.size(), 16);
+    ASSERT_EQ(stream_found.size(), 18);
 
     // Check the end of the list is reached and that on next request it will restart from the beginning
     ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
@@ -331,12 +337,12 @@ TEST(UtApiStreams, CheckGetStreamFromContext)
     ASSERT_EQ(ed247_channel_get_stream_list(channel, NULL), ED247_STATUS_FAILURE);
     ASSERT_EQ(ed247_channel_get_stream_list(channel, &stream_list), ED247_STATUS_SUCCESS);
     std::map<std::string, int> stream_found;
-    for (int i = 1; i < 9; i++) {
+    for (int i = 1; i < 10; i++) {
       ASSERT_EQ(ed247_stream_list_next(stream_list, &stream), ED247_STATUS_SUCCESS);
       ASSERT_NE(stream, nullptr);
       std::string name = ed247_stream_get_name(stream);
       ASSERT_TRUE(name == "Stream1" || name == "Stream2" || name == "Stream3" || name == "Stream4" ||
-                  name == "Stream5" || name == "Stream6" || name == "Stream7" || name == "Stream8");
+                  name == "Stream5" || name == "Stream6" || name == "Stream7" || name == "Stream8" || name == "Stream9");
       stream_found[name] += 1;
     }
     for (auto stream_pair: stream_found) {

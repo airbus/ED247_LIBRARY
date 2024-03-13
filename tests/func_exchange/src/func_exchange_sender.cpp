@@ -488,6 +488,8 @@ int main(int argc, char **argv)
     tests_tools::display_ed247_lib_infos();
     SAY("Configuration path: " << config_path);
 
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_eth_uc_main.xml"});
+    stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_eth_mc_main.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_uc_main.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a429_mc_main.xml"});
     stream_files.push_back({TEST_ACTOR_ID, config_path+"/ecic_func_exchange_a664_mc_main.xml"});
