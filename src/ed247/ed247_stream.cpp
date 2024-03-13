@@ -38,6 +38,7 @@ typedef uint8_t  A825_sample_size_t;
 typedef uint16_t SERIAL_sample_size_t;
 typedef uint16_t AUDIO_sample_size_t;
 typedef uint16_t VNAD_sample_size_t;
+typedef uint16_t ETHERNET_sample_size_t;
 
 //
 // Client lists (ed247.h interface)
@@ -427,6 +428,11 @@ ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configura
     stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel, sizeof(SERIAL_sample_size_t));
     break;
 
+  case ED247_STREAM_TYPE_ETHERNET:
+    stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel,
+                                      (((const xml::ETHStream*)configuration)->_enable_message_size == ED247_YESNO_YES)? sizeof(ETHERNET_sample_size_t) : 0);
+    break;
+
   case ED247_STREAM_TYPE_AUDIO:
     stream = std::make_shared<Stream>(_context, configuration, ed247_api_channel, sizeof(AUDIO_sample_size_t));
     break;
@@ -447,7 +453,6 @@ ed247::stream_ptr_t ed247::StreamSet::create(const ed247::xml::Stream* configura
     stream = std::make_shared<StreamSignals>(_context, configuration, ed247_api_channel, sizeof(VNAD_sample_size_t));
     break;
 
-  case ED247_STREAM_TYPE_ETHERNET:
   case ED247_STREAM_TYPE_VIDEO:
   case ED247_STREAM_TYPE_M1553:
     THROW_ED247_ERROR("Stream '" << configuration->_name << "': Unsupported stream type '" << configuration->_type << "'");
