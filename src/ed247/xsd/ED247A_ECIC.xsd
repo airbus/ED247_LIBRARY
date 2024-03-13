@@ -543,9 +543,9 @@ DEALINGS IN THE SOFTWARE.
 			<xs:element name="DataTimestamp" type="data_timestamp_type" minOccurs="0"/>
 			<xs:element name="Errors" type="enable_type_no" minOccurs="0"/>
 			<xs:element name="PacketStrategy" type="eth_packet_strategy_type" minOccurs="0"/>
-			<xs:element name="Frame">
+			<xs:element name="Frame" minOccurs="0">
 				<xs:complexType>
-					<xs:attribute name="Layer" type="eth_frame_layer_type" default="Network"/>
+					<xs:attribute name="Layer" type="eth_frame_layer_type"  default="Network"/>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="FrameSize" type="enable_type_yes" minOccurs="0"/>
@@ -555,6 +555,7 @@ DEALINGS IN THE SOFTWARE.
 		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
 		<xs:attribute name="Comment" type="xs:string" default=""/>
         <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
+        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="eth_stream_multi_type">
