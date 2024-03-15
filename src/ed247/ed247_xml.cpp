@@ -499,7 +499,7 @@ void ed247::xml::A664Stream::validate(const xmlNodePtr closest_node)
 
   if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
     THROW_PARSER_ERROR(closest_node, node::A664_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
-                       " (A greather size cannot be encoded in an ED247 frame)");
+                       " (A greater size cannot be encoded in an ED247 frame)");
   }
 }
 
@@ -551,7 +551,7 @@ void ed247::xml::A825Stream::validate(const xmlNodePtr closest_node)
 {
   if (_sample_max_size_bytes > std::numeric_limits<uint8_t>::max()) {
     THROW_PARSER_ERROR(closest_node, node::A825_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint8_t>::max() <<
-                       " (A greather size cannot be encoded in an ED247 frame)");
+                       " (A greater size cannot be encoded in an ED247 frame)");
   }
 }
 
@@ -604,7 +604,7 @@ void ed247::xml::SERIALStream::validate(const xmlNodePtr closest_node)
 {
   if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
     THROW_PARSER_ERROR(closest_node, node::SERIAL_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
-                       " (A greather size cannot be encoded in an ED247 frame)");
+                       " (A greater size cannot be encoded in an ED247 frame)");
   }
 }
 
@@ -614,7 +614,7 @@ void ed247::xml::SERIALStream::validate(const xmlNodePtr closest_node)
 ed247::xml::ETHStream::ETHStream() :
 StreamProtocoled(ED247_STREAM_TYPE_ETHERNET, 1),
 _enable_message_size(ED247_YESNO_YES),
-_layer("Network")
+_layer(std::string())
 {}
 
 void ed247::xml::ETHStream::load(const xmlNodePtr xml_node)
@@ -683,7 +683,7 @@ void ed247::xml::ETHStream::validate(const xmlNodePtr closest_node)
     if (_sample_max_number > 1) {
       THROW_PARSER_ERROR(closest_node, "ETH: Cannot encode several samples (SampleMaxNumber=" << _sample_max_number << ") "
       "in a stream without sample size (FrameSize disabled)");
-      // Curently the library is able to handle this case by sending one packet by sample. But this is not part of the NORM.
+      //Throws an error if SampleMaxNumber is > 1 while message size field is disabled
     }
   }
   if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
@@ -957,7 +957,11 @@ void ed247::xml::DISStream::load(const xmlNodePtr xml_node)
 
 void ed247::xml::DISStream::validate(const xmlNodePtr closest_node)
 {
-  // Nothing to check
+  //Checks that a sample's max size cannot be greater than ED-247 frame size limit.
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::DIS_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                       " (A greater size cannot be encoded in an ED247 frame)");
+  }
 }
 
 
@@ -1036,7 +1040,11 @@ void ed247::xml::ANAStream::load(const xmlNodePtr xml_node)
 
 void ed247::xml::ANAStream::validate(const xmlNodePtr closest_node)
 {
-  // Nothing to check
+  //Checks that a sample's max size cannot be greater than ED-247 frame size limit.
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::ANA_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                       " (A greater size cannot be encoded in an ED247 frame)");
+  }
 }
 
 
@@ -1115,7 +1123,11 @@ void ed247::xml::NADStream::load(const xmlNodePtr xml_node)
 
 void ed247::xml::NADStream::validate(const xmlNodePtr closest_node)
 {
-  // Nothing to check
+  //Checks that a sample's max size cannot be greater than ED-247 frame size limit.
+  if (_sample_max_size_bytes > std::numeric_limits<uint16_t>::max()) {
+    THROW_PARSER_ERROR(closest_node, node::NAD_Stream << ": SampleMaxSizeByte shall be lower than " << std::numeric_limits<uint16_t>::max() <<
+                       " (A greater size cannot be encoded in an ED247 frame)");
+  }
 }
 
 //
