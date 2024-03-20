@@ -98,7 +98,11 @@ TEST(RobustnessLoad, Loading)
     ASSERT_EQ(ed247_load_content("I am a wrong configuration file content !", &context), ED247_STATUS_FAILURE);
 
     // ECIC ETH file FrameSize disabled but sample max number is > 1, unload after error checked
-    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_eth.xml").c_str(), NULL), ED247_STATUS_FAILURE);
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_eth.xml").c_str(), &context), ED247_STATUS_FAILURE);
+
+    //Sample Max Size Bytes UDP check
+    ASSERT_EQ(ed247_load_file((config_path+"/ecic_func_load_all_sample_size.xml").c_str(), &context), ED247_STATUS_FAILURE);
+
 }
 
 TEST(NoInputs, Wait)
