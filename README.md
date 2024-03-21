@@ -15,7 +15,7 @@ Refer to [LICENCE](./LICENSE.md) file.
 
 -   ED247 Error handling is not implemented.
 
--   The implementation is compliant only with A664, A429, A825, SERIAL, ANALOG, DISCRETE, NAD & VNAD protocols.
+-   The implementation is compliant only with A664, A429, A825, SERIAL, ETH, ANALOG, DISCRETE, NAD & VNAD protocols.
 
 
 # Operating system and compilers
