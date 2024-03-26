@@ -43,14 +43,7 @@ if (NOT LibXml2_ROOT)
   set(LibXml2_ROOT /)
 endif()
 find_package(LibXml2 2.9.1 REQUIRED)
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  # Fix iconv.h dependency
-  find_package(Iconv QUIET)
-  if (Iconv_FOUND)
-    message("Using iconv header: ${Iconv_INCLUDE_DIRS}")
-    target_include_directories(LibXml2::LibXml2 INTERFACE ${Iconv_INCLUDE_DIRS})
-  endif()
-endif()
+target_compile_definitions(LibXml2::LibXml2 INTERFACE "LIBXML_STATIC")
 
 # Simulink RT logger
 add_library(SimulinkLogger INTERFACE)

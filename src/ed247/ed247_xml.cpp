@@ -201,7 +201,11 @@ namespace ed247 {
       virtual ~exception() throw () override {}
     };
 
+#if LIBXML_VERSION >= 21200
+    static void libxml_structured_error(void * user_data, const xmlError* error)
+#else
     static void libxml_structured_error(void * user_data, xmlErrorPtr error)
+#endif
     {
       xmlResetError(&libxml_error);
       xmlCopyError(error, &libxml_error);
@@ -1458,4 +1462,3 @@ std::unique_ptr<ed247::xml::Component> ed247::xml::load_content(const std::strin
     throw;
   }
 }
-
