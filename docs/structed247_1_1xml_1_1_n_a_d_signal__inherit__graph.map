@@ -1,0 +1,4 @@
+<map id="ed247::xml::NADSignal" name="ed247::xml::NADSignal">
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_signal.html" title="{ed247::xml::Signal\n|+ _name\l+ _type\l+ _comment\l+ _icd\l+ _byte_offset\l+ _analogue_electrical_unit\l+ _nad_type\l+ _nad_unit\l+ _nad_dimensions\l+ _vnad_position\l+ _vnad_max_number\l|+ get_sample_max_size\l_bytes()\l+ get_nad_type_size()\l+ Signal()\l+ ~Signal()\l+ get_nad_type_size()\l}" alt="" coords="5,131,184,429"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="32,5,157,83"/>
+</map>

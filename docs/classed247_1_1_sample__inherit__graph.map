@@ -1,0 +1,3 @@
+<map id="ed247::Sample" name="ed247::Sample">
+<area shape="rect" id="node2" href="$classed247_1_1_stream_sample.html" title="{ed247::StreamSample\n|# _data_timestamp\l# _recv_timestamp\l# _frame_details\l|+ StreamSample()\l+ StreamSample()\l+ operator=()\l+ StreamSample()\l+ copy()\l+ set_data_timestamp()\l+ set_recv_timestamp()\l+ set_frame_details()\l+ data_timestamp()\l+ recv_timestamp()\l+ frame_details()\l+ update_recv_timestamp()\l}" alt="" coords="5,353,187,621"/>
+</map>

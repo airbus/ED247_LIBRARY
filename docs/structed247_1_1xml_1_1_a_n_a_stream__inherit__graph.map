@@ -1,0 +1,5 @@
+<map id="ed247::xml::ANAStream" name="ed247::xml::ANAStream">
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_stream_signals.html" title="{ed247::xml::StreamSignals\n|+ _signal_list\l+ _sampling_period_us\l|+ is_signal_based()\l+ StreamSignals()\l}" alt="" coords="8,432,187,539"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_stream.html" title="{ed247::xml::Stream\n|+ _name\l+ _direction\l+ _type\l+ _comment\l+ _icd\l+ _uid\l+ _sample_max_number\l+ _sample_max_size_bytes\l+ _sample_size_fixed\l+ _data_timestamp\l|+ is_signal_based()\l+ validate()\l+ Stream()\l+ ~Stream()\l}" alt="" coords="5,131,189,384"/>
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="35,5,160,83"/>
+</map>
