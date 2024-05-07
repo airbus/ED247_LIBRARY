@@ -842,7 +842,7 @@ DEALINGS IN THE SOFTWARE.
 			<xs:element name="PacketStrategy" type="eth_packet_strategy_type" minOccurs="0"/>
             <!-- EDC only --> <xs:element name="PacketStrategyCapabilities" type="eth_packet_strategy_capa_type" minOccurs="0"/>
             <!-- EDC only --> <xs:element name="PacketStrategyNeeds" type="eth_packet_strategy_need_type" minOccurs="0"/>
-            <xs:element name="Frame">
+            <xs:element name="Frame" minOccurs="0">
                 <xs:complexType>
                     <xs:attribute name="Layer" type="eth_frame_layer_type" default="Network"/>
                 </xs:complexType>
@@ -854,6 +854,7 @@ DEALINGS IN THE SOFTWARE.
 		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
 		<xs:attribute name="Comment" type="xs:string" default=""/>
         <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
+        <xs:attribute name="Direction" type="direction_bidir_type" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="eth_stream_multi_type">
@@ -1038,7 +1039,7 @@ DEALINGS IN THE SOFTWARE.
                         </xs:extension>
                     </xs:complexContent>
                 </xs:complexType>
-            </xs:element>   
+            </xs:element>
 		</xs:all>
 		<xs:attribute name="Name" type="xs:normalizedString" use="required"/>
 		<xs:attribute name="SampleMaxNumber" type="xs:positiveInteger" default="1"/>
@@ -1157,12 +1158,7 @@ DEALINGS IN THE SOFTWARE.
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
                 <xs:attribute name="Type" type="nad_type" use="required"/>
-                <!-- The MaxLenght attribute was an error,
-                     the correct one is the *required* attribute MaxNumber.
-                     This XSD support any of them for backward compatibility.
-                -->
-                <xs:attribute name="MaxNumber" type="xs:positiveInteger" use="optional"/>
-                <xs:attribute name="MaxLength" type="xs:positiveInteger" use="optional"/>
+                <xs:attribute name="MaxNumber" type="xs:positiveInteger" use="required"/>
                 <xs:attribute name="Unit" type="xs:normalizedString" default=""/>
             </xs:extension>
         </xs:complexContent>
@@ -1176,7 +1172,7 @@ DEALINGS IN THE SOFTWARE.
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="vnad_packet_strategy_type">
 		<xs:all>
 			<xs:element name="Periodic" minOccurs="0">
@@ -1427,7 +1423,7 @@ DEALINGS IN THE SOFTWARE.
 
     <!-- Root -->
 
-     <xs:complexType name="root_type">
+    <xs:complexType name="root_type">
         <xs:all>
             <xs:element name="Pools" minOccurs="0">
                 <xs:complexType>

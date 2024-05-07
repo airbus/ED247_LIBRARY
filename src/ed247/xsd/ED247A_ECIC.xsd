@@ -545,7 +545,7 @@ DEALINGS IN THE SOFTWARE.
 			<xs:element name="PacketStrategy" type="eth_packet_strategy_type" minOccurs="0"/>
 			<xs:element name="Frame" minOccurs="0">
 				<xs:complexType>
-					<xs:attribute name="Layer" type="eth_frame_layer_type"  default="Network"/>
+					<xs:attribute name="Layer" type="eth_frame_layer_type" default="Network"/>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="FrameSize" type="enable_type_yes" minOccurs="0"/>
@@ -555,7 +555,7 @@ DEALINGS IN THE SOFTWARE.
 		<xs:attribute name="ICD" type="xs:normalizedString" default=""/>
 		<xs:attribute name="Comment" type="xs:string" default=""/>
         <xs:attribute name="SampleMaxSizeBytes" type="xs:positiveInteger" use="required"/>
-        <xs:attribute name="Direction" type="direction_single_type" use="required"/>
+        <xs:attribute name="Direction" type="direction_bidir_type" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="eth_stream_multi_type">
@@ -758,12 +758,7 @@ DEALINGS IN THE SOFTWARE.
         <xs:complexContent>
             <xs:extension base="signal_abstract_type">
                 <xs:attribute name="Type" type="nad_type" use="required"/>
-                <!-- The MaxLenght attribute was an error,
-                     the correct one is the *required* attribute MaxNumber.
-                     This XSD support any of them for backward compatibility.
-                -->
-                <xs:attribute name="MaxNumber" type="xs:positiveInteger" use="optional"/>
-                <xs:attribute name="MaxLength" type="xs:positiveInteger" use="optional"/>
+                <xs:attribute name="MaxNumber" type="xs:positiveInteger" use="required"/>
                 <xs:attribute name="Unit" type="xs:normalizedString" default=""/>
             </xs:extension>
         </xs:complexContent>
