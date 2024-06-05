@@ -21,6 +21,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
+add_subdirectory(lib)
+
 function(add_subdirectory_with_rpath _folder_name)
   add_subdirectory(${_folder_name})
   set_target_properties(${_folder_name} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib")
