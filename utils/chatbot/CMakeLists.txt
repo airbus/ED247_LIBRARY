@@ -4,6 +4,7 @@ target_link_libraries(chatbot
   PRIVATE
   Ed247::ed247
   libtime_tools
+  libutils
 )
 
 install(TARGETS chatbot RUNTIME DESTINATION ${PLATFORM_INSTALL_SUBDIR}bin)
