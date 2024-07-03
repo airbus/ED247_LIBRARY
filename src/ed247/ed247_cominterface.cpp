@@ -96,8 +96,9 @@ namespace ed247 {
 
 #define SYSTEM_SOCKET_ASSERT(test, address, socket, m)                  \
     if ((test) == false) {                                              \
+      std::string error = ed247_get_system_error();                     \
       ed247_close_socket(socket);                                       \
-      THROW_ED247_ERROR("[" << address << "] " << m << " (" << ed247_get_system_error() << ")"); \
+      THROW_ED247_ERROR("[" << address << "] " << m << " (" << error << ")"); \
     }
 
     struct socket_address_hash {
