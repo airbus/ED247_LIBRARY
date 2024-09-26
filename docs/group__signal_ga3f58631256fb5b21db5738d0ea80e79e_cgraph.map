@@ -1,0 +1,4 @@
+<map id="ed247_signal_get_assistant" name="ed247_signal_get_assistant">
+<area shape="rect" id="node2" href="$group__signal.html#gaa940f54199d73bb0c29d440966b88997" title="Get the stream that contain this signal. " alt="" coords="247,5,417,32"/>
+<area shape="rect" id="node3" href="$group__stream__io.html#ga3907463be59d8d3cc80caf0dd06e4af9" title="Get an assistant to build stream samples based on signals. " alt="" coords="237,56,427,83"/>
+</map>

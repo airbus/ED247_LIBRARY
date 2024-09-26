@@ -1,0 +1,5 @@
+<map id="ed247::ClientStreamListWithData" name="ed247::ClientStreamListWithData">
+<area shape="rect" id="node2" href="$structed247_1_1client__list__container.html" title="{ClientStreamList\n||+ is_context_owned()\l+ size()\l+ free()\l+ ~client_list_container()\l+ reset_iterator()\l+ get_current()\l+ get_next()\l+ wrap()\l+ copy()\l# client_list_container()\l}" alt="" coords="172,379,337,589"/>
+<area shape="rect" id="node3" href="$structed247_1_1client__list.html" title="{ed247::client_list\l\&lt; CBaseList, T \&gt;\n||+ ~client_list()\l+ is_context_owned()\l+ size()\l+ get_current()\l+ get_next()\l+ reset_iterator()\l+ free()\l}" alt="" coords="5,134,152,314"/>
+<area shape="rect" id="node4" href="$class_c_base_list.html" title="{CBaseList\n||}" alt="" coords="37,5,120,83"/>
+</map>

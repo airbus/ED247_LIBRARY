@@ -1,0 +1,3 @@
+<map id="ed247_internal_signal_t" name="ed247_internal_signal_t">
+<area shape="rect" id="node2" href="$classed247_1_1_signal.html" title="{ed247::Signal\n||+ Signal()\l+ ~Signal()\l+ Signal()\l+ operator=()\l+ get_name()\l+ get_comment()\l+ get_icd()\l+ get_type()\l+ get_byte_offset()\l+ get_analogue_electrical_unit()\l+ get_nad_type()\l+ get_nad_type_size()\l+ get_nad_unit()\l+ get_nad_dimensions()\l+ get_vnad_position()\l+ get_vnad_max_number()\l+ get_sample_max_size\l_bytes()\l+ get_api_stream()\l+ set_user_data()\l+ get_user_data()\l}" alt="" coords="5,131,211,501"/>
+</map>

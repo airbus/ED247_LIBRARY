@@ -1,0 +1,7 @@
+<map id="ed247::xml::Signal" name="ed247::xml::Signal">
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_a_n_a_signal.html" title="{ed247::xml::ANASignal\n||+ ANASignal()\l+ load()\l}" alt="" coords="5,478,163,570"/>
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_d_i_s_signal.html" title="{ed247::xml::DISSignal\n||+ DISSignal()\l+ load()\l}" alt="" coords="187,478,340,570"/>
+<area shape="rect" id="node5" href="$structed247_1_1xml_1_1_n_a_d_signal.html" title="{ed247::xml::NADSignal\n||+ NADSignal()\l+ load()\l}" alt="" coords="365,478,523,570"/>
+<area shape="rect" id="node6" href="$structed247_1_1xml_1_1_v_n_a_d_signal.html" title="{ed247::xml::VNADSignal\n||+ VNADSignal()\l+ load()\l}" alt="" coords="548,478,716,570"/>
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="291,5,416,83"/>
+</map>

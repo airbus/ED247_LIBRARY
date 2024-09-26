@@ -1,0 +1,4 @@
+<map id="ed247::udp::Transceiver" name="ed247::udp::Transceiver">
+<area shape="rect" id="node2" href="$classed247_1_1udp_1_1_emitter.html" title="{ed247::udp::Emitter\n||+ Emitter()\l+ send_frame()\l}" alt="" coords="5,219,141,311"/>
+<area shape="rect" id="node3" href="$classed247_1_1udp_1_1_receiver.html" title="{ed247::udp::Receiver\n|+ MAX_FRAME_SIZE\l|+ Receiver()\l+ receive()\l}" alt="" coords="165,219,320,311"/>
+</map>

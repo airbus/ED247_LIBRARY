@@ -1,0 +1,5 @@
+<map id="ed247::StreamAssistant" name="ed247::StreamAssistant">
+<area shape="rect" id="node3" href="$classed247_1_1_fixed_stream_assistant.html" title="{ed247::FixedStreamAssistant\n||+ FixedStreamAssistant()\l+ write()\l+ read()\l+ push()\l+ pop()\l}" alt="" coords="5,448,200,584"/>
+<area shape="rect" id="node4" href="$classed247_1_1_v_n_a_d_stream_assistant.html" title="{ed247::VNADStreamAssistant\n||+ VNADStreamAssistant()\l+ write()\l+ read()\l+ push()\l+ pop()\l}" alt="" coords="224,448,424,584"/>
+<area shape="rect" id="node2" href="$structed247__internal__stream__assistant__t.html" title="{ed247_internal_stream\l_assistant_t\n||+ ~ed247_internal_stream\l_assistant_t()\l}" alt="" coords="127,5,300,112"/>
+</map>

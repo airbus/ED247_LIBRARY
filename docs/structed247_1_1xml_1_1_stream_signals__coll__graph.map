@@ -1,0 +1,5 @@
+<map id="ed247::xml::StreamSignals" name="ed247::xml::StreamSignals">
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_stream.html" title="{ed247::xml::Stream\n||+ is_signal_based()\l+ validate()\l+ Stream()\l+ ~Stream()\l}" alt="" coords="575,363,711,485"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="367,5,492,83"/>
+<area shape="rect" id="node8" href="$structed247_1_1xml_1_1_data_timestamp.html" title="{ed247::xml::DataTimestamp\n||+ DataTimestamp()\l+ load()\l}" alt="" coords="5,177,192,269"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="ed247::xml::SERIALStream" name="ed247::xml::SERIALStream">
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_stream_protocoled.html" title="{ed247::xml::StreamProtocoled\n|+ _errors\l|+ is_signal_based()\l+ StreamProtocoled()\l}" alt="" coords="5,433,203,525"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_stream.html" title="{ed247::xml::Stream\n|+ _name\l+ _direction\l+ _type\l+ _comment\l+ _icd\l+ _uid\l+ _sample_max_number\l+ _sample_max_size_bytes\l+ _sample_size_fixed\l+ _data_timestamp\l|+ is_signal_based()\l+ validate()\l+ Stream()\l+ ~Stream()\l}" alt="" coords="11,131,196,384"/>
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="41,5,167,83"/>
+</map>

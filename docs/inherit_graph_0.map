@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$class_c_base_list.html" title="CBaseList" alt="" coords="5,27,88,53"/>
+<area shape="rect" id="node2" href="$structed247_1_1client__list.html" title="ed247::client_list\l\&lt; CBaseList, T \&gt;" alt="" coords="136,19,259,61"/>
+<area shape="rect" id="node3" href="$structed247_1_1client__list__container.html" title="ed247::client_list\l_container\&lt; CBaseList,\l T, Container, context\l_owned \&gt;" alt="" coords="307,5,466,75"/>
+<area shape="rect" id="node4" href="$structed247_1_1_client_stream_list_with_data.html" title="ed247::ClientStreamListWithData" alt="" coords="515,27,733,53"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="ed247::xml::StreamSignals" name="ed247::xml::StreamSignals">
+<area shape="rect" id="node4" href="$structed247_1_1xml_1_1_a_n_a_stream.html" title="{ed247::xml::ANAStream\n||+ ANAStream()\l+ load()\l+ validate()\l}" alt="" coords="5,587,168,693"/>
+<area shape="rect" id="node5" href="$structed247_1_1xml_1_1_d_i_s_stream.html" title="{ed247::xml::DISStream\n||+ DISStream()\l+ load()\l+ validate()\l}" alt="" coords="193,587,351,693"/>
+<area shape="rect" id="node6" href="$structed247_1_1xml_1_1_n_a_d_stream.html" title="{ed247::xml::NADStream\n||+ NADStream()\l+ load()\l+ validate()\l}" alt="" coords="376,587,541,693"/>
+<area shape="rect" id="node7" href="$structed247_1_1xml_1_1_v_n_a_d_stream.html" title="{ed247::xml::VNADStream\n||+ VNADStream()\l+ load()\l+ validate()\l}" alt="" coords="566,587,740,693"/>
+<area shape="rect" id="node2" href="$structed247_1_1xml_1_1_stream.html" title="{ed247::xml::Stream\n|+ _name\l+ _direction\l+ _type\l+ _comment\l+ _icd\l+ _uid\l+ _sample_max_number\l+ _sample_max_size_bytes\l+ _sample_size_fixed\l+ _data_timestamp\l|+ is_signal_based()\l+ validate()\l+ Stream()\l+ ~Stream()\l}" alt="" coords="273,131,457,384"/>
+<area shape="rect" id="node3" href="$structed247_1_1xml_1_1_node.html" title="{ed247::xml::Node\n||+ load()\l}" alt="" coords="303,5,428,83"/>
+</map>
