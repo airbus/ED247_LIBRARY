@@ -27,6 +27,7 @@
 #include "ed247_xsd.h"
 #include <libxml/xmlschemas.h>
 #include <algorithm>
+#include <limits>
 
 /*
  * ECIC Nodes and attributes
